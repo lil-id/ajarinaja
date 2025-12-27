@@ -20,7 +20,8 @@ import {
   X,
   GraduationCap,
   FileText,
-  User
+  User,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Overview', href: '/teacher', icon: LayoutDashboard },
   { name: 'Courses', href: '/teacher/courses', icon: BookOpen },
   { name: 'Exams', href: '/teacher/exams', icon: FileText },
+  { name: 'Analytics', href: '/teacher/analytics', icon: BarChart3 },
   { name: 'Students', href: '/teacher/students', icon: Users },
 ];
 

@@ -15,6 +15,7 @@ import TeacherOverview from "./pages/teacher/Overview";
 import TeacherCourses from "./pages/teacher/Courses";
 import TeacherExams from "./pages/teacher/Exams";
 import TeacherGradeExam from "./pages/teacher/GradeExam";
+import TeacherAnalytics from "./pages/teacher/Analytics";
 import TeacherStudents from "./pages/teacher/Students";
 import TeacherProfile from "./pages/teacher/Profile";
 import TeacherSettings from "./pages/teacher/Settings";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="courses" element={<TeacherCourses />} />
               <Route path="exams" element={<TeacherExams />} />
               <Route path="exams/:examId/grade" element={<TeacherGradeExam />} />
+              <Route path="analytics" element={<TeacherAnalytics />} />
               <Route path="students" element={<TeacherStudents />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="settings" element={<TeacherSettings />} />
