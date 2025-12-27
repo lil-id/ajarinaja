@@ -18,7 +18,8 @@ import {
   GraduationCap,
   User,
   Megaphone,
-  FolderOpen
+  FolderOpen,
+  Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'My Courses', href: '/student/courses', icon: BookOpen },
   { name: 'My Exams', href: '/student/exams', icon: FileText },
   { name: 'Materials', href: '/student/materials', icon: FolderOpen },
+  { name: 'Badges', href: '/student/badges', icon: Award },
   { name: 'Announcements', href: '/student/announcements', icon: Megaphone },
 ];
 
