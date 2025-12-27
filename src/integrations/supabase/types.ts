@@ -246,6 +246,35 @@ export type Database = {
           },
         ]
       }
+      material_views: {
+        Row: {
+          id: string
+          material_id: string
+          student_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          material_id: string
+          student_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          material_id?: string
+          student_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_views_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "course_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
