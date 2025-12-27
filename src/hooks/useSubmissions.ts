@@ -122,3 +122,113 @@ export function useSubmitExam() {
     },
   });
 }
+
+export function useGradeSubmission() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      submissionId, 
+      score,
+      essayScores
+    }: { 
+      submissionId: string; 
+      score: number;
+      essayScores?: Record<string, number>;
+    }) => {
+      const { data, error } = await supabase
+        .from('exam_submissions')
+        .update({
+          score,
+          graded: true,
+        })
+        .eq('id', submissionId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+    },
+  });
+}
+
+export interface SubmissionWithStudent extends ExamSubmission {
+  student: {
+    name: string;
+    email: string;
+  } | null;
+}
+
+export function useSubmissionsWithStudents(examId: string) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: submissions = [], isLoading, error } = useQuery({
+    queryKey: ['submissions-with-students', examId],
+    queryFn: async () => {
+      if (!user || !examId) return [];
+      
+      // First fetch submissions
+      const { data: submissionsData, error: submissionsError } = await supabase
+        .from('exam_submissions')
+        .select('*')
+        .eq('exam_id', examId)
+        .order('submitted_at', { ascending: false });
+      
+      if (submissionsError) throw submissionsError;
+      if (!submissionsData || submissionsData.length === 0) return [];
+      
+      // Get unique student IDs
+      const studentIds = [...new Set(submissionsData.map(s => s.student_id))];
+      
+      // Fetch profiles for these students
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, name, email')
+        .in('user_id', studentIds);
+      
+      if (profilesError) throw profilesError;
+      
+      // Create a map for quick lookup
+      const profilesMap = new Map(
+        (profilesData || []).map(p => [p.user_id, { name: p.name, email: p.email }])
+      );
+      
+      // Combine submissions with student data
+      return submissionsData.map(submission => ({
+        ...submission,
+        student: profilesMap.get(submission.student_id) || null,
+      })) as SubmissionWithStudent[];
+    },
+    enabled: !!user && !!examId,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('submissions-grading-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'exam_submissions',
+          filter: `exam_id=eq.${examId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['submissions-with-students', examId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, examId, queryClient]);
+
+  return { submissions, isLoading, error };
+}

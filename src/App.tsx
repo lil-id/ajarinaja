@@ -14,6 +14,7 @@ import TeacherLayout from "./layouts/TeacherLayout";
 import TeacherOverview from "./pages/teacher/Overview";
 import TeacherCourses from "./pages/teacher/Courses";
 import TeacherExams from "./pages/teacher/Exams";
+import TeacherGradeExam from "./pages/teacher/GradeExam";
 import TeacherStudents from "./pages/teacher/Students";
 import TeacherProfile from "./pages/teacher/Profile";
 import TeacherSettings from "./pages/teacher/Settings";
@@ -49,6 +50,7 @@ const App = () => (
               <Route index element={<TeacherOverview />} />
               <Route path="courses" element={<TeacherCourses />} />
               <Route path="exams" element={<TeacherExams />} />
+              <Route path="exams/:examId/grade" element={<TeacherGradeExam />} />
               <Route path="students" element={<TeacherStudents />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="settings" element={<TeacherSettings />} />
