@@ -49,42 +49,78 @@ export type Database = {
           },
         ]
       }
+      badges: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          icon: string
+          id: string
+          is_preset: boolean
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_preset?: boolean
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_preset?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       course_materials: {
         Row: {
           course_id: string
           created_at: string
           description: string | null
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
           id: string
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           course_id: string
           created_at?: string
           description?: string | null
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           course_id?: string
           created_at?: string
           description?: string | null
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          file_type?: string
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -345,6 +381,58 @@ export type Database = {
             columns: ["exam_id"]
             isOneToOne: false
             referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_badges: {
+        Row: {
+          awarded_at: string
+          awarded_by: string
+          badge_id: string
+          exam_id: string | null
+          id: string
+          student_id: string
+          submission_id: string | null
+        }
+        Insert: {
+          awarded_at?: string
+          awarded_by: string
+          badge_id: string
+          exam_id?: string | null
+          id?: string
+          student_id: string
+          submission_id?: string | null
+        }
+        Update: {
+          awarded_at?: string
+          awarded_by?: string
+          badge_id?: string
+          exam_id?: string | null
+          id?: string
+          student_id?: string
+          submission_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_badges_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_badges_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "exam_submissions"
             referencedColumns: ["id"]
           },
         ]
