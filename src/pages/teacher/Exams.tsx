@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams, useCreateExam, useUpdateExam, useDeleteExam, Question } from '@/hooks/useExams';
-import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2 } from 'lucide-react';
+import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2, ClipboardCheck } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 const TeacherExams = () => {
+  const navigate = useNavigate();
   const { courses } = useTeacherCourses();
   const { exams, isLoading } = useExams();
   const createExam = useCreateExam();
@@ -340,6 +342,12 @@ const TeacherExams = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {exam.status === 'published' && (
+                        <DropdownMenuItem onClick={() => navigate(`/teacher/exams/${exam.id}/grade`)}>
+                          <ClipboardCheck className="w-4 h-4 mr-2" />
+                          Grade Submissions
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
