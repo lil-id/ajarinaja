@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { mockCourses } from '@/data/mockData';
-import { Course } from '@/types';
-import { BookOpen, Plus, Users, FileText, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { useTeacherCourses, useCreateCourse, useUpdateCourse, useDeleteCourse } from '@/hooks/useCourses';
+import { BookOpen, Plus, FileText, MoreVertical, Edit, Trash2, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,48 +16,58 @@ import {
 import { toast } from 'sonner';
 
 const TeacherCourses = () => {
-  const { user } = useAuth();
-  const [courses, setCourses] = useState<Course[]>(
-    mockCourses.filter(c => c.teacherId === user?.id)
-  );
+  const { courses, isLoading } = useTeacherCourses();
+  const createCourse = useCreateCourse();
+  const updateCourse = useUpdateCourse();
+  const deleteCourse = useDeleteCourse();
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCourse, setNewCourse] = useState({ title: '', description: '' });
 
-  const handleCreateCourse = () => {
+  const handleCreateCourse = async () => {
     if (!newCourse.title.trim()) {
       toast.error('Please enter a course title');
       return;
     }
 
-    const course: Course = {
-      id: String(Date.now()),
-      title: newCourse.title,
-      description: newCourse.description,
-      teacherId: user?.id || '1',
-      teacherName: user?.name || 'Teacher',
-      enrolledCount: 0,
-      examCount: 0,
-      createdAt: new Date().toISOString().split('T')[0],
-      status: 'draft',
-    };
-
-    setCourses([...courses, course]);
-    setNewCourse({ title: '', description: '' });
-    setIsDialogOpen(false);
-    toast.success('Course created successfully!');
+    try {
+      await createCourse.mutateAsync({
+        title: newCourse.title,
+        description: newCourse.description,
+      });
+      setNewCourse({ title: '', description: '' });
+      setIsDialogOpen(false);
+      toast.success('Course created successfully!');
+    } catch (error) {
+      toast.error('Failed to create course');
+    }
   };
 
-  const handleDeleteCourse = (courseId: string) => {
-    setCourses(courses.filter(c => c.id !== courseId));
-    toast.success('Course deleted');
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      await deleteCourse.mutateAsync(courseId);
+      toast.success('Course deleted');
+    } catch (error) {
+      toast.error('Failed to delete course');
+    }
   };
 
-  const handlePublishCourse = (courseId: string) => {
-    setCourses(courses.map(c => 
-      c.id === courseId ? { ...c, status: 'published' as const } : c
-    ));
-    toast.success('Course published!');
+  const handlePublishCourse = async (courseId: string) => {
+    try {
+      await updateCourse.mutateAsync({ id: courseId, status: 'published' });
+      toast.success('Course published!');
+    } catch (error) {
+      toast.error('Failed to publish course');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -102,7 +110,12 @@ const TeacherCourses = () => {
                   onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
                 />
               </div>
-              <Button onClick={handleCreateCourse} className="w-full">
+              <Button 
+                onClick={handleCreateCourse} 
+                className="w-full"
+                disabled={createCourse.isPending}
+              >
+                {createCourse.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 Create Course
               </Button>
             </div>
@@ -178,18 +191,14 @@ const TeacherCourses = () => {
                   </DropdownMenu>
                 </div>
                 <CardDescription className="line-clamp-2">
-                  {course.description}
+                  {course.description || 'No description'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    {course.enrolledCount}
-                  </div>
-                  <div className="flex items-center gap-1">
                     <FileText className="w-4 h-4" />
-                    {course.examCount} exams
+                    Created {new Date(course.created_at).toLocaleDateString()}
                   </div>
                 </div>
               </CardContent>

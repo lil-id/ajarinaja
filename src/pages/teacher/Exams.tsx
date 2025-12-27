@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,9 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockCourses, mockExams } from '@/data/mockData';
-import { Exam, Question } from '@/types';
-import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft } from 'lucide-react';
+import { useTeacherCourses } from '@/hooks/useCourses';
+import { useExams, useCreateExam, useUpdateExam, useDeleteExam, Question } from '@/hooks/useExams';
+import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,11 +19,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 const TeacherExams = () => {
-  const { user } = useAuth();
-  const teacherCourses = mockCourses.filter(c => c.teacherId === user?.id);
-  const [exams, setExams] = useState<Exam[]>(
-    mockExams.filter(e => teacherCourses.some(c => c.id === e.courseId))
-  );
+  const { courses } = useTeacherCourses();
+  const { exams, isLoading } = useExams();
+  const createExam = useCreateExam();
+  const updateExam = useUpdateExam();
+  const deleteExam = useDeleteExam();
+
+  // Filter exams to only show those for teacher's courses
+  const teacherCourseIds = courses.map(c => c.id);
+  const teacherExams = exams.filter(e => teacherCourseIds.includes(e.course_id));
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [examForm, setExamForm] = useState({
@@ -32,8 +36,14 @@ const TeacherExams = () => {
     description: '',
     duration: 60,
   });
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState<Partial<Question>>({
+  const [questions, setQuestions] = useState<Omit<Question, 'id' | 'exam_id'>[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<{
+    type: 'multiple-choice' | 'essay';
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    points: number;
+  }>({
     type: 'multiple-choice',
     question: '',
     options: ['', '', '', ''],
@@ -47,15 +57,13 @@ const TeacherExams = () => {
       return;
     }
     
-    const newQuestion: Question = {
-      id: `q${Date.now()}`,
-      type: currentQuestion.type as 'multiple-choice' | 'essay',
+    const newQuestion: Omit<Question, 'id' | 'exam_id'> = {
+      type: currentQuestion.type,
       question: currentQuestion.question,
-      points: currentQuestion.points || 10,
-      ...(currentQuestion.type === 'multiple-choice' && {
-        options: currentQuestion.options,
-        correctAnswer: currentQuestion.correctAnswer,
-      }),
+      points: currentQuestion.points,
+      order_index: questions.length,
+      options: currentQuestion.type === 'multiple-choice' ? currentQuestion.options : null,
+      correct_answer: currentQuestion.type === 'multiple-choice' ? currentQuestion.correctAnswer : null,
     };
     
     setQuestions([...questions, newQuestion]);
@@ -69,47 +77,60 @@ const TeacherExams = () => {
     toast.success('Question added');
   };
 
-  const handleCreateExam = () => {
+  const handleCreateExam = async () => {
     if (!selectedCourse || !examForm.title.trim() || questions.length === 0) {
       toast.error('Please fill in all fields and add at least one question');
       return;
     }
 
-    const exam: Exam = {
-      id: String(Date.now()),
-      courseId: selectedCourse,
-      title: examForm.title,
-      description: examForm.description,
-      duration: examForm.duration,
-      questions,
-      totalPoints: questions.reduce((sum, q) => sum + q.points, 0),
-      status: 'draft',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    setExams([...exams, exam]);
-    setExamForm({ title: '', description: '', duration: 60 });
-    setQuestions([]);
-    setSelectedCourse('');
-    setIsDialogOpen(false);
-    toast.success('Exam created successfully!');
+    try {
+      await createExam.mutateAsync({
+        courseId: selectedCourse,
+        title: examForm.title,
+        description: examForm.description,
+        duration: examForm.duration,
+        questions,
+      });
+      
+      setExamForm({ title: '', description: '', duration: 60 });
+      setQuestions([]);
+      setSelectedCourse('');
+      setIsDialogOpen(false);
+      toast.success('Exam created successfully!');
+    } catch (error) {
+      toast.error('Failed to create exam');
+    }
   };
 
-  const handleDeleteExam = (examId: string) => {
-    setExams(exams.filter(e => e.id !== examId));
-    toast.success('Exam deleted');
+  const handleDeleteExam = async (examId: string) => {
+    try {
+      await deleteExam.mutateAsync(examId);
+      toast.success('Exam deleted');
+    } catch (error) {
+      toast.error('Failed to delete exam');
+    }
   };
 
-  const handlePublishExam = (examId: string) => {
-    setExams(exams.map(e => 
-      e.id === examId ? { ...e, status: 'published' as const } : e
-    ));
-    toast.success('Exam published!');
+  const handlePublishExam = async (examId: string) => {
+    try {
+      await updateExam.mutateAsync({ id: examId, status: 'published' });
+      toast.success('Exam published!');
+    } catch (error) {
+      toast.error('Failed to publish exam');
+    }
   };
 
   const getCourseTitle = (courseId: string) => {
-    return teacherCourses.find(c => c.id === courseId)?.title || 'Unknown Course';
+    return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -123,7 +144,7 @@ const TeacherExams = () => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="hero">
+            <Button variant="hero" disabled={courses.length === 0}>
               <Plus className="w-4 h-4" />
               New Exam
             </Button>
@@ -142,7 +163,7 @@ const TeacherExams = () => {
                       <SelectValue placeholder="Choose a course" />
                     </SelectTrigger>
                     <SelectContent>
-                      {teacherCourses.map(course => (
+                      {courses.map(course => (
                         <SelectItem key={course.id} value={course.id}>
                           {course.title}
                         </SelectItem>
@@ -178,7 +199,7 @@ const TeacherExams = () => {
                 {questions.length > 0 && (
                   <div className="space-y-2 mb-4">
                     {questions.map((q, i) => (
-                      <div key={q.id} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                      <div key={i} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                         {q.type === 'multiple-choice' ? (
                           <CheckCircle className="w-4 h-4 text-secondary" />
                         ) : (
@@ -248,7 +269,13 @@ const TeacherExams = () => {
                 </Tabs>
               </div>
 
-              <Button onClick={handleCreateExam} className="w-full" size="lg">
+              <Button 
+                onClick={handleCreateExam} 
+                className="w-full" 
+                size="lg"
+                disabled={createExam.isPending}
+              >
+                {createExam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 Create Exam
               </Button>
             </div>
@@ -256,8 +283,18 @@ const TeacherExams = () => {
         </Dialog>
       </div>
 
+      {courses.length === 0 && (
+        <Card className="border-0 shadow-card">
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">
+              Create a course first before adding exams.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Exams List */}
-      {exams.length === 0 ? (
+      {courses.length > 0 && teacherExams.length === 0 ? (
         <Card className="border-0 shadow-card">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -275,7 +312,7 @@ const TeacherExams = () => {
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
-          {exams.map((exam, index) => (
+          {teacherExams.map((exam, index) => (
             <Card 
               key={exam.id}
               className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up"
@@ -293,7 +330,7 @@ const TeacherExams = () => {
                     </span>
                     <CardTitle className="text-lg">{exam.title}</CardTitle>
                     <CardDescription className="mt-1">
-                      {getCourseTitle(exam.courseId)}
+                      {getCourseTitle(exam.course_id)}
                     </CardDescription>
                   </div>
                   <DropdownMenu>
@@ -331,12 +368,8 @@ const TeacherExams = () => {
                     {exam.duration} min
                   </div>
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    {exam.questions.length} questions
-                  </div>
-                  <div className="flex items-center gap-2">
                     <Award className="w-4 h-4" />
-                    {exam.totalPoints} pts
+                    {exam.total_points} pts
                   </div>
                 </div>
               </CardContent>

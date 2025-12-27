@@ -1,24 +1,36 @@
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { mockCourses, mockEnrollments, mockExams, mockSubmissions } from '@/data/mockData';
-import { FileText, Clock, Award, ArrowRight, CheckCircle } from 'lucide-react';
+import { useCourses } from '@/hooks/useCourses';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import { useExams } from '@/hooks/useExams';
+import { useSubmissions } from '@/hooks/useSubmissions';
+import { FileText, Clock, Award, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const StudentExams = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { courses, isLoading: coursesLoading } = useCourses();
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { exams, isLoading: examsLoading } = useExams();
+  const { submissions, isLoading: submissionsLoading } = useSubmissions();
+
+  const isLoading = coursesLoading || enrollmentsLoading || examsLoading || submissionsLoading;
+
+  const enrolledCourseIds = enrollments.map(e => e.course_id);
   
-  const enrollments = mockEnrollments.filter(e => e.studentId === user?.id);
-  const enrolledCourseIds = enrollments.map(e => e.courseId);
-  
-  const availableExams = mockExams.filter(
-    e => e.status === 'published' && enrolledCourseIds.includes(e.courseId)
+  const availableExams = exams.filter(
+    e => e.status === 'published' && enrolledCourseIds.includes(e.course_id)
   );
   
-  const completedExamIds = mockSubmissions
-    .filter(s => s.studentId === user?.id)
-    .map(s => s.examId);
+  const completedExamIds = submissions.map(s => s.exam_id);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -44,11 +56,9 @@ const StudentExams = () => {
       ) : (
         <div className="space-y-4">
           {availableExams.map((exam, index) => {
-            const course = mockCourses.find(c => c.id === exam.courseId);
+            const course = courses.find(c => c.id === exam.course_id);
             const isCompleted = completedExamIds.includes(exam.id);
-            const submission = mockSubmissions.find(
-              s => s.examId === exam.id && s.studentId === user?.id
-            );
+            const submission = submissions.find(s => s.exam_id === exam.id);
 
             return (
               <Card 
@@ -77,12 +87,8 @@ const StudentExams = () => {
                             {exam.duration} min
                           </span>
                           <span className="flex items-center gap-1">
-                            <FileText className="w-4 h-4" />
-                            {exam.questions.length} questions
-                          </span>
-                          <span className="flex items-center gap-1">
                             <Award className="w-4 h-4" />
-                            {exam.totalPoints} pts
+                            {exam.total_points} pts
                           </span>
                         </div>
                       </div>
@@ -93,16 +99,17 @@ const StudentExams = () => {
                         <div className="text-right">
                           <p className="text-sm text-muted-foreground">Score</p>
                           <p className="text-lg font-bold text-secondary">
-                            {submission.score}/{exam.totalPoints}
+                            {submission.score ?? 'Pending'}/{exam.total_points}
                           </p>
                         </div>
                       )}
                       <Button 
                         variant={isCompleted ? 'outline' : 'default'}
                         onClick={() => navigate(`/student/exam/${exam.id}`)}
+                        disabled={isCompleted}
                       >
-                        {isCompleted ? 'Review' : 'Take Exam'}
-                        <ArrowRight className="w-4 h-4" />
+                        {isCompleted ? 'Completed' : 'Take Exam'}
+                        {!isCompleted && <ArrowRight className="w-4 h-4" />}
                       </Button>
                     </div>
                   </div>

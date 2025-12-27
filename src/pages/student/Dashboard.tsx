@@ -1,47 +1,56 @@
-import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { mockCourses, mockEnrollments, mockExams } from '@/data/mockData';
-import { Enrollment } from '@/types';
-import { BookOpen, FileText, Award, ArrowRight } from 'lucide-react';
+import { useCourses } from '@/hooks/useCourses';
+import { useEnrollments, useEnroll } from '@/hooks/useEnrollments';
+import { useExams } from '@/hooks/useExams';
+import { BookOpen, FileText, Award, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const StudentDashboard = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
-  const [enrollments, setEnrollments] = useState<Enrollment[]>(
-    mockEnrollments.filter(e => e.studentId === user?.id)
-  );
-  
-  const enrolledCourseIds = enrollments.map(e => e.courseId);
-  const enrolledCourses = mockCourses.filter(c => enrolledCourseIds.includes(c.id));
-  const availableCourses = mockCourses.filter(
+  const { courses, isLoading: coursesLoading } = useCourses();
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { exams, isLoading: examsLoading } = useExams();
+  const enroll = useEnroll();
+
+  const isLoading = coursesLoading || enrollmentsLoading || examsLoading;
+
+  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
+  const availableCourses = courses.filter(
     c => c.status === 'published' && !enrolledCourseIds.includes(c.id)
   );
   
-  const upcomingExams = mockExams.filter(
-    e => e.status === 'published' && enrolledCourseIds.includes(e.courseId)
+  const upcomingExams = exams.filter(
+    e => e.status === 'published' && enrolledCourseIds.includes(e.course_id)
   );
 
-  const handleEnroll = (courseId: string) => {
-    const newEnrollment: Enrollment = {
-      id: String(Date.now()),
-      studentId: user?.id || '3',
-      courseId,
-      enrolledAt: new Date().toISOString().split('T')[0],
-    };
-    setEnrollments([...enrollments, newEnrollment]);
-    toast.success('Successfully enrolled in course!');
+  const handleEnroll = async (courseId: string) => {
+    try {
+      await enroll.mutateAsync(courseId);
+      toast.success('Successfully enrolled in course!');
+    } catch (error) {
+      toast.error('Failed to enroll in course');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Welcome */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">
-          Hello, {user?.name?.split(' ')[0] || 'Student'}!
+          Hello, {profile?.name?.split(' ')[0] || 'Student'}!
         </h1>
         <p className="text-muted-foreground mt-1">
           Here's your learning dashboard
@@ -83,7 +92,7 @@ const StudentDashboard = () => {
           <CardContent>
             <div className="space-y-3">
               {upcomingExams.slice(0, 3).map((exam) => {
-                const course = mockCourses.find(c => c.id === exam.courseId);
+                const course = courses.find(c => c.id === exam.course_id);
                 return (
                   <div 
                     key={exam.id}
@@ -92,7 +101,7 @@ const StudentDashboard = () => {
                     <div>
                       <h3 className="font-semibold text-foreground">{exam.title}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {course?.title} • {exam.duration} min • {exam.totalPoints} pts
+                        {course?.title} • {exam.duration} min • {exam.total_points} pts
                       </p>
                     </div>
                     <Button 
@@ -130,17 +139,16 @@ const StudentDashboard = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-foreground">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        by {course.teacherName}
-                      </p>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {course.description}
+                        {course.description || 'No description available'}
                       </p>
                       <Button 
                         size="sm" 
                         variant="secondary"
                         onClick={() => handleEnroll(course.id)}
+                        disabled={enroll.isPending}
                       >
+                        {enroll.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                         Enroll Now
                       </Button>
                     </div>
@@ -148,6 +156,16 @@ const StudentDashboard = () => {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {availableCourses.length === 0 && enrolledCourses.length === 0 && (
+        <Card className="border-0 shadow-card">
+          <CardContent className="py-12 text-center">
+            <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No courses available yet</h3>
+            <p className="text-muted-foreground">Check back later for new courses from teachers.</p>
           </CardContent>
         </Card>
       )}

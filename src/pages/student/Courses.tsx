@@ -1,14 +1,24 @@
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockCourses, mockEnrollments } from '@/data/mockData';
-import { BookOpen, Users, FileText } from 'lucide-react';
+import { useCourses } from '@/hooks/useCourses';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import { BookOpen, FileText, Loader2 } from 'lucide-react';
 
 const StudentCourses = () => {
-  const { user } = useAuth();
-  const enrollments = mockEnrollments.filter(e => e.studentId === user?.id);
-  const enrolledCourses = mockCourses.filter(c => 
-    enrollments.some(e => e.courseId === c.id)
-  );
+  const { courses, isLoading: coursesLoading } = useCourses();
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+
+  const isLoading = coursesLoading || enrollmentsLoading;
+
+  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -44,20 +54,16 @@ const StudentCourses = () => {
               </div>
               <CardHeader>
                 <CardTitle className="text-lg">{course.title}</CardTitle>
-                <CardDescription>by {course.teacherName}</CardDescription>
+                <CardDescription>Enrolled</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                  {course.description}
+                  {course.description || 'No description available'}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    {course.enrolledCount}
-                  </div>
-                  <div className="flex items-center gap-1">
                     <FileText className="w-4 h-4" />
-                    {course.examCount} exams
+                    View exams in My Exams
                   </div>
                 </div>
               </CardContent>

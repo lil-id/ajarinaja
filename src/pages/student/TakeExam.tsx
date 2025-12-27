@@ -6,24 +6,37 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { mockExams, mockCourses } from '@/data/mockData';
-import { Clock, AlertCircle, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useExamWithQuestions } from '@/hooks/useExams';
+import { useSubmitExam, useMySubmission } from '@/hooks/useSubmissions';
+import { useCourses } from '@/hooks/useCourses';
+import { Clock, AlertCircle, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const TakeExam = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
-  const exam = mockExams.find(e => e.id === examId);
-  const course = exam ? mockCourses.find(c => c.id === exam.courseId) : null;
+  const { data: exam, isLoading: examLoading } = useExamWithQuestions(examId || '');
+  const { courses } = useCourses();
+  const { data: existingSubmission } = useMySubmission(examId || '');
+  const submitExam = useSubmitExam();
+  
+  const course = exam ? courses.find(c => c.id === exam.course_id) : null;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | number>>({});
-  const [timeLeft, setTimeLeft] = useState(exam ? exam.duration * 60 : 0);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    if (!exam || isSubmitted) return;
+    if (exam && started && !isSubmitted) {
+      setTimeLeft(exam.duration * 60);
+    }
+  }, [exam, started, isSubmitted]);
+
+  useEffect(() => {
+    if (!started || isSubmitted || timeLeft <= 0) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -36,7 +49,22 @@ const TakeExam = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [exam, isSubmitted]);
+  }, [started, isSubmitted, timeLeft]);
+
+  // Check if already submitted
+  useEffect(() => {
+    if (existingSubmission) {
+      setIsSubmitted(true);
+    }
+  }, [existingSubmission]);
+
+  if (examLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
 
   if (!exam) {
     return (
@@ -63,20 +91,29 @@ const TakeExam = () => {
     setAnswers({ ...answers, [question.id]: value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Calculate score for multiple choice questions
     let score = 0;
     exam.questions.forEach(q => {
-      if (q.type === 'multiple-choice' && answers[q.id] === q.correctAnswer) {
+      if (q.type === 'multiple-choice' && answers[q.id] === q.correct_answer) {
         score += q.points;
       }
     });
     
-    setIsSubmitted(true);
-    toast.success('Exam submitted successfully!');
+    try {
+      await submitExam.mutateAsync({
+        examId: exam.id,
+        answers,
+        score,
+      });
+      setIsSubmitted(true);
+      toast.success('Exam submitted successfully!');
+    } catch (error) {
+      toast.error('Failed to submit exam');
+    }
   };
 
-  if (isSubmitted) {
+  if (existingSubmission || isSubmitted) {
     return (
       <div className="max-w-2xl mx-auto animate-fade-in">
         <Card className="border-0 shadow-card">
@@ -84,12 +121,60 @@ const TakeExam = () => {
             <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-10 h-10 text-secondary" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Exam Submitted!</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              {existingSubmission ? 'Already Submitted!' : 'Exam Submitted!'}
+            </h2>
             <p className="text-muted-foreground mb-6">
-              Your answers have been recorded. Essay questions will be graded by your teacher.
+              {existingSubmission 
+                ? `Your score: ${existingSubmission.score ?? 'Pending grading'}/${exam.total_points}`
+                : 'Your answers have been recorded. Essay questions will be graded by your teacher.'
+              }
             </p>
             <Button onClick={() => navigate('/student/exams')}>
               Back to Exams
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!started) {
+    return (
+      <div className="max-w-2xl mx-auto animate-fade-in">
+        <Card className="border-0 shadow-card">
+          <CardHeader>
+            <CardTitle>{exam.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">Course</p>
+              <p className="font-medium">{course?.title}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-muted rounded-lg text-center">
+                <Clock className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Duration</p>
+                <p className="font-bold">{exam.duration} min</p>
+              </div>
+              <div className="p-4 bg-muted rounded-lg text-center">
+                <p className="text-2xl mb-1">📝</p>
+                <p className="text-sm text-muted-foreground">Questions</p>
+                <p className="font-bold">{exam.questions.length}</p>
+              </div>
+              <div className="p-4 bg-muted rounded-lg text-center">
+                <p className="text-2xl mb-1">🏆</p>
+                <p className="text-sm text-muted-foreground">Total Points</p>
+                <p className="font-bold">{exam.total_points}</p>
+              </div>
+            </div>
+            <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+              <p className="text-sm text-destructive">
+                ⚠️ Once you start, the timer will begin. Make sure you have enough time to complete the exam.
+              </p>
+            </div>
+            <Button className="w-full" size="lg" onClick={() => setStarted(true)}>
+              Start Exam
             </Button>
           </CardContent>
         </Card>
@@ -147,7 +232,7 @@ const TakeExam = () => {
               onValueChange={(v) => handleAnswer(Number(v))}
               className="space-y-3"
             >
-              {question.options.map((option, index) => (
+              {(question.options as string[]).map((option, index) => (
                 <div
                   key={index}
                   className={cn(
@@ -189,7 +274,12 @@ const TakeExam = () => {
         </Button>
 
         {currentQuestion === exam.questions.length - 1 ? (
-          <Button variant="hero" onClick={handleSubmit}>
+          <Button 
+            variant="hero" 
+            onClick={handleSubmit}
+            disabled={submitExam.isPending}
+          >
+            {submitExam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Submit Exam
           </Button>
         ) : (

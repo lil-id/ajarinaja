@@ -27,12 +27,12 @@ const navigation = [
 ];
 
 const StudentLayout = () => {
-  const { user, logout } = useAuth();
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
@@ -43,7 +43,7 @@ const StudentLayout = () => {
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/student')}>
               <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-secondary-foreground" />
               </div>
@@ -78,11 +78,11 @@ const StudentLayout = () => {
                 <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                      {user?.name?.charAt(0) || 'S'}
+                      {profile?.name?.charAt(0) || 'S'}
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden md:block text-sm font-medium text-foreground">
-                    {user?.name || 'Student'}
+                    {profile?.name || 'Student'}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
