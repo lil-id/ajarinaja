@@ -348,7 +348,7 @@ const TeacherExams = () => {
                           Grade Submissions
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/teacher/exams/${exam.id}/edit`)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>

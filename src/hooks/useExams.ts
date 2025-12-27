@@ -11,6 +11,8 @@ export interface Exam {
   duration: number;
   total_points: number;
   status: string;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
   updated_at: string;
 }
