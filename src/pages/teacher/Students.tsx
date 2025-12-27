@@ -14,13 +14,34 @@ const TeacherStudents = () => {
     queryFn: async () => {
       if (courseIds.length === 0) return [];
       
-      const { data, error } = await supabase
+      // First fetch enrollments
+      const { data: enrollmentData, error: enrollmentError } = await supabase
         .from('enrollments')
-        .select('*, profiles:student_id(name, email)')
+        .select('*')
         .in('course_id', courseIds);
       
-      if (error) throw error;
-      return data;
+      if (enrollmentError) throw enrollmentError;
+      if (!enrollmentData || enrollmentData.length === 0) return [];
+      
+      // Get unique student IDs
+      const studentIds = [...new Set(enrollmentData.map(e => e.student_id))];
+      
+      // Fetch profiles for these students
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, name, email')
+        .in('user_id', studentIds);
+      
+      if (profilesError) throw profilesError;
+      
+      // Create a map of profiles by user_id
+      const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+      
+      // Combine enrollments with profiles
+      return enrollmentData.map(enrollment => ({
+        ...enrollment,
+        profiles: profilesMap.get(enrollment.student_id) || null
+      }));
     },
     enabled: !coursesLoading && courseIds.length > 0,
   });
