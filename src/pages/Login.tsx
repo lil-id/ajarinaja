@@ -6,27 +6,58 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { GraduationCap, Loader2, BookOpen, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Login = () => {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading } = useAuth();
+  const [name, setName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'teacher' | 'student'>('student');
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn, signUp, role } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      toast.success('Welcome back!');
-      // Redirect based on role
-      const user = email.includes('teacher') ? 'teacher' : 'student';
-      navigate(user === 'teacher' ? '/teacher' : '/student');
-    } else {
-      toast.error('Invalid credentials. Try one of the demo accounts.');
+    setIsLoading(true);
+
+    try {
+      if (isSignUp) {
+        if (!name.trim()) {
+          toast.error('Please enter your name');
+          setIsLoading(false);
+          return;
+        }
+        const { error } = await signUp(email, password, name, selectedRole);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Account created! You can now sign in.');
+          setIsSignUp(false);
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Welcome back!');
+          // Navigate based on role - will be set after auth state changes
+        }
+      }
+    } catch (err) {
+      toast.error('An error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Redirect if already logged in with a role
+  if (role) {
+    navigate(role === 'teacher' ? '/teacher' : '/student');
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -75,7 +106,7 @@ const Login = () => {
         </p>
       </div>
 
-      {/* Right Panel - Login Form */}
+      {/* Right Panel - Auth Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
@@ -88,93 +119,92 @@ const Login = () => {
 
           <Card className="shadow-xl border-0 bg-card">
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-              <CardDescription>Choose your role and enter your credentials</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                {isSignUp ? 'Create Account' : 'Sign In'}
+              </CardTitle>
+              <CardDescription>
+                {isSignUp ? 'Join EduExam to get started' : 'Welcome back to EduExam'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="teacher" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="teacher">Teacher</TabsTrigger>
-                  <TabsTrigger value="student">Student</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="teacher">
-                  <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignUp && (
+                  <>
                     <div className="space-y-2">
-                      <Label htmlFor="teacher-email">Email</Label>
+                      <Label htmlFor="name">Full Name</Label>
                       <Input
-                        id="teacher-email"
-                        type="email"
-                        placeholder="teacher@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        id="name"
+                        placeholder="John Doe"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         required
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="teacher-password">Password</Label>
-                      <Input
-                        id="teacher-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
+                    <div className="space-y-3">
+                      <Label>I am a</Label>
+                      <RadioGroup 
+                        value={selectedRole} 
+                        onValueChange={(v) => setSelectedRole(v as 'teacher' | 'student')}
+                        className="grid grid-cols-2 gap-4"
+                      >
+                        <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                          <RadioGroupItem value="teacher" id="teacher" />
+                          <Label htmlFor="teacher" className="cursor-pointer flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" />
+                            Teacher
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                          <RadioGroupItem value="student" id="student" />
+                          <Label htmlFor="student" className="cursor-pointer flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            Student
+                          </Label>
+                        </div>
+                      </RadioGroup>
                     </div>
-                    <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                      {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Sign In as Teacher
-                    </Button>
-                    <p className="text-xs text-muted-foreground text-center">
-                      Demo: teacher@example.com (any password)
-                    </p>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="student">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="student-email">Email</Label>
-                      <Input
-                        id="student-email"
-                        type="email"
-                        placeholder="student@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="student-password">Password</Label>
-                      <Input
-                        id="student-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                      {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Sign In as Student
-                    </Button>
-                    <p className="text-xs text-muted-foreground text-center">
-                      Demo: student@example.com (any password)
-                    </p>
-                  </form>
-                </TabsContent>
-              </Tabs>
+                  </>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isSignUp ? 'Create Account' : 'Sign In'}
+                </Button>
+              </form>
+
+              <p className="text-center text-sm text-muted-foreground mt-6">
+                {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+                <button 
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-secondary font-semibold hover:underline"
+                >
+                  {isSignUp ? 'Sign in' : 'Sign up'}
+                </button>
+              </p>
             </CardContent>
           </Card>
-
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Don't have an account?{' '}
-            <button className="text-secondary font-semibold hover:underline">
-              Sign up
-            </button>
-          </p>
         </div>
       </div>
     </div>

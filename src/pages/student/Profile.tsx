@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Camera } from 'lucide-react';
 
 const StudentProfile = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
@@ -28,7 +28,7 @@ const StudentProfile = () => {
             <div className="relative">
               <Avatar className="w-20 h-20">
                 <AvatarFallback className="bg-gradient-secondary text-secondary-foreground text-2xl">
-                  {user?.name?.charAt(0) || 'S'}
+                  {profile?.name?.charAt(0) || 'S'}
                 </AvatarFallback>
               </Avatar>
               <button className="absolute bottom-0 right-0 w-8 h-8 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center shadow-md">
@@ -36,7 +36,7 @@ const StudentProfile = () => {
               </button>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">{user?.name}</h3>
+              <h3 className="font-semibold text-foreground">{profile?.name}</h3>
               <p className="text-sm text-muted-foreground">Student</p>
             </div>
           </div>
@@ -48,14 +48,14 @@ const StudentProfile = () => {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input 
                   id="firstName" 
-                  defaultValue={user?.name?.split(' ')[0]} 
+                  defaultValue={profile?.name?.split(' ')[0]} 
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input 
                   id="lastName" 
-                  defaultValue={user?.name?.split(' ').slice(1).join(' ')} 
+                  defaultValue={profile?.name?.split(' ').slice(1).join(' ')} 
                 />
               </div>
             </div>
@@ -64,7 +64,8 @@ const StudentProfile = () => {
               <Input 
                 id="email" 
                 type="email" 
-                defaultValue={user?.email} 
+                defaultValue={profile?.email} 
+                disabled
               />
             </div>
           </div>

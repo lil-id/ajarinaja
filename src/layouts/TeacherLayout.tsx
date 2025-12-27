@@ -33,12 +33,12 @@ const navigation = [
 
 const TeacherLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
@@ -60,7 +60,7 @@ const TeacherLayout = () => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/teacher')}>
               <div className="w-10 h-10 bg-sidebar-primary rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-sidebar-primary-foreground" />
               </div>
@@ -143,12 +143,12 @@ const TeacherLayout = () => {
                 <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                      {user?.name?.charAt(0) || 'T'}
+                      {profile?.name?.charAt(0) || 'T'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium text-foreground">{user?.name || 'Teacher'}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm font-medium text-foreground">{profile?.name || 'Teacher'}</p>
+                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>

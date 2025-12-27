@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -40,7 +41,11 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             
             {/* Teacher Routes */}
-            <Route path="/teacher" element={<TeacherLayout />}>
+            <Route path="/teacher" element={
+              <ProtectedRoute requiredRole="teacher">
+                <TeacherLayout />
+              </ProtectedRoute>
+            }>
               <Route index element={<TeacherOverview />} />
               <Route path="courses" element={<TeacherCourses />} />
               <Route path="exams" element={<TeacherExams />} />
@@ -50,7 +55,11 @@ const App = () => (
             </Route>
 
             {/* Student Routes */}
-            <Route path="/student" element={<StudentLayout />}>
+            <Route path="/student" element={
+              <ProtectedRoute requiredRole="student">
+                <StudentLayout />
+              </ProtectedRoute>
+            }>
               <Route index element={<StudentDashboard />} />
               <Route path="courses" element={<StudentCourses />} />
               <Route path="exams" element={<StudentExams />} />
