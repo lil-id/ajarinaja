@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import TeacherLayout from "./layouts/TeacherLayout";
 import TeacherOverview from "./pages/teacher/Overview";
 import TeacherCourses from "./pages/teacher/Courses";
+import TeacherCourseDetail from "./pages/teacher/CourseDetail";
 import TeacherExams from "./pages/teacher/Exams";
 import TeacherEditExam from "./pages/teacher/EditExam";
 import TeacherGradeExam from "./pages/teacher/GradeExam";
@@ -56,6 +57,7 @@ const App = () => (
             }>
               <Route index element={<TeacherOverview />} />
               <Route path="courses" element={<TeacherCourses />} />
+              <Route path="courses/:courseId" element={<TeacherCourseDetail />} />
               <Route path="exams" element={<TeacherExams />} />
               <Route path="exams/:examId/edit" element={<TeacherEditExam />} />
               <Route path="exams/:examId/grade" element={<TeacherGradeExam />} />

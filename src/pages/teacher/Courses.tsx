@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useTeacherCourses, useCreateCourse, useUpdateCourse, useDeleteCourse } from '@/hooks/useCourses';
-import { BookOpen, Plus, FileText, MoreVertical, Edit, Trash2, Loader2 } from 'lucide-react';
+import { BookOpen, Plus, FileText, MoreVertical, Edit, Trash2, Loader2, Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
 import { toast } from 'sonner';
 
 const TeacherCourses = () => {
+  const navigate = useNavigate();
   const { courses, isLoading } = useTeacherCourses();
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
@@ -145,8 +147,9 @@ const TeacherCourses = () => {
           {courses.map((course, index) => (
             <Card 
               key={course.id}
-              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden"
+              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden cursor-pointer"
               style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => navigate(`/teacher/courses/${course.id}`)}
             >
               <div className="h-32 bg-gradient-hero flex items-center justify-center">
                 <BookOpen className="w-12 h-12 text-primary-foreground/50" />
@@ -170,7 +173,11 @@ const TeacherCourses = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/teacher/courses/${course.id}`)}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/teacher/courses/${course.id}`)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
