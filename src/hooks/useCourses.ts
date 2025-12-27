@@ -145,6 +145,49 @@ export function useCreateCourse() {
   });
 }
 
+export function useUploadCourseThumbnail() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ courseId, file }: { courseId: string; file: File }) => {
+      // Upload file to storage
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${courseId}/thumbnail.${fileExt}`;
+      
+      // Delete existing thumbnail if any
+      await supabase.storage
+        .from('course-thumbnails')
+        .remove([filePath]);
+      
+      const { error: uploadError } = await supabase.storage
+        .from('course-thumbnails')
+        .upload(filePath, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('course-thumbnails')
+        .getPublicUrl(filePath);
+
+      // Update course with thumbnail URL
+      const { data, error } = await supabase
+        .from('courses')
+        .update({ thumbnail_url: urlData.publicUrl })
+        .eq('id', courseId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-courses'] });
+    },
+  });
+}
+
 export function useUpdateCourse() {
   const queryClient = useQueryClient();
 
