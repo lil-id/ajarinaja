@@ -22,7 +22,8 @@ import {
   FileText,
   User,
   BarChart3,
-  Megaphone
+  Megaphone,
+  FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Overview', href: '/teacher', icon: LayoutDashboard },
   { name: 'Courses', href: '/teacher/courses', icon: BookOpen },
   { name: 'Exams', href: '/teacher/exams', icon: FileText },
+  { name: 'Materials', href: '/teacher/materials', icon: FolderOpen },
   { name: 'Announcements', href: '/teacher/announcements', icon: Megaphone },
   { name: 'Analytics', href: '/teacher/analytics', icon: BarChart3 },
   { name: 'Students', href: '/teacher/students', icon: Users },
