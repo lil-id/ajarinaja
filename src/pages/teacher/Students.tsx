@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const TeacherStudents = () => {
-  const { courses } = useTeacherCourses();
+  const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const courseIds = courses.map(c => c.id);
 
   const { data: enrollments = [], isLoading: enrollmentsLoading } = useQuery({
@@ -22,7 +22,7 @@ const TeacherStudents = () => {
       if (error) throw error;
       return data;
     },
-    enabled: courseIds.length > 0,
+    enabled: !coursesLoading && courseIds.length > 0,
   });
 
   // Group students by unique student_id
@@ -43,7 +43,7 @@ const TeacherStudents = () => {
 
   const students = Array.from(studentsMap.values());
 
-  if (enrollmentsLoading) {
+  if (coursesLoading || enrollmentsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-secondary" />
