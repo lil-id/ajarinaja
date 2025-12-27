@@ -151,8 +151,16 @@ const TeacherCourses = () => {
               style={{ animationDelay: `${index * 100}ms` }}
               onClick={() => navigate(`/teacher/courses/${course.id}`)}
             >
-              <div className="h-32 bg-gradient-hero flex items-center justify-center">
-                <BookOpen className="w-12 h-12 text-primary-foreground/50" />
+              <div className="h-32 bg-gradient-hero flex items-center justify-center overflow-hidden">
+                {course.thumbnail_url ? (
+                  <img 
+                    src={course.thumbnail_url} 
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <BookOpen className="w-12 h-12 text-primary-foreground/50" />
+                )}
               </div>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
