@@ -1,9 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useCourses } from '@/hooks/useCourses';
 import { useEnrollments } from '@/hooks/useEnrollments';
-import { BookOpen, FileText, Loader2 } from 'lucide-react';
+import { BookOpen, FileText, Loader2, ArrowRight } from 'lucide-react';
 
 const StudentCourses = () => {
+  const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
 
@@ -46,11 +49,20 @@ const StudentCourses = () => {
           {enrolledCourses.map((course, index) => (
             <Card 
               key={course.id}
-              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden"
+              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden cursor-pointer group"
               style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => navigate(`/student/courses/${course.id}`)}
             >
-              <div className="h-32 bg-gradient-hero flex items-center justify-center">
-                <BookOpen className="w-12 h-12 text-primary-foreground/50" />
+              <div className="h-32 bg-gradient-hero flex items-center justify-center overflow-hidden">
+                {course.thumbnail_url ? (
+                  <img 
+                    src={course.thumbnail_url} 
+                    alt={course.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <BookOpen className="w-12 h-12 text-primary-foreground/50" />
+                )}
               </div>
               <CardHeader>
                 <CardTitle className="text-lg">{course.title}</CardTitle>
@@ -60,12 +72,10 @@ const StudentCourses = () => {
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                   {course.description || 'No description available'}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <FileText className="w-4 h-4" />
-                    View exams in My Exams
-                  </div>
-                </div>
+                <Button variant="outline" size="sm" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  View Details
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </CardContent>
             </Card>
           ))}

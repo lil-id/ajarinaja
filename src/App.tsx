@@ -28,6 +28,7 @@ import TeacherSettings from "./pages/teacher/Settings";
 import StudentLayout from "./layouts/StudentLayout";
 import StudentDashboard from "./pages/student/Dashboard";
 import StudentCourses from "./pages/student/Courses";
+import StudentCourseDetail from "./pages/student/CourseDetail";
 import StudentExams from "./pages/student/Exams";
 import TakeExam from "./pages/student/TakeExam";
 import ExamResults from "./pages/student/ExamResults";
@@ -77,6 +78,7 @@ const App = () => (
             }>
               <Route index element={<StudentDashboard />} />
               <Route path="courses" element={<StudentCourses />} />
+              <Route path="courses/:courseId" element={<StudentCourseDetail />} />
               <Route path="exams" element={<StudentExams />} />
               <Route path="exam/:examId" element={<TakeExam />} />
               <Route path="exam/:examId/results" element={<ExamResults />} />
