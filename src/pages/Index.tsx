@@ -21,16 +21,16 @@ const Index = () => {
             <span className="text-xl font-bold text-foreground">EduExam</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Fitur</a>
-            <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">Tentang</a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Testimoni</a>
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
+            <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">About</a>
+            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate('/login')}>
-              Masuk
+              Sign In
             </Button>
             <Button variant="hero" onClick={() => navigate('/login')}>
-              Mulai Sekarang
+              Get Started
             </Button>
           </div>
         </div>
@@ -44,40 +44,40 @@ const Index = () => {
             <div className="animate-fade-in">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
                 <Award className="w-4 h-4" />
-                Dipercaya 500+ Institusi Pendidikan
+                Trusted by 500+ Educational Institutions
               </div>
               <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-6 leading-tight">
-                Transformasi
-                <span className="text-gradient block">Pengalaman Belajar</span>
+                Transform Your
+                <span className="text-gradient block">Classroom Experience</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Buat, kelola, dan selenggarakan ujian dengan mudah. Berdayakan guru dengan alat canggih 
-                dan berikan siswa pengalaman belajar yang intuitif.
+                Create, manage, and deliver exams seamlessly. Empower teachers with powerful tools 
+                and give students an intuitive learning experience.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <Button variant="hero" size="xl" onClick={() => navigate('/login')}>
-                  Mulai Mengajar
+                  Start Teaching
                   <ArrowRight className="w-5 h-5" />
                 </Button>
                 <Button variant="outline" size="xl" onClick={() => navigate('/login')}>
                   <Play className="w-4 h-4" />
-                  Lihat Demo
+                  Watch Demo
                 </Button>
               </div>
               <div className="flex items-center gap-6 mt-8 pt-8 border-t border-border">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">10K+</div>
-                  <div className="text-sm text-muted-foreground">Siswa Aktif</div>
+                  <div className="text-sm text-muted-foreground">Active Students</div>
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">500+</div>
-                  <div className="text-sm text-muted-foreground">Sekolah</div>
+                  <div className="text-sm text-muted-foreground">Schools</div>
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">50K+</div>
-                  <div className="text-sm text-muted-foreground">Ujian Dibuat</div>
+                  <div className="text-sm text-muted-foreground">Exams Created</div>
                 </div>
               </div>
             </div>
@@ -96,8 +96,8 @@ const Index = () => {
                     <CheckCircle className="w-6 h-6 text-green-500" />
                   </div>
                   <div>
-                    <div className="font-semibold text-foreground">Ujian Selesai</div>
-                    <div className="text-sm text-muted-foreground">1,234 hari ini</div>
+                    <div className="font-semibold text-foreground">Exams Completed</div>
+                    <div className="text-sm text-muted-foreground">1,234 today</div>
                   </div>
                 </div>
               </div>
@@ -113,42 +113,42 @@ const Index = () => {
             <div className="order-2 lg:order-1 grid grid-cols-2 gap-4">
               <img 
                 src={teacherTeaching} 
-                alt="Guru mengajar di kelas" 
+                alt="Teacher teaching in classroom" 
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
                 style={{ animationDelay: '100ms' }}
               />
               <img 
                 src={studentsStudying} 
-                alt="Siswa belajar bersama" 
+                alt="Students studying together"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover mt-8 animate-slide-up"
                 style={{ animationDelay: '200ms' }}
               />
               <img 
                 src={studentExam} 
-                alt="Siswa mengerjakan ujian online" 
+                alt="Student taking online exam" 
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
                 style={{ animationDelay: '300ms' }}
               />
               <div className="bg-gradient-hero rounded-2xl p-6 flex flex-col justify-center items-center text-center mt-8 animate-slide-up" style={{ animationDelay: '400ms' }}>
                 <div className="text-4xl font-bold text-primary-foreground">98%</div>
-                <div className="text-sm text-primary-foreground/80">Tingkat Kepuasan</div>
+                <div className="text-sm text-primary-foreground/80">Satisfaction Rate</div>
               </div>
             </div>
             <div className="order-1 lg:order-2">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Platform Pendidikan Modern untuk Era Digital
+                Modern Education Platform for the Digital Era
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                EduExam dirancang untuk memudahkan guru dalam membuat dan mengelola ujian, 
-                serta memberikan pengalaman belajar yang menyenangkan bagi siswa. Dengan teknologi 
-                terdepan, kami membantu institusi pendidikan bertransformasi ke era digital.
+                EduExam is designed to make it easy for teachers to create and manage exams, 
+                while providing an enjoyable learning experience for students. With cutting-edge 
+                technology, we help educational institutions transform into the digital era.
               </p>
               <ul className="space-y-4">
                 {[
-                  'Antarmuka yang mudah digunakan untuk guru dan siswa',
-                  'Analitik mendalam untuk memantau kemajuan belajar',
-                  'Keamanan data tingkat enterprise',
-                  'Dukungan teknis 24/7'
+                  'Easy-to-use interface for teachers and students',
+                  'In-depth analytics to monitor learning progress',
+                  'Enterprise-grade data security',
+                  '24/7 technical support'
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -168,30 +168,30 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Fitur Lengkap untuk Kebutuhan Anda
+              Everything You Need
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Platform lengkap untuk pendidikan modern
+              A complete platform for modern education
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard
               icon={<BookOpen className="w-8 h-8" />}
-              title="Manajemen Kursus"
-              description="Buat dan atur kursus dengan mudah. Tambahkan konten, atur jadwal, dan pantau kemajuan dalam satu tempat."
+              title="Course Management"
+              description="Create and organize courses with ease. Add content, set schedules, and track progress all in one place."
               delay={0}
             />
             <FeatureCard
               icon={<Users className="w-8 h-8" />}
-              title="Pendaftaran Siswa"
-              description="Siswa dapat dengan mudah mendaftar ke kursus dan mengakses semua materi pembelajaran dan ujian."
+              title="Student Enrollment"
+              description="Students can easily enroll in courses and access all learning materials and exams."
               delay={100}
             />
             <FeatureCard
               icon={<BarChart3 className="w-8 h-8" />}
-              title="Analitik Ujian"
-              description="Buat ujian pilihan ganda dan esai. Dapatkan analitik detail tentang performa siswa."
+              title="Exam Analytics"
+              description="Create multiple choice and essay exams. Get detailed analytics on student performance."
               delay={200}
             />
           </div>
@@ -203,30 +203,30 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Apa Kata Mereka?
+              What They Say
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Testimoni dari guru dan siswa yang telah menggunakan EduExam
+              Testimonials from teachers and students who have used EduExam
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             <TestimonialCard
-              quote="EduExam sangat membantu saya dalam mengelola ujian untuk 200+ siswa. Prosesnya jadi jauh lebih efisien!"
-              name="Budi Santoso"
-              role="Guru Matematika, SMA Negeri 1"
+              quote="EduExam has been incredibly helpful in managing exams for 200+ students. The process is so much more efficient!"
+              name="Sarah Johnson"
+              role="Math Teacher, Lincoln High School"
               delay={0}
             />
             <TestimonialCard
-              quote="Platform yang sangat user-friendly. Siswa-siswa saya jadi lebih semangat mengerjakan ujian online."
-              name="Siti Rahayu"
-              role="Guru Bahasa Inggris, SMP Negeri 5"
+              quote="A very user-friendly platform. My students are now more excited about taking online exams."
+              name="Michael Chen"
+              role="English Teacher, Westwood Middle School"
               delay={100}
             />
             <TestimonialCard
-              quote="Fitur analitiknya luar biasa! Saya bisa melihat di mana siswa kesulitan dan fokus mengajar di area tersebut."
-              name="Ahmad Wijaya"
-              role="Kepala Sekolah, SMK Teknologi"
+              quote="The analytics feature is amazing! I can see where students struggle and focus my teaching on those areas."
+              name="Emily Rodriguez"
+              role="Principal, Tech Valley Academy"
               delay={200}
             />
           </div>
@@ -240,14 +240,14 @@ const Index = () => {
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
             <div className="relative">
               <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-                Siap Memulai?
+                Ready to Get Started?
               </h2>
               <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-                Bergabunglah dengan ribuan pendidik yang telah menggunakan EduExam untuk transformasi pengajaran mereka.
+                Join thousands of educators who are already using EduExam to transform their teaching.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button variant="heroOutline" size="xl" onClick={() => navigate('/login')}>
-                  Buat Akun Gratis
+                  Create Free Account
                   <ArrowRight className="w-5 h-5" />
                 </Button>
                 <Button 
@@ -256,7 +256,7 @@ const Index = () => {
                   className="text-primary-foreground hover:bg-primary-foreground/10"
                   onClick={() => navigate('/login')}
                 >
-                  Hubungi Sales
+                  Contact Sales
                 </Button>
               </div>
             </div>
@@ -276,41 +276,41 @@ const Index = () => {
                 <span className="text-xl font-bold text-foreground">EduExam</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Platform ujian online terdepan untuk institusi pendidikan di Indonesia.
+                Leading online exam platform for educational institutions worldwide.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Produk</h4>
+              <h4 className="font-semibold text-foreground mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Fitur</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Harga</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Integrasi</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Integrations</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Perusahaan</h4>
+              <h4 className="font-semibold text-foreground mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Tentang Kami</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Karir</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">About Us</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Careers</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Dukungan</h4>
+              <h4 className="font-semibold text-foreground mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Bantuan</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Kontak</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">FAQ</a></li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 EduExam. Hak cipta dilindungi.
+              © 2024 EduExam. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Kebijakan Privasi</a>
-              <a href="#" className="hover:text-foreground transition-colors">Syarat & Ketentuan</a>
+              <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
             </div>
           </div>
         </div>
