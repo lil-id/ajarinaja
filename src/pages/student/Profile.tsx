@@ -1,13 +1,35 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUpdateProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Camera } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const StudentProfile = () => {
   const { profile } = useAuth();
+  const updateProfile = useUpdateProfile();
+  
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
+  useEffect(() => {
+    if (profile?.name) {
+      const parts = profile.name.split(' ');
+      setFirstName(parts[0] || '');
+      setLastName(parts.slice(1).join(' ') || '');
+    }
+  }, [profile?.name]);
+
+  const handleSave = () => {
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+    if (!fullName) return;
+    updateProfile.mutate({ name: fullName });
+  };
+
+  const hasChanges = profile?.name !== `${firstName.trim()} ${lastName.trim()}`.trim();
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
@@ -28,15 +50,14 @@ const StudentProfile = () => {
             <div className="relative">
               <Avatar className="w-20 h-20">
                 <AvatarFallback className="bg-gradient-secondary text-secondary-foreground text-2xl">
-                  {profile?.name?.charAt(0) || 'S'}
+                  {firstName?.charAt(0) || profile?.name?.charAt(0) || 'S'}
                 </AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center shadow-md">
-                <Camera className="w-4 h-4" />
-              </button>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">{profile?.name}</h3>
+              <h3 className="font-semibold text-foreground">
+                {firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name}
+              </h3>
               <p className="text-sm text-muted-foreground">Student</p>
             </div>
           </div>
@@ -48,14 +69,20 @@ const StudentProfile = () => {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input 
                   id="firstName" 
-                  defaultValue={profile?.name?.split(' ')[0]} 
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter first name"
+                  maxLength={50}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input 
                   id="lastName" 
-                  defaultValue={profile?.name?.split(' ').slice(1).join(' ')} 
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter last name"
+                  maxLength={50}
                 />
               </div>
             </div>
@@ -66,11 +93,19 @@ const StudentProfile = () => {
                 type="email" 
                 defaultValue={profile?.email} 
                 disabled
+                className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
           </div>
 
-          <Button>Save Changes</Button>
+          <Button 
+            onClick={handleSave} 
+            disabled={updateProfile.isPending || !hasChanges || !firstName.trim()}
+          >
+            {updateProfile.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Save Changes
+          </Button>
         </CardContent>
       </Card>
     </div>
