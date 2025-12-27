@@ -4,7 +4,7 @@ import { useCourses } from '@/hooks/useCourses';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useExams } from '@/hooks/useExams';
 import { useSubmissions } from '@/hooks/useSubmissions';
-import { FileText, Clock, Award, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
+import { FileText, Clock, Award, ArrowRight, CheckCircle, Loader2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const StudentExams = () => {
@@ -103,14 +103,22 @@ const StudentExams = () => {
                           </p>
                         </div>
                       )}
-                      <Button 
-                        variant={isCompleted ? 'outline' : 'default'}
-                        onClick={() => navigate(`/student/exam/${exam.id}`)}
-                        disabled={isCompleted}
-                      >
-                        {isCompleted ? 'Completed' : 'Take Exam'}
-                        {!isCompleted && <ArrowRight className="w-4 h-4" />}
-                      </Button>
+                      {isCompleted ? (
+                        <Button 
+                          variant="outline"
+                          onClick={() => navigate(`/student/exam/${exam.id}/results`)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View Results
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => navigate(`/student/exam/${exam.id}`)}
+                        >
+                          Take Exam
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>

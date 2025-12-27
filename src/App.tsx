@@ -25,6 +25,7 @@ import StudentDashboard from "./pages/student/Dashboard";
 import StudentCourses from "./pages/student/Courses";
 import StudentExams from "./pages/student/Exams";
 import TakeExam from "./pages/student/TakeExam";
+import ExamResults from "./pages/student/ExamResults";
 import StudentProfile from "./pages/student/Profile";
 import StudentSettings from "./pages/student/Settings";
 
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="courses" element={<StudentCourses />} />
               <Route path="exams" element={<StudentExams />} />
               <Route path="exam/:examId" element={<TakeExam />} />
+              <Route path="exam/:examId/results" element={<ExamResults />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>

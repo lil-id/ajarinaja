@@ -1,0 +1,298 @@
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { useExamWithQuestions, Question } from '@/hooks/useExams';
+import { useMySubmission } from '@/hooks/useSubmissions';
+import { ArrowLeft, CheckCircle, XCircle, AlignLeft, Loader2, Award, Clock, Target, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const ExamResults = () => {
+  const { examId } = useParams<{ examId: string }>();
+  const navigate = useNavigate();
+  const { data: exam, isLoading: examLoading } = useExamWithQuestions(examId || '');
+  const { data: submission, isLoading: submissionLoading } = useMySubmission(examId || '');
+
+  const isLoading = examLoading || submissionLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
+
+  if (!exam || !submission) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-muted-foreground">Results not found</p>
+        <Button variant="ghost" onClick={() => navigate('/student/exams')} className="mt-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Exams
+        </Button>
+      </div>
+    );
+  }
+
+  const questions = exam.questions || [];
+  const mcQuestions = questions.filter((q: Question) => q.type === 'multiple-choice');
+  const essayQuestions = questions.filter((q: Question) => q.type === 'essay');
+
+  // Calculate MC score
+  let mcCorrect = 0;
+  let mcTotal = mcQuestions.length;
+  mcQuestions.forEach((q: Question) => {
+    const answer = submission.answers[q.id];
+    if (answer !== undefined && Number(answer) === q.correct_answer) {
+      mcCorrect++;
+    }
+  });
+
+  const scorePercentage = submission.score !== null 
+    ? Math.round((submission.score / exam.total_points) * 100) 
+    : 0;
+
+  const getGradeLabel = (percentage: number) => {
+    if (percentage >= 90) return { label: 'Excellent', color: 'text-green-600' };
+    if (percentage >= 80) return { label: 'Great', color: 'text-emerald-600' };
+    if (percentage >= 70) return { label: 'Good', color: 'text-blue-600' };
+    if (percentage >= 60) return { label: 'Satisfactory', color: 'text-amber-600' };
+    return { label: 'Needs Improvement', color: 'text-red-600' };
+  };
+
+  const grade = getGradeLabel(scorePercentage);
+
+  return (
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate('/student/exams')}>
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold text-foreground">{exam.title}</h1>
+          <p className="text-muted-foreground">Exam Results</p>
+        </div>
+      </div>
+
+      {/* Score Overview Card */}
+      <Card className="border-0 shadow-card overflow-hidden">
+        <div className="bg-gradient-hero p-6 text-primary-foreground">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-primary-foreground/80 text-sm mb-1">Your Score</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold">
+                  {submission.graded ? submission.score : '—'}
+                </span>
+                <span className="text-2xl text-primary-foreground/80">/ {exam.total_points}</span>
+              </div>
+              {submission.graded && (
+                <p className={cn("text-lg font-medium mt-2", "text-primary-foreground")}>
+                  {grade.label} • {scorePercentage}%
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              {submission.graded ? (
+                <Badge variant="secondary" className="text-sm px-4 py-1">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Graded
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-sm px-4 py-1 bg-amber-100 text-amber-700 border-amber-300">
+                  <Clock className="w-4 h-4 mr-1" />
+                  Awaiting Grade
+                </Badge>
+              )}
+              <p className="text-sm text-primary-foreground/70">
+                Submitted {new Date(submission.submitted_at).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          {submission.graded && (
+            <div className="mt-4">
+              <Progress value={scorePercentage} className="h-3 bg-primary-foreground/20" />
+            </div>
+          )}
+        </div>
+        
+        {/* Stats Row */}
+        <CardContent className="p-6">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-2">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{mcCorrect}</p>
+              <p className="text-sm text-muted-foreground">Correct</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-2">
+                <XCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{mcTotal - mcCorrect}</p>
+              <p className="text-sm text-muted-foreground">Incorrect</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
+                <AlignLeft className="w-6 h-6 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{essayQuestions.length}</p>
+              <p className="text-sm text-muted-foreground">Essays</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Questions Review */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">Question Review</h2>
+
+        {/* Multiple Choice Questions */}
+        {mcQuestions.map((q: Question, idx: number) => {
+          const answer = submission.answers[q.id];
+          const isCorrect = answer !== undefined && Number(answer) === q.correct_answer;
+          const selectedOption = answer !== undefined ? Number(answer) : null;
+
+          return (
+            <Card 
+              key={q.id} 
+              className={cn(
+                "border-0 shadow-card overflow-hidden",
+                isCorrect ? "ring-1 ring-green-200" : "ring-1 ring-red-200"
+              )}
+            >
+              <div className={cn(
+                "px-4 py-2 flex items-center justify-between",
+                isCorrect ? "bg-green-50" : "bg-red-50"
+              )}>
+                <div className="flex items-center gap-2">
+                  {isCorrect ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  )}
+                  <span className={cn(
+                    "font-medium",
+                    isCorrect ? "text-green-700" : "text-red-700"
+                  )}>
+                    {isCorrect ? 'Correct' : 'Incorrect'}
+                  </span>
+                </div>
+                <Badge variant="outline" className="bg-background">
+                  {isCorrect ? q.points : 0} / {q.points} pts
+                </Badge>
+              </div>
+              <CardContent className="p-4">
+                <p className="font-medium text-foreground mb-4">
+                  <span className="text-muted-foreground mr-2">Q{idx + 1}.</span>
+                  {q.question}
+                </p>
+                <div className="space-y-2">
+                  {q.options?.map((option, optIdx) => {
+                    const isSelected = selectedOption === optIdx;
+                    const isCorrectOption = q.correct_answer === optIdx;
+                    
+                    return (
+                      <div 
+                        key={optIdx}
+                        className={cn(
+                          "p-3 rounded-lg border flex items-center gap-3",
+                          isCorrectOption && "bg-green-50 border-green-300",
+                          isSelected && !isCorrectOption && "bg-red-50 border-red-300",
+                          !isSelected && !isCorrectOption && "bg-muted/30 border-border"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium",
+                          isCorrectOption && "bg-green-600 text-white",
+                          isSelected && !isCorrectOption && "bg-red-600 text-white",
+                          !isSelected && !isCorrectOption && "bg-muted text-muted-foreground"
+                        )}>
+                          {String.fromCharCode(65 + optIdx)}
+                        </div>
+                        <span className={cn(
+                          "flex-1",
+                          isCorrectOption && "text-green-700 font-medium",
+                          isSelected && !isCorrectOption && "text-red-700"
+                        )}>
+                          {option}
+                        </span>
+                        {isCorrectOption && (
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        )}
+                        {isSelected && !isCorrectOption && (
+                          <span className="text-xs text-red-600 font-medium">Your answer</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+
+        {/* Essay Questions */}
+        {essayQuestions.length > 0 && (
+          <>
+            <Separator className="my-6" />
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <AlignLeft className="w-5 h-5" />
+              Essay Questions
+            </h3>
+            
+            {essayQuestions.map((q: Question, idx: number) => {
+              const answer = submission.answers[q.id];
+              
+              return (
+                <Card key={q.id} className="border-0 shadow-card">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-base">
+                        <span className="text-muted-foreground mr-2">Q{mcQuestions.length + idx + 1}.</span>
+                        {q.question}
+                      </CardTitle>
+                      <Badge variant="outline">{q.points} pts</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Your Answer:</p>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm whitespace-pre-wrap">
+                          {answer ? String(answer) : <em className="text-muted-foreground">No answer provided</em>}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {!submission.graded && (
+                      <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg text-amber-700 text-sm">
+                        <Clock className="w-4 h-4" />
+                        This essay is awaiting teacher review
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </>
+        )}
+      </div>
+
+      {/* Back Button */}
+      <div className="flex justify-center pt-4">
+        <Button variant="outline" size="lg" onClick={() => navigate('/student/exams')}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Exams
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default ExamResults;
