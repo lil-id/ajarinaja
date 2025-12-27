@@ -1,19 +1,29 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams, useExamWithQuestions, Question } from '@/hooks/useExams';
 import { useSubmissions } from '@/hooks/useSubmissions';
+import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line, AreaChart, Area
 } from 'recharts';
 import { 
   TrendingUp, Users, Award, Target, BookOpen, 
-  CheckCircle, XCircle, Loader2, BarChart3, PieChartIcon
+  CheckCircle, XCircle, Loader2, BarChart3, PieChartIcon,
+  Download, FileText, FileSpreadsheet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const CHART_COLORS = ['hsl(var(--secondary))', 'hsl(var(--primary))', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -98,6 +108,45 @@ const TeacherAnalytics = () => {
     { name: 'Pending', value: filteredSubmissions.length - gradedSubmissions.length, color: CHART_COLORS[3] },
   ].filter(s => s.value > 0);
 
+  // Export handlers
+  const handleExportCSV = () => {
+    const courseName = selectedCourse === 'all' 
+      ? 'All Courses' 
+      : courses.find(c => c.id === selectedCourse)?.title;
+    
+    exportToCSV({
+      totalStudents,
+      totalSubmissions,
+      avgScore,
+      passRate,
+      scoreRanges,
+      examPerformance,
+      courseName,
+      exportDate: new Date().toLocaleDateString(),
+    }, `analytics-report-${new Date().toISOString().split('T')[0]}`);
+    
+    toast.success('CSV report downloaded');
+  };
+
+  const handleExportPDF = () => {
+    const courseName = selectedCourse === 'all' 
+      ? undefined
+      : courses.find(c => c.id === selectedCourse)?.title;
+    
+    exportToPDF({
+      totalStudents,
+      totalSubmissions,
+      avgScore,
+      passRate,
+      scoreRanges,
+      examPerformance,
+      courseName,
+      exportDate: new Date().toLocaleDateString(),
+    }, `analytics-report-${new Date().toISOString().split('T')[0]}`);
+    
+    toast.success('PDF report downloaded');
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -131,6 +180,25 @@ const TeacherAnalytics = () => {
               ))}
             </SelectContent>
           </Select>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF}>
+                <FileText className="w-4 h-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
