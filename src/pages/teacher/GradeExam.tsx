@@ -6,11 +6,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useExamWithQuestions, Question } from '@/hooks/useExams';
 import { useSubmissionsWithStudents, useGradeSubmission, SubmissionWithStudent } from '@/hooks/useSubmissions';
-import { ArrowLeft, CheckCircle, AlignLeft, Loader2, User, Clock, Award, Check, X } from 'lucide-react';
+import { useBadges, useAwardBadge, useStudentBadges, useCreateBadge } from '@/hooks/useBadges';
+import { ArrowLeft, CheckCircle, AlignLeft, Loader2, User, Clock, Award, Check, X, Trophy, Star, TrendingUp, Zap, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const BADGE_ICONS: Record<string, React.ElementType> = {
+  trophy: Trophy,
+  star: Star,
+  'trending-up': TrendingUp,
+  zap: Zap,
+  award: Award,
+};
+
+const BADGE_COLORS: Record<string, string> = {
+  gold: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+  blue: 'bg-blue-100 text-blue-700 border-blue-300',
+  green: 'bg-green-100 text-green-700 border-green-300',
+  purple: 'bg-purple-100 text-purple-700 border-purple-300',
+  orange: 'bg-orange-100 text-orange-700 border-orange-300',
+};
 
 const GradeExam = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -18,9 +36,16 @@ const GradeExam = () => {
   const { data: exam, isLoading: examLoading } = useExamWithQuestions(examId || '');
   const { submissions, isLoading: submissionsLoading } = useSubmissionsWithStudents(examId || '');
   const gradeSubmission = useGradeSubmission();
+  const { data: badges = [] } = useBadges();
+  const { data: studentBadges = [] } = useStudentBadges();
+  const awardBadge = useAwardBadge();
+  const createBadge = useCreateBadge();
   
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionWithStudent | null>(null);
   const [essayScores, setEssayScores] = useState<Record<string, number>>({});
+  const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
+  const [showCreateBadge, setShowCreateBadge] = useState(false);
+  const [newBadge, setNewBadge] = useState({ name: '', description: '', icon: 'award', color: 'gold' });
 
   const isLoading = examLoading || submissionsLoading;
 
@@ -61,12 +86,44 @@ const GradeExam = () => {
 
   const handleSelectSubmission = (submission: SubmissionWithStudent) => {
     setSelectedSubmission(submission);
-    // Initialize essay scores
     const initialScores: Record<string, number> = {};
     essayQuestions.forEach((q: Question) => {
       initialScores[q.id] = 0;
     });
     setEssayScores(initialScores);
+    setSelectedBadges([]);
+  };
+
+  const getStudentBadgesForExam = (studentId: string) => {
+    return studentBadges.filter(sb => sb.student_id === studentId && sb.exam_id === examId);
+  };
+
+  const handleToggleBadge = (badgeId: string) => {
+    setSelectedBadges(prev => 
+      prev.includes(badgeId) 
+        ? prev.filter(id => id !== badgeId)
+        : [...prev, badgeId]
+    );
+  };
+
+  const handleCreateBadge = async () => {
+    if (!newBadge.name.trim()) {
+      toast.error('Please enter a badge name');
+      return;
+    }
+    try {
+      await createBadge.mutateAsync({
+        name: newBadge.name,
+        description: newBadge.description || undefined,
+        icon: newBadge.icon,
+        color: newBadge.color,
+      });
+      setNewBadge({ name: '', description: '', icon: 'award', color: 'gold' });
+      setShowCreateBadge(false);
+      toast.success('Badge created!');
+    } catch (error) {
+      toast.error('Failed to create badge');
+    }
   };
 
   const handleGrade = async () => {
@@ -82,9 +139,26 @@ const GradeExam = () => {
         score: totalScore,
         essayScores,
       });
+
+      // Award selected badges
+      for (const badgeId of selectedBadges) {
+        const alreadyAwarded = getStudentBadgesForExam(selectedSubmission.student_id)
+          .some(sb => sb.badge_id === badgeId);
+        
+        if (!alreadyAwarded) {
+          await awardBadge.mutateAsync({
+            studentId: selectedSubmission.student_id,
+            badgeId,
+            examId: examId!,
+            submissionId: selectedSubmission.id,
+          });
+        }
+      }
+
       toast.success('Submission graded successfully!');
       setSelectedSubmission(null);
       setEssayScores({});
+      setSelectedBadges([]);
     } catch (error) {
       toast.error('Failed to grade submission');
     }
@@ -127,44 +201,67 @@ const GradeExam = () => {
             </Card>
           ) : (
             <div className="space-y-2">
-              {submissions.map((submission) => (
-                <Card 
-                  key={submission.id}
-                  className={cn(
-                    "border-0 shadow-card cursor-pointer transition-all hover:shadow-card-hover",
-                    selectedSubmission?.id === submission.id && "ring-2 ring-secondary"
-                  )}
-                  onClick={() => handleSelectSubmission(submission)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-muted-foreground" />
+              {submissions.map((submission) => {
+                const submissionBadges = getStudentBadgesForExam(submission.student_id);
+                return (
+                  <Card 
+                    key={submission.id}
+                    className={cn(
+                      "border-0 shadow-card cursor-pointer transition-all hover:shadow-card-hover",
+                      selectedSubmission?.id === submission.id && "ring-2 ring-secondary"
+                    )}
+                    onClick={() => handleSelectSubmission(submission)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {submission.student?.name || 'Unknown Student'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(submission.submitted_at).toLocaleDateString()}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {submission.student?.name || 'Unknown Student'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(submission.submitted_at).toLocaleDateString()}
-                          </p>
+                        <div className="flex items-center gap-2">
+                          {submissionBadges.length > 0 && (
+                            <div className="flex -space-x-1">
+                              {submissionBadges.slice(0, 3).map((sb) => {
+                                const BadgeIcon = BADGE_ICONS[sb.badge?.icon || 'award'] || Award;
+                                return (
+                                  <div 
+                                    key={sb.id}
+                                    className={cn(
+                                      "w-6 h-6 rounded-full border flex items-center justify-center",
+                                      BADGE_COLORS[sb.badge?.color || 'gold']
+                                    )}
+                                  >
+                                    <BadgeIcon className="w-3 h-3" />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {submission.graded ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <Check className="w-3 h-3" />
+                              {submission.score}/{exam.total_points}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+                              Pending
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                      {submission.graded ? (
-                        <Badge variant="secondary" className="gap-1">
-                          <Check className="w-3 h-3" />
-                          {submission.score}/{exam.total_points}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
-                          Pending
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
@@ -287,6 +384,126 @@ const GradeExam = () => {
 
                 <Separator />
 
+                {/* Badge Awards */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">
+                      <Award className="w-5 h-5 text-yellow-500" />
+                      Award Badges (Optional)
+                    </h3>
+                    <Dialog open={showCreateBadge} onOpenChange={setShowCreateBadge}>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Create Badge
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Create Custom Badge</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <div className="space-y-2">
+                            <Label>Badge Name</Label>
+                            <Input
+                              placeholder="e.g., Creative Thinker"
+                              value={newBadge.name}
+                              onChange={(e) => setNewBadge({ ...newBadge, name: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Description (optional)</Label>
+                            <Input
+                              placeholder="Brief description..."
+                              value={newBadge.description}
+                              onChange={(e) => setNewBadge({ ...newBadge, description: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Icon</Label>
+                            <div className="flex gap-2">
+                              {Object.entries(BADGE_ICONS).map(([key, Icon]) => (
+                                <Button
+                                  key={key}
+                                  type="button"
+                                  variant={newBadge.icon === key ? "secondary" : "outline"}
+                                  size="icon"
+                                  onClick={() => setNewBadge({ ...newBadge, icon: key })}
+                                >
+                                  <Icon className="w-4 h-4" />
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Color</Label>
+                            <div className="flex gap-2">
+                              {Object.keys(BADGE_COLORS).map((color) => (
+                                <Button
+                                  key={color}
+                                  type="button"
+                                  variant={newBadge.color === color ? "secondary" : "outline"}
+                                  size="sm"
+                                  onClick={() => setNewBadge({ ...newBadge, color })}
+                                  className="capitalize"
+                                >
+                                  {color}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          <Button onClick={handleCreateBadge} className="w-full" disabled={createBadge.isPending}>
+                            {createBadge.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                            Create Badge
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {badges.map((badge) => {
+                      const BadgeIcon = BADGE_ICONS[badge.icon] || Award;
+                      const isSelected = selectedBadges.includes(badge.id);
+                      const alreadyAwarded = getStudentBadgesForExam(selectedSubmission.student_id)
+                        .some(sb => sb.badge_id === badge.id);
+                      
+                      return (
+                        <button
+                          key={badge.id}
+                          onClick={() => !alreadyAwarded && handleToggleBadge(badge.id)}
+                          disabled={alreadyAwarded}
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                            alreadyAwarded 
+                              ? "opacity-50 cursor-not-allowed bg-muted" 
+                              : isSelected 
+                                ? cn(BADGE_COLORS[badge.color], "ring-2 ring-offset-1 ring-secondary")
+                                : "hover:bg-muted"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center",
+                            BADGE_COLORS[badge.color]
+                          )}>
+                            <BadgeIcon className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-sm font-medium">{badge.name}</span>
+                          {alreadyAwarded && (
+                            <Check className="w-4 h-4 text-green-600" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedBadges.length > 0 && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {selectedBadges.length} badge(s) will be awarded
+                    </p>
+                  )}
+                </div>
+
+                <Separator />
+
                 {/* Total & Submit */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -300,9 +517,9 @@ const GradeExam = () => {
                     variant="hero" 
                     size="lg" 
                     onClick={handleGrade}
-                    disabled={gradeSubmission.isPending}
+                    disabled={gradeSubmission.isPending || awardBadge.isPending}
                   >
-                    {gradeSubmission.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {(gradeSubmission.isPending || awardBadge.isPending) && <Loader2 className="w-4 h-4 animate-spin" />}
                     Submit Grade
                   </Button>
                 </div>
