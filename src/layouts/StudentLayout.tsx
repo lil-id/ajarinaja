@@ -16,7 +16,8 @@ import {
   Settings, 
   LogOut, 
   GraduationCap,
-  User
+  User,
+  Megaphone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Dashboard', href: '/student', icon: Home },
   { name: 'My Courses', href: '/student/courses', icon: BookOpen },
   { name: 'My Exams', href: '/student/exams', icon: FileText },
+  { name: 'Announcements', href: '/student/announcements', icon: Megaphone },
 ];
 
 const StudentLayout = () => {

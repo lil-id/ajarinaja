@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          content: string
+          course_id: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          course_id: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
@@ -120,7 +155,9 @@ export type Database = {
           created_at: string
           description: string | null
           duration: number
+          end_date: string | null
           id: string
+          start_date: string | null
           status: string
           title: string
           total_points: number
@@ -131,7 +168,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number
+          end_date?: string | null
           id?: string
+          start_date?: string | null
           status?: string
           title: string
           total_points?: number
@@ -142,7 +181,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number
+          end_date?: string | null
           id?: string
+          start_date?: string | null
           status?: string
           title?: string
           total_points?: number
