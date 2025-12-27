@@ -34,6 +34,7 @@ import TakeExam from "./pages/student/TakeExam";
 import ExamResults from "./pages/student/ExamResults";
 import StudentAnnouncements from "./pages/student/Announcements";
 import StudentMaterials from "./pages/student/Materials";
+import StudentBadges from "./pages/student/Badges";
 import StudentProfile from "./pages/student/Profile";
 import StudentSettings from "./pages/student/Settings";
 
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="exam/:examId/results" element={<ExamResults />} />
               <Route path="announcements" element={<StudentAnnouncements />} />
               <Route path="materials" element={<StudentMaterials />} />
+              <Route path="badges" element={<StudentBadges />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>
