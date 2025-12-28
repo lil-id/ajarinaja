@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useCourseMaterials } from '@/hooks/useCourseMaterials';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourseProgress, useMarkMaterialViewed } from '@/hooks/useProgress';
+import { MaterialViewer } from '@/components/MaterialViewer';
 import { 
   ArrowLeft, 
   BookOpen, 
@@ -19,7 +21,9 @@ import {
   Clock,
   CheckCircle2,
   Circle,
-  Trophy
+  Trophy,
+  Play,
+  Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,6 +35,8 @@ import { toast } from 'sonner';
 const StudentCourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
   
   const { courses, isLoading: coursesLoading } = useCourses();
   const { exams, isLoading: examsLoading } = useExams();
@@ -296,19 +302,49 @@ const StudentCourseDetail = () => {
                           <p className="text-sm text-muted-foreground">
                             {material.description || material.file_name}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {(material.file_size / 1024).toFixed(1)} KB • {format(new Date(material.created_at), 'MMM d, yyyy')}
-                          </p>
+                          {material.file_size && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {(material.file_size / 1024).toFixed(1)} KB • {format(new Date(material.created_at), 'MMM d, yyyy')}
+                            </p>
+                          )}
+                          {material.video_url && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Video • {format(new Date(material.created_at), 'MMM d, yyyy')}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDownloadMaterial(material.id, material.file_path, material.file_name)}
-                      >
-                        <Download className="w-4 h-4" />
-                        Download
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="hero" 
+                          size="sm"
+                          onClick={async () => {
+                            // Mark as viewed when opening
+                            try {
+                              await markMaterialViewed.mutateAsync(material.id);
+                            } catch (error) {
+                              console.error('Failed to mark material as viewed:', error);
+                            }
+                            setSelectedMaterial(material);
+                            setViewerOpen(true);
+                          }}
+                        >
+                          {material.video_url ? (
+                            <><Play className="w-4 h-4 mr-1" /> Watch</>
+                          ) : (
+                            <><Eye className="w-4 h-4 mr-1" /> View</>
+                          )}
+                        </Button>
+                        {material.file_path && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadMaterial(material.id, material.file_path!, material.file_name!)}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -413,6 +449,16 @@ const StudentCourseDetail = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Material Viewer Modal */}
+      <MaterialViewer
+        isOpen={viewerOpen}
+        onClose={() => {
+          setViewerOpen(false);
+          setSelectedMaterial(null);
+        }}
+        material={selectedMaterial}
+      />
     </div>
   );
 };

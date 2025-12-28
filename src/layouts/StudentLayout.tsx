@@ -33,6 +33,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 const navigation = [
   { name: 'Dashboard', href: '/student', icon: Home },
   { name: 'My Courses', href: '/student/courses', icon: BookOpen },
+  { name: 'Explore Courses', href: '/student/explore', icon: GraduationCap },
   { name: 'Assignments', href: '/student/assignments', icon: ClipboardList },
   { name: 'Exams', href: '/student/exams', icon: FileText },
   { name: 'Materials', href: '/student/materials', icon: FolderOpen },

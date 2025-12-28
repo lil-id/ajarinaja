@@ -33,6 +33,7 @@ import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
 import StudentLayout from "./layouts/StudentLayout";
 import StudentDashboard from "./pages/student/Dashboard";
 import StudentCourses from "./pages/student/Courses";
+import StudentExploreCourses from "./pages/student/ExploreCourses";
 import StudentCourseDetail from "./pages/student/CourseDetail";
 import StudentExams from "./pages/student/Exams";
 import TakeExam from "./pages/student/TakeExam";
@@ -94,6 +95,8 @@ const App = () => (
             }>
               <Route index element={<StudentDashboard />} />
               <Route path="courses" element={<StudentCourses />} />
+              <Route path="explore" element={<StudentExploreCourses />} />
+              <Route path="courses/:courseId" element={<StudentCourseDetail />} />
               <Route path="courses/:courseId" element={<StudentCourseDetail />} />
               <Route path="exams" element={<StudentExams />} />
               <Route path="exam/:examId" element={<TakeExam />} />
