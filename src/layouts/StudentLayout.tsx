@@ -19,13 +19,15 @@ import {
   User,
   Megaphone,
   FolderOpen,
-  Award
+  Award,
+  ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/student', icon: Home },
   { name: 'My Courses', href: '/student/courses', icon: BookOpen },
+  { name: 'Assignments', href: '/student/assignments', icon: ClipboardList },
   { name: 'My Exams', href: '/student/exams', icon: FileText },
   { name: 'Materials', href: '/student/materials', icon: FolderOpen },
   { name: 'Badges', href: '/student/badges', icon: Award },
