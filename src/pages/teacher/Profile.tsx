@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
+import { AvatarUpload } from '@/components/AvatarUpload';
 
 const TeacherProfile = () => {
   const { profile } = useAuth();
@@ -14,6 +14,7 @@ const TeacherProfile = () => {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile?.name) {
@@ -21,7 +22,10 @@ const TeacherProfile = () => {
       setFirstName(parts[0] || '');
       setLastName(parts.slice(1).join(' ') || '');
     }
-  }, [profile?.name]);
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url);
+    }
+  }, [profile?.name, profile?.avatar_url]);
 
   const handleSave = () => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -30,6 +34,7 @@ const TeacherProfile = () => {
   };
 
   const hasChanges = profile?.name !== `${firstName.trim()} ${lastName.trim()}`.trim();
+  const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || 'Teacher';
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
@@ -45,19 +50,16 @@ const TeacherProfile = () => {
           <CardTitle>Personal Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar */}
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <Avatar className="w-20 h-20">
-                <AvatarFallback className="bg-gradient-secondary text-secondary-foreground text-2xl">
-                  {firstName?.charAt(0) || profile?.name?.charAt(0) || 'T'}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">
-                {firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name}
-              </h3>
+          {/* Avatar with upload */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <AvatarUpload
+              currentAvatarUrl={avatarUrl}
+              userName={displayName}
+              onAvatarChange={setAvatarUrl}
+              size="lg"
+            />
+            <div className="sm:ml-4">
+              <h3 className="font-semibold text-foreground">{displayName}</h3>
               <p className="text-sm text-muted-foreground">Teacher</p>
             </div>
           </div>
