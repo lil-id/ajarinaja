@@ -14,13 +14,14 @@ import {
   useUploadMaterial, 
   useAddVideoMaterial,
   useDeleteMaterial, 
-  getMaterialUrl,
+  getMaterialSignedUrl,
   extractYouTubeId,
   getYouTubeThumbnail 
 } from '@/hooks/useCourseMaterials';
 import { FileText, Plus, Trash2, Loader2, Upload, File, Video, FileImage, Download, ExternalLink, Youtube, Link } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 const getFileIcon = (fileType: string | null) => {
   if (!fileType) return File;
@@ -126,6 +127,20 @@ const TeacherMaterials = () => {
       toast.success('Material deleted');
     } catch (error) {
       toast.error('Failed to delete material');
+    }
+  };
+
+  const handleOpen = async (filePath: string) => {
+    try {
+      const signedUrl = await getMaterialSignedUrl(filePath);
+      if (signedUrl) {
+        window.open(signedUrl, '_blank');
+      } else {
+        toast.error('Failed to open material');
+      }
+    } catch (error) {
+      console.error('Open error:', error);
+      toast.error('Failed to open material');
     }
   };
 
@@ -323,7 +338,6 @@ const TeacherMaterials = () => {
             const isVideo = !!material.video_url;
             const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
             const FileIcon = isVideo ? Youtube : getFileIcon(material.file_type);
-            const fileUrl = material.file_path ? getMaterialUrl(material.file_path) : null;
             
             return (
               <Card 
@@ -381,8 +395,8 @@ const TeacherMaterials = () => {
                             onClick={() => {
                               if (isVideo && material.video_url) {
                                 window.open(material.video_url, '_blank');
-                              } else if (fileUrl) {
-                                window.open(fileUrl, '_blank');
+                              } else if (material.file_path) {
+                                handleOpen(material.file_path);
                               }
                             }}
                           >

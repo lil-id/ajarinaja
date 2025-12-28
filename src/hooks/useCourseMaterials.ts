@@ -182,14 +182,32 @@ export function useDeleteMaterial() {
   });
 }
 
-export function getMaterialUrl(filePath: string | null) {
+// Get signed URL for secure material access (1 hour expiry)
+export async function getMaterialSignedUrl(filePath: string | null): Promise<string | null> {
   if (!filePath) return null;
   
-  const { data } = supabase.storage
+  const { data, error } = await supabase.storage
     .from('course-materials')
-    .getPublicUrl(filePath);
+    .createSignedUrl(filePath, 3600); // 1 hour expiry
   
-  return data.publicUrl;
+  if (error) {
+    console.error('Failed to get signed URL:', error);
+    return null;
+  }
+  
+  return data.signedUrl;
+}
+
+// Hook for getting signed URLs for materials
+export function useMaterialUrl(filePath: string | null) {
+  const { data: signedUrl, isLoading } = useQuery({
+    queryKey: ['material-url', filePath],
+    queryFn: () => getMaterialSignedUrl(filePath),
+    enabled: !!filePath,
+    staleTime: 1000 * 60 * 30, // Cache for 30 minutes (half of the 1 hour expiry)
+  });
+  
+  return { signedUrl, isLoading };
 }
 
 // Helper to extract YouTube video ID
