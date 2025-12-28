@@ -42,6 +42,7 @@ import StudentProfile from "./pages/student/Profile";
 import StudentSettings from "./pages/student/Settings";
 import StudentAssignments from "./pages/student/Assignments";
 import SubmitAssignment from "./pages/student/SubmitAssignment";
+import StudentNotifications from "./pages/student/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="badges" element={<StudentBadges />} />
               <Route path="assignments" element={<StudentAssignments />} />
               <Route path="assignments/:assignmentId" element={<SubmitAssignment />} />
+              <Route path="notifications" element={<StudentNotifications />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>

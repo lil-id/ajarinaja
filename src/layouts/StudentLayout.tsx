@@ -20,9 +20,11 @@ import {
   Megaphone,
   FolderOpen,
   Award,
-  ClipboardList
+  ClipboardList,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NotificationBell } from '@/components/NotificationBell';
 
 const navigation = [
   { name: 'Dashboard', href: '/student', icon: Home },
@@ -32,6 +34,7 @@ const navigation = [
   { name: 'Materials', href: '/student/materials', icon: FolderOpen },
   { name: 'Badges', href: '/student/badges', icon: Award },
   { name: 'Announcements', href: '/student/announcements', icon: Megaphone },
+  { name: 'Notifications', href: '/student/notifications', icon: Bell },
 ];
 
 const StudentLayout = () => {
@@ -80,20 +83,22 @@ const StudentLayout = () => {
               })}
             </nav>
 
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                      {profile?.name?.charAt(0) || 'S'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden md:block text-sm font-medium text-foreground">
-                    {profile?.name || 'Student'}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
+            {/* Notification Bell & User Menu */}
+            <div className="flex items-center gap-2">
+              <NotificationBell basePath="/student" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
+                        {profile?.name?.charAt(0) || 'S'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:block text-sm font-medium text-foreground">
+                      {profile?.name || 'Student'}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => navigate('/student/profile')}>
                   <User className="w-4 h-4 mr-2" />
@@ -110,6 +115,7 @@ const StudentLayout = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
 
           {/* Mobile Navigation */}
