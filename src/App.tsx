@@ -23,6 +23,9 @@ import TeacherAnalytics from "./pages/teacher/Analytics";
 import TeacherStudents from "./pages/teacher/Students";
 import TeacherProfile from "./pages/teacher/Profile";
 import TeacherSettings from "./pages/teacher/Settings";
+import TeacherAssignments from "./pages/teacher/Assignments";
+import CreateAssignment from "./pages/teacher/CreateAssignment";
+import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
 
 // Student Pages
 import StudentLayout from "./layouts/StudentLayout";
@@ -37,6 +40,8 @@ import StudentMaterials from "./pages/student/Materials";
 import StudentBadges from "./pages/student/Badges";
 import StudentProfile from "./pages/student/Profile";
 import StudentSettings from "./pages/student/Settings";
+import StudentAssignments from "./pages/student/Assignments";
+import SubmitAssignment from "./pages/student/SubmitAssignment";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +72,10 @@ const App = () => (
               <Route path="materials" element={<TeacherMaterials />} />
               <Route path="analytics" element={<TeacherAnalytics />} />
               <Route path="students" element={<TeacherStudents />} />
+              <Route path="assignments" element={<TeacherAssignments />} />
+              <Route path="assignments/new" element={<CreateAssignment />} />
+              <Route path="assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
+              <Route path="assignments/:assignmentId/edit" element={<CreateAssignment />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="settings" element={<TeacherSettings />} />
             </Route>
@@ -86,6 +95,8 @@ const App = () => (
               <Route path="announcements" element={<StudentAnnouncements />} />
               <Route path="materials" element={<StudentMaterials />} />
               <Route path="badges" element={<StudentBadges />} />
+              <Route path="assignments" element={<StudentAssignments />} />
+              <Route path="assignments/:assignmentId" element={<SubmitAssignment />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>
