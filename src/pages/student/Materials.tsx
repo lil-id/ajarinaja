@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
-import { useCourseMaterials, getMaterialSignedUrl, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
-import { FileText, Loader2, File, Video, FileImage, Download, ExternalLink, Youtube, Play } from 'lucide-react';
+import { useCourseMaterials, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
+import { FileText, Loader2, File, Video, FileImage, Download, Youtube, Play, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { MaterialViewer } from '@/components/MaterialViewer';
 
 const getFileIcon = (fileType: string | null) => {
   if (!fileType) return File;
@@ -29,6 +31,8 @@ const StudentMaterials = () => {
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<typeof materials[0] | null>(null);
 
   const isLoading = enrollmentsLoading || coursesLoading || materialsLoading;
 
@@ -46,6 +50,11 @@ const StudentMaterials = () => {
 
   const getCourseTitle = (courseId: string) => {
     return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+  };
+
+  const handleViewMaterial = (material: typeof materials[0]) => {
+    setSelectedMaterial(material);
+    setViewerOpen(true);
   };
 
   const handleDownload = async (filePath: string, fileName: string) => {
@@ -74,19 +83,6 @@ const StudentMaterials = () => {
     }
   };
 
-  const handleOpen = async (filePath: string) => {
-    try {
-      const signedUrl = await getMaterialSignedUrl(filePath);
-      if (signedUrl) {
-        window.open(signedUrl, '_blank');
-      } else {
-        toast.error('Failed to open material');
-      }
-    } catch (error) {
-      console.error('Open error:', error);
-      toast.error('Failed to open material');
-    }
-  };
 
   if (isLoading) {
     return (
@@ -141,7 +137,7 @@ const StudentMaterials = () => {
                     >
                       {isVideo && videoId ? (
                         <div className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-black relative group cursor-pointer"
-                          onClick={() => window.open(material.video_url!, '_blank')}
+                          onClick={() => handleViewMaterial(material)}
                         >
                           <img 
                             src={getYouTubeThumbnail(videoId)} 
@@ -153,7 +149,10 @@ const StudentMaterials = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div 
+                          className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-secondary/20 transition-colors"
+                          onClick={() => handleViewMaterial(material)}
+                        >
                           <FileIcon className="w-5 h-5 text-secondary" />
                         </div>
                       )}
@@ -182,29 +181,31 @@ const StudentMaterials = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => window.open(material.video_url!, '_blank')}
+                            onClick={() => handleViewMaterial(material)}
                           >
                             <Play className="w-4 h-4 mr-1" />
                             Watch
                           </Button>
-                        ) : material.file_path && (
+                        ) : (
                           <>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleOpen(material.file_path!)}
+                              onClick={() => handleViewMaterial(material)}
                             >
-                              <ExternalLink className="w-4 h-4 mr-1" />
-                              Open
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
                             </Button>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => handleDownload(material.file_path!, material.file_name || 'download')}
-                            >
-                              <Download className="w-4 h-4 mr-1" />
-                              Download
-                            </Button>
+                            {material.file_path && (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleDownload(material.file_path!, material.file_name || 'download')}
+                              >
+                                <Download className="w-4 h-4 mr-1" />
+                                Download
+                              </Button>
+                            )}
                           </>
                         )}
                       </div>
@@ -216,6 +217,12 @@ const StudentMaterials = () => {
           ))}
         </div>
       )}
+
+      <MaterialViewer
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        material={selectedMaterial}
+      />
     </div>
   );
 };
