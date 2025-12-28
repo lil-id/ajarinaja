@@ -49,6 +49,133 @@ export type Database = {
           },
         ]
       }
+      assignment_submissions: {
+        Row: {
+          assignment_id: string
+          feedback: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          graded: boolean
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          is_late: boolean
+          rubric_scores: Json | null
+          score: number | null
+          student_id: string
+          submitted_at: string
+          text_content: string | null
+        }
+        Insert: {
+          assignment_id: string
+          feedback?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          graded?: boolean
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          is_late?: boolean
+          rubric_scores?: Json | null
+          score?: number | null
+          student_id: string
+          submitted_at?: string
+          text_content?: string | null
+        }
+        Update: {
+          assignment_id?: string
+          feedback?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          graded?: boolean
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          is_late?: boolean
+          rubric_scores?: Json | null
+          score?: number | null
+          student_id?: string
+          submitted_at?: string
+          text_content?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          allow_late_submissions: boolean
+          allowed_file_types: string[] | null
+          course_id: string
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          instructions: string | null
+          late_penalty_percent: number | null
+          max_file_size_mb: number | null
+          max_points: number
+          rubric: Json | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          allow_late_submissions?: boolean
+          allowed_file_types?: string[] | null
+          course_id: string
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          instructions?: string | null
+          late_penalty_percent?: number | null
+          max_file_size_mb?: number | null
+          max_points?: number
+          rubric?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          allow_late_submissions?: boolean
+          allowed_file_types?: string[] | null
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          instructions?: string | null
+          late_penalty_percent?: number | null
+          max_file_size_mb?: number | null
+          max_points?: number
+          rubric?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           color: string
