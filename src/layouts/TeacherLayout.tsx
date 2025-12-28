@@ -23,13 +23,15 @@ import {
   User,
   BarChart3,
   Megaphone,
-  FolderOpen
+  FolderOpen,
+  ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Overview', href: '/teacher', icon: LayoutDashboard },
   { name: 'Courses', href: '/teacher/courses', icon: BookOpen },
+  { name: 'Assignments', href: '/teacher/assignments', icon: ClipboardList },
   { name: 'Exams', href: '/teacher/exams', icon: FileText },
   { name: 'Materials', href: '/teacher/materials', icon: FolderOpen },
   { name: 'Announcements', href: '/teacher/announcements', icon: Megaphone },
