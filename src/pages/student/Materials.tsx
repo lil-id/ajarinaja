@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
-import { useCourseMaterials, getMaterialUrl, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
+import { useCourseMaterials, getMaterialSignedUrl, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 import { FileText, Loader2, File, Video, FileImage, Download, ExternalLink, Youtube, Play } from 'lucide-react';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const getFileIcon = (fileType: string | null) => {
   if (!fileType) return File;
@@ -44,6 +46,46 @@ const StudentMaterials = () => {
 
   const getCourseTitle = (courseId: string) => {
     return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+  };
+
+  const handleDownload = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('course-materials')
+        .download(filePath);
+      
+      if (error) {
+        console.error('Download error:', error);
+        toast.error('Failed to download material');
+        return;
+      }
+      
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download material');
+    }
+  };
+
+  const handleOpen = async (filePath: string) => {
+    try {
+      const signedUrl = await getMaterialSignedUrl(filePath);
+      if (signedUrl) {
+        window.open(signedUrl, '_blank');
+      } else {
+        toast.error('Failed to open material');
+      }
+    } catch (error) {
+      console.error('Open error:', error);
+      toast.error('Failed to open material');
+    }
   };
 
   if (isLoading) {
@@ -90,7 +132,6 @@ const StudentMaterials = () => {
                   const isVideo = !!material.video_url;
                   const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
                   const FileIcon = isVideo ? Youtube : getFileIcon(material.file_type);
-                  const fileUrl = material.file_path ? getMaterialUrl(material.file_path) : null;
                   
                   return (
                     <div 
@@ -146,12 +187,12 @@ const StudentMaterials = () => {
                             <Play className="w-4 h-4 mr-1" />
                             Watch
                           </Button>
-                        ) : fileUrl && (
+                        ) : material.file_path && (
                           <>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => window.open(fileUrl, '_blank')}
+                              onClick={() => handleOpen(material.file_path!)}
                             >
                               <ExternalLink className="w-4 h-4 mr-1" />
                               Open
@@ -159,12 +200,10 @@ const StudentMaterials = () => {
                             <Button
                               variant="secondary"
                               size="sm"
-                              asChild
+                              onClick={() => handleDownload(material.file_path!, material.file_name || 'download')}
                             >
-                              <a href={fileUrl} download={material.file_name || 'download'}>
-                                <Download className="w-4 h-4 mr-1" />
-                                Download
-                              </a>
+                              <Download className="w-4 h-4 mr-1" />
+                              Download
                             </Button>
                           </>
                         )}
