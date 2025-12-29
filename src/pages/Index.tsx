@@ -9,6 +9,9 @@ import studentsLearning from '@/assets/students-learning.jpg';
 import teacherSmartboard from '@/assets/teacher-smartboard.jpg';
 import studentOnlineExam from '@/assets/student-online-exam.jpg';
 import teacherAnalytics from '@/assets/teacher-analytics.jpg';
+import testimonialJames from '@/assets/testimonial-james.jpg';
+import testimonialSarah from '@/assets/testimonial-sarah.jpg';
+import testimonialEmily from '@/assets/testimonial-emily.jpg';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -370,18 +373,21 @@ const Index = () => {
               quote="EduExam has transformed how we manage assessments. What used to take hours now takes minutes. The auto-grading feature alone saves us 10+ hours per week."
               name="Dr. Sarah Mitchell"
               role="Department Head, Westfield Academy"
+              avatar={testimonialSarah}
               delay={0}
             />
             <TestimonialCard
               quote="The platform is incredibly intuitive. Our teachers adopted it within days, and students love the clean interface for taking exams."
               name="Michael Chen"
               role="Principal, Sunrise International School"
+              avatar={testimonialJames}
               delay={100}
             />
             <TestimonialCard
               quote="The analytics dashboard gives us insights we never had before. We can now identify struggling students early and provide targeted support."
               name="Emily Rodriguez"
               role="Academic Director, Tech Valley Institute"
+              avatar={testimonialEmily}
               delay={200}
             />
           </div>
@@ -504,11 +510,13 @@ function TestimonialCard({
   quote,
   name,
   role,
+  avatar,
   delay
 }: {
   quote: string;
   name: string;
   role: string;
+  avatar: string;
   delay: number;
 }) {
   return (
@@ -524,9 +532,16 @@ function TestimonialCard({
         ))}
       </div>
       <p className="text-foreground mb-6 leading-relaxed">"{quote}"</p>
-      <div>
-        <div className="font-semibold text-foreground">{name}</div>
-        <div className="text-sm text-muted-foreground">{role}</div>
+      <div className="flex items-center gap-3">
+        <img 
+          src={avatar} 
+          alt={name} 
+          className="w-12 h-12 rounded-full object-cover"
+        />
+        <div>
+          <div className="font-semibold text-foreground">{name}</div>
+          <div className="text-sm text-muted-foreground">{role}</div>
+        </div>
       </div>
     </div>
   );
