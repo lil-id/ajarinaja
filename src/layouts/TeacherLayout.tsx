@@ -25,13 +25,15 @@ import {
   Megaphone,
   FolderOpen,
   ClipboardList,
-  Library
+  Library,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Overview', href: '/teacher', icon: LayoutDashboard },
   { name: 'Courses', href: '/teacher/courses', icon: BookOpen },
+  { name: 'Calendar', href: '/teacher/calendar', icon: Calendar },
   { name: 'Assignments', href: '/teacher/assignments', icon: ClipboardList },
   { name: 'Exams', href: '/teacher/exams', icon: FileText },
   { name: 'Question Bank', href: '/teacher/question-bank', icon: Library },
