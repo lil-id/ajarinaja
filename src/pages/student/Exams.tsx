@@ -102,9 +102,12 @@ const StudentExams = () => {
                               <FileText className="w-6 h-6 text-primary" />
                             )}
                           </div>
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-foreground">{exam.title}</h3>
                             <p className="text-sm text-muted-foreground">{course?.title}</p>
+                            {exam.description && (
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{exam.description}</p>
+                            )}
                             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
@@ -177,9 +180,12 @@ const StudentExams = () => {
                           <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-muted">
                             <Calendar className="w-6 h-6 text-muted-foreground" />
                           </div>
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-foreground">{exam.title}</h3>
                             <p className="text-sm text-muted-foreground">{course?.title}</p>
+                            {exam.description && (
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{exam.description}</p>
+                            )}
                             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
