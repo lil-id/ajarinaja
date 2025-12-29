@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useExamWithQuestions, Question } from '@/hooks/useExams';
 import { useSubmissionsWithStudents, useGradeSubmission, SubmissionWithStudent } from '@/hooks/useSubmissions';
 import { useBadges, useAwardBadge, useStudentBadges, useCreateBadge } from '@/hooks/useBadges';
-import { ArrowLeft, CheckCircle, AlignLeft, Loader2, User, Clock, Award, Check, X, Trophy, Star, TrendingUp, Zap, Plus } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlignLeft, Loader2, User, Clock, Award, Check, X, Trophy, Star, TrendingUp, Zap, Plus, ListChecks } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -72,13 +72,29 @@ const GradeExam = () => {
   const questions = exam.questions || [];
   const essayQuestions = questions.filter((q: Question) => q.type === 'essay');
   const mcQuestions = questions.filter((q: Question) => q.type === 'multiple-choice');
+  const multiSelectQuestions = questions.filter((q: Question) => q.type === 'multi-select');
 
   const calculateMCScore = (submission: SubmissionWithStudent) => {
     let score = 0;
+    // Score multiple-choice questions
     mcQuestions.forEach((q: Question) => {
       const answer = submission.answers[q.id];
       if (answer !== undefined && Number(answer) === q.correct_answer) {
         score += q.points;
+      }
+    });
+    // Score multi-select questions
+    multiSelectQuestions.forEach((q: Question) => {
+      const answer = submission.answers[q.id];
+      const correctAnswers = q.correct_answers || [];
+      if (Array.isArray(answer) && correctAnswers.length > 0) {
+        const studentAnswers = answer.map(Number).sort();
+        const correctSorted = [...correctAnswers].sort();
+        // Check if arrays are equal
+        if (studentAnswers.length === correctSorted.length && 
+            studentAnswers.every((val, idx) => val === correctSorted[idx])) {
+          score += q.points;
+        }
       }
     });
     return score;
@@ -289,7 +305,11 @@ const GradeExam = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-secondary" />
-                      Multiple Choice ({calculateMCScore(selectedSubmission)}/{mcQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} pts)
+                      Multiple Choice ({mcQuestions.reduce((sum: number, q: Question) => {
+                        const answer = selectedSubmission.answers[q.id];
+                        const isCorrect = answer !== undefined && Number(answer) === q.correct_answer;
+                        return sum + (isCorrect ? q.points : 0);
+                      }, 0)}/{mcQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} pts)
                     </h3>
                     <div className="space-y-3">
                       {mcQuestions.map((q: Question, idx: number) => {
@@ -334,7 +354,91 @@ const GradeExam = () => {
                   </div>
                 )}
 
-                {mcQuestions.length > 0 && essayQuestions.length > 0 && <Separator />}
+                {/* Multi-Select Results */}
+                {multiSelectQuestions.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <ListChecks className="w-5 h-5 text-primary" />
+                      Multi-Select ({multiSelectQuestions.reduce((sum: number, q: Question) => {
+                        const answer = selectedSubmission.answers[q.id];
+                        const correctAnswers = q.correct_answers || [];
+                        if (Array.isArray(answer) && correctAnswers.length > 0) {
+                          const studentAnswers = answer.map(Number).sort();
+                          const correctSorted = [...correctAnswers].sort();
+                          if (studentAnswers.length === correctSorted.length && 
+                              studentAnswers.every((val, idx) => val === correctSorted[idx])) {
+                            return sum + q.points;
+                          }
+                        }
+                        return sum;
+                      }, 0)}/{multiSelectQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} pts)
+                    </h3>
+                    <div className="space-y-3">
+                      {multiSelectQuestions.map((q: Question, idx: number) => {
+                        const answer = selectedSubmission.answers[q.id];
+                        const correctAnswers = q.correct_answers || [];
+                        const studentAnswers = Array.isArray(answer) ? answer.map(Number).sort() : [];
+                        const correctSorted = [...correctAnswers].sort();
+                        const isCorrect = studentAnswers.length === correctSorted.length && 
+                          studentAnswers.every((val, idx) => val === correctSorted[idx]);
+                        
+                        return (
+                          <div 
+                            key={q.id} 
+                            className={cn(
+                              "p-4 rounded-lg border",
+                              isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                            )}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <p className="font-medium text-sm">Q{mcQuestions.length + idx + 1}: {q.question}</p>
+                                <div className="mt-2 space-y-1">
+                                  {q.options?.map((option: string, optIdx: number) => {
+                                    const wasSelected = studentAnswers.includes(optIdx);
+                                    const isCorrectAnswer = correctAnswers.includes(optIdx);
+                                    
+                                    return (
+                                      <div 
+                                        key={optIdx}
+                                        className={cn(
+                                          "flex items-center gap-2 text-sm px-2 py-1 rounded",
+                                          wasSelected && isCorrectAnswer && "bg-green-100 text-green-800",
+                                          wasSelected && !isCorrectAnswer && "bg-red-100 text-red-800",
+                                          !wasSelected && isCorrectAnswer && "bg-yellow-100 text-yellow-800",
+                                          !wasSelected && !isCorrectAnswer && "text-muted-foreground"
+                                        )}
+                                      >
+                                        {wasSelected && isCorrectAnswer && <Check className="w-4 h-4 text-green-600" />}
+                                        {wasSelected && !isCorrectAnswer && <X className="w-4 h-4 text-red-600" />}
+                                        {!wasSelected && isCorrectAnswer && <span className="w-4 h-4 text-xs font-bold text-yellow-600">!</span>}
+                                        {!wasSelected && !isCorrectAnswer && <span className="w-4 h-4" />}
+                                        <span>{option}</span>
+                                        {isCorrectAnswer && <span className="text-xs text-green-600 ml-auto">(correct)</span>}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {isCorrect ? (
+                                  <Check className="w-5 h-5 text-green-600" />
+                                ) : (
+                                  <X className="w-5 h-5 text-red-600" />
+                                )}
+                                <span className="text-sm font-medium">
+                                  {isCorrect ? q.points : 0}/{q.points}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {(mcQuestions.length > 0 || multiSelectQuestions.length > 0) && essayQuestions.length > 0 && <Separator />}
 
                 {/* Essay Questions */}
                 {essayQuestions.length > 0 && (
