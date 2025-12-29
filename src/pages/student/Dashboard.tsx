@@ -128,7 +128,7 @@ const StudentDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
-              {availableCourses.map((course) => (
+              {availableCourses.slice(0, 3).map((course) => (
                 <div 
                   key={course.id}
                   className="p-4 rounded-xl border border-border hover:border-secondary/50 transition-colors"
