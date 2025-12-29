@@ -7,10 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
 import { useUpdateQuestion, useDeleteQuestion, useAddQuestion } from '@/hooks/useQuestions';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar } from 'lucide-react';
+import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const EditExam = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -20,6 +24,8 @@ const EditExam = () => {
   const updateQuestion = useUpdateQuestion();
   const deleteQuestion = useDeleteQuestion();
   const addQuestion = useAddQuestion();
+  const { data: questionBank = [] } = useQuestionBank();
+  const incrementUsage = useIncrementQuestionUsage();
 
   const [examForm, setExamForm] = useState({
     title: '',
@@ -31,6 +37,9 @@ const EditExam = () => {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importSearch, setImportSearch] = useState('');
+  const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([]);
   const [newQuestion, setNewQuestion] = useState<{
     type: 'multiple-choice' | 'essay';
     question: string;
@@ -139,6 +148,53 @@ const EditExam = () => {
     setQuestions(newQuestions);
   };
 
+  const filteredBankQuestions = questionBank.filter((q) =>
+    q.question.toLowerCase().includes(importSearch.toLowerCase()) ||
+    q.category.toLowerCase().includes(importSearch.toLowerCase())
+  );
+
+  const toggleBankQuestion = (id: string) => {
+    setSelectedBankQuestions((prev) =>
+      prev.includes(id) ? prev.filter((qId) => qId !== id) : [...prev, id]
+    );
+  };
+
+  const handleImportQuestions = async () => {
+    if (selectedBankQuestions.length === 0) {
+      toast.error('Please select at least one question');
+      return;
+    }
+
+    try {
+      let currentIndex = questions.length;
+      for (const bankId of selectedBankQuestions) {
+        const bankQ = questionBank.find((q) => q.id === bankId);
+        if (!bankQ) continue;
+
+        const result = await addQuestion.mutateAsync({
+          examId: examId!,
+          exam_id: examId!,
+          type: bankQ.type === 'multiple_choice' ? 'multiple-choice' : bankQ.type,
+          question: bankQ.question,
+          options: bankQ.options,
+          correct_answer: bankQ.correct_answer,
+          points: bankQ.points,
+          order_index: currentIndex,
+        });
+
+        setQuestions((prev) => [...prev, result as Question]);
+        await incrementUsage.mutateAsync(bankId);
+        currentIndex++;
+      }
+
+      toast.success(`Imported ${selectedBankQuestions.length} question(s)`);
+      setSelectedBankQuestions([]);
+      setIsImportDialogOpen(false);
+    } catch (error) {
+      toast.error('Failed to import questions');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -237,74 +293,155 @@ const EditExam = () => {
       <Card className="border-0 shadow-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Questions ({questions.length})</CardTitle>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Plus className="w-4 h-4" />
-                Add Question
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Question</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <Tabs
-                  value={newQuestion.type}
-                  onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'essay' })}
-                >
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
-                    <TabsTrigger value="essay">Essay</TabsTrigger>
-                  </TabsList>
-
-                  <Textarea
-                    placeholder="Enter your question..."
-                    value={newQuestion.question}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
-                  />
-
-                  <TabsContent value="multiple-choice" className="mt-4 space-y-2">
-                    {newQuestion.options.map((opt, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="newCorrect"
-                          checked={newQuestion.correctAnswer === i}
-                          onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
-                          className="w-4 h-4"
-                        />
-                        <Input
-                          placeholder={`Option ${i + 1}`}
-                          value={opt}
-                          onChange={(e) => {
-                            const newOptions = [...newQuestion.options];
-                            newOptions[i] = e.target.value;
-                            setNewQuestion({ ...newQuestion, options: newOptions });
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </TabsContent>
-                </Tabs>
-
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <Label className="text-xs">Points</Label>
+          <div className="flex gap-2">
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Library className="w-4 h-4" />
+                  Import from Bank
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Import from Question Bank</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      type="number"
-                      value={newQuestion.points}
-                      onChange={(e) => setNewQuestion({ ...newQuestion, points: Number(e.target.value) })}
+                      placeholder="Search questions..."
+                      value={importSearch}
+                      onChange={(e) => setImportSearch(e.target.value)}
+                      className="pl-10"
                     />
                   </div>
-                  <Button onClick={handleAddNewQuestion} className="mt-5" disabled={addQuestion.isPending}>
-                    {addQuestion.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Add Question
-                  </Button>
+                  <ScrollArea className="h-[400px] border rounded-lg p-2">
+                    {filteredBankQuestions.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        {questionBank.length === 0
+                          ? 'No questions in your bank yet'
+                          : 'No questions match your search'}
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {filteredBankQuestions.map((q) => (
+                          <div
+                            key={q.id}
+                            className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                            onClick={() => toggleBankQuestion(q.id)}
+                          >
+                            <Checkbox
+                              checked={selectedBankQuestions.includes(q.id)}
+                              onCheckedChange={() => toggleBankQuestion(q.id)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex gap-2 mb-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  {q.category}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {q.type === 'multiple_choice' ? 'MCQ' : 'Essay'}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {q.points} pts
+                                </Badge>
+                              </div>
+                              <p className="text-sm line-clamp-2">{q.question}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-sm text-muted-foreground">
+                      {selectedBankQuestions.length} selected
+                    </span>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleImportQuestions}
+                        disabled={selectedBankQuestions.length === 0 || addQuestion.isPending}
+                      >
+                        {addQuestion.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Import Selected
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Plus className="w-4 h-4" />
+                  Add Question
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Question</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <Tabs
+                    value={newQuestion.type}
+                    onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'essay' })}
+                  >
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
+                      <TabsTrigger value="essay">Essay</TabsTrigger>
+                    </TabsList>
+
+                    <Textarea
+                      placeholder="Enter your question..."
+                      value={newQuestion.question}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                    />
+
+                    <TabsContent value="multiple-choice" className="mt-4 space-y-2">
+                      {newQuestion.options.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="newCorrect"
+                            checked={newQuestion.correctAnswer === i}
+                            onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
+                            className="w-4 h-4"
+                          />
+                          <Input
+                            placeholder={`Option ${i + 1}`}
+                            value={opt}
+                            onChange={(e) => {
+                              const newOptions = [...newQuestion.options];
+                              newOptions[i] = e.target.value;
+                              setNewQuestion({ ...newQuestion, options: newOptions });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <Label className="text-xs">Points</Label>
+                      <Input
+                        type="number"
+                        value={newQuestion.points}
+                        onChange={(e) => setNewQuestion({ ...newQuestion, points: Number(e.target.value) })}
+                      />
+                    </div>
+                    <Button onClick={handleAddNewQuestion} className="mt-5" disabled={addQuestion.isPending}>
+                      {addQuestion.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                      Add Question
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {questions.length === 0 ? (

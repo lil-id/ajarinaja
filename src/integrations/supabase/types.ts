@@ -501,6 +501,62 @@ export type Database = {
         }
         Relationships: []
       }
+      question_bank: {
+        Row: {
+          category: string
+          correct_answer: number | null
+          course_id: string | null
+          created_at: string
+          id: string
+          options: Json | null
+          points: number
+          question: string
+          tags: string[] | null
+          teacher_id: string
+          type: string
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          category?: string
+          correct_answer?: number | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          points?: number
+          question: string
+          tags?: string[] | null
+          teacher_id: string
+          type?: string
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          category?: string
+          correct_answer?: number | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          points?: number
+          question?: string
+          tags?: string[] | null
+          teacher_id?: string
+          type?: string
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_bank_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions: {
         Row: {
           correct_answer: number | null

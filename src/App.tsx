@@ -28,6 +28,7 @@ import TeacherSettings from "./pages/teacher/Settings";
 import TeacherAssignments from "./pages/teacher/Assignments";
 import CreateAssignment from "./pages/teacher/CreateAssignment";
 import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
+import TeacherQuestionBank from "./pages/teacher/QuestionBank";
 
 // Student Pages
 import StudentLayout from "./layouts/StudentLayout";
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="assignments/new" element={<CreateAssignment />} />
               <Route path="assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
               <Route path="assignments/:assignmentId/edit" element={<CreateAssignment />} />
+              <Route path="question-bank" element={<TeacherQuestionBank />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="settings" element={<TeacherSettings />} />
             </Route>
