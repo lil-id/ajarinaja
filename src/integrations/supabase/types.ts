@@ -673,7 +673,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string | null
+          name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      student_exam_questions: {
+        Row: {
+          created_at: string | null
+          exam_id: string | null
+          id: string | null
+          options: Json | null
+          order_index: number | null
+          points: number | null
+          question: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          exam_id?: string | null
+          id?: string | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          question?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          exam_id?: string | null
+          id?: string | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          question?: string | null
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
