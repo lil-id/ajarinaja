@@ -27,7 +27,6 @@ interface CoursePreviewModalProps {
 interface TeacherProfile {
   user_id: string;
   name: string;
-  email: string;
   avatar_url: string | null;
 }
 
@@ -37,9 +36,10 @@ function useTeacherProfile(teacherId: string | undefined) {
     queryFn: async () => {
       if (!teacherId) return null;
       
+      // Use public_profiles view which is accessible to all authenticated users
       const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, name, email, avatar_url')
+        .from('public_profiles')
+        .select('user_id, name, avatar_url')
         .eq('user_id', teacherId)
         .single();
       
@@ -178,7 +178,6 @@ const CoursePreviewModal = ({
                   </Avatar>
                   <div className="text-center">
                     <h3 className="text-lg font-semibold">{teacher.name}</h3>
-                    <p className="text-sm text-muted-foreground">{teacher.email}</p>
                     <Badge variant="secondary" className="mt-2">
                       <User className="w-3 h-3 mr-1" />
                       Course Instructor
