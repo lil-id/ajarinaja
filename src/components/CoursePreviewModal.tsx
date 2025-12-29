@@ -170,24 +170,32 @@ const CoursePreviewModal = ({
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
               ) : teacher ? (
-                <div className="flex flex-col items-center py-6 space-y-4">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src={teacher.avatar_url || undefined} />
-                    <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                      {teacher.name?.charAt(0)?.toUpperCase() || 'T'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-center space-y-2">
-                    <h3 className="text-lg font-semibold">{teacher.name}</h3>
-                    <Badge variant="secondary">
-                      <User className="w-3 h-3 mr-1" />
-                      Course Instructor
-                    </Badge>
-                    {teacher.bio && (
-                      <p className="text-sm text-muted-foreground mt-4 text-left px-4">
-                        {teacher.bio}
-                      </p>
-                    )}
+                <div className="p-4 rounded-lg bg-muted/30 border">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="w-16 h-16 shrink-0">
+                      <AvatarImage src={teacher.avatar_url || undefined} />
+                      <AvatarFallback className="text-xl bg-primary/10 text-primary">
+                        {teacher.name?.charAt(0)?.toUpperCase() || 'T'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-lg font-semibold">{teacher.name}</h3>
+                        <Badge variant="secondary" className="shrink-0">
+                          <User className="w-3 h-3 mr-1" />
+                          Instructor
+                        </Badge>
+                      </div>
+                      {teacher.bio ? (
+                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                          {teacher.bio}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground/60 mt-2 italic">
+                          No bio available
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
