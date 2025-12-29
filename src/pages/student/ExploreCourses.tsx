@@ -4,37 +4,61 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useCourses } from '@/hooks/useCourses';
-import { useEnrollments, useEnroll } from '@/hooks/useEnrollments';
-import { BookOpen, Loader2, Search, Users, CheckCircle2 } from 'lucide-react';
+import { useCourses, Course } from '@/hooks/useCourses';
+import { useEnrollments, useEnroll, useUnenroll } from '@/hooks/useEnrollments';
+import { BookOpen, Loader2, Search, Users, CheckCircle2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import CoursePreviewModal from '@/components/CoursePreviewModal';
 
 const ExploreCourses = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { courses, isLoading: coursesLoading } = useCourses();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const enroll = useEnroll();
+  const unenroll = useUnenroll();
 
   const isLoading = coursesLoading || enrollmentsLoading;
 
-  // Filter only published courses that are NOT already enrolled
+  // Filter only published courses
   const enrolledCourseIds = enrollments.map(e => e.course_id);
-  const availableCourses = courses.filter(c => c.status === 'published' && !enrolledCourseIds.includes(c.id));
+  const publishedCourses = courses.filter(c => c.status === 'published');
   
   // Filter by search query
-  const filteredCourses = availableCourses.filter(course => 
+  const filteredCourses = publishedCourses.filter(course => 
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (course.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  // Separate enrolled and available courses
+  const enrolledCourses = filteredCourses.filter(c => enrolledCourseIds.includes(c.id));
+  const availableCourses = filteredCourses.filter(c => !enrolledCourseIds.includes(c.id));
 
   const handleEnroll = async (courseId: string) => {
     try {
       await enroll.mutateAsync(courseId);
       toast.success('Successfully enrolled in course!');
+      setIsPreviewOpen(false);
     } catch (error) {
       toast.error('Failed to enroll in course');
     }
+  };
+
+  const handleUnenroll = async (courseId: string) => {
+    try {
+      await unenroll.mutateAsync(courseId);
+      toast.success('Successfully unenrolled from course');
+      setIsPreviewOpen(false);
+    } catch (error) {
+      toast.error('Failed to unenroll from course');
+    }
+  };
+
+  const openPreview = (course: Course) => {
+    setSelectedCourse(course);
+    setIsPreviewOpen(true);
   };
 
   if (isLoading) {
@@ -96,8 +120,8 @@ const ExploreCourses = () => {
               <Users className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{availableCourses.length}</p>
-              <p className="text-sm text-muted-foreground">New to Explore</p>
+              <p className="text-2xl font-bold text-foreground">{publishedCourses.length}</p>
+              <p className="text-sm text-muted-foreground">Total Courses</p>
             </div>
           </CardContent>
         </Card>
@@ -116,67 +140,143 @@ const ExploreCourses = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course, index) => {
-            const isEnrolled = enrolledCourseIds.includes(course.id);
-            return (
-              <Card 
-                key={course.id}
-                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden group"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="h-40 bg-gradient-hero flex items-center justify-center overflow-hidden relative">
-                  {course.thumbnail_url ? (
-                    <img 
-                      src={course.thumbnail_url} 
-                      alt={course.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <BookOpen className="w-12 h-12 text-primary-foreground/50" />
-                  )}
-                  {isEnrolled && (
-                    <Badge className="absolute top-3 right-3 bg-green-500/90 hover:bg-green-500">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
-                      Enrolled
-                    </Badge>
-                  )}
-                </div>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {course.description || 'No description available'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {isEnrolled ? (
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => navigate(`/student/courses/${course.id}`)}
-                    >
-                      View Course
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="hero" 
-                      className="w-full"
-                      onClick={() => handleEnroll(course.id)}
-                      disabled={enroll.isPending}
-                    >
-                      {enroll.isPending ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+        <div className="space-y-8">
+          {/* Enrolled Courses Section */}
+          {enrolledCourses.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Your Enrolled Courses</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {enrolledCourses.map((course, index) => (
+                  <Card 
+                    key={course.id}
+                    className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden group cursor-pointer"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => openPreview(course)}
+                  >
+                    <div className="h-40 bg-gradient-hero flex items-center justify-center overflow-hidden relative">
+                      {course.thumbnail_url ? (
+                        <img 
+                          src={course.thumbnail_url} 
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       ) : (
-                        'Enroll Now'
+                        <BookOpen className="w-12 h-12 text-primary-foreground/50" />
                       )}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+                      <Badge className="absolute top-3 right-3 bg-green-500/90 hover:bg-green-500">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                        Enrolled
+                      </Badge>
+                    </div>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
+                      <CardDescription className="line-clamp-2">
+                        {course.description || 'No description available'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0 flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/student/courses/${course.id}`);
+                        }}
+                      >
+                        Go to Course
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openPreview(course);
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Available Courses Section */}
+          {availableCourses.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Available to Enroll</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availableCourses.map((course, index) => (
+                  <Card 
+                    key={course.id}
+                    className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden group cursor-pointer"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => openPreview(course)}
+                  >
+                    <div className="h-40 bg-gradient-hero flex items-center justify-center overflow-hidden relative">
+                      {course.thumbnail_url ? (
+                        <img 
+                          src={course.thumbnail_url} 
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <BookOpen className="w-12 h-12 text-primary-foreground/50" />
+                      )}
+                    </div>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
+                      <CardDescription className="line-clamp-2">
+                        {course.description || 'No description available'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0 flex gap-2">
+                      <Button 
+                        variant="hero" 
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEnroll(course.id);
+                        }}
+                        disabled={enroll.isPending}
+                      >
+                        {enroll.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Enroll Now'
+                        )}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openPreview(course);
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Course Preview Modal */}
+      <CoursePreviewModal
+        course={selectedCourse}
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        isEnrolled={selectedCourse ? enrolledCourseIds.includes(selectedCourse.id) : false}
+        onEnroll={handleEnroll}
+        onUnenroll={handleUnenroll}
+        isEnrolling={enroll.isPending}
+        isUnenrolling={unenroll.isPending}
+      />
     </div>
   );
 };
