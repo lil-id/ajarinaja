@@ -77,10 +77,11 @@ export function useExams(courseId?: string) {
 }
 
 export function useExamWithQuestions(examId: string) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const isTeacher = role === 'teacher';
 
   return useQuery({
-    queryKey: ['exam', examId],
+    queryKey: ['exam', examId, role],
     queryFn: async () => {
       const { data: exam, error: examError } = await supabase
         .from('exams')
@@ -90,17 +91,42 @@ export function useExamWithQuestions(examId: string) {
       
       if (examError) throw examError;
 
-      const { data: questions, error: questionsError } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('exam_id', examId)
-        .order('order_index');
+      // Teachers query questions table (with correct_answer), students query filtered view (without correct_answer)
+      let questions: Question[];
       
-      if (questionsError) throw questionsError;
+      if (isTeacher) {
+        const { data, error } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('exam_id', examId)
+          .order('order_index');
+        
+        if (error) throw error;
+        questions = data as Question[];
+      } else {
+        const { data, error } = await supabase
+          .from('student_exam_questions')
+          .select('*')
+          .eq('exam_id', examId)
+          .order('order_index');
+        
+        if (error) throw error;
+        // Student view doesn't include correct_answer
+        questions = (data ?? []).map(q => ({
+          id: q.id!,
+          exam_id: q.exam_id!,
+          type: q.type!,
+          question: q.question!,
+          options: q.options as string[] | null,
+          correct_answer: null,
+          points: q.points!,
+          order_index: q.order_index!,
+        }));
+      }
 
       return {
         ...exam,
-        questions: questions as Question[],
+        questions,
       };
     },
     enabled: !!user && !!examId,
