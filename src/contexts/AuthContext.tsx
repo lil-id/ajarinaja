@@ -8,6 +8,7 @@ interface Profile {
   email: string;
   name: string;
   avatar_url: string | null;
+  bio: string | null;
 }
 
 interface AuthContextType {

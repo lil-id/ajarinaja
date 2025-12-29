@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { AvatarUpload } from '@/components/AvatarUpload';
 
@@ -14,6 +15,7 @@ const TeacherProfile = () => {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,15 +27,19 @@ const TeacherProfile = () => {
     if (profile?.avatar_url) {
       setAvatarUrl(profile.avatar_url);
     }
-  }, [profile?.name, profile?.avatar_url]);
+    if (profile?.bio) {
+      setBio(profile.bio);
+    }
+  }, [profile?.name, profile?.avatar_url, profile?.bio]);
 
   const handleSave = () => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!fullName) return;
-    updateProfile.mutate({ name: fullName });
+    updateProfile.mutate({ name: fullName, bio: bio.trim() || undefined });
   };
 
-  const hasChanges = profile?.name !== `${firstName.trim()} ${lastName.trim()}`.trim();
+  const currentName = `${firstName.trim()} ${lastName.trim()}`.trim();
+  const hasChanges = profile?.name !== currentName || (profile?.bio || '') !== bio;
   const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || 'Teacher';
 
   return (
@@ -98,6 +104,18 @@ const TeacherProfile = () => {
                 className="bg-muted"
               />
               <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea 
+                id="bio" 
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell students about yourself, your teaching experience, and expertise..."
+                maxLength={500}
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">{bio.length}/500 characters • Visible to students on course previews</p>
             </div>
           </div>
 
