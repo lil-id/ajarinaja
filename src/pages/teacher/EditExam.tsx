@@ -7,14 +7,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
 import { useUpdateQuestion, useDeleteQuestion, useAddQuestion } from '@/hooks/useQuestions';
-import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search } from 'lucide-react';
+import { useQuestionBank, useIncrementQuestionUsage, useSaveExamQuestionsToBank } from '@/hooks/useQuestionBank';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const EditExam = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -26,6 +27,7 @@ const EditExam = () => {
   const addQuestion = useAddQuestion();
   const { data: questionBank = [] } = useQuestionBank();
   const incrementUsage = useIncrementQuestionUsage();
+  const saveToBank = useSaveExamQuestionsToBank();
 
   const [examForm, setExamForm] = useState({
     title: '',
@@ -40,6 +42,8 @@ const EditExam = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [importSearch, setImportSearch] = useState('');
   const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([]);
+  const [isSaveToBankDialogOpen, setIsSaveToBankDialogOpen] = useState(false);
+  const [saveToBankCategory, setSaveToBankCategory] = useState('General');
   const [newQuestion, setNewQuestion] = useState<{
     type: 'multiple-choice' | 'essay';
     question: string;
@@ -195,6 +199,34 @@ const EditExam = () => {
     }
   };
 
+  const handleSaveQuestionsToBank = async () => {
+    if (questions.length === 0) {
+      toast.error('No questions to save');
+      return;
+    }
+
+    try {
+      const questionsToSave = questions.map((q) => ({
+        question: q.question,
+        type: q.type === 'multiple-choice' ? 'multiple_choice' : q.type,
+        options: q.options as string[] | undefined,
+        correct_answer: q.correct_answer ?? undefined,
+        points: q.points,
+      }));
+
+      await saveToBank.mutateAsync({
+        questions: questionsToSave,
+        courseId: exam?.course_id || '',
+        category: saveToBankCategory,
+      });
+
+      toast.success(`Saved ${questions.length} question(s) to bank`);
+      setIsSaveToBankDialogOpen(false);
+    } catch (error) {
+      toast.error('Failed to save questions to bank');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -293,7 +325,51 @@ const EditExam = () => {
       <Card className="border-0 shadow-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Questions ({questions.length})</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {questions.length > 0 && (
+              <Dialog open={isSaveToBankDialogOpen} onOpenChange={setIsSaveToBankDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <BookmarkPlus className="w-4 h-4" />
+                    Save to Bank
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Save Questions to Bank</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      This will save all {questions.length} question(s) from this exam to your question bank for future reuse.
+                    </p>
+                    <div className="space-y-2">
+                      <Label>Category</Label>
+                      <Select value={saveToBankCategory} onValueChange={setSaveToBankCategory}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="General">General</SelectItem>
+                          <SelectItem value="Midterm">Midterm</SelectItem>
+                          <SelectItem value="Final">Final</SelectItem>
+                          <SelectItem value="Quiz">Quiz</SelectItem>
+                          <SelectItem value="Practice">Practice</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="outline" onClick={() => setIsSaveToBankDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveQuestionsToBank} disabled={saveToBank.isPending}>
+                        {saveToBank.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Save All Questions
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
             <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
