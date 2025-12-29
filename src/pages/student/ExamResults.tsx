@@ -46,6 +46,7 @@ const ExamResults = () => {
 
   const questions = exam.questions || [];
   const mcQuestions = questions.filter((q: Question) => q.type === 'multiple-choice');
+  const multiSelectQuestions = questions.filter((q: Question) => q.type === 'multi-select');
   const essayQuestions = questions.filter((q: Question) => q.type === 'essay');
 
   // Calculate MC score
@@ -55,6 +56,18 @@ const ExamResults = () => {
     const answer = submission.answers[q.id];
     if (answer !== undefined && Number(answer) === q.correct_answer) {
       mcCorrect++;
+    }
+  });
+
+  // Calculate multi-select score
+  let msCorrect = 0;
+  let msTotal = multiSelectQuestions.length;
+  multiSelectQuestions.forEach((q: Question) => {
+    const answer = submission.answers[q.id];
+    const studentAnswers = Array.isArray(answer) ? answer.map(Number).sort() : [];
+    const correctAnswers = (q.correct_answers || []).sort();
+    if (JSON.stringify(studentAnswers) === JSON.stringify(correctAnswers)) {
+      msCorrect++;
     }
   });
 
@@ -135,20 +148,27 @@ const ExamResults = () => {
         
         {/* Stats Row */}
         <CardContent className="p-6">
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-2">
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{mcCorrect}</p>
+              <p className="text-2xl font-bold text-foreground">{mcCorrect + msCorrect}</p>
               <p className="text-sm text-muted-foreground">Correct</p>
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-2">
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{mcTotal - mcCorrect}</p>
+              <p className="text-2xl font-bold text-foreground">{(mcTotal - mcCorrect) + (msTotal - msCorrect)}</p>
               <p className="text-sm text-muted-foreground">Incorrect</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-2">
+                <CheckCircle className="w-6 h-6 text-purple-600" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{msTotal}</p>
+              <p className="text-sm text-muted-foreground">Multi-Select</p>
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
@@ -323,6 +343,137 @@ const ExamResults = () => {
           );
         })}
 
+        {/* Multi-Select Questions */}
+        {multiSelectQuestions.length > 0 && (
+          <>
+            <Separator className="my-6" />
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-purple-600" />
+              Multi-Select Questions
+            </h3>
+            
+            {multiSelectQuestions.map((q: Question, idx: number) => {
+              const answer = submission.answers[q.id];
+              const studentAnswers = Array.isArray(answer) ? answer.map(Number) : [];
+              const correctAnswers = q.correct_answers || [];
+              const isFullyCorrect = JSON.stringify([...studentAnswers].sort()) === JSON.stringify([...correctAnswers].sort());
+
+              return (
+                <Card 
+                  key={q.id} 
+                  className={cn(
+                    "border-0 shadow-card overflow-hidden",
+                    isFullyCorrect ? "ring-1 ring-green-200" : "ring-1 ring-red-200"
+                  )}
+                >
+                  <div className={cn(
+                    "px-4 py-2 flex items-center justify-between",
+                    isFullyCorrect ? "bg-green-50" : "bg-red-50"
+                  )}>
+                    <div className="flex items-center gap-2">
+                      {isFullyCorrect ? (
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-600" />
+                      )}
+                      <span className={cn(
+                        "font-medium",
+                        isFullyCorrect ? "text-green-700" : "text-red-700"
+                      )}>
+                        {isFullyCorrect ? 'Correct' : 'Incorrect'}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="bg-background">
+                      {isFullyCorrect ? q.points : 0} / {q.points} pts
+                    </Badge>
+                  </div>
+                  <CardContent className="p-4">
+                    <p className="font-medium text-foreground mb-2">
+                      <span className="text-muted-foreground mr-2">Q{mcQuestions.length + idx + 1}.</span>
+                      {q.question}
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">(Select all that apply)</p>
+                    <div className="space-y-2">
+                      {q.options?.map((option, optIdx) => {
+                        const isSelected = studentAnswers.includes(optIdx);
+                        const isCorrectOption = correctAnswers.includes(optIdx);
+                        
+                        return (
+                          <div 
+                            key={optIdx}
+                            className={cn(
+                              "p-3 rounded-lg border flex items-center gap-3",
+                              isCorrectOption && isSelected && "bg-green-50 border-green-300",
+                              isCorrectOption && !isSelected && "bg-amber-50 border-amber-300",
+                              !isCorrectOption && isSelected && "bg-red-50 border-red-300",
+                              !isCorrectOption && !isSelected && "bg-muted/30 border-border"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-6 h-6 rounded flex items-center justify-center text-sm font-medium",
+                              isCorrectOption && isSelected && "bg-green-600 text-white",
+                              isCorrectOption && !isSelected && "bg-amber-600 text-white",
+                              !isCorrectOption && isSelected && "bg-red-600 text-white",
+                              !isCorrectOption && !isSelected && "bg-muted text-muted-foreground"
+                            )}>
+                              {String.fromCharCode(65 + optIdx)}
+                            </div>
+                            <span className={cn(
+                              "flex-1",
+                              isCorrectOption && "text-green-700 font-medium",
+                              !isCorrectOption && isSelected && "text-red-700"
+                            )}>
+                              {option}
+                            </span>
+                            {isCorrectOption && isSelected && (
+                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Correct
+                              </Badge>
+                            )}
+                            {isCorrectOption && !isSelected && (
+                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
+                                Missed
+                              </Badge>
+                            )}
+                            {!isCorrectOption && isSelected && (
+                              <span className="text-xs text-red-600 font-medium">Should not select</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Quick link to materials for incorrect answers */}
+                    {!isFullyCorrect && materials.length > 0 && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm text-blue-700 font-medium mb-2 flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" />
+                          Review related materials:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {materials.slice(0, 3).map((material) => (
+                            <Button
+                              key={material.id}
+                              variant="outline"
+                              size="sm"
+                              className="bg-white text-blue-700 border-blue-300 hover:bg-blue-100"
+                              onClick={() => setSelectedMaterial(material)}
+                            >
+                              {getMaterialIcon(material)}
+                              <span className="ml-1 max-w-[120px] truncate">{material.title}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </>
+        )}
+
         {/* Essay Questions */}
         {essayQuestions.length > 0 && (
           <>
@@ -340,7 +491,7 @@ const ExamResults = () => {
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-base">
-                        <span className="text-muted-foreground mr-2">Q{mcQuestions.length + idx + 1}.</span>
+                        <span className="text-muted-foreground mr-2">Q{mcQuestions.length + multiSelectQuestions.length + idx + 1}.</span>
                         {q.question}
                       </CardTitle>
                       <Badge variant="outline">{q.points} pts</Badge>
