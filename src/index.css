@@ -143,6 +143,16 @@
     box-shadow: var(--shadow-glow);
   }
 
+  /* Hidden scrollbar utility - hides scrollbar while keeping scroll functionality */
+  .scrollbar-hidden {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.5s ease-out forwards;
   }
