@@ -96,6 +96,7 @@ const EditExam = () => {
         question: q.question,
         options: q.options,
         correct_answer: q.correct_answer,
+        correct_answers: q.correct_answers,
         points: q.points,
         type: q.type,
       });
@@ -218,6 +219,7 @@ const EditExam = () => {
         type: q.type === 'multiple-choice' ? 'multiple_choice' : q.type,
         options: q.options as string[] | undefined,
         correct_answer: q.correct_answer ?? undefined,
+        correct_answers: q.correct_answers ?? undefined,
         points: q.points,
       }));
 
