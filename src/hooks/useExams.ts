@@ -24,6 +24,7 @@ export interface Question {
   question: string;
   options: string[] | null;
   correct_answer: number | null;
+  correct_answers: number[] | null;
   points: number;
   order_index: number;
 }
@@ -111,7 +112,7 @@ export function useExamWithQuestions(examId: string) {
           .order('order_index');
         
         if (error) throw error;
-        // Student view doesn't include correct_answer
+        // Student view doesn't include correct_answer or correct_answers
         questions = (data ?? []).map(q => ({
           id: q.id!,
           exam_id: q.exam_id!,
@@ -119,6 +120,7 @@ export function useExamWithQuestions(examId: string) {
           question: q.question!,
           options: q.options as string[] | null,
           correct_answer: null,
+          correct_answers: null,
           points: q.points!,
           order_index: q.order_index!,
         }));

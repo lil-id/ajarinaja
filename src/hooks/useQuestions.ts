@@ -11,12 +11,13 @@ export function useUpdateQuestion() {
       question,
       options,
       correct_answer,
+      correct_answers,
       points,
       type
     }: Partial<Question> & { id: string }) => {
       const { data, error } = await supabase
         .from('questions')
-        .update({ question, options, correct_answer, points, type })
+        .update({ question, options, correct_answer, correct_answers, points, type })
         .eq('id', id)
         .select()
         .single();
@@ -59,6 +60,7 @@ export function useAddQuestion() {
       question,
       options,
       correct_answer,
+      correct_answers,
       points,
       type,
       order_index
@@ -70,6 +72,7 @@ export function useAddQuestion() {
           question,
           options,
           correct_answer,
+          correct_answers,
           points,
           type,
           order_index

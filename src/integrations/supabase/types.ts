@@ -508,6 +508,7 @@ export type Database = {
         Row: {
           category: string
           correct_answer: number | null
+          correct_answers: number[] | null
           course_id: string | null
           created_at: string
           id: string
@@ -523,6 +524,7 @@ export type Database = {
         Insert: {
           category?: string
           correct_answer?: number | null
+          correct_answers?: number[] | null
           course_id?: string | null
           created_at?: string
           id?: string
@@ -538,6 +540,7 @@ export type Database = {
         Update: {
           category?: string
           correct_answer?: number | null
+          correct_answers?: number[] | null
           course_id?: string | null
           created_at?: string
           id?: string
@@ -563,6 +566,7 @@ export type Database = {
       questions: {
         Row: {
           correct_answer: number | null
+          correct_answers: number[] | null
           created_at: string
           exam_id: string
           id: string
@@ -574,6 +578,7 @@ export type Database = {
         }
         Insert: {
           correct_answer?: number | null
+          correct_answers?: number[] | null
           created_at?: string
           exam_id: string
           id?: string
@@ -585,6 +590,7 @@ export type Database = {
         }
         Update: {
           correct_answer?: number | null
+          correct_answers?: number[] | null
           created_at?: string
           exam_id?: string
           id?: string

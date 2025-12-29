@@ -7,7 +7,7 @@ export interface ExamSubmission {
   id: string;
   exam_id: string;
   student_id: string;
-  answers: Record<string, string | number>;
+  answers: Record<string, string | number | number[]>;
   score: number | null;
   graded: boolean;
   submitted_at: string;
@@ -96,7 +96,7 @@ export function useSubmitExam() {
       score 
     }: { 
       examId: string; 
-      answers: Record<string, string | number>;
+      answers: Record<string, string | number | number[]>;
       score?: number;
     }) => {
       if (!user) throw new Error('Not authenticated');

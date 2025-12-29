@@ -66,6 +66,7 @@ const TeacherExams = () => {
       order_index: questions.length,
       options: currentQuestion.type === 'multiple-choice' ? currentQuestion.options : null,
       correct_answer: currentQuestion.type === 'multiple-choice' ? currentQuestion.correctAnswer : null,
+      correct_answers: null,
     };
     
     setQuestions([...questions, newQuestion]);

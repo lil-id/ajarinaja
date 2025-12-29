@@ -11,6 +11,7 @@ export interface QuestionBankItem {
   type: string;
   options: string[] | null;
   correct_answer: number | null;
+  correct_answers: number[] | null;
   points: number;
   tags: string[];
   used_count: number;
@@ -171,6 +172,7 @@ export function useSaveExamQuestionsToBank() {
         type: string;
         options?: string[];
         correct_answer?: number;
+        correct_answers?: number[];
         points: number;
       }>;
       courseId: string;
@@ -184,6 +186,7 @@ export function useSaveExamQuestionsToBank() {
         type: q.type,
         options: q.options || null,
         correct_answer: q.correct_answer ?? null,
+        correct_answers: q.correct_answers ?? null,
         points: q.points,
         tags: [],
       }));
