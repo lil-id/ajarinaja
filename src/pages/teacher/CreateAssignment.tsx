@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format } from 'date-fns';
-import { ArrowLeft, Plus, Trash2, GripVertical } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,7 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTeacherCourses } from '@/hooks/useCourses';
-import { useCreateAssignment, RubricItem } from '@/hooks/useAssignments';
+import { useCreateAssignment, useUpdateAssignment, useAssignment, RubricItem } from '@/hooks/useAssignments';
 import { toast } from 'sonner';
 
 const formSchema = z.object({
@@ -48,8 +47,13 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CreateAssignment() {
   const navigate = useNavigate();
+  const { assignmentId } = useParams<{ assignmentId: string }>();
+  const isEditMode = !!assignmentId;
+  
   const { courses = [] } = useTeacherCourses();
+  const { data: existingAssignment, isLoading: assignmentLoading } = useAssignment(assignmentId || '');
   const createAssignment = useCreateAssignment();
+  const updateAssignment = useUpdateAssignment();
   const [rubric, setRubric] = useState<RubricItem[]>([]);
 
   const form = useForm<FormData>({
@@ -67,6 +71,27 @@ export default function CreateAssignment() {
       status: 'draft',
     },
   });
+
+  // Load existing assignment data in edit mode
+  useEffect(() => {
+    if (isEditMode && existingAssignment) {
+      form.reset({
+        course_id: existingAssignment.course_id,
+        title: existingAssignment.title,
+        description: existingAssignment.description || '',
+        instructions: existingAssignment.instructions || '',
+        due_date: existingAssignment.due_date 
+          ? new Date(existingAssignment.due_date).toISOString().slice(0, 16) 
+          : '',
+        max_points: existingAssignment.max_points,
+        allow_late_submissions: existingAssignment.allow_late_submissions,
+        late_penalty_percent: existingAssignment.late_penalty_percent || 10,
+        max_file_size_mb: existingAssignment.max_file_size_mb || 10,
+        status: existingAssignment.status as 'draft' | 'published',
+      });
+      setRubric(existingAssignment.rubric || []);
+    }
+  }, [isEditMode, existingAssignment, form]);
 
   const allowLate = form.watch('allow_late_submissions');
 
@@ -89,7 +114,7 @@ export default function CreateAssignment() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await createAssignment.mutateAsync({
+      const assignmentData = {
         course_id: data.course_id,
         title: data.title,
         description: data.description,
@@ -101,13 +126,44 @@ export default function CreateAssignment() {
         max_file_size_mb: data.max_file_size_mb,
         status: data.status,
         rubric: rubric.filter(r => r.criterion.trim()),
-      });
-      toast.success('Assignment created successfully');
+      };
+
+      if (isEditMode) {
+        await updateAssignment.mutateAsync({
+          id: assignmentId!,
+          ...assignmentData,
+        });
+        toast.success('Assignment updated successfully');
+      } else {
+        await createAssignment.mutateAsync(assignmentData);
+        toast.success('Assignment created successfully');
+      }
       navigate('/teacher/assignments');
     } catch {
-      toast.error('Failed to create assignment');
+      toast.error(isEditMode ? 'Failed to update assignment' : 'Failed to create assignment');
     }
   };
+
+  const isPending = createAssignment.isPending || updateAssignment.isPending;
+
+  if (isEditMode && assignmentLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isEditMode && !existingAssignment && !assignmentLoading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Assignment not found</p>
+        <Button variant="outline" onClick={() => navigate('/teacher/assignments')} className="mt-4">
+          Back to Assignments
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -116,8 +172,10 @@ export default function CreateAssignment() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Create Assignment</h1>
-          <p className="text-muted-foreground">Set up a new assignment for your students</p>
+          <h1 className="text-3xl font-bold">{isEditMode ? 'Edit Assignment' : 'Create Assignment'}</h1>
+          <p className="text-muted-foreground">
+            {isEditMode ? 'Update the assignment details' : 'Set up a new assignment for your students'}
+          </p>
         </div>
       </div>
 
@@ -340,7 +398,7 @@ export default function CreateAssignment() {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {rubric.map((item, index) => (
+                  {rubric.map((item) => (
                     <div key={item.id} className="flex items-start gap-3 p-4 border rounded-lg">
                       <GripVertical className="h-5 w-5 text-muted-foreground mt-2 cursor-move" />
                       <div className="flex-1 grid gap-3">
@@ -384,8 +442,15 @@ export default function CreateAssignment() {
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createAssignment.isPending}>
-              {createAssignment.isPending ? 'Creating...' : 'Create Assignment'}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {isEditMode ? 'Updating...' : 'Creating...'}
+                </>
+              ) : (
+                isEditMode ? 'Update Assignment' : 'Create Assignment'
+              )}
             </Button>
           </div>
         </form>
