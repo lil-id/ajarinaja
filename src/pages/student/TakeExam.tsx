@@ -151,6 +151,15 @@ const TakeExam = () => {
               <p className="text-sm text-muted-foreground mb-2">Course</p>
               <p className="font-medium">{course?.title}</p>
             </div>
+            
+            {/* Exam Description/Instructions */}
+            {exam.description && (
+              <div className="p-4 border rounded-lg bg-card">
+                <p className="text-sm font-medium text-foreground mb-2">Instructions</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{exam.description}</p>
+              </div>
+            )}
+            
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-muted rounded-lg text-center">
                 <Clock className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
