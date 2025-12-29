@@ -30,6 +30,7 @@ import CreateAssignment from "./pages/teacher/CreateAssignment";
 import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
 import TeacherQuestionBank from "./pages/teacher/QuestionBank";
 import TeacherCalendar from "./pages/teacher/Calendar";
+import TeacherAtRiskStudents from "./pages/teacher/AtRiskStudents";
 
 // Student Pages
 import StudentLayout from "./layouts/StudentLayout";
@@ -49,6 +50,7 @@ import StudentAssignments from "./pages/student/Assignments";
 import SubmitAssignment from "./pages/student/SubmitAssignment";
 import StudentNotifications from "./pages/student/Notifications";
 import StudentAnalytics from "./pages/student/Analytics";
+import StudentCalendar from "./pages/student/Calendar";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +89,7 @@ const App = () => (
               <Route path="assignments/:assignmentId/edit" element={<CreateAssignment />} />
               <Route path="question-bank" element={<TeacherQuestionBank />} />
               <Route path="calendar" element={<TeacherCalendar />} />
+              <Route path="at-risk" element={<TeacherAtRiskStudents />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="settings" element={<TeacherSettings />} />
             </Route>
@@ -112,6 +115,7 @@ const App = () => (
               <Route path="assignments/:assignmentId" element={<SubmitAssignment />} />
               <Route path="notifications" element={<StudentNotifications />} />
               <Route path="analytics" element={<StudentAnalytics />} />
+              <Route path="calendar" element={<StudentCalendar />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>

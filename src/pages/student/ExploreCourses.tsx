@@ -18,16 +18,15 @@ const ExploreCourses = () => {
 
   const isLoading = coursesLoading || enrollmentsLoading;
 
-  // Filter only published courses
-  const publishedCourses = courses.filter(c => c.status === 'active');
+  // Filter only published courses that are NOT already enrolled
+  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const availableCourses = courses.filter(c => c.status === 'published' && !enrolledCourseIds.includes(c.id));
   
   // Filter by search query
-  const filteredCourses = publishedCourses.filter(course => 
+  const filteredCourses = availableCourses.filter(course => 
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (course.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
 
   const handleEnroll = async (courseId: string) => {
     try {
@@ -75,7 +74,7 @@ const ExploreCourses = () => {
               <BookOpen className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{publishedCourses.length}</p>
+              <p className="text-2xl font-bold text-foreground">{availableCourses.length}</p>
               <p className="text-sm text-muted-foreground">Available Courses</p>
             </div>
           </CardContent>
@@ -97,7 +96,7 @@ const ExploreCourses = () => {
               <Users className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{Math.max(0, publishedCourses.length - enrollments.length)}</p>
+              <p className="text-2xl font-bold text-foreground">{availableCourses.length}</p>
               <p className="text-sm text-muted-foreground">New to Explore</p>
             </div>
           </CardContent>

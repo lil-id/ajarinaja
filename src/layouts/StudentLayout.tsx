@@ -25,7 +25,8 @@ import {
   Bell,
   Menu,
   X,
-  BarChart3
+  BarChart3,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -34,6 +35,7 @@ const navigation = [
   { name: 'Dashboard', href: '/student', icon: Home },
   { name: 'My Courses', href: '/student/courses', icon: BookOpen },
   { name: 'Explore Courses', href: '/student/explore', icon: GraduationCap },
+  { name: 'Calendar', href: '/student/calendar', icon: Calendar },
   { name: 'Assignments', href: '/student/assignments', icon: ClipboardList },
   { name: 'Exams', href: '/student/exams', icon: FileText },
   { name: 'Materials', href: '/student/materials', icon: FolderOpen },
