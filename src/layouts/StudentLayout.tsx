@@ -91,7 +91,7 @@ const StudentLayout = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hidden scroll-smooth">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
