@@ -1,19 +1,26 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
-import { useExamWithQuestions, Question } from '@/hooks/useExams';
+import { useExamResults } from '@/hooks/useExamResults';
+import { Question } from '@/hooks/useExams';
 import { useMySubmission } from '@/hooks/useSubmissions';
-import { ArrowLeft, CheckCircle, XCircle, AlignLeft, Loader2, Award, Clock, Target, TrendingUp } from 'lucide-react';
+import { useCourseMaterials, CourseMaterial } from '@/hooks/useCourseMaterials';
+import { ArrowLeft, CheckCircle, XCircle, AlignLeft, Loader2, Clock, BookOpen, FileText, Video, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import MaterialViewer from '@/components/MaterialViewer';
 
 const ExamResults = () => {
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
-  const { data: exam, isLoading: examLoading } = useExamWithQuestions(examId || '');
+  const { data: exam, isLoading: examLoading } = useExamResults(examId || '');
   const { data: submission, isLoading: submissionLoading } = useMySubmission(examId || '');
+  const { materials, isLoading: materialsLoading } = useCourseMaterials(exam?.course_id);
+
+  const [selectedMaterial, setSelectedMaterial] = useState<CourseMaterial | null>(null);
 
   const isLoading = examLoading || submissionLoading;
 
@@ -64,6 +71,12 @@ const ExamResults = () => {
   };
 
   const grade = getGradeLabel(scorePercentage);
+
+  const getMaterialIcon = (material: CourseMaterial) => {
+    if (material.video_url) return <Video className="w-4 h-4" />;
+    if (material.file_type?.includes('pdf')) return <FileText className="w-4 h-4" />;
+    return <BookOpen className="w-4 h-4" />;
+  };
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
@@ -148,6 +161,52 @@ const ExamResults = () => {
         </CardContent>
       </Card>
 
+      {/* Related Learning Materials */}
+      {materials.length > 0 && (
+        <Card className="border-0 shadow-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-secondary" />
+              Review Learning Materials
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Revisit course materials to strengthen your understanding
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2">
+              {materials.slice(0, 5).map((material) => (
+                <button
+                  key={material.id}
+                  onClick={() => setSelectedMaterial(material)}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors text-left w-full group"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 bg-secondary/10 rounded-lg text-secondary">
+                    {getMaterialIcon(material)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-foreground truncate">{material.title}</p>
+                    {material.description && (
+                      <p className="text-xs text-muted-foreground truncate">{material.description}</p>
+                    )}
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
+              {materials.length > 5 && (
+                <Button 
+                  variant="ghost" 
+                  className="w-full mt-2"
+                  onClick={() => navigate('/student/materials')}
+                >
+                  View all {materials.length} materials
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Questions Review */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">Question Review</h2>
@@ -223,7 +282,10 @@ const ExamResults = () => {
                           {option}
                         </span>
                         {isCorrectOption && (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Correct Answer
+                          </Badge>
                         )}
                         {isSelected && !isCorrectOption && (
                           <span className="text-xs text-red-600 font-medium">Your answer</span>
@@ -232,6 +294,30 @@ const ExamResults = () => {
                     );
                   })}
                 </div>
+                
+                {/* Quick link to materials for incorrect answers */}
+                {!isCorrect && materials.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-700 font-medium mb-2 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      Review related materials:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {materials.slice(0, 3).map((material) => (
+                        <Button
+                          key={material.id}
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-blue-700 border-blue-300 hover:bg-blue-100"
+                          onClick={() => setSelectedMaterial(material)}
+                        >
+                          {getMaterialIcon(material)}
+                          <span className="ml-1 max-w-[120px] truncate">{material.title}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
@@ -291,6 +377,20 @@ const ExamResults = () => {
           Back to Exams
         </Button>
       </div>
+
+      {/* Material Viewer Modal */}
+      <MaterialViewer
+        isOpen={!!selectedMaterial}
+        onClose={() => setSelectedMaterial(null)}
+        material={selectedMaterial ? {
+          id: selectedMaterial.id,
+          title: selectedMaterial.title,
+          file_path: selectedMaterial.file_path,
+          file_name: selectedMaterial.file_name,
+          file_type: selectedMaterial.file_type,
+          video_url: selectedMaterial.video_url,
+        } : null}
+      />
     </div>
   );
 };
