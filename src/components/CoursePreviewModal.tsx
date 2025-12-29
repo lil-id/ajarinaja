@@ -28,6 +28,7 @@ interface TeacherProfile {
   user_id: string;
   name: string;
   avatar_url: string | null;
+  bio: string | null;
 }
 
 function useTeacherProfile(teacherId: string | undefined) {
@@ -39,7 +40,7 @@ function useTeacherProfile(teacherId: string | undefined) {
       // Use public_profiles view which is accessible to all authenticated users
       const { data, error } = await supabase
         .from('public_profiles')
-        .select('user_id, name, avatar_url')
+        .select('user_id, name, avatar_url, bio')
         .eq('user_id', teacherId)
         .single();
       
@@ -176,12 +177,17 @@ const CoursePreviewModal = ({
                       {teacher.name?.charAt(0)?.toUpperCase() || 'T'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="text-center">
+                  <div className="text-center space-y-2">
                     <h3 className="text-lg font-semibold">{teacher.name}</h3>
-                    <Badge variant="secondary" className="mt-2">
+                    <Badge variant="secondary">
                       <User className="w-3 h-3 mr-1" />
                       Course Instructor
                     </Badge>
+                    {teacher.bio && (
+                      <p className="text-sm text-muted-foreground mt-4 text-left px-4">
+                        {teacher.bio}
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : (
