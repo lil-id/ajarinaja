@@ -11,6 +11,7 @@ import {
   Loader2,
   ChevronDown
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +65,7 @@ interface QuestionFormData {
   type: string;
   options: string[];
   correct_answer: number | null;
+  correct_answers: number[];
   points: number;
   category: string;
   course_id: string | null;
@@ -75,6 +77,7 @@ const defaultFormData: QuestionFormData = {
   type: "multiple_choice",
   options: ["", "", "", ""],
   correct_answer: null,
+  correct_answers: [],
   points: 10,
   category: "General",
   course_id: null,
@@ -115,6 +118,7 @@ export default function QuestionBank() {
         type: question.type,
         options: question.options || ["", "", "", ""],
         correct_answer: question.correct_answer,
+        correct_answers: question.correct_answers || [],
         points: question.points,
         category: question.category,
         course_id: question.course_id,
@@ -133,14 +137,20 @@ export default function QuestionBank() {
       return;
     }
 
-    if (formData.type === "multiple_choice") {
+    const isChoiceType = formData.type === "multiple_choice" || formData.type === "multi_select";
+    
+    if (isChoiceType) {
       const filledOptions = formData.options.filter((o) => o.trim());
       if (filledOptions.length < 2) {
         toast.error("At least 2 options are required");
         return;
       }
-      if (formData.correct_answer === null) {
+      if (formData.type === "multiple_choice" && formData.correct_answer === null) {
         toast.error("Please select the correct answer");
+        return;
+      }
+      if (formData.type === "multi_select" && formData.correct_answers.length === 0) {
+        toast.error("Please select at least one correct answer");
         return;
       }
     }
@@ -153,8 +163,9 @@ export default function QuestionBank() {
           id: editingQuestion.id,
           question: formData.question,
           type: formData.type,
-          options: formData.type === "multiple_choice" ? formData.options.filter((o) => o.trim()) : null,
+          options: isChoiceType ? formData.options.filter((o) => o.trim()) : null,
           correct_answer: formData.type === "multiple_choice" ? formData.correct_answer : null,
+          correct_answers: formData.type === "multi_select" ? formData.correct_answers : null,
           points: formData.points,
           category,
           course_id: formData.course_id || null,
@@ -165,8 +176,9 @@ export default function QuestionBank() {
         await createQuestion.mutateAsync({
           question: formData.question,
           type: formData.type,
-          options: formData.type === "multiple_choice" ? formData.options.filter((o) => o.trim()) : null,
+          options: isChoiceType ? formData.options.filter((o) => o.trim()) : null,
           correct_answer: formData.type === "multiple_choice" ? formData.correct_answer : null,
+          correct_answers: formData.type === "multi_select" ? formData.correct_answers : null,
           points: formData.points,
           category,
           course_id: formData.course_id || null,
@@ -199,6 +211,7 @@ export default function QuestionBank() {
         type: question.type,
         options: question.options,
         correct_answer: question.correct_answer,
+        correct_answers: question.correct_answers,
         points: question.points,
         category: question.category,
         course_id: question.course_id,
@@ -307,6 +320,7 @@ export default function QuestionBank() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                      <SelectItem value="multi_select">Multi-Select</SelectItem>
                       <SelectItem value="essay">Essay</SelectItem>
                     </SelectContent>
                   </Select>
@@ -359,6 +373,35 @@ export default function QuestionBank() {
                       </div>
                     ))}
                   </RadioGroup>
+                </div>
+              )}
+
+              {formData.type === "multi_select" && (
+                <div className="space-y-3">
+                  <Label>Options (select all correct answers)</Label>
+                  {formData.options.map((option, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Checkbox
+                        checked={formData.correct_answers.includes(index)}
+                        onCheckedChange={(checked) => {
+                          const newAnswers = checked
+                            ? [...formData.correct_answers, index]
+                            : formData.correct_answers.filter(a => a !== index);
+                          setFormData({ ...formData, correct_answers: newAnswers });
+                        }}
+                      />
+                      <Input
+                        placeholder={`Option ${index + 1}`}
+                        value={option}
+                        onChange={(e) => {
+                          const newOptions = [...formData.options];
+                          newOptions[index] = e.target.value;
+                          setFormData({ ...formData, options: newOptions });
+                        }}
+                        className="flex-1"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -428,6 +471,7 @@ export default function QuestionBank() {
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                <SelectItem value="multi_select">Multi-Select</SelectItem>
                 <SelectItem value="essay">Essay</SelectItem>
               </SelectContent>
             </Select>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useExamWithQuestions } from '@/hooks/useExams';
@@ -24,7 +25,7 @@ const TakeExam = () => {
   const course = exam ? courses.find(c => c.id === exam.course_id) : null;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | number>>({});
+  const [answers, setAnswers] = useState<Record<string, string | number | number[]>>({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [started, setStarted] = useState(false);
@@ -87,7 +88,7 @@ const TakeExam = () => {
   const question = exam.questions[currentQuestion];
   const progress = ((currentQuestion + 1) / exam.questions.length) * 100;
 
-  const handleAnswer = (value: string | number) => {
+  const handleAnswer = (value: string | number | number[]) => {
     setAnswers({ ...answers, [question.id]: value });
   };
 
@@ -225,10 +226,15 @@ const TakeExam = () => {
               "px-2 py-1 rounded text-xs font-medium",
               question.type === 'multiple-choice' 
                 ? "bg-primary/10 text-primary" 
-                : "bg-secondary/10 text-secondary"
+                : question.type === 'multi-select'
+                ? "bg-secondary/10 text-secondary"
+                : "bg-muted text-muted-foreground"
             )}>
-              {question.type === 'multiple-choice' ? 'Multiple Choice' : 'Essay'}
+              {question.type === 'multiple-choice' ? 'Multiple Choice' : question.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
             </span>
+            {question.type === 'multi-select' && (
+              <span className="text-xs text-muted-foreground">(Select all that apply)</span>
+            )}
           </div>
           <CardTitle className="text-xl leading-relaxed">
             {question.question}
@@ -259,6 +265,35 @@ const TakeExam = () => {
                 </div>
               ))}
             </RadioGroup>
+          ) : question.type === 'multi-select' && question.options ? (
+            <div className="space-y-3">
+              {(question.options as string[]).map((option, index) => {
+                const currentAnswers = (answers[question.id] as number[]) || [];
+                const isSelected = currentAnswers.includes(index);
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      "flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer",
+                      isSelected
+                        ? "border-secondary bg-secondary/5"
+                        : "border-border hover:border-muted-foreground/30"
+                    )}
+                    onClick={() => {
+                      const newAnswers = isSelected
+                        ? currentAnswers.filter(a => a !== index)
+                        : [...currentAnswers, index];
+                      handleAnswer(newAnswers);
+                    }}
+                  >
+                    <Checkbox checked={isSelected} />
+                    <Label className="flex-1 cursor-pointer">
+                      {option}
+                    </Label>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <Textarea
               placeholder="Write your answer here..."

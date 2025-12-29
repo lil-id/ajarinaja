@@ -45,16 +45,18 @@ const EditExam = () => {
   const [isSaveToBankDialogOpen, setIsSaveToBankDialogOpen] = useState(false);
   const [saveToBankCategory, setSaveToBankCategory] = useState('General');
   const [newQuestion, setNewQuestion] = useState<{
-    type: 'multiple-choice' | 'essay';
+    type: 'multiple-choice' | 'multi-select' | 'essay';
     question: string;
     options: string[];
     correctAnswer: number;
+    correctAnswers: number[];
     points: number;
   }>({
     type: 'multiple-choice',
     question: '',
     options: ['', '', '', ''],
     correctAnswer: 0,
+    correctAnswers: [],
     points: 10,
   });
 
@@ -119,13 +121,16 @@ const EditExam = () => {
       return;
     }
 
+    const isChoice = newQuestion.type === 'multiple-choice' || newQuestion.type === 'multi-select';
+
     try {
       const result = await addQuestion.mutateAsync({
         examId: examId!,
         type: newQuestion.type,
         question: newQuestion.question,
-        options: newQuestion.type === 'multiple-choice' ? newQuestion.options : null,
+        options: isChoice ? newQuestion.options : null,
         correct_answer: newQuestion.type === 'multiple-choice' ? newQuestion.correctAnswer : null,
+        correct_answers: newQuestion.type === 'multi-select' ? newQuestion.correctAnswers : null,
         points: newQuestion.points,
         order_index: questions.length,
         exam_id: examId!,
@@ -137,6 +142,7 @@ const EditExam = () => {
         question: '',
         options: ['', '', '', ''],
         correctAnswer: 0,
+        correctAnswers: [],
         points: 10,
       });
       setIsAddDialogOpen(false);
@@ -182,6 +188,7 @@ const EditExam = () => {
           question: bankQ.question,
           options: bankQ.options,
           correct_answer: bankQ.correct_answer,
+          correct_answers: (bankQ as any).correct_answers || null,
           points: bankQ.points,
           order_index: currentIndex,
         });
@@ -463,10 +470,11 @@ const EditExam = () => {
                 <div className="space-y-4 pt-4">
                   <Tabs
                     value={newQuestion.type}
-                    onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'essay' })}
+                    onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'multi-select' | 'essay' })}
                   >
                     <TabsList className="mb-4">
                       <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
+                      <TabsTrigger value="multi-select">Multi-Select</TabsTrigger>
                       <TabsTrigger value="essay">Essay</TabsTrigger>
                     </TabsList>
 
@@ -485,6 +493,32 @@ const EditExam = () => {
                             checked={newQuestion.correctAnswer === i}
                             onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
                             className="w-4 h-4"
+                          />
+                          <Input
+                            placeholder={`Option ${i + 1}`}
+                            value={opt}
+                            onChange={(e) => {
+                              const newOptions = [...newQuestion.options];
+                              newOptions[i] = e.target.value;
+                              setNewQuestion({ ...newQuestion, options: newOptions });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="multi-select" className="mt-4 space-y-2">
+                      <p className="text-xs text-muted-foreground mb-2">Select all correct answers</p>
+                      {newQuestion.options.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={newQuestion.correctAnswers.includes(i)}
+                            onCheckedChange={(checked) => {
+                              const newAnswers = checked
+                                ? [...newQuestion.correctAnswers, i]
+                                : newQuestion.correctAnswers.filter(a => a !== i);
+                              setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
+                            }}
                           />
                           <Input
                             placeholder={`Option ${i + 1}`}
@@ -530,6 +564,8 @@ const EditExam = () => {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       {q.type === 'multiple-choice' ? (
                         <CheckCircle className="w-4 h-4 text-secondary" />
+                      ) : q.type === 'multi-select' ? (
+                        <CheckCircle className="w-4 h-4 text-primary" />
                       ) : (
                         <AlignLeft className="w-4 h-4 text-primary" />
                       )}
@@ -576,6 +612,37 @@ const EditExam = () => {
                               handleUpdateQuestion({ ...questions[index], correct_answer: optIndex });
                             }}
                             className="w-4 h-4"
+                          />
+                          <Input
+                            value={opt}
+                            onChange={(e) => {
+                              const newOptions = [...(q.options as string[])];
+                              newOptions[optIndex] = e.target.value;
+                              updateLocalQuestion(index, { options: newOptions });
+                            }}
+                            onBlur={() => handleUpdateQuestion(questions[index])}
+                            className="bg-background"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {q.type === 'multi-select' && q.options && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">Select all correct answers</p>
+                      {(q.options as string[]).map((opt, optIndex) => (
+                        <div key={optIndex} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={(q.correct_answers || []).includes(optIndex)}
+                            onCheckedChange={(checked) => {
+                              const currentAnswers = q.correct_answers || [];
+                              const newAnswers = checked
+                                ? [...currentAnswers, optIndex]
+                                : currentAnswers.filter(a => a !== optIndex);
+                              updateLocalQuestion(index, { correct_answers: newAnswers });
+                              handleUpdateQuestion({ ...questions[index], correct_answers: newAnswers });
+                            }}
                           />
                           <Input
                             value={opt}
