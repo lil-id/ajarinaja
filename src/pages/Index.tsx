@@ -1,17 +1,30 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { BookOpen, Users, Award, ArrowRight, GraduationCap, BarChart3, CheckCircle, Play, FileText, Shield, Clock, Zap } from 'lucide-react';
-import heroClassroom from '@/assets/hero-classroom.jpg';
-import teacherTeaching from '@/assets/teacher-teaching.jpg';
-import studentsStudying from '@/assets/students-studying.jpg';
-import studentExam from '@/assets/student-exam.jpg';
-import studentsLearning from '@/assets/students-learning.jpg';
-import teacherSmartboard from '@/assets/teacher-smartboard.jpg';
-import studentOnlineExam from '@/assets/student-online-exam.jpg';
-import teacherAnalytics from '@/assets/teacher-analytics.jpg';
-import testimonialJames from '@/assets/testimonial-james.jpg';
-import testimonialSarah from '@/assets/testimonial-sarah.jpg';
-import testimonialEmily from '@/assets/testimonial-emily.jpg';
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  BookOpen,
+  Users,
+  Award,
+  ArrowRight,
+  GraduationCap,
+  BarChart3,
+  CheckCircle,
+  Play,
+  FileText,
+  Shield,
+  Clock,
+  Zap,
+} from "lucide-react";
+import heroClassroom from "@/assets/hero-classroom.jpg";
+import teacherTeaching from "@/assets/teacher-teaching.jpg";
+import studentsStudying from "@/assets/students-studying.jpg";
+import studentExam from "@/assets/student-exam.jpg";
+import studentsLearning from "@/assets/students-learning.jpg";
+import teacherSmartboard from "@/assets/teacher-smartboard.jpg";
+import studentOnlineExam from "@/assets/student-online-exam.jpg";
+import teacherAnalytics from "@/assets/teacher-analytics.jpg";
+import testimonialJames from "@/assets/testimonial-james.jpg";
+import testimonialSarah from "@/assets/testimonial-sarah.jpg";
+import testimonialEmily from "@/assets/testimonial-emily.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -28,16 +41,24 @@ const Index = () => {
             <span className="text-xl font-bold text-foreground">EduExam</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
-            <a href="#for-teachers" className="text-muted-foreground hover:text-foreground transition-colors">For Teachers</a>
-            <a href="#for-schools" className="text-muted-foreground hover:text-foreground transition-colors">For Schools</a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+              Features
+            </a>
+            <a href="#for-teachers" className="text-muted-foreground hover:text-foreground transition-colors">
+              For Teachers
+            </a>
+            <a href="#for-schools" className="text-muted-foreground hover:text-foreground transition-colors">
+              For Schools
+            </a>
+            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">
+              Testimonials
+            </a>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/login')}>
+            <Button variant="ghost" onClick={() => navigate("/login")}>
               Sign In
             </Button>
-            <Button variant="hero" onClick={() => navigate('/login')}>
+            <Button variant="hero" onClick={() => navigate("/login")}>
               Get Started Free
             </Button>
           </div>
@@ -59,15 +80,15 @@ const Index = () => {
                 <span className="text-gradient block">Smart Learning Tools</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                The complete learning management system for modern educators. Create courses, 
-                manage exams, track student progress, and deliver an exceptional learning experience.
+                The complete learning management system for modern educators. Create courses, manage exams, track
+                student progress, and deliver an exceptional learning experience.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4">
-                <Button variant="hero" size="xl" onClick={() => navigate('/login')}>
+                <Button variant="hero" size="xl" onClick={() => navigate("/login")}>
                   Start Teaching Today
                   <ArrowRight className="w-5 h-5" />
                 </Button>
-                <Button variant="outline" size="xl" onClick={() => navigate('/login')}>
+                <Button variant="outline" size="xl" onClick={() => navigate("/login")}>
                   <Play className="w-4 h-4" />
                   Watch Demo
                 </Button>
@@ -91,14 +112,17 @@ const Index = () => {
             </div>
             <div className="relative animate-slide-up">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src={studentsLearning} 
-                  alt="Students engaged in digital learning with laptops in a modern classroom" 
+                <img
+                  src={studentsLearning}
+                  alt="Students engaged in digital learning with laptops in a modern classroom"
                   className="w-full h-auto object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-2xl shadow-card animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div
+                className="absolute -bottom-6 -left-6 bg-card p-4 rounded-2xl shadow-card animate-fade-in"
+                style={{ animationDelay: "300ms" }}
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
                     <CheckCircle className="w-6 h-6 text-green-500" />
@@ -109,7 +133,10 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-card animate-fade-in" style={{ animationDelay: '500ms' }}>
+              <div
+                className="absolute -top-4 -right-4 bg-card p-4 rounded-2xl shadow-card animate-fade-in"
+                style={{ animationDelay: "500ms" }}
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                     <Users className="w-6 h-6 text-primary" />
@@ -131,19 +158,22 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
               <div className="grid grid-cols-2 gap-4">
-                <img 
-                  src={teacherSmartboard} 
-                  alt="Teacher explaining content on digital smartboard to engaged students" 
+                <img
+                  src={teacherSmartboard}
+                  alt="Teacher explaining content on digital smartboard to engaged students"
                   className="rounded-2xl shadow-lg w-full h-56 object-cover animate-slide-up col-span-2"
-                  style={{ animationDelay: '100ms' }}
+                  style={{ animationDelay: "100ms" }}
                 />
-                <img 
-                  src={teacherAnalytics} 
-                  alt="Teacher reviewing student performance analytics on computer" 
+                <img
+                  src={teacherAnalytics}
+                  alt="Teacher reviewing student performance analytics on computer"
                   className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
-                  style={{ animationDelay: '200ms' }}
+                  style={{ animationDelay: "200ms" }}
                 />
-                <div className="bg-gradient-hero rounded-2xl p-6 flex flex-col justify-center items-center text-center animate-slide-up" style={{ animationDelay: '300ms' }}>
+                <div
+                  className="bg-gradient-hero rounded-2xl p-6 flex flex-col justify-center items-center text-center animate-slide-up"
+                  style={{ animationDelay: "300ms" }}
+                >
                   <div className="text-4xl font-bold text-primary-foreground">75%</div>
                   <div className="text-sm text-primary-foreground/80">Time Saved on Grading</div>
                 </div>
@@ -158,15 +188,15 @@ const Index = () => {
                 Everything You Need to Teach Effectively
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Create engaging courses, design comprehensive exams, and track student progress 
-                with powerful analytics. Spend less time on administration and more time teaching.
+                Create engaging courses, design comprehensive exams, and track student progress with powerful analytics.
+                Spend less time on administration and more time teaching.
               </p>
               <ul className="space-y-4 mb-8">
                 {[
-                  { icon: <BookOpen className="w-4 h-4" />, text: 'Create unlimited courses with rich content' },
-                  { icon: <FileText className="w-4 h-4" />, text: 'Design multiple choice & essay exams with rubrics' },
-                  { icon: <BarChart3 className="w-4 h-4" />, text: 'Auto-grading with detailed performance analytics' },
-                  { icon: <Clock className="w-4 h-4" />, text: 'Assignment management with deadline tracking' }
+                  { icon: <BookOpen className="w-4 h-4" />, text: "Create unlimited courses with rich content" },
+                  { icon: <FileText className="w-4 h-4" />, text: "Design multiple choice & essay exams with rubrics" },
+                  { icon: <BarChart3 className="w-4 h-4" />, text: "Auto-grading with detailed performance analytics" },
+                  { icon: <Clock className="w-4 h-4" />, text: "Assignment management with deadline tracking" },
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 text-secondary">
@@ -176,7 +206,7 @@ const Index = () => {
                   </li>
                 ))}
               </ul>
-              <Button variant="hero" size="lg" onClick={() => navigate('/login')}>
+              <Button variant="hero" size="lg" onClick={() => navigate("/login")}>
                 Start Teaching Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -198,8 +228,8 @@ const Index = () => {
                 Scale Your Institution with Confidence
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                A comprehensive platform designed to support educational institutions of all sizes. 
-                From course management to student enrollment, everything you need in one secure place.
+                A comprehensive platform designed to support educational institutions of all sizes. From course
+                management to student enrollment, everything you need in one secure place.
               </p>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-card p-4 rounded-xl border border-border">
@@ -219,31 +249,34 @@ const Index = () => {
                   <div className="text-sm text-muted-foreground">Support Available</div>
                 </div>
               </div>
-              <Button variant="outline" size="lg" onClick={() => navigate('/login')}>
+              <Button variant="outline" size="lg" onClick={() => navigate("/login")}>
                 Contact for Demo
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img 
-                src={heroClassroom} 
-                alt="Modern classroom environment with students and teacher" 
+              <img
+                src={heroClassroom}
+                alt="Modern classroom environment with students and teacher"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
-                style={{ animationDelay: '100ms' }}
+                style={{ animationDelay: "100ms" }}
               />
-              <img 
-                src={teacherTeaching} 
+              <img
+                src={teacherTeaching}
                 alt="Teacher actively teaching in classroom"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover mt-8 animate-slide-up"
-                style={{ animationDelay: '200ms' }}
+                style={{ animationDelay: "200ms" }}
               />
-              <img 
-                src={studentOnlineExam} 
-                alt="Student taking online exam on laptop" 
+              <img
+                src={studentOnlineExam}
+                alt="Student taking online exam on laptop"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
-                style={{ animationDelay: '300ms' }}
+                style={{ animationDelay: "300ms" }}
               />
-              <div className="bg-gradient-secondary rounded-2xl p-6 flex flex-col justify-center items-center text-center mt-8 animate-slide-up" style={{ animationDelay: '400ms' }}>
+              <div
+                className="bg-gradient-secondary rounded-2xl p-6 flex flex-col justify-center items-center text-center mt-8 animate-slide-up"
+                style={{ animationDelay: "400ms" }}
+              >
                 <div className="text-4xl font-bold text-secondary-foreground">98%</div>
                 <div className="text-sm text-secondary-foreground/80">Satisfaction Rate</div>
               </div>
@@ -263,7 +296,7 @@ const Index = () => {
               Everything you need to deliver exceptional learning experiences
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
               icon={<BookOpen className="w-8 h-8" />}
@@ -274,7 +307,7 @@ const Index = () => {
             <FeatureCard
               icon={<FileText className="w-8 h-8" />}
               title="Comprehensive Exams"
-              description="Design multiple choice and essay exams with customizable rubrics. Auto-grade MCQ and manually review essays."
+              description="Design multiple choice. multiple select and essay exams with customizable rubrics. Auto-grade MCQ and manually review essays."
               delay={100}
             />
             <FeatureCard
@@ -310,9 +343,9 @@ const Index = () => {
         <div className="container mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
-              <img 
-                src={studentsStudying} 
-                alt="Students collaborating and studying together" 
+              <img
+                src={studentsStudying}
+                alt="Students collaborating and studying together"
                 className="rounded-3xl shadow-2xl w-full h-auto object-cover"
               />
               <div className="absolute -bottom-6 -right-6 bg-card p-6 rounded-2xl shadow-card">
@@ -332,16 +365,16 @@ const Index = () => {
                 A Seamless Experience for Students
               </h2>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Give your students an intuitive platform where they can discover courses, 
-                access learning materials, take exams, and track their progress all in one place.
+                Give your students an intuitive platform where they can discover courses, access learning materials,
+                take exams, and track their progress all in one place.
               </p>
               <ul className="space-y-4">
                 {[
-                  'Browse and enroll in available courses easily',
-                  'View videos and materials directly in the platform',
-                  'Take exams with a clean, distraction-free interface',
-                  'Track grades and progress with visual analytics',
-                  'Receive instant notifications for updates'
+                  "Browse and enroll in available courses easily",
+                  "View videos and materials directly in the platform",
+                  "Take exams with a clean, distraction-free interface",
+                  "Track grades and progress with visual analytics",
+                  "Receive instant notifications for updates",
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -360,14 +393,12 @@ const Index = () => {
       <section id="testimonials" className="py-20 px-6 bg-muted/30">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Loved by Educators Worldwide
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Loved by Educators Worldwide</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               See what teachers and school administrators are saying about EduExam
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <TestimonialCard
               quote="EduExam has transformed how we manage assessments. What used to take hours now takes minutes. The auto-grading feature alone saves us 10+ hours per week."
@@ -404,19 +435,19 @@ const Index = () => {
                 Ready to Transform Your School?
               </h2>
               <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-                Join hundreds of schools already using EduExam to deliver exceptional education. 
-                Start free today, no credit card required.
+                Join hundreds of schools already using EduExam to deliver exceptional education. Start free today, no
+                credit card required.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="heroOutline" size="xl" onClick={() => navigate('/login')}>
+                <Button variant="heroOutline" size="xl" onClick={() => navigate("/login")}>
                   Create Free Account
                   <ArrowRight className="w-5 h-5" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="xl" 
+                <Button
+                  variant="ghost"
+                  size="xl"
                   className="text-primary-foreground hover:bg-primary-foreground/10"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate("/login")}
                 >
                   Schedule Demo
                 </Button>
@@ -444,35 +475,73 @@ const Index = () => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#for-teachers" className="hover:text-foreground transition-colors">For Teachers</a></li>
-                <li><a href="#for-schools" className="hover:text-foreground transition-colors">For Schools</a></li>
+                <li>
+                  <a href="#features" className="hover:text-foreground transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#for-teachers" className="hover:text-foreground transition-colors">
+                    For Teachers
+                  </a>
+                </li>
+                <li>
+                  <a href="#for-schools" className="hover:text-foreground transition-colors">
+                    For Schools
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Blog
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Support</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Sales</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Partnership</a></li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Support
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Sales
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Partnership
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
-              © 2024 EduExam. All rights reserved.
-            </p>
+            <p className="text-sm text-muted-foreground">© 2024 EduExam. All rights reserved.</p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-foreground transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="hover:text-foreground transition-colors">
+                Terms of Service
+              </a>
             </div>
           </div>
         </div>
@@ -481,19 +550,19 @@ const Index = () => {
   );
 };
 
-function FeatureCard({ 
-  icon, 
-  title, 
-  description, 
-  delay 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
+function FeatureCard({
+  icon,
+  title,
+  description,
+  delay,
+}: {
+  icon: React.ReactNode;
+  title: string;
   description: string;
   delay: number;
 }) {
   return (
-    <div 
+    <div
       className="bg-card rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 animate-slide-up border border-border/50"
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -511,7 +580,7 @@ function TestimonialCard({
   name,
   role,
   avatar,
-  delay
+  delay,
 }: {
   quote: string;
   name: string;
@@ -520,7 +589,7 @@ function TestimonialCard({
   delay: number;
 }) {
   return (
-    <div 
+    <div
       className="bg-card rounded-2xl p-8 shadow-card animate-slide-up border border-border/50"
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -533,11 +602,7 @@ function TestimonialCard({
       </div>
       <p className="text-foreground mb-6 leading-relaxed">"{quote}"</p>
       <div className="flex items-center gap-3">
-        <img 
-          src={avatar} 
-          alt={name} 
-          className="w-12 h-12 rounded-full object-cover"
-        />
+        <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover" />
         <div>
           <div className="font-semibold text-foreground">{name}</div>
           <div className="text-sm text-muted-foreground">{role}</div>
