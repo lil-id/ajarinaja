@@ -18,10 +18,10 @@ import {
   extractYouTubeId,
   getYouTubeThumbnail 
 } from '@/hooks/useCourseMaterials';
-import { FileText, Plus, Trash2, Loader2, Upload, File, Video, FileImage, Download, ExternalLink, Youtube, Link } from 'lucide-react';
+import { FileText, Plus, Trash2, Loader2, Upload, File, Video, FileImage, ExternalLink, Youtube, Link, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { MaterialViewer } from '@/components/MaterialViewer';
 
 const getFileIcon = (fileType: string | null) => {
   if (!fileType) return File;
@@ -56,6 +56,7 @@ const TeacherMaterials = () => {
   const [form, setForm] = useState({ title: '', description: '', videoUrl: '' });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [viewingMaterial, setViewingMaterial] = useState<typeof teacherMaterials[0] | null>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,26 +122,13 @@ const TeacherMaterials = () => {
     }
   };
 
-  const handleDelete = async (id: string, filePath: string | null) => {
+  const handleDelete = async (id: string, filePath: string | null, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       await deleteMaterial.mutateAsync({ id, filePath });
       toast.success('Material deleted');
     } catch (error) {
       toast.error('Failed to delete material');
-    }
-  };
-
-  const handleOpen = async (filePath: string) => {
-    try {
-      const signedUrl = await getMaterialSignedUrl(filePath);
-      if (signedUrl) {
-        window.open(signedUrl, '_blank');
-      } else {
-        toast.error('Failed to open material');
-      }
-    } catch (error) {
-      console.error('Open error:', error);
-      toast.error('Failed to open material');
     }
   };
 
@@ -342,8 +330,9 @@ const TeacherMaterials = () => {
             return (
               <Card 
                 key={material.id}
-                className="border-0 shadow-card animate-slide-up"
+                className="border-0 shadow-card animate-slide-up cursor-pointer hover:shadow-lg transition-shadow"
                 style={{ animationDelay: `${index * 50}ms` }}
+                onClick={() => setViewingMaterial(material)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
@@ -392,21 +381,18 @@ const TeacherMaterials = () => {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => {
-                              if (isVideo && material.video_url) {
-                                window.open(material.video_url, '_blank');
-                              } else if (material.file_path) {
-                                handleOpen(material.file_path);
-                              }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingMaterial(material);
                             }}
                           >
-                            <ExternalLink className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="text-destructive"
-                            onClick={() => handleDelete(material.id, material.file_path)}
+                            onClick={(e) => handleDelete(material.id, material.file_path, e)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -420,6 +406,12 @@ const TeacherMaterials = () => {
           })}
         </div>
       )}
+
+      <MaterialViewer
+        isOpen={!!viewingMaterial}
+        onClose={() => setViewingMaterial(null)}
+        material={viewingMaterial}
+      />
     </div>
   );
 };

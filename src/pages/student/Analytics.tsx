@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,8 +13,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -24,9 +21,8 @@ import {
   TrendingUp,
   Award,
   BookOpen,
-  FileText,
+  BarChart3,
   ClipboardList,
-  Target,
   Clock,
   CheckCircle2,
 } from 'lucide-react';
@@ -148,24 +144,28 @@ const StudentAnalytics = () => {
     return { grade, count: examCount + assignmentCount };
   });
 
-  // Recent performance trend (last 5 graded items)
-  const recentItems = [
-    ...(examSubmissions?.map(s => ({
-      title: s.exam?.title || 'Exam',
-      score: Math.round((s.score / (s.exam?.total_points || 100)) * 100),
-      date: s.submitted_at,
-      type: 'exam',
-    })) || []),
-    ...(gradedAssignments.map(s => ({
-      title: s.assignment?.title || 'Assignment',
-      score: Math.round(((s.score || 0) / (s.assignment?.max_points || 100)) * 100),
-      date: s.submitted_at,
-      type: 'assignment',
-    }))),
-  ]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 6)
-    .reverse();
+  // Score distribution histogram (actual scores grouped by ranges)
+  const scoreRanges = [
+    { range: '0-20', min: 0, max: 20, count: 0 },
+    { range: '21-40', min: 21, max: 40, count: 0 },
+    { range: '41-60', min: 41, max: 60, count: 0 },
+    { range: '61-80', min: 61, max: 80, count: 0 },
+    { range: '81-100', min: 81, max: 100, count: 0 },
+  ];
+
+  // Count scores from exams
+  examSubmissions?.forEach(s => {
+    const percentage = Math.round((s.score / (s.exam?.total_points || 100)) * 100);
+    const range = scoreRanges.find(r => percentage >= r.min && percentage <= r.max);
+    if (range) range.count++;
+  });
+
+  // Count scores from assignments
+  gradedAssignments.forEach(s => {
+    const percentage = Math.round(((s.score || 0) / (s.assignment?.max_points || 100)) * 100);
+    const range = scoreRanges.find(r => percentage >= r.min && percentage <= r.max);
+    if (range) range.count++;
+  });
 
   // Submission status
   const submissionStatus = [
@@ -269,118 +269,54 @@ const StudentAnalytics = () => {
         </Card>
       </div>
 
-      {/* Performance Overview */}
+      {/* Charts - Histogram and Pie */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Score Distribution Histogram */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              Performance by Type
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Score Distribution
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {performanceByType.map((item, index) => (
-                <div key={item.name} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-muted-foreground">
-                      {item.value}% ({item.count} completed)
-                    </span>
-                  </div>
-                  <Progress value={item.value} className="h-3" />
-                </div>
-              ))}
-            </div>
+            {(examSubmissions?.length || 0) + gradedAssignments.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={scoreRanges}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="range" 
+                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                    formatter={(value: number) => [`${value} submissions`, 'Count']}
+                  />
+                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Clock className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-1">No graded work yet</h3>
+                <p className="text-sm text-muted-foreground">
+                  Complete exams and assignments to see your score distribution.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Grade Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={gradeDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="grade" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--popover))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Performance Trend */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Recent Performance Trend
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentItems.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={recentItems}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="title" 
-                  stroke="hsl(var(--muted-foreground))"
-                  tick={{ fontSize: 12 }}
-                  interval={0}
-                  angle={-20}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))" 
-                  domain={[0, 100]}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--popover))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                  formatter={(value: number) => [`${value}%`, 'Score']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Clock className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-1">No graded work yet</h3>
-              <p className="text-sm text-muted-foreground">
-                Complete exams and assignments to see your performance trend.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Submission Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Submission Status Pie */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -430,49 +366,50 @@ const StudentAnalytics = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              Recent Badges
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {badges && badges.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
-                {badges.slice(0, 4).map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50"
-                  >
-                    <div
-                      className="h-10 w-10 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: `${item.badge?.color}20` }}
-                    >
-                      <Award className="h-5 w-5" style={{ color: item.badge?.color }} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{item.badge?.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {item.badge?.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Award className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-1">No badges yet</h3>
-                <p className="text-sm text-muted-foreground">
-                  Complete coursework to earn badges from your teachers.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Recent Badges */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-primary" />
+            Recent Badges
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {badges && badges.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {badges.slice(0, 4).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50"
+                >
+                  <div
+                    className="h-10 w-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${item.badge?.color}20` }}
+                  >
+                    <Award className="h-5 w-5" style={{ color: item.badge?.color }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{item.badge?.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.badge?.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Award className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-1">No badges yet</h3>
+              <p className="text-sm text-muted-foreground">
+                Complete coursework to earn badges from your teachers.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

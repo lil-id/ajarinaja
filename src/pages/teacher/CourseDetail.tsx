@@ -61,6 +61,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MaterialViewer } from '@/components/MaterialViewer';
+import { extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 
 const TeacherCourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -90,6 +92,7 @@ const TeacherCourseDetail = () => {
   const [editForm, setEditForm] = useState({ title: '', description: '' });
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [viewingMaterial, setViewingMaterial] = useState<typeof courseMaterials[0] | null>(null);
 
   // Get students not already enrolled
   const enrolledStudentIds = new Set(enrollments.map(e => e.student_id));
@@ -600,22 +603,55 @@ const TeacherCourseDetail = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {courseMaterials.map((material) => (
-                <Card key={material.id} className="border-0 shadow-card">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">{material.title}</CardTitle>
-                    <CardDescription>{material.description || 'No description'}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span>{material.file_name}</span>
-                      <span>{(material.file_size / 1024).toFixed(1)} KB</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {courseMaterials.map((material) => {
+                const isVideo = !!material.video_url;
+                const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
+                
+                return (
+                  <Card 
+                    key={material.id} 
+                    className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => setViewingMaterial(material)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        {isVideo && videoId ? (
+                          <div className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                            <img 
+                              src={getYouTubeThumbnail(videoId)} 
+                              alt={material.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-6 h-6 text-secondary" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground">{material.title}</h3>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {material.description || material.file_name || 'YouTube Video'}
+                          </p>
+                          {material.file_size && (
+                            <span className="text-xs text-muted-foreground">
+                              {(material.file_size / 1024).toFixed(1)} KB
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
+          
+          <MaterialViewer
+            isOpen={!!viewingMaterial}
+            onClose={() => setViewingMaterial(null)}
+            material={viewingMaterial}
+          />
         </TabsContent>
 
         <TabsContent value="announcements" className="space-y-4">
