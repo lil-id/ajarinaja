@@ -49,6 +49,91 @@ export type Database = {
           },
         ]
       }
+      assignment_question_submissions: {
+        Row: {
+          answers: Json
+          assignment_id: string
+          graded: boolean
+          id: string
+          score: number | null
+          student_id: string
+          submitted_at: string
+        }
+        Insert: {
+          answers?: Json
+          assignment_id: string
+          graded?: boolean
+          id?: string
+          score?: number | null
+          student_id: string
+          submitted_at?: string
+        }
+        Update: {
+          answers?: Json
+          assignment_id?: string
+          graded?: boolean
+          id?: string
+          score?: number | null
+          student_id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_question_submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignment_questions: {
+        Row: {
+          assignment_id: string
+          correct_answer: number | null
+          correct_answers: number[] | null
+          created_at: string
+          id: string
+          options: Json | null
+          order_index: number
+          points: number
+          question: string
+          type: string
+        }
+        Insert: {
+          assignment_id: string
+          correct_answer?: number | null
+          correct_answers?: number[] | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          order_index?: number
+          points?: number
+          question: string
+          type: string
+        }
+        Update: {
+          assignment_id?: string
+          correct_answer?: number | null
+          correct_answers?: number[] | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          order_index?: number
+          points?: number
+          question?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_questions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignment_submissions: {
         Row: {
           assignment_id: string
@@ -118,12 +203,14 @@ export type Database = {
         Row: {
           allow_late_submissions: boolean
           allowed_file_types: string[] | null
+          assignment_type: string | null
           course_id: string
           created_at: string
           description: string | null
           due_date: string
           id: string
           instructions: string | null
+          kkm: number | null
           late_penalty_percent: number | null
           max_file_size_mb: number | null
           max_points: number
@@ -135,12 +222,14 @@ export type Database = {
         Insert: {
           allow_late_submissions?: boolean
           allowed_file_types?: string[] | null
+          assignment_type?: string | null
           course_id: string
           created_at?: string
           description?: string | null
           due_date: string
           id?: string
           instructions?: string | null
+          kkm?: number | null
           late_penalty_percent?: number | null
           max_file_size_mb?: number | null
           max_points?: number
@@ -152,12 +241,14 @@ export type Database = {
         Update: {
           allow_late_submissions?: boolean
           allowed_file_types?: string[] | null
+          assignment_type?: string | null
           course_id?: string
           created_at?: string
           description?: string | null
           due_date?: string
           id?: string
           instructions?: string | null
+          kkm?: number | null
           late_penalty_percent?: number | null
           max_file_size_mb?: number | null
           max_points?: number
@@ -367,6 +458,7 @@ export type Database = {
           duration: number
           end_date: string | null
           id: string
+          kkm: number | null
           start_date: string | null
           status: string
           title: string
@@ -380,6 +472,7 @@ export type Database = {
           duration?: number
           end_date?: string | null
           id?: string
+          kkm?: number | null
           start_date?: string | null
           status?: string
           title: string
@@ -393,6 +486,7 @@ export type Database = {
           duration?: number
           end_date?: string | null
           id?: string
+          kkm?: number | null
           start_date?: string | null
           status?: string
           title?: string

@@ -1,12 +1,18 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, FileText, ClipboardList, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ChevronLeft, ChevronRight, FileText, ClipboardList, Calendar as CalendarIcon, Loader2, Plus } from 'lucide-react';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useTeacherCourses } from '@/hooks/useCourses';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface CalendarEvent {
@@ -16,11 +22,15 @@ interface CalendarEvent {
   type: 'exam' | 'assignment';
   courseName: string;
   status: string;
+  href?: string;
 }
 
 export default function TeacherCalendar() {
+  const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [newEventType, setNewEventType] = useState<'exam' | 'assignment'>('exam');
 
   const { courses } = useTeacherCourses();
   const courseIds = courses.map((c) => c.id);
@@ -52,6 +62,7 @@ export default function TeacherCalendar() {
             type: 'exam',
             courseName: courseMap.get(exam.course_id) || 'Unknown',
             status: exam.status,
+            href: `/teacher/exams/${exam.id}/edit`,
           });
         }
         if (exam.start_date) {
@@ -62,6 +73,7 @@ export default function TeacherCalendar() {
             type: 'exam',
             courseName: courseMap.get(exam.course_id) || 'Unknown',
             status: exam.status,
+            href: `/teacher/exams/${exam.id}/edit`,
           });
         }
       });
@@ -78,6 +90,7 @@ export default function TeacherCalendar() {
             type: 'assignment',
             courseName: courseMap.get(assignment.course_id) || 'Unknown',
             status: assignment.status,
+            href: `/teacher/assignments/${assignment.id}/edit`,
           });
         }
       });
@@ -109,6 +122,15 @@ export default function TeacherCalendar() {
   // Get first day of week offset
   const firstDayOfWeek = monthStart.getDay();
 
+  const handleAddEvent = () => {
+    if (newEventType === 'exam') {
+      navigate('/teacher/exams');
+    } else {
+      navigate('/teacher/assignments/new');
+    }
+    setIsAddEventOpen(false);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -124,10 +146,50 @@ export default function TeacherCalendar() {
           <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
           <p className="text-muted-foreground">View all exams and assignment deadlines</p>
         </div>
-        <Button variant="outline" onClick={goToToday}>
-          <CalendarIcon className="h-4 w-4 mr-2" />
-          Today
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Event
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Event</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Event Type</Label>
+                  <Select value={newEventType} onValueChange={(v) => setNewEventType(v as 'exam' | 'assignment')}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="exam">Exam</SelectItem>
+                      <SelectItem value="assignment">Assignment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  You'll be redirected to create a new {newEventType} with your desired schedule.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsAddEventOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddEvent}>
+                    Continue
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" onClick={goToToday}>
+            <CalendarIcon className="h-4 w-4 mr-2" />
+            Today
+          </Button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -166,6 +228,7 @@ export default function TeacherCalendar() {
                 const dayEvents = getEventsForDay(day);
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
                 const isCurrentDay = isToday(day);
+                const hasEvents = dayEvents.length > 0;
 
                 return (
                   <button
@@ -173,14 +236,16 @@ export default function TeacherCalendar() {
                     onClick={() => setSelectedDate(day)}
                     className={cn(
                       'h-24 p-1 border rounded-lg text-left transition-colors hover:bg-muted/50 overflow-hidden',
-                      isSelected && 'ring-2 ring-primary bg-primary/5',
-                      isCurrentDay && !isSelected && 'bg-muted'
+                      isSelected && 'ring-2 ring-destructive bg-destructive/5',
+                      isCurrentDay && !isSelected && 'bg-muted',
+                      hasEvents && !isSelected && 'border-destructive/50'
                     )}
                   >
                     <div
                       className={cn(
                         'text-sm font-medium mb-1',
-                        isCurrentDay && 'text-primary font-bold'
+                        isCurrentDay && 'text-destructive font-bold',
+                        hasEvents && 'text-destructive'
                       )}
                     >
                       {format(day, 'd')}
@@ -192,8 +257,8 @@ export default function TeacherCalendar() {
                           className={cn(
                             'text-xs px-1 py-0.5 rounded truncate',
                             event.type === 'exam'
-                              ? 'bg-primary/20 text-primary'
-                              : 'bg-secondary/20 text-secondary-foreground'
+                              ? 'bg-destructive/20 text-destructive'
+                              : 'bg-orange-500/20 text-orange-600 dark:text-orange-400'
                           )}
                         >
                           {event.title}
@@ -231,25 +296,29 @@ export default function TeacherCalendar() {
                 {selectedDateEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="flex items-start gap-3 p-3 border rounded-lg"
+                    onClick={() => event.href && navigate(event.href)}
+                    className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div
                       className={cn(
                         'p-2 rounded-lg',
-                        event.type === 'exam' ? 'bg-primary/10' : 'bg-secondary/10'
+                        event.type === 'exam' ? 'bg-destructive/10' : 'bg-orange-500/10'
                       )}
                     >
                       {event.type === 'exam' ? (
-                        <FileText className="h-4 w-4 text-primary" />
+                        <FileText className="h-4 w-4 text-destructive" />
                       ) : (
-                        <ClipboardList className="h-4 w-4 text-secondary-foreground" />
+                        <ClipboardList className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{event.title}</p>
                       <p className="text-xs text-muted-foreground">{event.courseName}</p>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className={cn(
+                          "text-xs",
+                          event.type === 'exam' ? 'border-destructive text-destructive' : 'border-orange-500 text-orange-600'
+                        )}>
                           {event.type === 'exam' ? 'Exam' : 'Assignment'}
                         </Badge>
                         <Badge
@@ -277,11 +346,11 @@ export default function TeacherCalendar() {
           <div className="flex flex-wrap gap-4 items-center">
             <span className="text-sm font-medium text-muted-foreground">Legend:</span>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-primary/20" />
+              <div className="w-3 h-3 rounded bg-destructive/20" />
               <span className="text-sm">Exam</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-secondary/20" />
+              <div className="w-3 h-3 rounded bg-orange-500/20" />
               <span className="text-sm">Assignment</span>
             </div>
           </div>
