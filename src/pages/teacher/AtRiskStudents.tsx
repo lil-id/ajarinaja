@@ -36,15 +36,24 @@ const getRiskLabel = (type: RiskFactor['type']) => {
   }
 };
 
-// Get link based on risk factor type
-const getRiskLink = (type: RiskFactor['type'], courseId: string) => {
-  switch (type) {
+// Get link based on risk factor type - now uses specific IDs for navigation
+const getRiskLink = (factor: RiskFactor, courseId: string) => {
+  switch (factor.type) {
     case 'no_material_views':
-      return `/teacher/courses/${courseId}`;
+      // Navigate to the course materials page
+      return `/teacher/courses/${factor.courseId || courseId}`;
     case 'missed_deadline':
+      // Navigate to the first missed assignment's submissions page
+      if (factor.assignmentIds && factor.assignmentIds.length > 0) {
+        return `/teacher/assignments/${factor.assignmentIds[0]}/submissions`;
+      }
       return `/teacher/assignments`;
     case 'low_score':
     case 'no_exam_submissions':
+      // Navigate to the first exam's grading page
+      if (factor.examIds && factor.examIds.length > 0) {
+        return `/teacher/exams/${factor.examIds[0]}/grade`;
+      }
       return `/teacher/exams`;
     default:
       return `/teacher/courses/${courseId}`;
@@ -173,7 +182,7 @@ export default function AtRiskStudents() {
                       <div className="flex flex-wrap gap-2">
                         {student.riskFactors.map((factor, index) => {
                           const Icon = getRiskIcon(factor.type);
-                          const link = getRiskLink(factor.type, student.courseId);
+                          const link = getRiskLink(factor, student.courseId);
                           return (
                             <button
                               key={index}

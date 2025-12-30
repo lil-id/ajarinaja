@@ -182,6 +182,17 @@ const GradeExam = () => {
 
   const ungradedCount = submissions.filter(s => !s.graded).length;
   const gradedCount = submissions.filter(s => s.graded).length;
+  
+  // Calculate pass/fail based on KKM (Minimum Passing Grade)
+  const kkm = exam.kkm || 0;
+  const gradedSubmissions = submissions.filter(s => s.graded && s.score !== null);
+  const passedCount = gradedSubmissions.filter(s => s.score !== null && s.score >= kkm).length;
+  const failedCount = gradedSubmissions.filter(s => s.score !== null && s.score < kkm).length;
+  
+  const getPassStatus = (submission: SubmissionWithStudent) => {
+    if (!submission.graded || submission.score === null || kkm === 0) return null;
+    return submission.score >= kkm ? 'passed' : 'failed';
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -194,13 +205,23 @@ const GradeExam = () => {
           <h1 className="text-2xl font-bold text-foreground">{exam.title}</h1>
           <p className="text-muted-foreground">Grade student submissions</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="text-sm">
             {ungradedCount} ungraded
           </Badge>
           <Badge variant="secondary" className="text-sm">
             {gradedCount} graded
           </Badge>
+          {kkm > 0 && gradedCount > 0 && (
+            <>
+              <Badge className="text-sm bg-green-100 text-green-700 border-green-300">
+                {passedCount} passed
+              </Badge>
+              <Badge className="text-sm bg-red-100 text-red-700 border-red-300">
+                {failedCount} failed
+              </Badge>
+            </>
+          )}
         </div>
       </div>
 
@@ -219,28 +240,55 @@ const GradeExam = () => {
             <div className="space-y-2">
               {submissions.map((submission) => {
                 const submissionBadges = getStudentBadgesForExam(submission.student_id);
+                const passStatus = getPassStatus(submission);
                 return (
                   <Card 
                     key={submission.id}
                     className={cn(
                       "border-0 shadow-card cursor-pointer transition-all hover:shadow-card-hover",
-                      selectedSubmission?.id === submission.id && "ring-2 ring-secondary"
+                      selectedSubmission?.id === submission.id && "ring-2 ring-secondary",
+                      passStatus === 'passed' && "border-l-4 border-l-green-500",
+                      passStatus === 'failed' && "border-l-4 border-l-red-500"
                     )}
                     onClick={() => handleSelectSubmission(submission)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-muted-foreground" />
+                          <div className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center",
+                            passStatus === 'passed' && "bg-green-100",
+                            passStatus === 'failed' && "bg-red-100",
+                            !passStatus && "bg-muted"
+                          )}>
+                            <User className={cn(
+                              "w-5 h-5",
+                              passStatus === 'passed' && "text-green-600",
+                              passStatus === 'failed' && "text-red-600",
+                              !passStatus && "text-muted-foreground"
+                            )} />
                           </div>
                           <div>
                             <p className="font-medium text-foreground">
                               {submission.student?.name || 'Unknown Student'}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(submission.submitted_at).toLocaleDateString()}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(submission.submitted_at).toLocaleDateString()}
+                              </p>
+                              {passStatus && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={cn(
+                                    "text-[10px] px-1.5 py-0",
+                                    passStatus === 'passed' && "bg-green-50 text-green-700 border-green-300",
+                                    passStatus === 'failed' && "bg-red-50 text-red-700 border-red-300"
+                                  )}
+                                >
+                                  {passStatus === 'passed' ? 'Passed' : 'Failed'}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -263,7 +311,14 @@ const GradeExam = () => {
                             </div>
                           )}
                           {submission.graded ? (
-                            <Badge variant="secondary" className="gap-1">
+                            <Badge 
+                              variant="secondary" 
+                              className={cn(
+                                "gap-1",
+                                passStatus === 'passed' && "bg-green-100 text-green-700",
+                                passStatus === 'failed' && "bg-red-100 text-red-700"
+                              )}
+                            >
                               <Check className="w-3 h-3" />
                               {submission.score}/{exam.total_points}
                             </Badge>
