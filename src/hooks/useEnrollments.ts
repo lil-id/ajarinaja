@@ -242,6 +242,25 @@ export function useTeacherUnenrollStudent() {
   });
 }
 
+export function useTeacherUnenrollAllStudents() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (courseId: string) => {
+      const { error } = await supabase
+        .from('enrollments')
+        .delete()
+        .eq('course_id', courseId);
+      
+      if (error) throw error;
+    },
+    onSuccess: (_, courseId) => {
+      queryClient.invalidateQueries({ queryKey: ['course-enrollments', courseId] });
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    },
+  });
+}
+
 export function useUnenroll() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

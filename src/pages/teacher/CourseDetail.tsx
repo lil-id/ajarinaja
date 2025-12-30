@@ -14,7 +14,8 @@ import {
   useCourseEnrollments, 
   useAllStudents, 
   useTeacherEnrollStudent, 
-  useTeacherUnenrollStudent 
+  useTeacherUnenrollStudent,
+  useTeacherUnenrollAllStudents 
 } from '@/hooks/useEnrollments';
 import { 
   ArrowLeft, 
@@ -31,7 +32,8 @@ import {
   Upload,
   UserPlus,
   UserMinus,
-  Image
+  Image,
+  UsersRound
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -83,6 +85,7 @@ const TeacherCourseDetail = () => {
   const { data: allStudents = [], isLoading: studentsLoading } = useAllStudents();
   const enrollStudent = useTeacherEnrollStudent();
   const unenrollStudent = useTeacherUnenrollStudent();
+  const unenrollAllStudents = useTeacherUnenrollAllStudents();
   
   const courseExams = exams.filter(e => e.course_id === courseId);
   const courseMaterials = materials.filter(m => m.course_id === courseId);
@@ -212,6 +215,15 @@ const TeacherCourseDetail = () => {
       toast.success('Student unenrolled');
     } catch (error) {
       toast.error('Failed to unenroll student');
+    }
+  };
+
+  const handleUnenrollAllStudents = async () => {
+    try {
+      await unenrollAllStudents.mutateAsync(course.id);
+      toast.success(`All ${enrollments.length} students unenrolled`);
+    } catch (error) {
+      toast.error('Failed to unenroll students');
     }
   };
 
@@ -412,7 +424,38 @@ const TeacherCourseDetail = () => {
         </TabsList>
 
         <TabsContent value="students" className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            {enrollments.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <UsersRound className="w-4 h-4" />
+                    Remove All ({enrollments.length})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove All Students</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to remove all {enrollments.length} students from this course? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleUnenrollAllStudents}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {unenrollAllStudents.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        'Remove All'
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="hero">

@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { AlertTriangle, AlertCircle, Info, Loader2, BookOpen, FileText, ClipboardList, TrendingDown } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, Loader2, BookOpen, FileText, ClipboardList, TrendingDown, ExternalLink } from 'lucide-react';
 import { useAtRiskStudents, RiskFactor } from '@/hooks/useAtRiskStudents';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 const getRiskIcon = (type: RiskFactor['type']) => {
   switch (type) {
@@ -35,7 +36,23 @@ const getRiskLabel = (type: RiskFactor['type']) => {
   }
 };
 
+// Get link based on risk factor type
+const getRiskLink = (type: RiskFactor['type'], courseId: string) => {
+  switch (type) {
+    case 'no_material_views':
+      return `/teacher/courses/${courseId}`;
+    case 'missed_deadline':
+      return `/teacher/assignments`;
+    case 'low_score':
+    case 'no_exam_submissions':
+      return `/teacher/exams`;
+    default:
+      return `/teacher/courses/${courseId}`;
+  }
+};
+
 export default function AtRiskStudents() {
+  const navigate = useNavigate();
   const { atRiskStudents, isLoading, highRiskCount, mediumRiskCount, lowRiskCount } = useAtRiskStudents();
 
   if (isLoading) {
@@ -152,14 +169,19 @@ export default function AtRiskStudents() {
                       <p className="text-sm text-muted-foreground">{student.studentEmail}</p>
                       <p className="text-sm text-muted-foreground mb-3">Course: {student.courseName}</p>
                       
-                      {/* Risk Factors */}
+                      {/* Risk Factors - now clickable */}
                       <div className="flex flex-wrap gap-2">
                         {student.riskFactors.map((factor, index) => {
                           const Icon = getRiskIcon(factor.type);
+                          const link = getRiskLink(factor.type, student.courseId);
                           return (
-                            <div
+                            <button
                               key={index}
-                              className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm"
+                              onClick={() => navigate(link)}
+                              className={cn(
+                                'flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm',
+                                'hover:bg-muted transition-colors cursor-pointer group'
+                              )}
                             >
                               <Icon className={cn(
                                 'w-4 h-4',
@@ -168,7 +190,8 @@ export default function AtRiskStudents() {
                                 factor.severity === 'low' && 'text-yellow-600 dark:text-yellow-400'
                               )} />
                               <span className="text-muted-foreground">{factor.description}</span>
-                            </div>
+                              <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
                           );
                         })}
                       </div>
