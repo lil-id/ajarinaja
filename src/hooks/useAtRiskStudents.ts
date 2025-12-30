@@ -17,6 +17,10 @@ export interface RiskFactor {
   type: 'no_material_views' | 'missed_deadline' | 'low_score' | 'no_exam_submissions';
   description: string;
   severity: 'high' | 'medium' | 'low';
+  // Metadata for navigation
+  examIds?: string[];
+  assignmentIds?: string[];
+  courseId?: string;
 }
 
 export function useAtRiskStudents() {
@@ -188,12 +192,14 @@ export function useAtRiskStudents() {
           type: 'no_material_views',
           description: `Has not viewed any of ${courseMaterials.length} course materials`,
           severity: 'medium',
+          courseId,
         });
       } else if (courseMaterials.length > 0 && studentMaterialViews.length < courseMaterials.length / 2) {
         riskFactors.push({
           type: 'no_material_views',
           description: `Viewed only ${studentMaterialViews.length} of ${courseMaterials.length} materials`,
           severity: 'low',
+          courseId,
         });
       }
       
@@ -204,10 +210,13 @@ export function useAtRiskStudents() {
       );
       
       if (courseExams.length > 0 && studentExamSubmissions.length === 0) {
+        // Get the first exam ID for direct navigation
+        const unsubmittedExamIds = courseExams.map(e => e.id);
         riskFactors.push({
           type: 'no_exam_submissions',
           description: `Has not submitted any of ${courseExams.length} exams`,
           severity: 'high',
+          examIds: unsubmittedExamIds,
         });
       }
       
@@ -219,17 +228,21 @@ export function useAtRiskStudents() {
           return sum + ((s.score / totalPoints) * 100);
         }, 0) / gradedSubmissions.length;
         
+        // Get exam IDs from graded submissions for navigation
+        const gradedExamIds = gradedSubmissions.map((s: any) => s.exam_id);
         if (avgScore < 50) {
           riskFactors.push({
             type: 'low_score',
             description: `Average exam score is ${avgScore.toFixed(0)}%`,
             severity: 'high',
+            examIds: gradedExamIds,
           });
         } else if (avgScore < 70) {
           riskFactors.push({
             type: 'low_score',
             description: `Average exam score is ${avgScore.toFixed(0)}%`,
             severity: 'medium',
+            examIds: gradedExamIds,
           });
         }
       }
@@ -246,10 +259,12 @@ export function useAtRiskStudents() {
       );
       
       if (missedAssignments.length > 0) {
+        const missedAssignmentIds = missedAssignments.map(a => a.id);
         riskFactors.push({
           type: 'missed_deadline',
           description: `Missed ${missedAssignments.length} assignment deadline${missedAssignments.length > 1 ? 's' : ''}`,
           severity: missedAssignments.length >= 2 ? 'high' : 'medium',
+          assignmentIds: missedAssignmentIds,
         });
       }
       
