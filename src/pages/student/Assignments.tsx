@@ -69,7 +69,19 @@ export default function StudentAssignments() {
     const isGraded = assignment.submission?.graded;
 
     return (
-      <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+      <Card
+        key={assignment.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => navigate(`/student/assignments/${assignment.id}`)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            navigate(`/student/assignments/${assignment.id}`);
+          }
+        }}
+        className="hover:shadow-md transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
