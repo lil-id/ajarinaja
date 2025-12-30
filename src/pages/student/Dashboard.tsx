@@ -59,21 +59,30 @@ const StudentDashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/student/courses')}
+        >
           <CardContent className="p-6 text-center">
             <BookOpen className="w-8 h-8 text-secondary mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{enrolledCourses.length}</p>
             <p className="text-sm text-muted-foreground">Enrolled Courses</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/student/exams')}
+        >
           <CardContent className="p-6 text-center">
             <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{upcomingExams.length}</p>
             <p className="text-sm text-muted-foreground">Available Exams</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/student/results')}
+        >
           <CardContent className="p-6 text-center">
             <Award className="w-8 h-8 text-accent mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">0</p>
