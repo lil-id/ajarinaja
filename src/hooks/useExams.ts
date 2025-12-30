@@ -13,6 +13,7 @@ export interface Exam {
   status: string;
   start_date: string | null;
   end_date: string | null;
+  kkm: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -143,13 +144,15 @@ export function useCreateExam() {
       courseId, 
       title, 
       description, 
-      duration, 
+      duration,
+      kkm,
       questions 
     }: { 
       courseId: string; 
       title: string; 
       description?: string; 
       duration: number;
+      kkm?: number;
       questions: Omit<Question, 'id' | 'exam_id'>[];
     }) => {
       // Create exam
@@ -164,6 +167,7 @@ export function useCreateExam() {
           duration,
           total_points: totalPoints,
           status: 'draft',
+          kkm: kkm || 60,
         })
         .select()
         .single();
