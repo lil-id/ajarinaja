@@ -37,6 +37,7 @@ const TeacherExams = () => {
     title: '',
     description: '',
     duration: 60,
+    kkm: 60,
   });
   const [questions, setQuestions] = useState<Omit<Question, 'id' | 'exam_id'>[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<{
@@ -92,10 +93,11 @@ const TeacherExams = () => {
         title: examForm.title,
         description: examForm.description,
         duration: examForm.duration,
+        kkm: examForm.kkm,
         questions,
       });
       
-      setExamForm({ title: '', description: '', duration: 60 });
+      setExamForm({ title: '', description: '', duration: 60, kkm: 60 });
       setQuestions([]);
       setSelectedCourse('');
       setIsDialogOpen(false);
@@ -190,6 +192,17 @@ const TeacherExams = () => {
                       value={examForm.duration}
                       onChange={(e) => setExamForm({ ...examForm, duration: Number(e.target.value) })}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Minimum Passing Grade (KKM)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={examForm.kkm}
+                      onChange={(e) => setExamForm({ ...examForm, kkm: Number(e.target.value) })}
+                    />
+                    <p className="text-xs text-muted-foreground">Percentage required to pass</p>
                   </div>
                 </div>
               </div>

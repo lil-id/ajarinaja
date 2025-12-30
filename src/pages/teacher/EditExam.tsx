@@ -35,6 +35,7 @@ const EditExam = () => {
     duration: 60,
     start_date: '',
     end_date: '',
+    kkm: 60,
   });
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -68,6 +69,7 @@ const EditExam = () => {
         duration: exam.duration,
         start_date: exam.start_date ? new Date(exam.start_date).toISOString().slice(0, 16) : '',
         end_date: exam.end_date ? new Date(exam.end_date).toISOString().slice(0, 16) : '',
+        kkm: (exam as any).kkm || 60,
       });
       setQuestions(exam.questions || []);
     }
@@ -82,6 +84,7 @@ const EditExam = () => {
         duration: examForm.duration,
         start_date: examForm.start_date ? new Date(examForm.start_date).toISOString() : null,
         end_date: examForm.end_date ? new Date(examForm.end_date).toISOString() : null,
+        kkm: examForm.kkm,
       });
       toast.success('Exam updated successfully');
     } catch (error) {
@@ -326,6 +329,17 @@ const EditExam = () => {
                 onChange={(e) => setExamForm({ ...examForm, end_date: e.target.value })}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Minimum Passing Grade (KKM)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={examForm.kkm}
+              onChange={(e) => setExamForm({ ...examForm, kkm: Number(e.target.value) })}
+            />
+            <p className="text-xs text-muted-foreground">Percentage required to pass</p>
           </div>
         </CardContent>
       </Card>
