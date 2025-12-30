@@ -380,24 +380,24 @@ const TeacherExams = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {exam.status === 'published' && (
-                        <DropdownMenuItem onClick={() => navigate(`/teacher/exams/${exam.id}/grade`)}>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/grade`); }}>
                           <ClipboardCheck className="w-4 h-4 mr-2" />
                           Grade Submissions
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => navigate(`/teacher/exams/${exam.id}/edit`)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/edit`); }}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
                       {exam.status === 'draft' && (
-                        <DropdownMenuItem onClick={() => handlePublishExam(exam.id)}>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePublishExam(exam.id); }}>
                           <FileText className="w-4 h-4 mr-2" />
                           Publish
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem 
                         className="text-destructive"
-                        onClick={() => handleDeleteExam(exam.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete

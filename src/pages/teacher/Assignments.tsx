@@ -134,16 +134,16 @@ export default function TeacherAssignments() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/teacher/assignments/${assignment.id}/submissions`)}>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/assignments/${assignment.id}/submissions`); }}>
                           <Eye className="h-4 w-4 mr-2" />
                           View Submissions
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/teacher/assignments/${assignment.id}/edit`)}>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/assignments/${assignment.id}/edit`); }}>
                           <Pencil className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => setDeleteId(assignment.id)}
+                          onClick={(e) => { e.stopPropagation(); setDeleteId(assignment.id); }}
                           className="text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
