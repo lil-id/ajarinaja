@@ -47,7 +47,7 @@ export default function TeacherAssignments() {
 
   const getStatusBadge = (assignment: { status: string; due_date: string }) => {
     const isPastDue = new Date(assignment.due_date) < new Date();
-    
+
     if (assignment.status === 'draft') {
       return <Badge variant="secondary">Draft</Badge>;
     }
@@ -55,6 +55,15 @@ export default function TeacherAssignments() {
       return <Badge variant="destructive">Closed</Badge>;
     }
     return <Badge className="bg-green-500">Active</Badge>;
+  };
+
+  const openAssignment = (id: string, status: string) => {
+    if (status === 'draft') {
+      navigate(`/teacher/assignments/${id}/edit`);
+      return;
+    }
+
+    navigate(`/teacher/assignments/${id}/submissions`);
   };
 
   if (isLoading) {
@@ -95,7 +104,19 @@ export default function TeacherAssignments() {
       ) : (
         <div className="grid gap-4">
           {assignments.map((assignment) => (
-            <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={assignment.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => openAssignment(assignment.id, assignment.status)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openAssignment(assignment.id, assignment.status);
+                }
+              }}
+              className="hover:shadow-md transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -108,7 +129,7 @@ export default function TeacherAssignments() {
                     {getStatusBadge(assignment)}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

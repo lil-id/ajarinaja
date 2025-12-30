@@ -129,6 +129,15 @@ const TeacherExams = () => {
     return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
   };
 
+  const openExam = (id: string, status: string) => {
+    if (status === 'published') {
+      navigate(`/teacher/exams/${id}/grade`);
+      return;
+    }
+
+    navigate(`/teacher/exams/${id}/edit`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -329,9 +338,18 @@ const TeacherExams = () => {
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
           {teacherExams.map((exam, index) => (
-            <Card 
+            <Card
               key={exam.id}
-              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up"
+              role="button"
+              tabIndex={0}
+              onClick={() => openExam(exam.id, exam.status)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openExam(exam.id, exam.status);
+                }
+              }}
+              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <CardHeader>
@@ -351,7 +369,12 @@ const TeacherExams = () => {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
