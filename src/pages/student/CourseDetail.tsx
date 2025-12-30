@@ -37,6 +37,7 @@ const StudentCourseDetail = () => {
   const navigate = useNavigate();
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('materials');
   
   const { courses, isLoading: coursesLoading } = useCourses();
   const { exams, isLoading: examsLoading } = useExams();
@@ -222,7 +223,7 @@ const StudentCourseDetail = () => {
       <div className="grid sm:grid-cols-3 gap-4">
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="exams"]')?.click()}
+          onClick={() => setActiveTab('exams')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
@@ -236,7 +237,7 @@ const StudentCourseDetail = () => {
         </Card>
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="materials"]')?.click()}
+          onClick={() => setActiveTab('materials')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -250,7 +251,7 @@ const StudentCourseDetail = () => {
         </Card>
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="announcements"]')?.click()}
+          onClick={() => setActiveTab('announcements')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
@@ -265,7 +266,7 @@ const StudentCourseDetail = () => {
       </div>
 
       {/* Content Tabs */}
-      <Tabs defaultValue="materials" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="materials">Materials ({courseMaterials.length})</TabsTrigger>
           <TabsTrigger value="exams">Exams ({courseExams.length})</TabsTrigger>
