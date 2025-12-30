@@ -366,9 +366,12 @@ const TeacherCourseDetail = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Clickable to navigate to tabs */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="students"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Users className="w-5 h-5 text-primary" />
@@ -379,7 +382,10 @@ const TeacherCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="exams"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
               <FileText className="w-5 h-5 text-secondary" />
@@ -390,7 +396,10 @@ const TeacherCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="materials"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-accent" />
@@ -401,7 +410,10 @@ const TeacherCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="announcements"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
               <Megaphone className="w-5 h-5 text-muted-foreground" />

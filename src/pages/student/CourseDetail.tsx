@@ -218,9 +218,12 @@ const StudentCourseDetail = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Clickable to navigate to tabs */}
       <div className="grid sm:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="exams"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
               <FileText className="w-5 h-5 text-secondary" />
@@ -231,7 +234,10 @@ const StudentCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="materials"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-accent" />
@@ -242,7 +248,10 @@ const StudentCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-card">
+        <Card 
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="announcements"]')?.click()}
+        >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
               <Megaphone className="w-5 h-5 text-muted-foreground" />
@@ -370,7 +379,11 @@ const StudentCourseDetail = () => {
               {courseExams.map((exam) => {
                 const isCompleted = progress.isExamCompleted(exam.id);
                 return (
-                  <Card key={exam.id} className="border-0 shadow-card">
+                  <Card 
+                    key={exam.id} 
+                    className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`)}
+                  >
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isCompleted ? 'bg-green-500/10' : 'bg-secondary/10'}`}>
@@ -404,7 +417,7 @@ const StudentCourseDetail = () => {
                       <Button 
                         variant={isCompleted ? "outline" : "hero"}
                         size="sm"
-                        onClick={() => navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`)}
+                        onClick={(e) => { e.stopPropagation(); navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`); }}
                       >
                         {isCompleted ? 'View Results' : 'Take Exam'}
                       </Button>
