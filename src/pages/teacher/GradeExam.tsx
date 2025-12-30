@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useExamWithQuestions, Question } from '@/hooks/useExams';
 import { useSubmissionsWithStudents, useGradeSubmission, SubmissionWithStudent } from '@/hooks/useSubmissions';
 import { useBadges, useAwardBadge, useStudentBadges, useCreateBadge } from '@/hooks/useBadges';
-import { ArrowLeft, CheckCircle, AlignLeft, Loader2, User, Clock, Award, Check, X, Trophy, Star, TrendingUp, Zap, Plus, ListChecks } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlignLeft, Loader2, User, Clock, Award, Check, X, Trophy, Star, TrendingUp, Zap, Plus, ListChecks, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,8 @@ const BADGE_COLORS: Record<string, string> = {
   orange: 'bg-orange-100 text-orange-700 border-orange-300',
 };
 
+type FilterType = 'all' | 'passed' | 'failed' | 'pending';
+
 const GradeExam = () => {
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
@@ -46,6 +49,7 @@ const GradeExam = () => {
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
   const [showCreateBadge, setShowCreateBadge] = useState(false);
   const [newBadge, setNewBadge] = useState({ name: '', description: '', icon: 'award', color: 'gold' });
+  const [statusFilter, setStatusFilter] = useState<FilterType>('all');
 
   const isLoading = examLoading || submissionsLoading;
 
@@ -189,10 +193,16 @@ const GradeExam = () => {
   const passedCount = gradedSubmissions.filter(s => s.score !== null && s.score >= kkm).length;
   const failedCount = gradedSubmissions.filter(s => s.score !== null && s.score < kkm).length;
   
-  const getPassStatus = (submission: SubmissionWithStudent) => {
-    if (!submission.graded || submission.score === null || kkm === 0) return null;
+  const getPassStatus = (submission: SubmissionWithStudent): 'passed' | 'failed' | 'pending' => {
+    if (!submission.graded || submission.score === null) return 'pending';
+    if (kkm === 0) return 'pending';
     return submission.score >= kkm ? 'passed' : 'failed';
   };
+
+  const filteredSubmissions = useMemo(() => {
+    if (statusFilter === 'all') return submissions;
+    return submissions.filter(s => getPassStatus(s) === statusFilter);
+  }, [submissions, statusFilter, kkm]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -228,17 +238,33 @@ const GradeExam = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Submissions List */}
         <div className="lg:col-span-1 space-y-4">
-          <h2 className="font-semibold text-foreground">Submissions ({submissions.length})</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold text-foreground">Submissions ({submissions.length})</h2>
+            <Select value={statusFilter} onValueChange={(value: FilterType) => setStatusFilter(value)}>
+              <SelectTrigger className="w-[130px] h-8">
+                <Filter className="w-3.5 h-3.5 mr-1" />
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="passed">Passed</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           
-          {submissions.length === 0 ? (
+          {filteredSubmissions.length === 0 ? (
             <Card className="border-0 shadow-card">
               <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">No submissions yet</p>
+                <p className="text-muted-foreground">
+                  {submissions.length === 0 ? 'No submissions yet' : `No ${statusFilter} submissions`}
+                </p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-2">
-              {submissions.map((submission) => {
+              {filteredSubmissions.map((submission) => {
                 const submissionBadges = getStudentBadgesForExam(submission.student_id);
                 const passStatus = getPassStatus(submission);
                 return (
