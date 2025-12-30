@@ -96,6 +96,7 @@ const TeacherCourseDetail = () => {
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [viewingMaterial, setViewingMaterial] = useState<typeof courseMaterials[0] | null>(null);
+  const [activeTab, setActiveTab] = useState('students');
 
   // Get students not already enrolled
   const enrolledStudentIds = new Set(enrollments.map(e => e.student_id));
@@ -370,7 +371,7 @@ const TeacherCourseDetail = () => {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="students"]')?.click()}
+          onClick={() => setActiveTab('students')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -384,7 +385,7 @@ const TeacherCourseDetail = () => {
         </Card>
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="exams"]')?.click()}
+          onClick={() => setActiveTab('exams')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
@@ -398,7 +399,7 @@ const TeacherCourseDetail = () => {
         </Card>
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="materials"]')?.click()}
+          onClick={() => setActiveTab('materials')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -412,7 +413,7 @@ const TeacherCourseDetail = () => {
         </Card>
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => document.querySelector<HTMLButtonElement>('[data-state][value="announcements"]')?.click()}
+          onClick={() => setActiveTab('announcements')}
         >
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
@@ -427,7 +428,7 @@ const TeacherCourseDetail = () => {
       </div>
 
       {/* Content Tabs */}
-      <Tabs defaultValue="students" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="students">Students ({enrollments.length})</TabsTrigger>
           <TabsTrigger value="exams">Exams ({courseExams.length})</TabsTrigger>

@@ -20,13 +20,28 @@ export default function StudentAssignments() {
   const { courses = [] } = useCourses();
   const { data: allAssignments = [] } = useAssignments();
 
-  // Get student's submissions
+  // Get student's file/text submissions
   const { data: mySubmissions = [] } = useQuery({
     queryKey: ['my-all-submissions', user?.id],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from('assignment_submissions')
+        .select('*')
+        .eq('student_id', user.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Get student's question-based submissions
+  const { data: myQuestionSubmissions = [] } = useQuery({
+    queryKey: ['my-all-question-submissions', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('assignment_question_submissions')
         .select('*')
         .eq('student_id', user.id);
       if (error) throw error;
@@ -42,7 +57,10 @@ export default function StudentAssignments() {
   const assignments = allAssignments
     .filter(a => enrolledCourseIds.includes(a.course_id) && a.status === 'published')
     .map(a => {
-      const submission = mySubmissions.find(s => s.assignment_id === a.id);
+      // Check both submission types based on assignment type
+      const fileSubmission = mySubmissions.find(s => s.assignment_id === a.id);
+      const questionSubmission = myQuestionSubmissions.find(s => s.assignment_id === a.id);
+      const submission = fileSubmission || questionSubmission;
       return { ...a, submission };
     });
 
