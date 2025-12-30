@@ -1,15 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useNotifications,
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
   type Notification,
 } from '@/hooks/useNotifications';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import { useCourses } from '@/hooks/useCourses';
+import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { 
   Bell, 
   CheckCheck, 
@@ -17,9 +21,11 @@ import {
   Megaphone, 
   ClipboardCheck,
   Clock,
-  Info
+  Info,
+  Calendar,
+  Loader2,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 const getNotificationIcon = (type: Notification['type']) => {
@@ -125,9 +131,14 @@ const NotificationSkeleton = () => (
 
 const StudentNotifications = () => {
   const navigate = useNavigate();
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading: notificationsLoading } = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
+
+  // Announcements data
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { courses, isLoading: coursesLoading } = useCourses();
+  const { announcements, isLoading: announcementsLoading } = useAnnouncements();
 
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
@@ -137,13 +148,23 @@ const StudentNotifications = () => {
     }
   };
 
+  // Announcements logic
+  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
+
+  const getCourseTitle = (courseId: string) => {
+    return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+  };
+
+  const isAnnouncementsLoading = enrollmentsLoading || coursesLoading || announcementsLoading;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
+          <h1 className="text-3xl font-bold text-foreground">Notifications & Announcements</h1>
           <p className="text-muted-foreground mt-1">
-            Stay updated with your courses and assignments
+            Stay updated with your courses, assignments, and announcements
           </p>
         </div>
         {unreadCount > 0 && (
@@ -159,53 +180,121 @@ const StudentNotifications = () => {
         )}
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">
-              All Notifications
-              {unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {unreadCount} unread
-                </Badge>
-              )}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[600px] pr-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <NotificationSkeleton key={i} />
-                ))}
-              </div>
-            ) : notifications && notifications.length > 0 ? (
-              <div className="space-y-3">
-                {notifications.map((notification) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onMarkRead={(id) => markRead.mutate(id)}
-                    onClick={handleNotificationClick}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-1">
-                  No notifications yet
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  You'll receive notifications about grades, announcements, and deadlines here.
-                </p>
-              </div>
+      <Tabs defaultValue="notifications" className="w-full">
+        <TabsList>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+            {unreadCount > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5">
+                {unreadCount}
+              </Badge>
             )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
+          </TabsTrigger>
+          <TabsTrigger value="announcements" className="gap-2">
+            <Megaphone className="h-4 w-4" />
+            Announcements
+            {myAnnouncements.length > 0 && (
+              <Badge variant="outline" className="ml-1 h-5 px-1.5">
+                {myAnnouncements.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="notifications" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">
+                  All Notifications
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[500px] pr-4">
+                {notificationsLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(5)].map((_, i) => (
+                      <NotificationSkeleton key={i} />
+                    ))}
+                  </div>
+                ) : notifications && notifications.length > 0 ? (
+                  <div className="space-y-3">
+                    {notifications.map((notification) => (
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        onMarkRead={(id) => markRead.mutate(id)}
+                        onClick={handleNotificationClick}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-1">
+                      No notifications yet
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      You'll receive notifications about grades, assignments, and deadlines here.
+                    </p>
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="announcements" className="mt-4">
+          {isAnnouncementsLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+            </div>
+          ) : myAnnouncements.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <Megaphone className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No announcements yet</h3>
+                <p className="text-muted-foreground text-center">
+                  {enrolledCourseIds.length === 0 
+                    ? 'Enroll in courses to see their announcements'
+                    : 'Your teachers haven\'t posted any announcements yet'}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {myAnnouncements.map((announcement, index) => (
+                <Card 
+                  key={announcement.id}
+                  className="border-0 shadow-card animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CardHeader>
+                    <div>
+                      <span className="text-xs font-medium text-secondary bg-secondary/10 px-2 py-1 rounded-full">
+                        {getCourseTitle(announcement.course_id)}
+                      </span>
+                      <CardTitle className="mt-2">{announcement.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-1 mt-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(announcement.created_at), 'PPp')}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground whitespace-pre-wrap">{announcement.content}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -53,6 +53,20 @@ const GradeExam = () => {
 
   const isLoading = examLoading || submissionsLoading;
 
+  // Calculate pass/fail based on KKM (Minimum Passing Grade) - must be before conditional returns
+  const kkm = exam?.kkm || 0;
+
+  const getPassStatus = (submission: SubmissionWithStudent): 'passed' | 'failed' | 'pending' => {
+    if (!submission.graded || submission.score === null) return 'pending';
+    if (kkm === 0) return 'pending';
+    return submission.score >= kkm ? 'passed' : 'failed';
+  };
+
+  const filteredSubmissions = useMemo(() => {
+    if (statusFilter === 'all') return submissions;
+    return submissions.filter(s => getPassStatus(s) === statusFilter);
+  }, [submissions, statusFilter, kkm]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -187,22 +201,10 @@ const GradeExam = () => {
   const ungradedCount = submissions.filter(s => !s.graded).length;
   const gradedCount = submissions.filter(s => s.graded).length;
   
-  // Calculate pass/fail based on KKM (Minimum Passing Grade)
-  const kkm = exam.kkm || 0;
+  // Pass/fail counting based on KKM
   const gradedSubmissions = submissions.filter(s => s.graded && s.score !== null);
   const passedCount = gradedSubmissions.filter(s => s.score !== null && s.score >= kkm).length;
   const failedCount = gradedSubmissions.filter(s => s.score !== null && s.score < kkm).length;
-  
-  const getPassStatus = (submission: SubmissionWithStudent): 'passed' | 'failed' | 'pending' => {
-    if (!submission.graded || submission.score === null) return 'pending';
-    if (kkm === 0) return 'pending';
-    return submission.score >= kkm ? 'passed' : 'failed';
-  };
-
-  const filteredSubmissions = useMemo(() => {
-    if (statusFilter === 'all') return submissions;
-    return submissions.filter(s => getPassStatus(s) === statusFilter);
-  }, [submissions, statusFilter, kkm]);
 
   return (
     <div className="space-y-6 animate-fade-in">

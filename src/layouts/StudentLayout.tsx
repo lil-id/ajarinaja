@@ -41,9 +41,8 @@ const navigation = [
   { name: 'Assignments', href: '/student/assignments', icon: ClipboardList },
   { name: 'Exams', href: '/student/exams', icon: FileText },
   { name: 'Materials', href: '/student/materials', icon: FolderOpen },
-  { name: 'Announcements', href: '/student/announcements', icon: Megaphone },
-  { name: 'Badges', href: '/student/badges', icon: Award },
   { name: 'Notifications', href: '/student/notifications', icon: Bell },
+  { name: 'Badges', href: '/student/badges', icon: Award },
   { name: 'Analytics', href: '/student/analytics', icon: BarChart3 },
 ];
 

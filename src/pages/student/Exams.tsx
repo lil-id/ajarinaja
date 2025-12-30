@@ -85,9 +85,24 @@ const StudentExams = () => {
                 const submission = submissions.find(s => s.exam_id === exam.id);
 
                 return (
-                  <Card 
+                  <Card
                     key={exam.id}
-                    className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      isCompleted
+                        ? navigate(`/student/exam/${exam.id}/results`)
+                        : navigate(`/student/exam/${exam.id}`)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        isCompleted
+                          ? navigate(`/student/exam/${exam.id}/results`)
+                          : navigate(`/student/exam/${exam.id}`);
+                      }
+                    }}
+                    className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <CardContent className="p-6">
