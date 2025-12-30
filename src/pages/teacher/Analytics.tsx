@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,6 +28,8 @@ import { toast } from 'sonner';
 const CHART_COLORS = ['hsl(var(--secondary))', 'hsl(var(--primary))', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const TeacherAnalytics = () => {
+  const navigate = useNavigate();
+
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const { exams, isLoading: examsLoading } = useExams();
   const { submissions, isLoading: submissionsLoading } = useSubmissions();
@@ -110,6 +113,7 @@ const TeacherAnalytics = () => {
     }).length;
     
     return {
+      examId: exam.id,
       name: exam.title.length > 20 ? exam.title.substring(0, 20) + '...' : exam.title,
       fullName: exam.title,
       submissions: examSubmissions.length,
@@ -410,7 +414,20 @@ const TeacherAnalytics = () => {
                     </thead>
                     <tbody>
                       {examPerformance.map((exam, idx) => (
-                        <tr key={idx} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                        <tr
+                          key={idx}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => navigate(`/teacher/exams/${exam.examId}/grade`)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              navigate(`/teacher/exams/${exam.examId}/grade`);
+                            }
+                          }}
+                          className="border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
+                          title="Open grading"
+                        >
                           <td className="py-3 px-4">
                             <p className="font-medium text-foreground">{exam.fullName}</p>
                           </td>

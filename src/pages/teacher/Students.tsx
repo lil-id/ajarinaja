@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Users, BookOpen, Loader2, AlertTriangle, AlertCircle, Info, TrendingDown, ClipboardList, FileText, Search, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTeacherCourses } from '@/hooks/useCourses';
@@ -43,12 +44,34 @@ const getRiskLabel = (type: RiskFactor['type']) => {
   }
 };
 
+const getRiskLink = (factor: RiskFactor, courseId: string) => {
+  switch (factor.type) {
+    case 'no_material_views':
+      return `/teacher/courses/${factor.courseId || courseId}`;
+    case 'missed_deadline':
+      if (factor.assignmentIds && factor.assignmentIds.length > 0) {
+        return `/teacher/assignments/${factor.assignmentIds[0]}/submissions`;
+      }
+      return `/teacher/assignments`;
+    case 'low_score':
+    case 'no_exam_submissions':
+      if (factor.examIds && factor.examIds.length > 0) {
+        return `/teacher/exams/${factor.examIds[0]}/grade`;
+      }
+      return `/teacher/exams`;
+    default:
+      return `/teacher/courses/${courseId}`;
+  }
+};
+
 type SortField = 'name' | 'status' | 'courses';
 type SortOrder = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE = 10;
 
 const TeacherStudents = () => {
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -563,8 +586,17 @@ const TeacherStudents = () => {
                   {atRiskStudents.map((student) => (
                     <div
                       key={`${student.studentId}-${student.courseId}`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/teacher/courses/${student.courseId}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/teacher/courses/${student.courseId}`);
+                        }
+                      }}
                       className={cn(
-                        'p-4 rounded-xl border transition-colors',
+                        'p-4 rounded-xl border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         student.riskLevel === 'high' && 'border-destructive/50 bg-destructive/5',
                         student.riskLevel === 'medium' && 'border-orange-500/50 bg-orange-50 dark:bg-orange-950/10',
                         student.riskLevel === 'low' && 'border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/10'
@@ -601,19 +633,31 @@ const TeacherStudents = () => {
                           <div className="flex flex-wrap gap-2">
                             {student.riskFactors.map((factor, index) => {
                               const Icon = getRiskIcon(factor.type);
+                              const link = getRiskLink(factor, student.courseId);
+                              const label = getRiskLabel(factor.type);
+
                               return (
-                                <div
+                                <button
                                   key={index}
-                                  className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm"
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(link);
+                                  }}
+                                  className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  aria-label={`${label}: ${factor.description}`}
+                                  title={`Open ${label}`}
                                 >
-                                  <Icon className={cn(
-                                    'w-4 h-4',
-                                    factor.severity === 'high' && 'text-destructive',
-                                    factor.severity === 'medium' && 'text-orange-600 dark:text-orange-400',
-                                    factor.severity === 'low' && 'text-yellow-600 dark:text-yellow-400'
-                                  )} />
+                                  <Icon
+                                    className={cn(
+                                      'w-4 h-4',
+                                      factor.severity === 'high' && 'text-destructive',
+                                      factor.severity === 'medium' && 'text-orange-600 dark:text-orange-400',
+                                      factor.severity === 'low' && 'text-yellow-600 dark:text-yellow-400'
+                                    )}
+                                  />
                                   <span className="text-muted-foreground">{factor.description}</span>
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
