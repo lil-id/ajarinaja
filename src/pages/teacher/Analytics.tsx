@@ -283,32 +283,31 @@ const TeacherAnalytics = () => {
             </Card>
           </div>
 
-          {/* Charts Row - Only Histogram and Pie */}
+          {/* Charts Row - Exam Performance and Submission Status */}
           <div className="grid lg:grid-cols-2 gap-6">
-            {/* Score Distribution Histogram */}
+            {/* Exam Performance Comparison */}
             <Card className="border-0 shadow-card">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-secondary" />
-                  <CardTitle className="text-lg">Score Distribution</CardTitle>
+                  <CardTitle className="text-lg">Exam Performance Comparison</CardTitle>
                 </div>
-                <CardDescription>Student count by score range (actual points)</CardDescription>
+                <CardDescription>Average scores across exams</CardDescription>
               </CardHeader>
               <CardContent>
-                {gradedSubmissions.length > 0 ? (
+                {examPerformance.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={scoreRanges}>
+                    <BarChart data={examPerformance}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
-                        dataKey="range" 
+                        dataKey="name" 
                         tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                         axisLine={{ stroke: 'hsl(var(--border))' }}
-                        label={{ value: 'Score Range', position: 'bottom', offset: -5 }}
                       />
                       <YAxis 
                         tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                         axisLine={{ stroke: 'hsl(var(--border))' }}
-                        label={{ value: 'Students', angle: -90, position: 'insideLeft' }}
+                        label={{ value: 'Avg Score', angle: -90, position: 'insideLeft' }}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -317,19 +316,26 @@ const TeacherAnalytics = () => {
                           borderRadius: '8px'
                         }}
                         labelStyle={{ color: 'hsl(var(--foreground))' }}
-                        formatter={(value: number) => [`${value} students`, 'Count']}
+                        formatter={(value: number, name: string) => {
+                          if (name === 'avgScore') return [`${value} pts`, 'Avg Score'];
+                          return [value, name];
+                        }}
+                        labelFormatter={(label) => {
+                          const exam = examPerformance.find(e => e.name === label);
+                          return exam?.fullName || label;
+                        }}
                       />
                       <Bar 
-                        dataKey="count" 
+                        dataKey="avgScore" 
                         fill="hsl(var(--secondary))" 
                         radius={[4, 4, 0, 0]}
-                        name="Students"
+                        name="avgScore"
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                    No graded submissions yet
+                    No exam data yet
                   </div>
                 )}
               </CardContent>

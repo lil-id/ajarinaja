@@ -202,40 +202,68 @@ const TeacherStudents = () => {
                   <p className="text-muted-foreground">No students enrolled yet</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {students.map((student: any) => {
-                    const isAtRisk = atRiskStudentIds.has(student.id);
-                    const studentRisk = atRiskStudents.find(s => s.studentId === student.id);
-                    
-                    return (
-                      <div 
-                        key={student.id}
-                        className={cn(
-                          "flex items-center justify-between p-4 rounded-xl transition-colors",
-                          isAtRisk 
-                            ? studentRisk?.riskLevel === 'high'
-                              ? 'bg-destructive/5 border border-destructive/20'
-                              : studentRisk?.riskLevel === 'medium'
-                                ? 'bg-orange-50 dark:bg-orange-950/10 border border-orange-500/20'
-                                : 'bg-yellow-50 dark:bg-yellow-950/10 border border-yellow-500/20'
-                            : 'bg-muted/50 hover:bg-muted'
-                        )}
-                      >
-                        <div className="flex items-center gap-4">
-                          <Avatar className="w-12 h-12">
-                            <AvatarFallback className={cn(
-                              isAtRisk && studentRisk?.riskLevel === 'high' && 'bg-destructive/20 text-destructive',
-                              isAtRisk && studentRisk?.riskLevel === 'medium' && 'bg-orange-500/20 text-orange-600',
-                              isAtRisk && studentRisk?.riskLevel === 'low' && 'bg-yellow-500/20 text-yellow-600',
-                              !isAtRisk && 'bg-secondary text-secondary-foreground'
-                            )}>
-                              {student.profile?.name?.charAt(0) || 'S'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-foreground">{student.profile?.name || 'Unknown'}</h3>
-                              {isAtRisk && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Student</th>
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Enrolled Courses</th>
+                        <th className="text-center py-3 px-4 font-medium text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student: any) => {
+                        const isAtRisk = atRiskStudentIds.has(student.id);
+                        const studentRisk = atRiskStudents.find(s => s.studentId === student.id);
+                        
+                        return (
+                          <tr 
+                            key={student.id}
+                            className={cn(
+                              "border-b border-border/50 hover:bg-muted/50 transition-colors",
+                              isAtRisk && studentRisk?.riskLevel === 'high' && 'bg-destructive/5',
+                              isAtRisk && studentRisk?.riskLevel === 'medium' && 'bg-orange-50 dark:bg-orange-950/10',
+                              isAtRisk && studentRisk?.riskLevel === 'low' && 'bg-yellow-50 dark:bg-yellow-950/10'
+                            )}
+                          >
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarFallback className={cn(
+                                    "text-sm",
+                                    isAtRisk && studentRisk?.riskLevel === 'high' && 'bg-destructive/20 text-destructive',
+                                    isAtRisk && studentRisk?.riskLevel === 'medium' && 'bg-orange-500/20 text-orange-600',
+                                    isAtRisk && studentRisk?.riskLevel === 'low' && 'bg-yellow-500/20 text-yellow-600',
+                                    !isAtRisk && 'bg-secondary/20 text-secondary'
+                                  )}>
+                                    {student.profile?.name?.charAt(0) || 'S'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium text-foreground">
+                                  {student.profile?.name || 'Unknown'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-muted-foreground">
+                              {student.profile?.email || '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-wrap gap-1 max-w-md">
+                                {student.courses.slice(0, 3).map((course: string, i: number) => (
+                                  <Badge key={i} variant="secondary" className="text-xs">
+                                    {course}
+                                  </Badge>
+                                ))}
+                                {student.courses.length > 3 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{student.courses.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {isAtRisk ? (
                                 <Badge
                                   variant={studentRisk?.riskLevel === 'high' ? 'destructive' : 'outline'}
                                   className={cn(
@@ -246,27 +274,17 @@ const TeacherStudents = () => {
                                 >
                                   {studentRisk?.riskLevel} risk
                                 </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs border-green-500 text-green-600">
+                                  On Track
+                                </Badge>
                               )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">{student.profile?.email || ''}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Enrolled in:</p>
-                          <div className="flex flex-wrap gap-1 justify-end mt-1">
-                            {student.courses.map((course: string, i: number) => (
-                              <span 
-                                key={i}
-                                className="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded-full"
-                              >
-                                {course}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </CardContent>
