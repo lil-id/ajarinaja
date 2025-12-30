@@ -44,7 +44,6 @@ const navigation = [
   { name: 'Announcements', href: '/teacher/announcements', icon: Megaphone },
   { name: 'Analytics', href: '/teacher/analytics', icon: BarChart3 },
   { name: 'Students', href: '/teacher/students', icon: Users },
-  { name: 'At-Risk Students', href: '/teacher/at-risk', icon: AlertTriangle },
 ];
 
 const TeacherLayout = () => {
