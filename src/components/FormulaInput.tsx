@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -87,6 +87,18 @@ const SYMBOLS = {
   ],
 };
 
+// Quick symbols for inline toolbar
+const QUICK_SYMBOLS = [
+  { label: 'x²', latex: '^{2}' },
+  { label: '√', latex: '\\sqrt{}', cursor: 6 },
+  { label: 'π', latex: '\\pi' },
+  { label: '÷', latex: '\\div' },
+  { label: '×', latex: '\\times' },
+  { label: 'a/b', latex: '\\frac{}{}', cursor: 6 },
+  { label: 'θ', latex: '\\theta' },
+  { label: '∫', latex: '\\int' },
+];
+
 interface FormulaInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -96,91 +108,178 @@ interface FormulaInputProps {
   /** Use single-line input instead of textarea */
   singleLine?: boolean;
   onBlur?: () => void;
+  /** Show live preview (default: true for better UX) */
+  showLivePreview?: boolean;
 }
 
 const FormulaInput: React.FC<FormulaInputProps> = ({
   value,
   onChange,
-  placeholder = 'Enter text with formulas (use $...$ for inline, $$...$$ for block)',
+  placeholder = 'Enter text with formulas (use $...$ for inline)',
   className,
   rows = 3,
   singleLine = false,
   onBlur,
+  showLivePreview = true,
 }) => {
-  const [showPreview, setShowPreview] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'live' | 'edit' | 'preview'>(showLivePreview ? 'live' : 'edit');
   const inputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
+  const [isInFormula, setIsInFormula] = useState(false);
 
-  const insertSymbol = (latex: string, cursorOffset?: number) => {
+  // Check if cursor is inside a formula ($...$)
+  const checkIfInFormula = useCallback(() => {
+    const input = inputRef.current;
+    if (!input) return false;
+    
+    const cursorPos = input.selectionStart || 0;
+    const beforeCursor = value.slice(0, cursorPos);
+    
+    // Count $ signs before cursor
+    const dollarCount = (beforeCursor.match(/\$/g) || []).length;
+    // If odd number of $, we're inside a formula
+    return dollarCount % 2 === 1;
+  }, [value]);
+
+  useEffect(() => {
+    setIsInFormula(checkIfInFormula());
+  }, [value, checkIfInFormula]);
+
+  const insertSymbol = useCallback((latex: string, cursorOffset?: number) => {
     const input = inputRef.current;
     if (!input) {
-      onChange(value + latex);
+      // If not in formula context, wrap with $
+      if (!isInFormula) {
+        onChange(value + `$${latex}$`);
+      } else {
+        onChange(value + latex);
+      }
       return;
     }
 
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
-    const newValue = value.slice(0, start) + latex + value.slice(end);
+    
+    // Check if we're inside a formula
+    const beforeCursor = value.slice(0, start);
+    const dollarCount = (beforeCursor.match(/\$/g) || []).length;
+    const inFormula = dollarCount % 2 === 1;
+    
+    let insertText = latex;
+    let newCursorOffset = cursorOffset;
+    
+    // If not in formula, wrap the symbol with $...$
+    if (!inFormula) {
+      insertText = `$${latex}$`;
+      newCursorOffset = cursorOffset ? cursorOffset + 1 : latex.length + 1;
+    }
+    
+    const newValue = value.slice(0, start) + insertText + value.slice(end);
     onChange(newValue);
 
     // Set cursor position after insert
     requestAnimationFrame(() => {
-      const newPos = cursorOffset ? start + cursorOffset : start + latex.length;
+      const newPos = newCursorOffset ? start + newCursorOffset : start + insertText.length;
       input.setSelectionRange(newPos, newPos);
       input.focus();
     });
-  };
+  }, [value, onChange, isInFormula]);
 
-  const wrapSelection = (prefix: string, suffix: string) => {
+  const startFormula = useCallback(() => {
     const input = inputRef.current;
-    if (!input) return;
+    if (!input) {
+      onChange(value + '$$');
+      return;
+    }
 
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
     const selectedText = value.slice(start, end);
-    const newValue = value.slice(0, start) + prefix + selectedText + suffix + value.slice(end);
+    
+    let newValue: string;
+    let cursorPos: number;
+    
+    if (selectedText) {
+      // Wrap selection
+      newValue = value.slice(0, start) + '$' + selectedText + '$' + value.slice(end);
+      cursorPos = start + 1 + selectedText.length;
+    } else {
+      // Insert $$ and place cursor in between
+      newValue = value.slice(0, start) + '$$' + value.slice(end);
+      cursorPos = start + 1;
+    }
+    
     onChange(newValue);
-
+    
     requestAnimationFrame(() => {
-      const newPos = start + prefix.length + selectedText.length;
-      input.setSelectionRange(newPos, newPos);
+      input.setSelectionRange(cursorPos, cursorPos);
       input.focus();
     });
-  };
+  }, [value, onChange]);
+
+  // Detect if value contains any LaTeX
+  const hasFormulas = value.includes('$');
 
   return (
     <div className={cn('space-y-2', className)}>
-      <div className="flex items-center gap-2 flex-wrap">
+      {/* Compact toolbar */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {/* Quick symbols - always visible for fast insertion */}
+        <div className="flex items-center gap-0.5 p-1 bg-muted rounded-md">
+          {QUICK_SYMBOLS.map((sym) => (
+            <Button
+              key={sym.latex}
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-xs font-mono hover:bg-background"
+              onClick={() => insertSymbol(sym.latex, sym.cursor)}
+              title={`Insert ${sym.label}`}
+            >
+              {sym.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Start formula button */}
+        <Button
+          type="button"
+          variant={isInFormula ? "secondary" : "outline"}
+          size="sm"
+          className="h-7 px-2 text-xs gap-1"
+          onClick={startFormula}
+        >
+          <FunctionSquare className="h-3 w-3" />
+          {isInFormula ? 'In Formula' : 'Start $'}
+        </Button>
+
+        {/* More symbols popover */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button type="button" variant="outline" size="sm" className="h-8 gap-1">
-              <FunctionSquare className="h-4 w-4" />
-              Insert Formula
+            <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs">
+              More...
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-2" align="start">
+          <PopoverContent className="w-72 p-2" align="start">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="w-full flex-wrap h-auto gap-1 bg-transparent p-0">
-                <TabsTrigger value="basic" className="text-xs px-2 py-1 h-7">Basic</TabsTrigger>
-                <TabsTrigger value="fractions" className="text-xs px-2 py-1 h-7">Fractions</TabsTrigger>
-                <TabsTrigger value="powers" className="text-xs px-2 py-1 h-7">Powers</TabsTrigger>
-                <TabsTrigger value="greek" className="text-xs px-2 py-1 h-7">Greek</TabsTrigger>
-                <TabsTrigger value="trig" className="text-xs px-2 py-1 h-7">Trig</TabsTrigger>
-                <TabsTrigger value="calculus" className="text-xs px-2 py-1 h-7">Calculus</TabsTrigger>
-                <TabsTrigger value="chemistry" className="text-xs px-2 py-1 h-7">Chem</TabsTrigger>
-                <TabsTrigger value="physics" className="text-xs px-2 py-1 h-7">Physics</TabsTrigger>
+              <TabsList className="w-full flex-wrap h-auto gap-0.5 bg-transparent p-0 mb-2">
+                {Object.keys(SYMBOLS).map((cat) => (
+                  <TabsTrigger key={cat} value={cat} className="text-xs px-2 py-1 h-6 capitalize">
+                    {cat}
+                  </TabsTrigger>
+                ))}
               </TabsList>
               {Object.entries(SYMBOLS).map(([category, symbols]) => (
-                <TabsContent key={category} value={category} className="mt-2">
-                  <ScrollArea className="h-32">
-                    <div className="grid grid-cols-4 gap-1">
+                <TabsContent key={category} value={category} className="mt-0">
+                  <ScrollArea className="h-28">
+                    <div className="grid grid-cols-4 gap-0.5">
                       {symbols.map((sym) => (
                         <Button
                           key={sym.latex}
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-8 text-sm font-mono"
-                          onClick={() => insertSymbol(`$${sym.latex}$`, sym.cursor ? sym.cursor + 1 : undefined)}
+                          className="h-7 text-sm font-mono hover:bg-primary/10"
+                          onClick={() => insertSymbol(sym.latex, sym.cursor)}
                         >
                           {sym.label}
                         </Button>
@@ -190,73 +289,68 @@ const FormulaInput: React.FC<FormulaInputProps> = ({
                 </TabsContent>
               ))}
             </Tabs>
-            <div className="mt-2 pt-2 border-t space-y-1">
-              <p className="text-xs text-muted-foreground">Quick wrap:</p>
-              <div className="flex gap-1">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="text-xs h-7"
-                  onClick={() => wrapSelection('$', '$')}
-                >
-                  Inline $...$
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="text-xs h-7"
-                  onClick={() => wrapSelection('$$', '$$')}
-                >
-                  Block $$...$$
-                </Button>
-              </div>
-            </div>
           </PopoverContent>
         </Popover>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1"
-          onClick={() => setShowPreview(!showPreview)}
-        >
-          {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          {showPreview ? 'Edit' : 'Preview'}
-        </Button>
-
-        <span className="text-xs text-muted-foreground ml-auto">
-          Use $...$ for inline, $$...$$ for block formulas
-        </span>
+        {/* Preview toggle */}
+        {hasFormulas && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs gap-1 ml-auto"
+            onClick={() => setPreviewMode(prev => prev === 'preview' ? 'edit' : 'preview')}
+          >
+            {previewMode === 'preview' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            {previewMode === 'preview' ? 'Edit' : 'Preview'}
+          </Button>
+        )}
       </div>
 
-      {showPreview ? (
-        <div className="min-h-[80px] p-3 rounded-md border bg-muted/30">
+      {/* Input/Preview area */}
+      {previewMode === 'preview' ? (
+        <div className="min-h-[60px] p-3 rounded-md border bg-muted/30">
           {value ? (
             <FormulaText text={value} />
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
         </div>
-      ) : singleLine ? (
-        <Input
-          ref={inputRef as React.RefObject<HTMLInputElement>}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          onBlur={onBlur}
-        />
       ) : (
-        <Textarea
-          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={rows}
-          onBlur={onBlur}
-        />
+        <div className="space-y-2">
+          {singleLine ? (
+            <Input
+              ref={inputRef as React.RefObject<HTMLInputElement>}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              onBlur={onBlur}
+              onClick={() => setIsInFormula(checkIfInFormula())}
+              onKeyUp={() => setIsInFormula(checkIfInFormula())}
+              className={cn(isInFormula && 'ring-2 ring-primary/50')}
+            />
+          ) : (
+            <Textarea
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              rows={rows}
+              onBlur={onBlur}
+              onClick={() => setIsInFormula(checkIfInFormula())}
+              onKeyUp={() => setIsInFormula(checkIfInFormula())}
+              className={cn(isInFormula && 'ring-2 ring-primary/50')}
+            />
+          )}
+          
+          {/* Live preview below input when there are formulas */}
+          {showLivePreview && hasFormulas && previewMode === 'live' && (
+            <div className="p-2 rounded-md border border-dashed bg-muted/20 text-sm">
+              <span className="text-xs text-muted-foreground block mb-1">Preview:</span>
+              <FormulaText text={value} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -212,14 +212,16 @@ export default function StudentCalendar() {
                     onClick={() => setSelectedDate(day)}
                     className={cn(
                       'h-24 p-1 border rounded-lg text-left transition-colors hover:bg-muted/50 overflow-hidden',
-                      isSelected && 'ring-2 ring-primary bg-primary/5',
-                      isCurrentDay && !isSelected && 'bg-muted'
+                      isSelected && 'ring-2 ring-destructive bg-destructive/5',
+                      isCurrentDay && !isSelected && 'bg-muted',
+                      dayEvents.length > 0 && !isSelected && 'border-destructive/50'
                     )}
                   >
                     <div
                       className={cn(
                         'text-sm font-medium mb-1',
-                        isCurrentDay && 'text-primary font-bold'
+                        isCurrentDay && 'text-destructive font-bold',
+                        dayEvents.length > 0 && 'text-destructive'
                       )}
                     >
                       {format(day, 'd')}
@@ -231,8 +233,8 @@ export default function StudentCalendar() {
                           className={cn(
                             'text-xs px-1 py-0.5 rounded truncate',
                             event.type === 'exam'
-                              ? 'bg-primary/20 text-primary'
-                              : 'bg-secondary/20 text-secondary-foreground'
+                              ? 'bg-destructive/20 text-destructive'
+                              : 'bg-orange-500/20 text-orange-600 dark:text-orange-400'
                           )}
                         >
                           {event.title}
@@ -275,20 +277,28 @@ export default function StudentCalendar() {
                     <div
                       className={cn(
                         'p-2 rounded-lg',
-                        event.type === 'exam' ? 'bg-primary/10' : 'bg-secondary/10'
+                        event.type === 'exam' ? 'bg-destructive/10' : 'bg-orange-500/10'
                       )}
                     >
                       {event.type === 'exam' ? (
-                        <FileText className="h-4 w-4 text-primary" />
+                        <FileText className="h-4 w-4 text-destructive" />
                       ) : (
-                        <ClipboardList className="h-4 w-4 text-secondary-foreground" />
+                        <ClipboardList className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{event.title}</p>
                       <p className="text-xs text-muted-foreground">{event.courseName}</p>
                       <div className="flex gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs",
+                            event.type === 'exam' 
+                              ? 'border-destructive text-destructive' 
+                              : 'border-orange-500 text-orange-600 dark:text-orange-400'
+                          )}
+                        >
                           {event.type === 'exam' ? 'Exam' : 'Assignment'}
                         </Badge>
                         {event.isPastDue && (
@@ -315,11 +325,11 @@ export default function StudentCalendar() {
           <div className="flex flex-wrap gap-4 items-center">
             <span className="text-sm font-medium text-muted-foreground">Legend:</span>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-primary/20" />
+              <div className="w-3 h-3 rounded bg-destructive/20" />
               <span className="text-sm">Exam</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-secondary/20" />
+              <div className="w-3 h-3 rounded bg-orange-500/20" />
               <span className="text-sm">Assignment</span>
             </div>
           </div>

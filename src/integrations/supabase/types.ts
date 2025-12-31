@@ -757,6 +757,45 @@ export type Database = {
           },
         ]
       }
+      risk_settings: {
+        Row: {
+          created_at: string
+          high_risk_below_kkm_count: number
+          high_risk_missed_assignments: number
+          id: string
+          low_risk_late_submissions: number
+          low_risk_material_view_percent: number
+          medium_risk_below_kkm_count: number
+          medium_risk_missed_assignments: number
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          high_risk_below_kkm_count?: number
+          high_risk_missed_assignments?: number
+          id?: string
+          low_risk_late_submissions?: number
+          low_risk_material_view_percent?: number
+          medium_risk_below_kkm_count?: number
+          medium_risk_missed_assignments?: number
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          high_risk_below_kkm_count?: number
+          high_risk_missed_assignments?: number
+          id?: string
+          low_risk_late_submissions?: number
+          low_risk_material_view_percent?: number
+          medium_risk_below_kkm_count?: number
+          medium_risk_missed_assignments?: number
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_badges: {
         Row: {
           awarded_at: string

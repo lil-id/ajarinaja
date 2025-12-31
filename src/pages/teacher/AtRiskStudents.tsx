@@ -1,11 +1,17 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { AlertTriangle, AlertCircle, Info, Loader2, BookOpen, FileText, ClipboardList, TrendingDown, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { AlertTriangle, AlertCircle, Info, Loader2, BookOpen, FileText, ClipboardList, TrendingDown, ExternalLink, Settings } from 'lucide-react';
 import { useAtRiskStudents, RiskFactor } from '@/hooks/useAtRiskStudents';
+import { useRiskSettings, DEFAULT_RISK_SETTINGS } from '@/hooks/useRiskSettings';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'sonner';
 const getRiskIcon = (type: RiskFactor['type']) => {
   switch (type) {
     case 'no_material_views':
@@ -13,9 +19,12 @@ const getRiskIcon = (type: RiskFactor['type']) => {
     case 'missed_deadline':
       return ClipboardList;
     case 'low_score':
+    case 'below_kkm':
       return TrendingDown;
     case 'no_exam_submissions':
       return FileText;
+    case 'late_submission':
+      return ClipboardList;
     default:
       return Info;
   }
@@ -29,8 +38,12 @@ const getRiskLabel = (type: RiskFactor['type']) => {
       return 'Missed Deadline';
     case 'low_score':
       return 'Low Performance';
+    case 'below_kkm':
+      return 'Below KKM';
     case 'no_exam_submissions':
       return 'Missing Exams';
+    case 'late_submission':
+      return 'Late Submission';
     default:
       return 'Risk Factor';
   }
@@ -40,19 +53,26 @@ const getRiskLabel = (type: RiskFactor['type']) => {
 const getRiskLink = (factor: RiskFactor, courseId: string) => {
   switch (factor.type) {
     case 'no_material_views':
-      // Navigate to the course materials page
       return `/teacher/courses/${factor.courseId || courseId}`;
     case 'missed_deadline':
-      // Navigate to the first missed assignment's submissions page
+    case 'late_submission':
       if (factor.assignmentIds && factor.assignmentIds.length > 0) {
         return `/teacher/assignments/${factor.assignmentIds[0]}/submissions`;
       }
       return `/teacher/assignments`;
     case 'low_score':
     case 'no_exam_submissions':
-      // Navigate to the first exam's grading page
       if (factor.examIds && factor.examIds.length > 0) {
         return `/teacher/exams/${factor.examIds[0]}/grade`;
+      }
+      return `/teacher/exams`;
+    case 'below_kkm':
+      // Navigate to first below-KKM item
+      if (factor.examIds && factor.examIds.length > 0) {
+        return `/teacher/exams/${factor.examIds[0]}/grade`;
+      }
+      if (factor.assignmentIds && factor.assignmentIds.length > 0) {
+        return `/teacher/assignments/${factor.assignmentIds[0]}/submissions`;
       }
       return `/teacher/exams`;
     default:
@@ -63,7 +83,49 @@ const getRiskLink = (factor: RiskFactor, courseId: string) => {
 export default function AtRiskStudents() {
   const navigate = useNavigate();
   const { atRiskStudents, isLoading, highRiskCount, mediumRiskCount, lowRiskCount } = useAtRiskStudents();
+  const { settings, saveSettings, hasCustomSettings, isLoading: settingsLoading } = useRiskSettings();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [localSettings, setLocalSettings] = useState({
+    high_risk_missed_assignments: settings.high_risk_missed_assignments,
+    high_risk_below_kkm_count: settings.high_risk_below_kkm_count,
+    medium_risk_missed_assignments: settings.medium_risk_missed_assignments,
+    medium_risk_below_kkm_count: settings.medium_risk_below_kkm_count,
+    low_risk_late_submissions: settings.low_risk_late_submissions,
+    low_risk_material_view_percent: settings.low_risk_material_view_percent,
+  });
 
+  const handleOpenSettings = () => {
+    setLocalSettings({
+      high_risk_missed_assignments: settings.high_risk_missed_assignments,
+      high_risk_below_kkm_count: settings.high_risk_below_kkm_count,
+      medium_risk_missed_assignments: settings.medium_risk_missed_assignments,
+      medium_risk_below_kkm_count: settings.medium_risk_below_kkm_count,
+      low_risk_late_submissions: settings.low_risk_late_submissions,
+      low_risk_material_view_percent: settings.low_risk_material_view_percent,
+    });
+    setIsSettingsOpen(true);
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      await saveSettings.mutateAsync(localSettings);
+      toast.success('Risk thresholds saved');
+      setIsSettingsOpen(false);
+    } catch (error) {
+      toast.error('Failed to save settings');
+    }
+  };
+
+  const handleResetDefaults = () => {
+    setLocalSettings({
+      high_risk_missed_assignments: DEFAULT_RISK_SETTINGS.high_risk_missed_assignments,
+      high_risk_below_kkm_count: DEFAULT_RISK_SETTINGS.high_risk_below_kkm_count,
+      medium_risk_missed_assignments: DEFAULT_RISK_SETTINGS.medium_risk_missed_assignments,
+      medium_risk_below_kkm_count: DEFAULT_RISK_SETTINGS.medium_risk_below_kkm_count,
+      low_risk_late_submissions: DEFAULT_RISK_SETTINGS.low_risk_late_submissions,
+      low_risk_material_view_percent: DEFAULT_RISK_SETTINGS.low_risk_material_view_percent,
+    });
+  };
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -74,11 +136,149 @@ export default function AtRiskStudents() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">At-Risk Students</h1>
-        <p className="text-muted-foreground">
-          Monitor students who may need additional support
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">At-Risk Students</h1>
+          <p className="text-muted-foreground">
+            Monitor students who may need additional support
+          </p>
+        </div>
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" onClick={handleOpenSettings}>
+              <Settings className="h-4 w-4 mr-2" />
+              Risk Thresholds
+              {hasCustomSettings && <Badge variant="secondary" className="ml-2 text-xs">Custom</Badge>}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Customize Risk Thresholds</DialogTitle>
+              <DialogDescription>
+                Define what conditions categorize students as high, medium, or low risk.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 pt-4">
+              {/* High Risk Settings */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-destructive flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  High Risk
+                </h4>
+                <div className="grid grid-cols-2 gap-4 pl-6">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Missed Assignments ≥</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={localSettings.high_risk_missed_assignments}
+                      onChange={(e) => setLocalSettings(prev => ({
+                        ...prev,
+                        high_risk_missed_assignments: parseInt(e.target.value) || 1
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Scores Below KKM ≥</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={localSettings.high_risk_below_kkm_count}
+                      onChange={(e) => setLocalSettings(prev => ({
+                        ...prev,
+                        high_risk_below_kkm_count: parseInt(e.target.value) || 1
+                      }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Medium Risk Settings */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Medium Risk
+                </h4>
+                <div className="grid grid-cols-2 gap-4 pl-6">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Missed Assignments ≥</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={localSettings.medium_risk_missed_assignments}
+                      onChange={(e) => setLocalSettings(prev => ({
+                        ...prev,
+                        medium_risk_missed_assignments: parseInt(e.target.value) || 1
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Scores Below KKM ≥</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={localSettings.medium_risk_below_kkm_count}
+                      onChange={(e) => setLocalSettings(prev => ({
+                        ...prev,
+                        medium_risk_below_kkm_count: parseInt(e.target.value) || 1
+                      }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Low Risk Settings */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  Low Risk
+                </h4>
+                <div className="grid grid-cols-2 gap-4 pl-6">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Late Submissions ≥</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={localSettings.low_risk_late_submissions}
+                      onChange={(e) => setLocalSettings(prev => ({
+                        ...prev,
+                        low_risk_late_submissions: parseInt(e.target.value) || 1
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Material Views Below %</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={localSettings.low_risk_material_view_percent}
+                      onChange={(e) => setLocalSettings(prev => ({
+                        ...prev,
+                        low_risk_material_view_percent: parseInt(e.target.value) || 50
+                      }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between pt-4 border-t">
+                <Button variant="ghost" onClick={handleResetDefaults}>
+                  Reset to Defaults
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsSettingsOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveSettings} disabled={saveSettings.isPending}>
+                    {saveSettings.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Summary Stats */}
