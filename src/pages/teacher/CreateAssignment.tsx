@@ -42,6 +42,8 @@ import { useCreateAssignment, useUpdateAssignment, useAssignment, RubricItem } f
 import { useAssignmentQuestions, useAddAssignmentQuestion, useUpdateAssignmentQuestion, useDeleteAssignmentQuestion, AssignmentQuestion } from '@/hooks/useAssignmentQuestions';
 import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
 import { toast } from 'sonner';
+import FormulaInput from '@/components/FormulaInput';
+import FormulaText from '@/components/FormulaText';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
@@ -726,7 +728,7 @@ export default function CreateAssignment() {
                                         {q.points} pts
                                       </Badge>
                                     </div>
-                                    <p className="text-sm line-clamp-2">{q.question}</p>
+                                    <p className="text-sm line-clamp-2"><FormulaText text={q.question} /></p>
                                   </div>
                                 </div>
                               ))}
@@ -774,10 +776,10 @@ export default function CreateAssignment() {
                             <TabsTrigger value="essay">Essay</TabsTrigger>
                           </TabsList>
 
-                          <Textarea
-                            placeholder="Enter your question..."
+                          <FormulaInput
+                            placeholder="Enter your question (use $...$ for formulas)..."
                             value={newQuestion.question}
-                            onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                            onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
                           />
 
                           <TabsContent value="multiple-choice" className="mt-4 space-y-2">
@@ -790,12 +792,13 @@ export default function CreateAssignment() {
                                   onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
                                   className="w-4 h-4"
                                 />
-                                <Input
+                                <FormulaInput
+                                  singleLine
                                   placeholder={`Option ${i + 1}`}
                                   value={opt}
-                                  onChange={(e) => {
+                                  onChange={(v) => {
                                     const newOptions = [...newQuestion.options];
-                                    newOptions[i] = e.target.value;
+                                    newOptions[i] = v;
                                     setNewQuestion({ ...newQuestion, options: newOptions });
                                   }}
                                 />
@@ -816,12 +819,13 @@ export default function CreateAssignment() {
                                     setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
                                   }}
                                 />
-                                <Input
+                                <FormulaInput
+                                  singleLine
                                   placeholder={`Option ${i + 1}`}
                                   value={opt}
-                                  onChange={(e) => {
+                                  onChange={(v) => {
                                     const newOptions = [...newQuestion.options];
-                                    newOptions[i] = e.target.value;
+                                    newOptions[i] = v;
                                     setNewQuestion({ ...newQuestion, options: newOptions });
                                   }}
                                 />
@@ -889,10 +893,9 @@ export default function CreateAssignment() {
                           </div>
                         </div>
 
-                        <Textarea
+                        <FormulaInput
                           value={q.question}
-                          onChange={(e) => updateLocalQuestion(index, { question: e.target.value })}
-                          className="bg-background"
+                          onChange={(v) => updateLocalQuestion(index, { question: v })}
                         />
 
                         {q.type === 'multiple-choice' && q.options && (
@@ -906,14 +909,14 @@ export default function CreateAssignment() {
                                   onChange={() => updateLocalQuestion(index, { correct_answer: optIndex })}
                                   className="w-4 h-4"
                                 />
-                                <Input
+                                <FormulaInput
+                                  singleLine
                                   value={opt}
-                                  onChange={(e) => {
+                                  onChange={(v) => {
                                     const newOptions = [...q.options];
-                                    newOptions[optIndex] = e.target.value;
+                                    newOptions[optIndex] = v;
                                     updateLocalQuestion(index, { options: newOptions });
                                   }}
-                                  className="bg-background"
                                 />
                               </div>
                             ))}
@@ -934,14 +937,14 @@ export default function CreateAssignment() {
                                     updateLocalQuestion(index, { correct_answers: newAnswers });
                                   }}
                                 />
-                                <Input
+                                <FormulaInput
+                                  singleLine
                                   value={opt}
-                                  onChange={(e) => {
+                                  onChange={(v) => {
                                     const newOptions = [...q.options];
-                                    newOptions[optIndex] = e.target.value;
+                                    newOptions[optIndex] = v;
                                     updateLocalQuestion(index, { options: newOptions });
                                   }}
-                                  className="bg-background"
                                 />
                               </div>
                             ))}

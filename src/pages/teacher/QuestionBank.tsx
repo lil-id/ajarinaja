@@ -47,7 +47,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { useTeacherCourses } from "@/hooks/useCourses";
@@ -59,6 +58,8 @@ import {
   useDeleteQuestionBankItem,
   QuestionBankItem,
 } from "@/hooks/useQuestionBank";
+import FormulaInput from "@/components/FormulaInput";
+import FormulaText from "@/components/FormulaText";
 
 interface QuestionFormData {
   question: string;
@@ -340,10 +341,10 @@ export default function QuestionBank() {
 
               <div className="space-y-2">
                 <Label>Question</Label>
-                <Textarea
+                <FormulaInput
                   value={formData.question}
-                  onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                  placeholder="Enter your question..."
+                  onChange={(v) => setFormData({ ...formData, question: v })}
+                  placeholder="Enter your question (use $...$ for formulas)..."
                   rows={3}
                 />
               </div>
@@ -360,15 +361,15 @@ export default function QuestionBank() {
                     {formData.options.map((option, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                        <Input
+                        <FormulaInput
+                          singleLine
                           placeholder={`Option ${index + 1}`}
                           value={option}
-                          onChange={(e) => {
+                          onChange={(v) => {
                             const newOptions = [...formData.options];
-                            newOptions[index] = e.target.value;
+                            newOptions[index] = v;
                             setFormData({ ...formData, options: newOptions });
                           }}
-                          className="flex-1"
                         />
                       </div>
                     ))}
@@ -390,15 +391,15 @@ export default function QuestionBank() {
                           setFormData({ ...formData, correct_answers: newAnswers });
                         }}
                       />
-                      <Input
+                      <FormulaInput
+                        singleLine
                         placeholder={`Option ${index + 1}`}
                         value={option}
-                        onChange={(e) => {
+                        onChange={(v) => {
                           const newOptions = [...formData.options];
-                          newOptions[index] = e.target.value;
+                          newOptions[index] = v;
                           setFormData({ ...formData, options: newOptions });
                         }}
-                        className="flex-1"
                       />
                     </div>
                   ))}
