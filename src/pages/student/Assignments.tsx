@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, isFuture, differenceInDays } from 'date-fns';
-import { FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload } from 'lucide-react';
+import { FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
 import { useAssignments } from '@/hooks/useAssignments';
@@ -19,6 +22,9 @@ export default function StudentAssignments() {
   const { enrollments = [] } = useEnrollments();
   const { courses = [] } = useCourses();
   const { data: allAssignments = [] } = useAssignments();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<string>('all');
 
   // Get student's file/text submissions
   const { data: mySubmissions = [] } = useQuery({
@@ -51,6 +57,7 @@ export default function StudentAssignments() {
   });
 
   const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
   const courseMap = new Map(courses.map(c => [c.id, c.title]));
 
   // Filter assignments for enrolled courses only
@@ -64,13 +71,21 @@ export default function StudentAssignments() {
       return { ...a, submission };
     });
 
-  const upcoming = assignments.filter(a => !a.submission && isFuture(new Date(a.due_date)));
-  const pending = assignments.filter(a => !a.submission && isPast(new Date(a.due_date)));
-  const submitted = assignments.filter(a => a.submission);
+  // Apply search and course filter
+  const filteredAssignments = assignments.filter(a => {
+    const matchesSearch = a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (courseMap.get(a.course_id) || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCourse = selectedCourse === 'all' || a.course_id === selectedCourse;
+    return matchesSearch && matchesCourse;
+  });
+
+  const upcoming = filteredAssignments.filter(a => !a.submission && isFuture(new Date(a.due_date)));
+  const pending = filteredAssignments.filter(a => !a.submission && isPast(new Date(a.due_date)));
+  const submitted = filteredAssignments.filter(a => a.submission);
   const graded = submitted.filter(a => a.submission?.graded);
 
-  const completionRate = assignments.length > 0 
-    ? Math.round((submitted.length / assignments.length) * 100) 
+  const completionRate = filteredAssignments.length > 0 
+    ? Math.round((submitted.length / filteredAssignments.length) * 100) 
     : 0;
 
   const getDaysUntilDue = (dueDate: string) => {
@@ -148,7 +163,10 @@ export default function StudentAssignments() {
             <Button 
               variant={isSubmitted ? 'outline' : 'default'}
               size="sm"
-              onClick={() => navigate(`/student/assignments/${assignment.id}`)}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/student/assignments/${assignment.id}`);
+              }}
             >
               {isSubmitted ? (
                 <>View Submission</>
@@ -192,16 +210,42 @@ export default function StudentAssignments() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Assignments</h1>
-        <p className="text-muted-foreground">View and submit your course assignments</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Assignments</h1>
+          <p className="text-muted-foreground">View and submit your course assignments</p>
+        </div>
+        <div className="flex gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search assignments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-[200px]"
+            />
+          </div>
+          <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All courses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Courses</SelectItem>
+              {enrolledCourses.map(course => (
+                <SelectItem key={course.id} value={course.id}>
+                  {course.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Assignments</CardDescription>
-            <CardTitle className="text-2xl">{assignments.length}</CardTitle>
+            <CardTitle className="text-2xl">{filteredAssignments.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
