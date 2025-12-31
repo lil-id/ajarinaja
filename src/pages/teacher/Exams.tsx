@@ -7,16 +7,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams, useCreateExam, useUpdateExam, useDeleteExam, Question } from '@/hooks/useExams';
-import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2, ClipboardCheck } from 'lucide-react';
+import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 const TeacherExams = () => {
@@ -33,6 +34,10 @@ const TeacherExams = () => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCourse, setFilterCourse] = useState('all');
+  const [activeTab, setActiveTab] = useState('published');
+  
   const [examForm, setExamForm] = useState({
     title: '',
     description: '',
@@ -125,6 +130,15 @@ const TeacherExams = () => {
     }
   };
 
+  const handleArchiveExam = async (examId: string, archive: boolean) => {
+    try {
+      await updateExam.mutateAsync({ id: examId, archived: archive } as any);
+      toast.success(archive ? 'Exam archived' : 'Exam restored');
+    } catch {
+      toast.error('Failed to update exam');
+    }
+  };
+
   const getCourseTitle = (courseId: string) => {
     return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
   };
@@ -134,8 +148,38 @@ const TeacherExams = () => {
       navigate(`/teacher/exams/${id}/grade`);
       return;
     }
-
     navigate(`/teacher/exams/${id}/edit`);
+  };
+
+  // Filter exams based on search, course, and tab
+  const filteredExams = teacherExams.filter(exam => {
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = exam.title.toLowerCase().includes(query);
+      const matchesCourse = getCourseTitle(exam.course_id).toLowerCase().includes(query);
+      if (!matchesTitle && !matchesCourse) return false;
+    }
+    
+    // Course filter
+    if (filterCourse !== 'all' && exam.course_id !== filterCourse) return false;
+    
+    // Tab filter
+    const isArchived = (exam as any).archived === true;
+    if (activeTab === 'archived') return isArchived;
+    if (isArchived) return false;
+    
+    if (activeTab === 'published') return exam.status === 'published';
+    if (activeTab === 'draft') return exam.status === 'draft';
+    
+    return true;
+  });
+
+  // Count items for tabs
+  const counts = {
+    published: teacherExams.filter(e => !((e as any).archived) && e.status === 'published').length,
+    draft: teacherExams.filter(e => !((e as any).archived) && e.status === 'draft').length,
+    archived: teacherExams.filter(e => (e as any).archived === true).length,
   };
 
   if (isLoading) {
@@ -308,36 +352,73 @@ const TeacherExams = () => {
         </Dialog>
       </div>
 
-      {courses.length === 0 && (
-        <Card className="border-0 shadow-card">
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">
-              Create a course first before adding exams.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search exams..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filterCourse} onValueChange={setFilterCourse}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <Filter className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="All Courses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Courses</SelectItem>
+            {courses.map(c => (
+              <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Exams List */}
-      {courses.length > 0 && teacherExams.length === 0 ? (
-        <Card className="border-0 shadow-card">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <FileText className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No exams yet</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Create your first exam for your courses
-            </p>
-            <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4" />
-              Create Exam
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid md:grid-cols-2 gap-6">
-          {teacherExams.map((exam, index) => (
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="published">Published ({counts.published})</TabsTrigger>
+          <TabsTrigger value="draft">Draft ({counts.draft})</TabsTrigger>
+          <TabsTrigger value="archived">Archived ({counts.archived})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-4">
+          {courses.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  Create a course first before adding exams.
+                </p>
+              </CardContent>
+            </Card>
+          ) : filteredExams.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {activeTab === 'archived' ? 'No archived exams' : 'No exams found'}
+                </h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  {searchQuery ? 'Try adjusting your search or filters' : 
+                    activeTab === 'archived' ? 'Archived exams will appear here' :
+                    'Create your first exam for your courses'}
+                </p>
+                {!searchQuery && activeTab !== 'archived' && (
+                  <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
+                    <Plus className="w-4 h-4" />
+                    Create Exam
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {filteredExams.map((exam, index) => (
             <Card
               key={exam.id}
               role="button"
@@ -395,6 +476,18 @@ const TeacherExams = () => {
                           Publish
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuSeparator />
+                      {(exam as any).archived ? (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, false); }}>
+                          <ArchiveRestore className="w-4 h-4 mr-2" />
+                          Restore
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, true); }}>
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archive
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem 
                         className="text-destructive"
                         onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }}
@@ -420,8 +513,10 @@ const TeacherExams = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
-      )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
