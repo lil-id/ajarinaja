@@ -98,12 +98,12 @@ const TeacherAnalytics = () => {
   const examAvgScore = gradedExamSubmissions.length > 0 ? Math.round(examTotalScore / gradedExamSubmissions.length) : 0;
   const examKKM = (filteredExams[0] as any)?.kkm || 60;
 
+  // KKM is an integer threshold - student passes if score >= kkm directly
   const examPassCount = gradedExamSubmissions.filter(s => {
     const exam = teacherExams.find(e => e.id === s.exam_id);
     if (!exam) return false;
     const kkm = (exam as any).kkm || 60;
-    const percentage = ((s.score || 0) / exam.total_points) * 100;
-    return percentage >= kkm;
+    return (s.score || 0) >= kkm;
   }).length;
   const examPassRate = gradedExamSubmissions.length > 0 
     ? Math.round((examPassCount / gradedExamSubmissions.length) * 100) 
@@ -123,12 +123,12 @@ const TeacherAnalytics = () => {
   const assignmentAvgScore = gradedAssignmentSubs.length > 0 ? Math.round(assignmentTotalScore / gradedAssignmentSubs.length) : 0;
   const assignmentKKM = (filteredAssignments[0] as any)?.kkm || 60;
 
+  // KKM is an integer threshold - student passes if score >= kkm directly
   const assignmentPassCount = gradedAssignmentSubs.filter(s => {
     const assignment = teacherAssignments.find(a => a.id === s.assignment_id);
     if (!assignment) return false;
     const kkm = (assignment as any).kkm || 60;
-    const percentage = ((s.score || 0) / assignment.max_points) * 100;
-    return percentage >= kkm;
+    return (s.score || 0) >= kkm;
   }).length;
   const assignmentPassRate = gradedAssignmentSubs.length > 0 
     ? Math.round((assignmentPassCount / gradedAssignmentSubs.length) * 100) 
@@ -175,16 +175,13 @@ const TeacherAnalytics = () => {
     { name: 'Pending', value: filteredAssignmentSubs.length - gradedAssignmentSubs.length, color: CHART_COLORS[3] },
   ].filter(s => s.value > 0);
 
-  // Exam performance data
+  // Exam performance data - KKM is integer threshold (score >= kkm)
   const examPerformance = filteredExams.map(exam => {
     const subs = gradedExamSubmissions.filter(s => s.exam_id === exam.id);
     const kkm = (exam as any).kkm || 60;
     const totalScore = subs.reduce((sum, s) => sum + (s.score || 0), 0);
     const avgScore = subs.length > 0 ? Math.round(totalScore / subs.length) : 0;
-    const passedCount = subs.filter(s => {
-      const percentage = ((s.score || 0) / exam.total_points) * 100;
-      return percentage >= kkm;
-    }).length;
+    const passedCount = subs.filter(s => (s.score || 0) >= kkm).length;
     
     return {
       id: exam.id,
@@ -199,16 +196,13 @@ const TeacherAnalytics = () => {
     };
   }).filter(e => e.submissions > 0);
 
-  // Assignment performance data
+  // Assignment performance data - KKM is integer threshold (score >= kkm)
   const assignmentPerformance = filteredAssignments.map(assignment => {
     const subs = gradedAssignmentSubs.filter(s => s.assignment_id === assignment.id);
     const kkm = (assignment as any).kkm || 60;
     const totalScore = subs.reduce((sum, s) => sum + (s.score || 0), 0);
     const avgScore = subs.length > 0 ? Math.round(totalScore / subs.length) : 0;
-    const passedCount = subs.filter(s => {
-      const percentage = ((s.score || 0) / assignment.max_points) * 100;
-      return percentage >= kkm;
-    }).length;
+    const passedCount = subs.filter(s => (s.score || 0) >= kkm).length;
     
     return {
       id: assignment.id,
@@ -433,7 +427,7 @@ const TeacherAnalytics = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stats.passRate}%</p>
-                  <p className="text-sm text-muted-foreground">Pass Rate (KKM: {stats.kkm})</p>
+                  <p className="text-sm text-muted-foreground">Pass Rate (KKM: {stats.kkm} pts)</p>
                 </div>
               </div>
             </CardContent>
@@ -612,7 +606,7 @@ const TeacherAnalytics = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <Badge variant="secondary">{item.kkm}%</Badge>
+                          <Badge variant="secondary">{item.kkm} pts</Badge>
                         </td>
                         <td className="py-3 px-4 text-center">
                           <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
