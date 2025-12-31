@@ -14,6 +14,9 @@ export interface Exam {
   start_date: string | null;
   end_date: string | null;
   kkm: number | null;
+  risk_on_missed: boolean;
+  risk_on_below_kkm: boolean;
+  risk_severity: 'high' | 'medium' | 'low' | null;
   created_at: string;
   updated_at: string;
 }

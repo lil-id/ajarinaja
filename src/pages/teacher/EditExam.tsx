@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
 import { useUpdateQuestion, useDeleteQuestion, useAddQuestion } from '@/hooks/useQuestions';
 import { useQuestionBank, useIncrementQuestionUsage, useSaveExamQuestionsToBank } from '@/hooks/useQuestionBank';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -38,6 +38,9 @@ const EditExam = () => {
     start_date: '',
     end_date: '',
     kkm: 60,
+    risk_on_missed: false,
+    risk_on_below_kkm: false,
+    risk_severity: 'medium' as 'high' | 'medium' | 'low',
   });
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -72,6 +75,9 @@ const EditExam = () => {
         start_date: exam.start_date ? new Date(exam.start_date).toISOString().slice(0, 16) : '',
         end_date: exam.end_date ? new Date(exam.end_date).toISOString().slice(0, 16) : '',
         kkm: (exam as any).kkm || 60,
+        risk_on_missed: (exam as any).risk_on_missed || false,
+        risk_on_below_kkm: (exam as any).risk_on_below_kkm || false,
+        risk_severity: (exam as any).risk_severity || 'medium',
       });
       setQuestions(exam.questions || []);
     }
@@ -87,6 +93,9 @@ const EditExam = () => {
         start_date: examForm.start_date ? new Date(examForm.start_date).toISOString() : null,
         end_date: examForm.end_date ? new Date(examForm.end_date).toISOString() : null,
         kkm: examForm.kkm,
+        risk_on_missed: examForm.risk_on_missed,
+        risk_on_below_kkm: examForm.risk_on_below_kkm,
+        risk_severity: examForm.risk_severity,
       });
       toast.success('Exam updated successfully');
     } catch (error) {
@@ -342,6 +351,64 @@ const EditExam = () => {
               onChange={(e) => setExamForm({ ...examForm, kkm: Number(e.target.value) })}
             />
             <p className="text-xs text-muted-foreground">Percentage required to pass</p>
+          </div>
+
+          {/* At-Risk Monitoring */}
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <Label className="font-medium">At-Risk Monitoring</Label>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Configure which conditions will flag students as at-risk for this exam.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                <div>
+                  <Label className="text-sm">Flag if Missed</Label>
+                  <p className="text-xs text-muted-foreground">Student doesn't submit this exam</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={examForm.risk_on_missed}
+                  onChange={(e) => setExamForm({ ...examForm, risk_on_missed: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                <div>
+                  <Label className="text-sm">Flag if Below KKM</Label>
+                  <p className="text-xs text-muted-foreground">Score is below the passing grade</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={examForm.risk_on_below_kkm}
+                  onChange={(e) => setExamForm({ ...examForm, risk_on_below_kkm: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+              </div>
+            </div>
+            {(examForm.risk_on_missed || examForm.risk_on_below_kkm) && (
+              <div className="space-y-2">
+                <Label className="text-sm">Risk Severity</Label>
+                <Select
+                  value={examForm.risk_severity}
+                  onValueChange={(v: 'high' | 'medium' | 'low') => setExamForm({ ...examForm, risk_severity: v })}
+                >
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">High Risk</SelectItem>
+                    <SelectItem value="medium">Medium Risk</SelectItem>
+                    <SelectItem value="low">Low Risk</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Choose how this exam affects a student's overall risk level
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRiskSettings } from './useRiskSettings';
 
 export interface AtRiskStudent {
   studentId: string;
@@ -22,11 +21,11 @@ export interface RiskFactor {
   examIds?: string[];
   assignmentIds?: string[];
   courseId?: string;
+  itemTitle?: string;
 }
 
 export function useAtRiskStudents() {
   const { user } = useAuth();
-  const { settings: riskSettings } = useRiskSettings();
 
   const { data: teacherCourses = [] } = useQuery({
     queryKey: ['teacher-courses', user?.id],
@@ -120,7 +119,7 @@ export function useAtRiskStudents() {
     enabled: courseIds.length > 0,
   });
 
-  // Fetch exams
+  // Fetch exams (with risk settings)
   const { data: exams = [] } = useQuery({
     queryKey: ['at-risk-exams', courseIds],
     queryFn: async () => {
@@ -151,7 +150,7 @@ export function useAtRiskStudents() {
     enabled: courseIds.length > 0,
   });
 
-  // Fetch assignments
+  // Fetch assignments (with risk settings)
   const { data: assignments = [] } = useQuery({
     queryKey: ['at-risk-assignments', courseIds],
     queryFn: async () => {
@@ -167,7 +166,7 @@ export function useAtRiskStudents() {
     enabled: courseIds.length > 0,
   });
 
-  // Calculate at-risk students using customizable thresholds
+  // Calculate at-risk students using per-item risk criteria
   const atRiskStudents = useMemo(() => {
     const courseMap = new Map(teacherCourses.map(c => [c.id, c.title]));
     const profileMap = new Map(profiles.map(p => [p.user_id, p]));
@@ -183,7 +182,7 @@ export function useAtRiskStudents() {
       const courseName = courseMap.get(courseId) || 'Unknown Course';
       const riskFactors: RiskFactor[] = [];
       
-      // Check for low material views
+      // Check for low material views (as general engagement indicator)
       const courseMaterials = materials.filter(m => m.course_id === courseId);
       const studentMaterialViews = materialViews.filter(
         (v: any) => v.student_id === enrollment.student_id && v.course_materials?.course_id === courseId
@@ -193,109 +192,106 @@ export function useAtRiskStudents() {
         ? (studentMaterialViews.length / courseMaterials.length) * 100 
         : 100;
       
-      if (courseMaterials.length > 0 && materialViewPercent < riskSettings.low_risk_material_view_percent) {
+      // Low material engagement (general indicator, always checked)
+      if (courseMaterials.length > 0 && materialViewPercent < 50 && studentMaterialViews.length === 0) {
         riskFactors.push({
           type: 'no_material_views',
           description: `Viewed ${studentMaterialViews.length} of ${courseMaterials.length} materials (${Math.round(materialViewPercent)}%)`,
-          severity: studentMaterialViews.length === 0 ? 'medium' : 'low',
+          severity: 'low',
           courseId,
         });
       }
       
-      // Check for no exam submissions
-      const courseExams = exams.filter(e => e.course_id === courseId);
+      // Check exams with per-item risk criteria
+      const courseExams = exams.filter((e: any) => e.course_id === courseId);
       const studentExamSubmissions = examSubmissions.filter(
         (s: any) => s.student_id === enrollment.student_id && s.exams?.course_id === courseId
       );
       
-      if (courseExams.length > 0 && studentExamSubmissions.length === 0) {
-        const unsubmittedExamIds = courseExams.map(e => e.id);
-        riskFactors.push({
-          type: 'no_exam_submissions',
-          description: `Has not submitted any of ${courseExams.length} exams`,
-          severity: 'high',
-          examIds: unsubmittedExamIds,
-        });
-      }
-      
-      // Check for scores below KKM (using teacher's customized threshold)
-      const gradedExamSubmissions = studentExamSubmissions.filter((s: any) => s.graded && s.score !== null);
-      const belowKkmExams: string[] = [];
-      
-      gradedExamSubmissions.forEach((sub: any) => {
-        const exam = courseExams.find(e => e.id === sub.exam_id);
-        if (exam && exam.kkm && sub.score < exam.kkm) {
-          belowKkmExams.push(sub.exam_id);
+      courseExams.forEach((exam: any) => {
+        const submission = studentExamSubmissions.find((s: any) => s.exam_id === exam.id);
+        const now = new Date();
+        const endDate = exam.end_date ? new Date(exam.end_date) : null;
+        const isPastDeadline = endDate && now > endDate;
+        
+        // Check if exam has risk_on_missed enabled and student hasn't submitted
+        if (exam.risk_on_missed && isPastDeadline && !submission) {
+          const severity = exam.risk_severity || 'medium';
+          riskFactors.push({
+            type: 'no_exam_submissions',
+            description: `Missed exam: "${exam.title}"`,
+            severity,
+            examIds: [exam.id],
+            itemTitle: exam.title,
+          });
+        }
+        
+        // Check if exam has risk_on_below_kkm enabled and score is below KKM
+        if (exam.risk_on_below_kkm && submission && submission.graded && submission.score !== null) {
+          if (exam.kkm && submission.score < exam.kkm) {
+            const severity = exam.risk_severity || 'medium';
+            riskFactors.push({
+              type: 'below_kkm',
+              description: `Below KKM on exam "${exam.title}" (${submission.score}/${exam.kkm})`,
+              severity,
+              examIds: [exam.id],
+              itemTitle: exam.title,
+            });
+          }
         }
       });
       
-      // Check assignment scores below KKM too
-      const courseAssignments = assignments.filter(a => a.course_id === courseId);
+      // Check assignments with per-item risk criteria
+      const courseAssignments = assignments.filter((a: any) => a.course_id === courseId);
       const studentAssignmentSubmissions = assignmentSubmissions.filter(
         (s: any) => s.student_id === enrollment.student_id && s.assignments?.course_id === courseId
       );
       
-      const belowKkmAssignments: string[] = [];
-      studentAssignmentSubmissions.forEach((sub: any) => {
-        const assignment = courseAssignments.find(a => a.id === sub.assignment_id);
-        if (assignment && assignment.kkm && sub.graded && sub.score !== null && sub.score < assignment.kkm) {
-          belowKkmAssignments.push(sub.assignment_id);
+      const now = new Date();
+      
+      courseAssignments.forEach((assignment: any) => {
+        const submission = studentAssignmentSubmissions.find((s: any) => s.assignment_id === assignment.id);
+        const dueDate = new Date(assignment.due_date);
+        const isPastDeadline = now > dueDate;
+        
+        // Check if assignment has risk_on_missed enabled and student hasn't submitted
+        if (assignment.risk_on_missed && isPastDeadline && !submission) {
+          const severity = assignment.risk_severity || 'medium';
+          riskFactors.push({
+            type: 'missed_deadline',
+            description: `Missed assignment: "${assignment.title}"`,
+            severity,
+            assignmentIds: [assignment.id],
+            itemTitle: assignment.title,
+          });
+        }
+        
+        // Check if assignment has risk_on_late enabled and submission is late
+        if (assignment.risk_on_late && submission && submission.is_late) {
+          const severity = assignment.risk_severity || 'low';
+          riskFactors.push({
+            type: 'late_submission',
+            description: `Late submission: "${assignment.title}"`,
+            severity,
+            assignmentIds: [assignment.id],
+            itemTitle: assignment.title,
+          });
+        }
+        
+        // Check if assignment has risk_on_below_kkm enabled and score is below KKM
+        if (assignment.risk_on_below_kkm && submission && submission.graded && submission.score !== null) {
+          if (assignment.kkm && submission.score < assignment.kkm) {
+            const severity = assignment.risk_severity || 'medium';
+            riskFactors.push({
+              type: 'below_kkm',
+              description: `Below KKM on "${assignment.title}" (${submission.score}/${assignment.kkm})`,
+              severity,
+              assignmentIds: [assignment.id],
+              itemTitle: assignment.title,
+            });
+          }
         }
       });
-      
-      const totalBelowKkm = belowKkmExams.length + belowKkmAssignments.length;
-      
-      if (totalBelowKkm >= riskSettings.high_risk_below_kkm_count) {
-        riskFactors.push({
-          type: 'below_kkm',
-          description: `${totalBelowKkm} score${totalBelowKkm > 1 ? 's' : ''} below KKM`,
-          severity: 'high',
-          examIds: belowKkmExams,
-          assignmentIds: belowKkmAssignments,
-        });
-      } else if (totalBelowKkm >= riskSettings.medium_risk_below_kkm_count) {
-        riskFactors.push({
-          type: 'below_kkm',
-          description: `${totalBelowKkm} score${totalBelowKkm > 1 ? 's' : ''} below KKM`,
-          severity: 'medium',
-          examIds: belowKkmExams,
-          assignmentIds: belowKkmAssignments,
-        });
-      }
-      
-      // Check for missed deadlines (assignments not submitted after due date)
-      const now = new Date();
-      const pastDueAssignments = courseAssignments.filter(a => new Date(a.due_date) < now);
-      const missedAssignments = pastDueAssignments.filter(
-        a => !studentAssignmentSubmissions.some((s: any) => s.assignment_id === a.id)
-      );
-      
-      if (missedAssignments.length >= riskSettings.high_risk_missed_assignments) {
-        riskFactors.push({
-          type: 'missed_deadline',
-          description: `Missed ${missedAssignments.length} assignment deadline${missedAssignments.length > 1 ? 's' : ''}`,
-          severity: 'high',
-          assignmentIds: missedAssignments.map(a => a.id),
-        });
-      } else if (missedAssignments.length >= riskSettings.medium_risk_missed_assignments) {
-        riskFactors.push({
-          type: 'missed_deadline',
-          description: `Missed ${missedAssignments.length} assignment deadline${missedAssignments.length > 1 ? 's' : ''}`,
-          severity: 'medium',
-          assignmentIds: missedAssignments.map(a => a.id),
-        });
-      }
-      
-      // Check for late submissions
-      const lateSubmissions = studentAssignmentSubmissions.filter((s: any) => s.is_late);
-      if (lateSubmissions.length >= riskSettings.low_risk_late_submissions) {
-        riskFactors.push({
-          type: 'late_submission',
-          description: `${lateSubmissions.length} late submission${lateSubmissions.length > 1 ? 's' : ''}`,
-          severity: 'low',
-          assignmentIds: lateSubmissions.map((s: any) => s.assignment_id),
-        });
-      }
       
       // Only add if there are risk factors
       if (riskFactors.length > 0) {
@@ -326,7 +322,7 @@ export function useAtRiskStudents() {
       const riskOrder = { high: 0, medium: 1, low: 2 };
       return riskOrder[a.riskLevel] - riskOrder[b.riskLevel];
     });
-  }, [enrollments, profiles, materials, materialViews, exams, examSubmissions, assignments, assignmentSubmissions, teacherCourses, riskSettings]);
+  }, [enrollments, profiles, materials, materialViews, exams, examSubmissions, assignments, assignmentSubmissions, teacherCourses]);
 
   return {
     atRiskStudents,
