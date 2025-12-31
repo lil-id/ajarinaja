@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export default function SubmitAssignment() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -246,16 +247,51 @@ export default function SubmitAssignment() {
               <Label className="text-sm text-muted-foreground">Your Answers</Label>
               {questions.map((q, index) => {
                 const answer = submission.answers[q.id];
+                const isCorrect = q.type === 'multiple-choice' 
+                  ? answer === q.correct_answer
+                  : q.type === 'multi-select' && q.correct_answers
+                    ? (answer as number[])?.length === q.correct_answers.length &&
+                      (answer as number[])?.every(a => q.correct_answers!.includes(a))
+                    : null;
+                
                 return (
-                  <div key={q.id} className="p-3 border rounded-lg space-y-2">
-                    <p className="font-medium">{index + 1}. {q.question}</p>
-                    <div className="text-sm text-muted-foreground">
-                      {q.type === 'essay' && <p className="whitespace-pre-wrap">{answer as string || 'No answer'}</p>}
+                  <div key={q.id} className={cn(
+                    "p-3 border rounded-lg space-y-2",
+                    submission.graded && q.type !== 'essay' && (
+                      isCorrect ? "border-green-300 bg-green-50 dark:bg-green-900/10" : "border-red-300 bg-red-50 dark:bg-red-900/10"
+                    )
+                  )}>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium">{index + 1}. {q.question}</p>
+                      {submission.graded && q.type !== 'essay' && (
+                        <Badge variant={isCorrect ? "default" : "destructive"} className="flex-shrink-0">
+                          {isCorrect ? 'Correct' : 'Incorrect'}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm">
+                      {q.type === 'essay' && (
+                        <div className="text-muted-foreground whitespace-pre-wrap">{answer as string || 'No answer'}</div>
+                      )}
                       {q.type === 'multiple-choice' && q.options && (
-                        <p>{(q.options as string[])[answer as number] || 'No answer'}</p>
+                        <div className="space-y-1">
+                          <p><span className="font-medium">Your answer:</span> {(q.options as string[])[answer as number] || 'No answer'}</p>
+                          {submission.graded && !isCorrect && q.correct_answer !== null && (
+                            <p className="text-green-600 dark:text-green-400">
+                              <span className="font-medium">Correct answer:</span> {(q.options as string[])[q.correct_answer]}
+                            </p>
+                          )}
+                        </div>
                       )}
                       {q.type === 'multi-select' && q.options && (
-                        <p>{(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || 'No answer'}</p>
+                        <div className="space-y-1">
+                          <p><span className="font-medium">Your answer:</span> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || 'No answer'}</p>
+                          {submission.graded && !isCorrect && q.correct_answers && (
+                            <p className="text-green-600 dark:text-green-400">
+                              <span className="font-medium">Correct answers:</span> {q.correct_answers.map(i => (q.options as string[])[i]).join(', ')}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
