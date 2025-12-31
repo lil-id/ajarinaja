@@ -166,11 +166,39 @@ export function useDeleteAssignment() {
   });
 }
 
-// Submissions hooks
-export function useAssignmentSubmissions(assignmentId: string) {
+// Submissions hooks - handles both file-based and question-based submissions
+export function useAssignmentSubmissions(assignmentId: string, assignmentType?: string) {
   return useQuery({
-    queryKey: ['assignment-submissions', assignmentId],
+    queryKey: ['assignment-submissions', assignmentId, assignmentType],
     queryFn: async () => {
+      // For question-based assignments, query assignment_question_submissions
+      if (assignmentType === 'questions') {
+        const { data: submissions, error } = await supabase
+          .from('assignment_question_submissions')
+          .select('*')
+          .eq('assignment_id', assignmentId);
+        
+        if (error) throw error;
+
+        const studentIds = [...new Set(submissions?.map(s => s.student_id) || [])];
+        
+        if (studentIds.length === 0) return [];
+        
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, name, email')
+          .in('user_id', studentIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+        return (submissions || []).map(s => ({
+          ...s,
+          answers: s.answers as Record<string, string | number | number[]>,
+          student: profileMap.get(s.student_id) || null,
+        }));
+      }
+      
+      // For file-based assignments (default)
       const { data: submissions, error } = await supabase
         .from('assignment_submissions')
         .select('*')
@@ -200,14 +228,31 @@ export function useAssignmentSubmissions(assignmentId: string) {
   });
 }
 
-export function useMyAssignmentSubmission(assignmentId: string) {
+export function useMyAssignmentSubmission(assignmentId: string, assignmentType?: string) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['my-assignment-submission', assignmentId, user?.id],
+    queryKey: ['my-assignment-submission', assignmentId, user?.id, assignmentType],
     queryFn: async () => {
       if (!user) return null;
       
+      // For question-based assignments
+      if (assignmentType === 'questions') {
+        const { data, error } = await supabase
+          .from('assignment_question_submissions')
+          .select('*')
+          .eq('assignment_id', assignmentId)
+          .eq('student_id', user.id)
+          .maybeSingle();
+        
+        if (error) throw error;
+        return data ? {
+          ...data,
+          answers: data.answers as Record<string, string | number | number[]>,
+        } : null;
+      }
+      
+      // For file-based assignments (default)
       const { data, error } = await supabase
         .from('assignment_submissions')
         .select('*')
