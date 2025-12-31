@@ -74,14 +74,56 @@ export function useMyBadges() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      // First get student badges with badge details
+      const { data: badgesData, error } = await supabase
         .from('student_badges')
         .select('*, badge:badges(*)')
         .eq('student_id', user.id)
         .order('awarded_at', { ascending: false });
       
       if (error) throw error;
-      return data as (StudentBadge & { badge: Badge })[];
+      if (!badgesData || badgesData.length === 0) return [];
+      
+      // Get unique teacher IDs and exam IDs
+      const teacherIds = [...new Set(badgesData.map(b => b.awarded_by))];
+      const examIds = [...new Set(badgesData.filter(b => b.exam_id).map(b => b.exam_id))];
+      
+      // Fetch teacher profiles
+      const { data: teachers } = await supabase
+        .from('profiles')
+        .select('user_id, name')
+        .in('user_id', teacherIds);
+      
+      // Fetch exams with course info
+      let examsWithCourses: any[] = [];
+      if (examIds.length > 0) {
+        const { data: exams } = await supabase
+          .from('exams')
+          .select('id, title, course_id')
+          .in('id', examIds as string[]);
+        
+        if (exams && exams.length > 0) {
+          const courseIds = [...new Set(exams.map(e => e.course_id))];
+          const { data: courses } = await supabase
+            .from('courses')
+            .select('id, title')
+            .in('id', courseIds);
+          
+          examsWithCourses = exams.map(e => ({
+            ...e,
+            course: courses?.find(c => c.id === e.course_id)
+          }));
+        }
+      }
+      
+      const teacherMap = new Map(teachers?.map(t => [t.user_id, t.name]) || []);
+      const examMap = new Map(examsWithCourses.map(e => [e.id, e]));
+      
+      return badgesData.map(b => ({
+        ...b,
+        teacher_name: teacherMap.get(b.awarded_by) || 'Unknown Teacher',
+        exam: b.exam_id ? examMap.get(b.exam_id) : null,
+      }));
     },
     enabled: !!user,
   });

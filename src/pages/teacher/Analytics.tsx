@@ -312,6 +312,8 @@ const TeacherAnalytics = () => {
                         tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                         axisLine={{ stroke: 'hsl(var(--border))' }}
                         label={{ value: 'Avg Score', angle: -90, position: 'insideLeft' }}
+                        allowDecimals={false}
+                        tickFormatter={(value) => Math.floor(value).toString()}
                       />
                       <Tooltip 
                         contentStyle={{ 

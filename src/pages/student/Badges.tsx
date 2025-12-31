@@ -54,7 +54,7 @@ const StudentBadges = () => {
         </Card>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {badges.map((studentBadge, index) => {
+          {badges.map((studentBadge: any, index: number) => {
             const badge = studentBadge.badge;
             const BadgeIcon = BADGE_ICONS[badge?.icon || 'award'] || Award;
             
@@ -75,6 +75,21 @@ const StudentBadges = () => {
                   {badge?.description && (
                     <p className="text-sm text-muted-foreground mt-1">{badge.description}</p>
                   )}
+                  
+                  {/* Teacher and Course info */}
+                  <div className="mt-3 space-y-1">
+                    {studentBadge.teacher_name && (
+                      <p className="text-xs text-muted-foreground">
+                        From: <span className="font-medium text-foreground">{studentBadge.teacher_name}</span>
+                      </p>
+                    )}
+                    {studentBadge.exam?.course?.title && (
+                      <p className="text-xs text-muted-foreground">
+                        Course: <span className="font-medium text-foreground">{studentBadge.exam.course.title}</span>
+                      </p>
+                    )}
+                  </div>
+                  
                   <p className="text-xs text-muted-foreground mt-3">
                     Awarded {format(new Date(studentBadge.awarded_at), 'MMM d, yyyy')}
                   </p>
