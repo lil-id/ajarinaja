@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -58,6 +58,10 @@ const formSchema = z.object({
   status: z.enum(['draft', 'published']),
   assignment_type: z.enum(['submission', 'questions']),
   kkm: z.coerce.number().min(0).max(100).optional(),
+  risk_on_missed: z.boolean(),
+  risk_on_below_kkm: z.boolean(),
+  risk_on_late: z.boolean(),
+  risk_severity: z.enum(['high', 'medium', 'low']),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -127,6 +131,10 @@ export default function CreateAssignment() {
       status: 'draft',
       assignment_type: 'submission',
       kkm: 60,
+      risk_on_missed: false,
+      risk_on_below_kkm: false,
+      risk_on_late: false,
+      risk_severity: 'medium',
     },
   });
 
@@ -151,6 +159,10 @@ export default function CreateAssignment() {
         status: existingAssignment.status as 'draft' | 'published',
         assignment_type: ((existingAssignment as any).assignment_type as 'submission' | 'questions') || 'submission',
         kkm: (existingAssignment as any).kkm || 60,
+        risk_on_missed: (existingAssignment as any).risk_on_missed || false,
+        risk_on_below_kkm: (existingAssignment as any).risk_on_below_kkm || false,
+        risk_on_late: (existingAssignment as any).risk_on_late || false,
+        risk_severity: (existingAssignment as any).risk_severity || 'medium',
       });
       setRubric(existingAssignment.rubric || []);
     }
@@ -298,6 +310,10 @@ export default function CreateAssignment() {
         rubric: data.assignment_type === 'submission' ? rubric.filter(r => r.criterion.trim()) : [],
         assignment_type: data.assignment_type,
         kkm: data.kkm,
+        risk_on_missed: data.risk_on_missed,
+        risk_on_below_kkm: data.risk_on_below_kkm,
+        risk_on_late: data.risk_on_late,
+        risk_severity: data.risk_severity,
       };
 
       if (isEditMode) {
@@ -660,6 +676,97 @@ export default function CreateAssignment() {
                         </FormControl>
                         <FormDescription>
                           Percentage deducted from score for late submissions
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              {/* At-Risk Monitoring */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-orange-500" />
+                  <Label className="font-medium">At-Risk Monitoring</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Configure which conditions will flag students as at-risk for this assignment.
+                </p>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="risk_on_missed"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <FormLabel className="text-sm">Flag if Missed</FormLabel>
+                          <FormDescription className="text-xs">
+                            Not submitted by deadline
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="risk_on_below_kkm"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <FormLabel className="text-sm">Flag if Below KKM</FormLabel>
+                          <FormDescription className="text-xs">
+                            Score below passing grade
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="risk_on_late"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div>
+                          <FormLabel className="text-sm">Flag if Late</FormLabel>
+                          <FormDescription className="text-xs">
+                            Submitted after deadline
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {(form.watch('risk_on_missed') || form.watch('risk_on_below_kkm') || form.watch('risk_on_late')) && (
+                  <FormField
+                    control={form.control}
+                    name="risk_severity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Risk Severity</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full sm:w-48">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="high">High Risk</SelectItem>
+                            <SelectItem value="medium">Medium Risk</SelectItem>
+                            <SelectItem value="low">Low Risk</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Choose how this assignment affects a student's overall risk level
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

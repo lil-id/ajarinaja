@@ -218,6 +218,10 @@ export type Database = {
           late_penalty_percent: number | null
           max_file_size_mb: number | null
           max_points: number
+          risk_on_below_kkm: boolean
+          risk_on_late: boolean
+          risk_on_missed: boolean
+          risk_severity: string | null
           rubric: Json | null
           status: string
           title: string
@@ -238,6 +242,10 @@ export type Database = {
           late_penalty_percent?: number | null
           max_file_size_mb?: number | null
           max_points?: number
+          risk_on_below_kkm?: boolean
+          risk_on_late?: boolean
+          risk_on_missed?: boolean
+          risk_severity?: string | null
           rubric?: Json | null
           status?: string
           title: string
@@ -258,6 +266,10 @@ export type Database = {
           late_penalty_percent?: number | null
           max_file_size_mb?: number | null
           max_points?: number
+          risk_on_below_kkm?: boolean
+          risk_on_late?: boolean
+          risk_on_missed?: boolean
+          risk_severity?: string | null
           rubric?: Json | null
           status?: string
           title?: string
@@ -510,6 +522,9 @@ export type Database = {
           end_date: string | null
           id: string
           kkm: number | null
+          risk_on_below_kkm: boolean
+          risk_on_missed: boolean
+          risk_severity: string | null
           start_date: string | null
           status: string
           title: string
@@ -525,6 +540,9 @@ export type Database = {
           end_date?: string | null
           id?: string
           kkm?: number | null
+          risk_on_below_kkm?: boolean
+          risk_on_missed?: boolean
+          risk_severity?: string | null
           start_date?: string | null
           status?: string
           title: string
@@ -540,6 +558,9 @@ export type Database = {
           end_date?: string | null
           id?: string
           kkm?: number | null
+          risk_on_below_kkm?: boolean
+          risk_on_missed?: boolean
+          risk_severity?: string | null
           start_date?: string | null
           status?: string
           title?: string

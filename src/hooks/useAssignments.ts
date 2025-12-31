@@ -24,6 +24,10 @@ export interface Assignment {
   allowed_file_types: string[] | null;
   rubric: RubricItem[];
   status: string;
+  risk_on_missed: boolean;
+  risk_on_below_kkm: boolean;
+  risk_on_late: boolean;
+  risk_severity: 'high' | 'medium' | 'low' | null;
   created_at: string;
   updated_at: string;
 }
