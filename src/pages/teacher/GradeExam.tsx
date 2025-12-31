@@ -55,11 +55,14 @@ const GradeExam = () => {
 
   // Calculate pass/fail based on KKM (Minimum Passing Grade) - must be before conditional returns
   const kkm = exam?.kkm || 0;
+  const totalPoints = exam?.total_points || 100;
 
   const getPassStatus = (submission: SubmissionWithStudent): 'passed' | 'failed' | 'pending' => {
     if (!submission.graded || submission.score === null) return 'pending';
-    if (kkm === 0) return 'pending';
-    return submission.score >= kkm ? 'passed' : 'failed';
+    if (kkm === 0 || totalPoints === 0) return 'pending';
+    // Calculate percentage: (score / total_points) * 100, then compare to KKM
+    const percentage = (submission.score / totalPoints) * 100;
+    return percentage >= kkm ? 'passed' : 'failed';
   };
 
   const filteredSubmissions = useMemo(() => {
