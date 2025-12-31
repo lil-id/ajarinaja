@@ -13,6 +13,7 @@ import { useCourses } from '@/hooks/useCourses';
 import { Clock, AlertCircle, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import FormulaText from '@/components/FormulaText';
 
 const TakeExam = () => {
   const { examId } = useParams();
@@ -237,7 +238,7 @@ const TakeExam = () => {
             )}
           </div>
           <CardTitle className="text-xl leading-relaxed">
-            {question.question}
+            <FormulaText text={question.question} />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -260,7 +261,7 @@ const TakeExam = () => {
                 >
                   <RadioGroupItem value={String(index)} id={`option-${index}`} />
                   <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                    {option}
+                    <FormulaText text={option} />
                   </Label>
                 </div>
               ))}
@@ -288,7 +289,7 @@ const TakeExam = () => {
                   >
                     <Checkbox checked={isSelected} />
                     <Label className="flex-1 cursor-pointer">
-                      {option}
+                      <FormulaText text={option} />
                     </Label>
                   </div>
                 );

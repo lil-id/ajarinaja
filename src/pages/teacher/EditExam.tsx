@@ -16,6 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import FormulaInput from '@/components/FormulaInput';
+import FormulaText from '@/components/FormulaText';
 
 const EditExam = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -445,7 +447,7 @@ const EditExam = () => {
                                   {q.points} pts
                                 </Badge>
                               </div>
-                              <p className="text-sm line-clamp-2">{q.question}</p>
+                              <p className="text-sm line-clamp-2"><FormulaText text={q.question} /></p>
                             </div>
                           </div>
                         ))}
@@ -494,10 +496,10 @@ const EditExam = () => {
                       <TabsTrigger value="essay">Essay</TabsTrigger>
                     </TabsList>
 
-                    <Textarea
-                      placeholder="Enter your question..."
+                    <FormulaInput
+                      placeholder="Enter your question (use $...$ for formulas)..."
                       value={newQuestion.question}
-                      onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                      onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
                     />
 
                     <TabsContent value="multiple-choice" className="mt-4 space-y-2">
@@ -510,12 +512,13 @@ const EditExam = () => {
                             onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
                             className="w-4 h-4"
                           />
-                          <Input
+                          <FormulaInput
+                            singleLine
                             placeholder={`Option ${i + 1}`}
                             value={opt}
-                            onChange={(e) => {
+                            onChange={(v) => {
                               const newOptions = [...newQuestion.options];
-                              newOptions[i] = e.target.value;
+                              newOptions[i] = v;
                               setNewQuestion({ ...newQuestion, options: newOptions });
                             }}
                           />
@@ -536,12 +539,13 @@ const EditExam = () => {
                               setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
                             }}
                           />
-                          <Input
+                          <FormulaInput
+                            singleLine
                             placeholder={`Option ${i + 1}`}
                             value={opt}
-                            onChange={(e) => {
+                            onChange={(v) => {
                               const newOptions = [...newQuestion.options];
-                              newOptions[i] = e.target.value;
+                              newOptions[i] = v;
                               setNewQuestion({ ...newQuestion, options: newOptions });
                             }}
                           />
@@ -608,11 +612,10 @@ const EditExam = () => {
                     </div>
                   </div>
 
-                  <Textarea
+                  <FormulaInput
                     value={q.question}
-                    onChange={(e) => updateLocalQuestion(index, { question: e.target.value })}
+                    onChange={(v) => updateLocalQuestion(index, { question: v })}
                     onBlur={() => handleUpdateQuestion(questions[index])}
-                    className="bg-background"
                   />
 
                   {q.type === 'multiple-choice' && q.options && (
@@ -629,15 +632,15 @@ const EditExam = () => {
                             }}
                             className="w-4 h-4"
                           />
-                          <Input
+                          <FormulaInput
+                            singleLine
                             value={opt}
-                            onChange={(e) => {
+                            onChange={(v) => {
                               const newOptions = [...(q.options as string[])];
-                              newOptions[optIndex] = e.target.value;
+                              newOptions[optIndex] = v;
                               updateLocalQuestion(index, { options: newOptions });
                             }}
                             onBlur={() => handleUpdateQuestion(questions[index])}
-                            className="bg-background"
                           />
                         </div>
                       ))}
@@ -660,15 +663,15 @@ const EditExam = () => {
                               handleUpdateQuestion({ ...questions[index], correct_answers: newAnswers });
                             }}
                           />
-                          <Input
+                          <FormulaInput
+                            singleLine
                             value={opt}
-                            onChange={(e) => {
+                            onChange={(v) => {
                               const newOptions = [...(q.options as string[])];
-                              newOptions[optIndex] = e.target.value;
+                              newOptions[optIndex] = v;
                               updateLocalQuestion(index, { options: newOptions });
                             }}
                             onBlur={() => handleUpdateQuestion(questions[index])}
-                            className="bg-background"
                           />
                         </div>
                       ))}
