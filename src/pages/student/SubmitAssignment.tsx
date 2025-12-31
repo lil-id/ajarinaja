@@ -25,8 +25,9 @@ export default function SubmitAssignment() {
   const queryClient = useQueryClient();
   
   const { data: assignment, isLoading: assignmentLoading } = useAssignment(assignmentId!);
-  const { data: submission, isLoading: submissionLoading } = useMyAssignmentSubmission(assignmentId!);
-  const { data: fileUrl } = useSubmissionFileUrl(submission?.file_path || null);
+  const isQuestionBased = (assignment as any)?.assignment_type === 'questions';
+  const { data: submission, isLoading: submissionLoading } = useMyAssignmentSubmission(assignmentId!, isQuestionBased ? 'questions' : 'submission');
+  const { data: fileUrl } = useSubmissionFileUrl(!isQuestionBased && submission && 'file_path' in submission ? submission.file_path : null);
   const { data: questions = [] } = useAssignmentQuestions(assignmentId!);
   const submitAssignment = useSubmitAssignment();
 
@@ -38,7 +39,6 @@ export default function SubmitAssignment() {
   const isLoading = assignmentLoading || submissionLoading;
   const isOverdue = assignment ? isPast(new Date(assignment.due_date)) : false;
   const canSubmit = assignment && (!isOverdue || assignment.allow_late_submissions) && !submission?.graded;
-  const isQuestionBased = (assignment as any)?.assignment_type === 'questions';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -189,8 +189,64 @@ export default function SubmitAssignment() {
         </div>
       )}
 
-      {/* Submission Already Made */}
-      {submission && (
+      {/* Submission Already Made - Question Based */}
+      {submission && isQuestionBased && 'answers' in submission && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Submitted
+            </CardTitle>
+            <CardDescription>
+              {format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Show submitted answers */}
+            <div className="space-y-4">
+              <Label className="text-sm text-muted-foreground">Your Answers</Label>
+              {questions.map((q, index) => {
+                const answer = submission.answers[q.id];
+                return (
+                  <div key={q.id} className="p-3 border rounded-lg space-y-2">
+                    <p className="font-medium">{index + 1}. {q.question}</p>
+                    <div className="text-sm text-muted-foreground">
+                      {q.type === 'essay' && <p className="whitespace-pre-wrap">{answer as string || 'No answer'}</p>}
+                      {q.type === 'multiple-choice' && q.options && (
+                        <p>{(q.options as string[])[answer as number] || 'No answer'}</p>
+                      )}
+                      {q.type === 'multi-select' && q.options && (
+                        <p>{(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || 'No answer'}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {submission.graded && (
+              <>
+                <Separator />
+                <div>
+                  <Label className="text-sm text-muted-foreground">Score</Label>
+                  <p className="text-2xl font-bold">
+                    {submission.score} / {assignment.max_points}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {!submission.graded && (
+              <p className="text-sm text-muted-foreground">
+                Your submission is pending review
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Submission Already Made - File Based */}
+      {submission && !isQuestionBased && 'file_path' in submission && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

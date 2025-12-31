@@ -25,16 +25,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAssignment, useAssignmentSubmissions, useGradeAssignment, useSubmissionFileUrl } from '@/hooks/useAssignments';
+import { useAssignmentQuestions } from '@/hooks/useAssignmentQuestions';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface GradeDialogProps {
   submission: any;
   assignment: any;
+  questions?: any[];
   open: boolean;
   onClose: () => void;
+  isQuestionBased: boolean;
 }
 
-function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps) {
+function GradeDialog({ submission, assignment, questions = [], open, onClose, isQuestionBased }: GradeDialogProps) {
   const [score, setScore] = useState(submission?.score?.toString() || '');
   const [feedback, setFeedback] = useState(submission?.feedback || '');
   const [rubricScores, setRubricScores] = useState<Record<string, number>>(
@@ -43,6 +49,8 @@ function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps
   
   const gradeAssignment = useGradeAssignment();
   const { data: fileUrl } = useSubmissionFileUrl(submission?.file_path);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const handleGrade = async () => {
     const finalScore = parseInt(score);
@@ -52,14 +60,31 @@ function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps
     }
 
     try {
-      await gradeAssignment.mutateAsync({
-        submissionId: submission.id,
-        score: finalScore,
-        feedback,
-        rubricScores: Object.entries(rubricScores).map(([id, score]) => ({ id, score })),
-      });
-      toast.success('Submission graded');
-      onClose();
+      if (isQuestionBased) {
+        // Grade question-based submission
+        const { error } = await supabase
+          .from('assignment_question_submissions')
+          .update({
+            score: finalScore,
+            graded: true,
+          })
+          .eq('id', submission.id);
+        
+        if (error) throw error;
+        queryClient.invalidateQueries({ queryKey: ['assignment-submissions'] });
+        toast.success('Submission graded');
+        onClose();
+      } else {
+        // Grade file-based submission
+        await gradeAssignment.mutateAsync({
+          submissionId: submission.id,
+          score: finalScore,
+          feedback,
+          rubricScores: Object.entries(rubricScores).map(([id, score]) => ({ id, score })),
+        });
+        toast.success('Submission graded');
+        onClose();
+      }
     } catch {
       toast.error('Failed to grade submission');
     }
@@ -86,7 +111,47 @@ function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps
             </p>
           </div>
 
-          {submission?.file_name && (
+          {/* Question-based submission view */}
+          {isQuestionBased && submission?.answers && (
+            <div className="space-y-3">
+              <Label>Student Answers</Label>
+              {questions.map((q, index) => {
+                const answer = submission.answers[q.id];
+                return (
+                  <div key={q.id} className="p-3 border rounded-lg space-y-2">
+                    <div className="flex justify-between items-start">
+                      <p className="font-medium text-sm">{index + 1}. {q.question}</p>
+                      <Badge variant="outline">{q.points} pts</Badge>
+                    </div>
+                    <div className="text-sm bg-muted p-2 rounded">
+                      {q.type === 'essay' && (
+                        <p className="whitespace-pre-wrap">{answer as string || 'No answer'}</p>
+                      )}
+                      {q.type === 'multiple-choice' && q.options && (
+                        <div>
+                          <p><strong>Answer:</strong> {(q.options as string[])[answer as number] || 'No answer'}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Correct: {(q.options as string[])[q.correct_answer]}
+                          </p>
+                        </div>
+                      )}
+                      {q.type === 'multi-select' && q.options && (
+                        <div>
+                          <p><strong>Answer:</strong> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || 'No answer'}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Correct: {q.correct_answers?.map((i: number) => (q.options as string[])[i]).join(', ')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* File-based submission view */}
+          {!isQuestionBased && submission?.file_name && (
             <div className="space-y-2">
               <Label>Submitted File</Label>
               <div className="flex items-center gap-2">
@@ -104,7 +169,7 @@ function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps
             </div>
           )}
 
-          {submission?.text_content && (
+          {!isQuestionBased && submission?.text_content && (
             <div className="space-y-2">
               <Label>Text Submission</Label>
               <div className="p-3 bg-muted rounded-md text-sm whitespace-pre-wrap">
@@ -113,7 +178,8 @@ function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps
             </div>
           )}
 
-          {assignment?.rubric?.length > 0 && (
+          {/* Rubric scoring for file-based */}
+          {!isQuestionBased && assignment?.rubric?.length > 0 && (
             <div className="space-y-3">
               <Label>Rubric Scoring</Label>
               {assignment.rubric.map((item: any) => (
@@ -158,15 +224,17 @@ function GradeDialog({ submission, assignment, open, onClose }: GradeDialogProps
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Feedback</Label>
-            <Textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Provide feedback to the student..."
-              rows={4}
-            />
-          </div>
+          {!isQuestionBased && (
+            <div className="space-y-2">
+              <Label>Feedback</Label>
+              <Textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Provide feedback to the student..."
+                rows={4}
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
@@ -184,15 +252,21 @@ export default function AssignmentSubmissions() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const { data: assignment, isLoading: assignmentLoading } = useAssignment(assignmentId!);
-  const { data: submissions = [], isLoading: submissionsLoading } = useAssignmentSubmissions(assignmentId!);
+  
+  const isQuestionBased = (assignment as any)?.assignment_type === 'questions';
+  const { data: submissions = [], isLoading: submissionsLoading } = useAssignmentSubmissions(
+    assignmentId!, 
+    isQuestionBased ? 'questions' : 'submission'
+  );
+  const { data: questions = [] } = useAssignmentQuestions(assignmentId!);
   const [gradeSubmission, setGradeSubmission] = useState<any>(null);
 
   const isLoading = assignmentLoading || submissionsLoading;
 
-  const gradedCount = submissions.filter(s => s.graded).length;
-  const lateCount = submissions.filter(s => s.is_late).length;
-  const avgScore = submissions.filter(s => s.graded && s.score !== null)
-    .reduce((sum, s) => sum + (s.score || 0), 0) / (gradedCount || 1);
+  const gradedCount = submissions.filter((s: any) => s.graded).length;
+  const lateCount = submissions.filter((s: any) => s.is_late).length;
+  const avgScore = submissions.filter((s: any) => s.graded && s.score !== null)
+    .reduce((sum: number, s: any) => sum + (s.score || 0), 0) / (gradedCount || 1);
 
   if (isLoading) {
     return (
@@ -209,11 +283,16 @@ export default function AssignmentSubmissions() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/teacher/assignments')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">{assignment.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">{assignment.title}</h1>
+            <Badge variant="outline">
+              {isQuestionBased ? 'Question-Based' : 'File Submission'}
+            </Badge>
+          </div>
           <p className="text-muted-foreground">
             Due: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
           </p>
@@ -236,12 +315,14 @@ export default function AssignmentSubmissions() {
             <Progress value={(gradedCount / submissions.length) * 100 || 0} className="h-2" />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Late Submissions</CardDescription>
-            <CardTitle className="text-2xl">{lateCount}</CardTitle>
-          </CardHeader>
-        </Card>
+        {!isQuestionBased && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Late Submissions</CardDescription>
+              <CardTitle className="text-2xl">{lateCount}</CardTitle>
+            </CardHeader>
+          </Card>
+        )}
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Average Score</CardDescription>
@@ -273,7 +354,7 @@ export default function AssignmentSubmissions() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {submissions.map((submission) => (
+                {submissions.map((submission: any) => (
                   <TableRow key={submission.id}>
                     <TableCell>
                       <div>
@@ -331,8 +412,10 @@ export default function AssignmentSubmissions() {
         <GradeDialog
           submission={gradeSubmission}
           assignment={assignment}
+          questions={questions}
           open={!!gradeSubmission}
           onClose={() => setGradeSubmission(null)}
+          isQuestionBased={isQuestionBased}
         />
       )}
     </div>
