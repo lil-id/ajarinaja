@@ -4,17 +4,46 @@ import { Button } from '@/components/ui/button';
 import { useCourses } from '@/hooks/useCourses';
 import { useEnrollments, useEnroll } from '@/hooks/useEnrollments';
 import { useExams } from '@/hooks/useExams';
-import { BookOpen, FileText, Award, ArrowRight, Loader2 } from 'lucide-react';
+import { useAssignments } from '@/hooks/useAssignments';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { BookOpen, FileText, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const StudentDashboard = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const { exams, isLoading: examsLoading } = useExams();
+  const { data: assignments = [] } = useAssignments();
   const enroll = useEnroll();
+
+  // Get completed assignments count
+  const { data: completedAssignments = 0 } = useQuery({
+    queryKey: ['completed-assignments-count', user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      
+      // Count file-based submissions
+      const { count: fileCount } = await supabase
+        .from('assignment_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('student_id', user.id)
+        .eq('graded', true);
+      
+      // Count question-based submissions
+      const { count: questionCount } = await supabase
+        .from('assignment_question_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('student_id', user.id)
+        .eq('graded', true);
+      
+      return (fileCount || 0) + (questionCount || 0);
+    },
+    enabled: !!user,
+  });
 
   const isLoading = coursesLoading || enrollmentsLoading || examsLoading;
 
@@ -81,12 +110,12 @@ const StudentDashboard = () => {
         </Card>
         <Card 
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/student/results')}
+          onClick={() => navigate('/student/assignments')}
         >
           <CardContent className="p-6 text-center">
-            <Award className="w-8 h-8 text-accent mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">0</p>
-            <p className="text-sm text-muted-foreground">Completed</p>
+            <CheckCircle className="w-8 h-8 text-accent mx-auto mb-2" />
+            <p className="text-2xl font-bold text-foreground">{completedAssignments}</p>
+            <p className="text-sm text-muted-foreground">Graded Assignments</p>
           </CardContent>
         </Card>
       </div>

@@ -97,18 +97,57 @@ export default function SubmitAssignment() {
 
     setIsSubmittingQuestions(true);
     try {
+      // Auto-grade MC and multi-select questions
+      let autoScore = 0;
+      let totalAutoGradablePoints = 0;
+      let hasEssayQuestions = false;
+
+      questions.forEach(q => {
+        const studentAnswer = answers[q.id];
+        
+        if (q.type === 'multiple-choice' && q.correct_answer !== null) {
+          totalAutoGradablePoints += q.points;
+          if (studentAnswer === q.correct_answer) {
+            autoScore += q.points;
+          }
+        } else if (q.type === 'multi-select' && q.correct_answers) {
+          totalAutoGradablePoints += q.points;
+          const studentAnswers = (studentAnswer as number[]) || [];
+          const correctAnswers = q.correct_answers;
+          // Full credit if arrays match exactly
+          const isCorrect = 
+            studentAnswers.length === correctAnswers.length &&
+            studentAnswers.every(a => correctAnswers.includes(a));
+          if (isCorrect) {
+            autoScore += q.points;
+          }
+        } else if (q.type === 'essay') {
+          hasEssayQuestions = true;
+        }
+      });
+
+      // If all questions are auto-gradable, mark as graded
+      const isFullyAutoGraded = !hasEssayQuestions;
+
       const { error } = await supabase
         .from('assignment_question_submissions')
         .insert({
           assignment_id: assignment.id,
           student_id: user.id,
           answers: answers,
+          score: isFullyAutoGraded ? autoScore : null,
+          graded: isFullyAutoGraded,
         });
 
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ['my-assignment-submission', assignmentId] });
-      toast.success('Assignment submitted successfully!');
+      
+      if (isFullyAutoGraded) {
+        toast.success(`Assignment submitted! Your score: ${autoScore} / ${assignment.max_points}`);
+      } else {
+        toast.success('Assignment submitted successfully! Awaiting teacher review for essay questions.');
+      }
       navigate('/student/assignments');
     } catch {
       toast.error('Failed to submit assignment');
@@ -233,6 +272,14 @@ export default function SubmitAssignment() {
                     {submission.score} / {assignment.max_points}
                   </p>
                 </div>
+                {'feedback' in submission && submission.feedback && (
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Teacher Feedback</Label>
+                    <p className="text-sm mt-1 whitespace-pre-wrap p-3 bg-muted rounded-lg">
+                      {submission.feedback}
+                    </p>
+                  </div>
+                )}
               </>
             )}
 
