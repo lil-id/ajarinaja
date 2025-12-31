@@ -206,6 +206,7 @@ export type Database = {
         Row: {
           allow_late_submissions: boolean
           allowed_file_types: string[] | null
+          archived: boolean
           assignment_type: string | null
           course_id: string
           created_at: string
@@ -225,6 +226,7 @@ export type Database = {
         Insert: {
           allow_late_submissions?: boolean
           allowed_file_types?: string[] | null
+          archived?: boolean
           assignment_type?: string | null
           course_id: string
           created_at?: string
@@ -244,6 +246,7 @@ export type Database = {
         Update: {
           allow_late_submissions?: boolean
           allowed_file_types?: string[] | null
+          archived?: boolean
           assignment_type?: string | null
           course_id?: string
           created_at?: string
@@ -499,6 +502,7 @@ export type Database = {
       }
       exams: {
         Row: {
+          archived: boolean
           course_id: string
           created_at: string
           description: string | null
@@ -513,6 +517,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived?: boolean
           course_id: string
           created_at?: string
           description?: string | null
@@ -527,6 +532,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived?: boolean
           course_id?: string
           created_at?: string
           description?: string | null
