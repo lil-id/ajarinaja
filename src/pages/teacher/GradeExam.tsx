@@ -54,15 +54,15 @@ const GradeExam = () => {
   const isLoading = examLoading || submissionsLoading;
 
   // Calculate pass/fail based on KKM (Minimum Passing Grade) - must be before conditional returns
+  // KKM is an integer threshold (e.g., 80) - student passes if their score >= kkm
   const kkm = exam?.kkm || 0;
   const totalPoints = exam?.total_points || 100;
 
   const getPassStatus = (submission: SubmissionWithStudent): 'passed' | 'failed' | 'pending' => {
     if (!submission.graded || submission.score === null) return 'pending';
-    if (kkm === 0 || totalPoints === 0) return 'pending';
-    // Calculate percentage: (score / total_points) * 100, then compare to KKM
-    const percentage = (submission.score / totalPoints) * 100;
-    return percentage >= kkm ? 'passed' : 'failed';
+    if (kkm === 0) return 'pending';
+    // Direct comparison: score >= kkm (both are integers)
+    return submission.score >= kkm ? 'passed' : 'failed';
   };
 
   const filteredSubmissions = useMemo(() => {
@@ -204,10 +204,10 @@ const GradeExam = () => {
   const ungradedCount = submissions.filter(s => !s.graded).length;
   const gradedCount = submissions.filter(s => s.graded).length;
   
-  // Pass/fail counting based on KKM
+  // Pass/fail counting based on KKM (direct integer comparison)
   const gradedSubmissions = submissions.filter(s => s.graded && s.score !== null);
-  const passedCount = gradedSubmissions.filter(s => s.score !== null && s.score >= kkm).length;
-  const failedCount = gradedSubmissions.filter(s => s.score !== null && s.score < kkm).length;
+  const passedCount = kkm > 0 ? gradedSubmissions.filter(s => s.score !== null && s.score >= kkm).length : 0;
+  const failedCount = kkm > 0 ? gradedSubmissions.filter(s => s.score !== null && s.score < kkm).length : 0;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -221,6 +221,11 @@ const GradeExam = () => {
           <p className="text-muted-foreground">Grade student submissions</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {kkm > 0 && (
+            <Badge variant="outline" className="text-sm bg-blue-50 text-blue-700 border-blue-300">
+              KKM: {kkm} pts
+            </Badge>
+          )}
           <Badge variant="outline" className="text-sm">
             {ungradedCount} ungraded
           </Badge>
@@ -278,8 +283,8 @@ const GradeExam = () => {
                     className={cn(
                       "border-0 shadow-card cursor-pointer transition-all hover:shadow-card-hover",
                       selectedSubmission?.id === submission.id && "ring-2 ring-secondary",
-                      passStatus === 'passed' && "border-l-4 border-l-green-500",
-                      passStatus === 'failed' && "border-l-4 border-l-red-500"
+                      passStatus === 'passed' && "border-l-4 border-l-green-500 bg-green-50/50",
+                      passStatus === 'failed' && "border-l-4 border-l-red-500 bg-red-50/50"
                     )}
                     onClick={() => handleSelectSubmission(submission)}
                   >
