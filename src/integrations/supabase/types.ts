@@ -53,6 +53,7 @@ export type Database = {
         Row: {
           answers: Json
           assignment_id: string
+          feedback: string | null
           graded: boolean
           id: string
           score: number | null
@@ -62,6 +63,7 @@ export type Database = {
         Insert: {
           answers?: Json
           assignment_id: string
+          feedback?: string | null
           graded?: boolean
           id?: string
           score?: number | null
@@ -71,6 +73,7 @@ export type Database = {
         Update: {
           answers?: Json
           assignment_id?: string
+          feedback?: string | null
           graded?: boolean
           id?: string
           score?: number | null

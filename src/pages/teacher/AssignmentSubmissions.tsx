@@ -61,12 +61,13 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
 
     try {
       if (isQuestionBased) {
-        // Grade question-based submission
+        // Grade question-based submission with feedback
         const { error } = await supabase
           .from('assignment_question_submissions')
           .update({
             score: finalScore,
             graded: true,
+            feedback: feedback || null,
           })
           .eq('id', submission.id);
         
@@ -224,17 +225,15 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
             </div>
           </div>
 
-          {!isQuestionBased && (
-            <div className="space-y-2">
-              <Label>Feedback</Label>
-              <Textarea
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Provide feedback to the student..."
-                rows={4}
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label>Feedback</Label>
+            <Textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder="Provide feedback to the student..."
+              rows={4}
+            />
+          </div>
 
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
