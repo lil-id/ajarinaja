@@ -88,9 +88,9 @@ export function useMyBadges() {
       const teacherIds = [...new Set(badgesData.map(b => b.awarded_by))];
       const examIds = [...new Set(badgesData.filter(b => b.exam_id).map(b => b.exam_id))];
       
-      // Fetch teacher profiles
+      // Fetch teacher profiles using public_profiles view (accessible to students)
       const { data: teachers } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('user_id, name')
         .in('user_id', teacherIds);
       
