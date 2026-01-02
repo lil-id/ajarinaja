@@ -40,7 +40,8 @@ const EditExam = () => {
     kkm: 60,
     risk_on_missed: false,
     risk_on_below_kkm: false,
-    risk_severity: 'medium' as 'high' | 'medium' | 'low',
+    risk_missed_severity: 'high' as 'high' | 'medium' | 'low',
+    risk_below_kkm_severity: 'medium' as 'high' | 'medium' | 'low',
   });
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -77,7 +78,8 @@ const EditExam = () => {
         kkm: (exam as any).kkm || 60,
         risk_on_missed: (exam as any).risk_on_missed || false,
         risk_on_below_kkm: (exam as any).risk_on_below_kkm || false,
-        risk_severity: (exam as any).risk_severity || 'medium',
+        risk_missed_severity: (exam as any).risk_missed_severity || 'high',
+        risk_below_kkm_severity: (exam as any).risk_below_kkm_severity || 'medium',
       });
       setQuestions(exam.questions || []);
     }
@@ -95,7 +97,8 @@ const EditExam = () => {
         kkm: examForm.kkm,
         risk_on_missed: examForm.risk_on_missed,
         risk_on_below_kkm: examForm.risk_on_below_kkm,
-        risk_severity: examForm.risk_severity,
+        risk_missed_severity: examForm.risk_missed_severity,
+        risk_below_kkm_severity: examForm.risk_below_kkm_severity,
       });
       toast.success('Exam updated successfully');
     } catch (error) {
@@ -360,55 +363,71 @@ const EditExam = () => {
               <Label className="font-medium">At-Risk Monitoring</Label>
             </div>
             <p className="text-sm text-muted-foreground">
-              Configure which conditions will flag students as at-risk for this exam.
+              Configure which conditions will flag students as at-risk for this exam, with individual severity levels.
             </p>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                <div>
-                  <Label className="text-sm">Flag if Missed</Label>
-                  <p className="text-xs text-muted-foreground">Student doesn't submit this exam</p>
+            <div className="space-y-3">
+              {/* Flag if Missed */}
+              <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm">Flag if Missed</Label>
+                    <p className="text-xs text-muted-foreground">Student doesn't submit this exam</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={examForm.risk_on_missed}
+                    onChange={(e) => setExamForm({ ...examForm, risk_on_missed: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  checked={examForm.risk_on_missed}
-                  onChange={(e) => setExamForm({ ...examForm, risk_on_missed: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300"
-                />
+                {examForm.risk_on_missed && (
+                  <Select
+                    value={examForm.risk_missed_severity}
+                    onValueChange={(v: 'high' | 'medium' | 'low') => setExamForm({ ...examForm, risk_missed_severity: v })}
+                  >
+                    <SelectTrigger className="w-full sm:w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">High Risk</SelectItem>
+                      <SelectItem value="medium">Medium Risk</SelectItem>
+                      <SelectItem value="low">Low Risk</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                <div>
-                  <Label className="text-sm">Flag if Below KKM</Label>
-                  <p className="text-xs text-muted-foreground">Score is below the passing grade</p>
+              
+              {/* Flag if Below KKM */}
+              <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm">Flag if Below KKM</Label>
+                    <p className="text-xs text-muted-foreground">Score is below the passing grade</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={examForm.risk_on_below_kkm}
+                    onChange={(e) => setExamForm({ ...examForm, risk_on_below_kkm: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  checked={examForm.risk_on_below_kkm}
-                  onChange={(e) => setExamForm({ ...examForm, risk_on_below_kkm: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300"
-                />
+                {examForm.risk_on_below_kkm && (
+                  <Select
+                    value={examForm.risk_below_kkm_severity}
+                    onValueChange={(v: 'high' | 'medium' | 'low') => setExamForm({ ...examForm, risk_below_kkm_severity: v })}
+                  >
+                    <SelectTrigger className="w-full sm:w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">High Risk</SelectItem>
+                      <SelectItem value="medium">Medium Risk</SelectItem>
+                      <SelectItem value="low">Low Risk</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
-            {(examForm.risk_on_missed || examForm.risk_on_below_kkm) && (
-              <div className="space-y-2">
-                <Label className="text-sm">Risk Severity</Label>
-                <Select
-                  value={examForm.risk_severity}
-                  onValueChange={(v: 'high' | 'medium' | 'low') => setExamForm({ ...examForm, risk_severity: v })}
-                >
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">High Risk</SelectItem>
-                    <SelectItem value="medium">Medium Risk</SelectItem>
-                    <SelectItem value="low">Low Risk</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Choose how this exam affects a student's overall risk level
-                </p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

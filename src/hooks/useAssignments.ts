@@ -27,7 +27,9 @@ export interface Assignment {
   risk_on_missed: boolean;
   risk_on_below_kkm: boolean;
   risk_on_late: boolean;
-  risk_severity: 'high' | 'medium' | 'low' | null;
+  risk_missed_severity: 'high' | 'medium' | 'low' | null;
+  risk_below_kkm_severity: 'high' | 'medium' | 'low' | null;
+  risk_late_severity: 'high' | 'medium' | 'low' | null;
   created_at: string;
   updated_at: string;
 }

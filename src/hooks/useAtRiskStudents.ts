@@ -216,7 +216,7 @@ export function useAtRiskStudents() {
         
         // Check if exam has risk_on_missed enabled and student hasn't submitted
         if (exam.risk_on_missed && isPastDeadline && !submission) {
-          const severity = exam.risk_severity || 'medium';
+          const severity = exam.risk_missed_severity || 'high';
           riskFactors.push({
             type: 'no_exam_submissions',
             description: `Missed exam: "${exam.title}"`,
@@ -229,7 +229,7 @@ export function useAtRiskStudents() {
         // Check if exam has risk_on_below_kkm enabled and score is below KKM
         if (exam.risk_on_below_kkm && submission && submission.graded && submission.score !== null) {
           if (exam.kkm && submission.score < exam.kkm) {
-            const severity = exam.risk_severity || 'medium';
+            const severity = exam.risk_below_kkm_severity || 'medium';
             riskFactors.push({
               type: 'below_kkm',
               description: `Below KKM on exam "${exam.title}" (${submission.score}/${exam.kkm})`,
@@ -256,7 +256,7 @@ export function useAtRiskStudents() {
         
         // Check if assignment has risk_on_missed enabled and student hasn't submitted
         if (assignment.risk_on_missed && isPastDeadline && !submission) {
-          const severity = assignment.risk_severity || 'medium';
+          const severity = assignment.risk_missed_severity || 'high';
           riskFactors.push({
             type: 'missed_deadline',
             description: `Missed assignment: "${assignment.title}"`,
@@ -268,7 +268,7 @@ export function useAtRiskStudents() {
         
         // Check if assignment has risk_on_late enabled and submission is late
         if (assignment.risk_on_late && submission && submission.is_late) {
-          const severity = assignment.risk_severity || 'low';
+          const severity = assignment.risk_late_severity || 'low';
           riskFactors.push({
             type: 'late_submission',
             description: `Late submission: "${assignment.title}"`,
@@ -281,7 +281,7 @@ export function useAtRiskStudents() {
         // Check if assignment has risk_on_below_kkm enabled and score is below KKM
         if (assignment.risk_on_below_kkm && submission && submission.graded && submission.score !== null) {
           if (assignment.kkm && submission.score < assignment.kkm) {
-            const severity = assignment.risk_severity || 'medium';
+            const severity = assignment.risk_below_kkm_severity || 'medium';
             riskFactors.push({
               type: 'below_kkm',
               description: `Below KKM on "${assignment.title}" (${submission.score}/${assignment.kkm})`,
