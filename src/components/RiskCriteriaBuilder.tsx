@@ -14,6 +14,9 @@ import {
 } from '@/components/ui/select';
 import { Plus, Trash2, GripVertical, AlertTriangle, Clock, TrendingDown, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { arrayMove } from '@dnd-kit/sortable';
+import SortableList from '@/components/SortableContext';
+import SortableItem from '@/components/SortableItem';
 
 export interface RiskCriterion {
   id: string;
@@ -120,7 +123,139 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
     onChange(criteria.filter(c => c.id !== id));
   };
 
+  const handleReorder = (oldIndex: number, newIndex: number) => {
+    onChange(arrayMove(criteria, oldIndex, newIndex));
+  };
+
   const enabledCount = criteria.filter(c => c.enabled).length;
+
+  const renderCriterionCard = (criterion: RiskCriterion) => {
+    const Icon = typeIcons[criterion.type];
+    const isPreset = criterion.type !== 'custom';
+
+    return (
+      <Card 
+        className={cn(
+          'transition-all',
+          criterion.enabled 
+            ? severityColors[criterion.severity]
+            : 'opacity-60 border-dashed'
+        )}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            {/* Icon */}
+            <div className={cn(
+              'h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0',
+              criterion.enabled ? 'bg-background' : 'bg-muted'
+            )}>
+              <Icon className={cn(
+                'h-5 w-5',
+                criterion.enabled 
+                  ? criterion.severity === 'high' ? 'text-destructive'
+                    : criterion.severity === 'medium' ? 'text-orange-500'
+                    : 'text-yellow-500'
+                  : 'text-muted-foreground'
+              )} />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  {isPreset ? (
+                    <>
+                      <h4 className="font-medium">{criterion.name}</h4>
+                      <p className="text-sm text-muted-foreground">{criterion.description}</p>
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        placeholder="Criterion name (e.g., Low Participation)"
+                        value={criterion.name}
+                        onChange={(e) => updateCriterion(criterion.id, { name: e.target.value })}
+                        className="font-medium h-8"
+                      />
+                      <Textarea
+                        placeholder="Description of when this applies..."
+                        value={criterion.description}
+                        onChange={(e) => updateCriterion(criterion.id, { description: e.target.value })}
+                        rows={2}
+                        className="text-sm resize-none"
+                      />
+                    </>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3 ml-4">
+                  <Switch
+                    checked={criterion.enabled}
+                    onCheckedChange={() => toggleCriterion(criterion.id)}
+                  />
+                  {!isPreset && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={() => removeCriterion(criterion.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Severity selector - only show when enabled */}
+              {criterion.enabled && (
+                <div className="flex items-center gap-3">
+                  <Label className="text-sm text-muted-foreground">Risk Level:</Label>
+                  <Select
+                    value={criterion.severity}
+                    onValueChange={(v: 'high' | 'medium' | 'low') => 
+                      updateCriterion(criterion.id, { severity: v })
+                    }
+                  >
+                    <SelectTrigger className="w-36 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-destructive" />
+                          High Risk
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="medium">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-orange-500" />
+                          Medium Risk
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="low">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                          Low Risk
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Severity badge preview */}
+                  <span className={cn(
+                    'text-xs px-2 py-0.5 rounded-full font-medium',
+                    severityBadgeColors[criterion.severity]
+                  )}>
+                    {criterion.severity.charAt(0).toUpperCase() + criterion.severity.slice(1)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -139,142 +274,23 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
         </div>
       </div>
 
-      {/* Criteria Cards */}
-      <div className="space-y-3">
-        {criteria.map((criterion) => {
-          const Icon = typeIcons[criterion.type];
-          const isPreset = criterion.type !== 'custom';
-          
-          return (
-            <Card 
+      {/* Criteria Cards with Drag and Drop */}
+      <SortableList
+        items={criteria.map(c => c.id)}
+        onReorder={handleReorder}
+      >
+        <div className="space-y-3">
+          {criteria.map((criterion) => (
+            <SortableItem 
               key={criterion.id} 
-              className={cn(
-                'transition-all',
-                criterion.enabled 
-                  ? severityColors[criterion.severity]
-                  : 'opacity-60 border-dashed'
-              )}
+              id={criterion.id}
+              showHandle={criterion.type === 'custom'}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  {/* Drag handle for custom */}
-                  {!isPreset && (
-                    <GripVertical className="h-5 w-5 text-muted-foreground mt-1 cursor-move" />
-                  )}
-                  
-                  {/* Icon */}
-                  <div className={cn(
-                    'h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0',
-                    criterion.enabled ? 'bg-background' : 'bg-muted'
-                  )}>
-                    <Icon className={cn(
-                      'h-5 w-5',
-                      criterion.enabled 
-                        ? criterion.severity === 'high' ? 'text-destructive'
-                          : criterion.severity === 'medium' ? 'text-orange-500'
-                          : 'text-yellow-500'
-                        : 'text-muted-foreground'
-                    )} />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        {isPreset ? (
-                          <>
-                            <h4 className="font-medium">{criterion.name}</h4>
-                            <p className="text-sm text-muted-foreground">{criterion.description}</p>
-                          </>
-                        ) : (
-                          <>
-                            <Input
-                              placeholder="Criterion name (e.g., Low Participation)"
-                              value={criterion.name}
-                              onChange={(e) => updateCriterion(criterion.id, { name: e.target.value })}
-                              className="font-medium h-8"
-                            />
-                            <Textarea
-                              placeholder="Description of when this applies..."
-                              value={criterion.description}
-                              onChange={(e) => updateCriterion(criterion.id, { description: e.target.value })}
-                              rows={2}
-                              className="text-sm resize-none"
-                            />
-                          </>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-3 ml-4">
-                        <Switch
-                          checked={criterion.enabled}
-                          onCheckedChange={() => toggleCriterion(criterion.id)}
-                        />
-                        {!isPreset && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => removeCriterion(criterion.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Severity selector - only show when enabled */}
-                    {criterion.enabled && (
-                      <div className="flex items-center gap-3">
-                        <Label className="text-sm text-muted-foreground">Risk Level:</Label>
-                        <Select
-                          value={criterion.severity}
-                          onValueChange={(v: 'high' | 'medium' | 'low') => 
-                            updateCriterion(criterion.id, { severity: v })
-                          }
-                        >
-                          <SelectTrigger className="w-36 h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="high">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-destructive" />
-                                High Risk
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="medium">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-orange-500" />
-                                Medium Risk
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="low">
-                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                                Low Risk
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        
-                        {/* Severity badge preview */}
-                        <span className={cn(
-                          'text-xs px-2 py-0.5 rounded-full font-medium',
-                          severityBadgeColors[criterion.severity]
-                        )}>
-                          {criterion.severity.charAt(0).toUpperCase() + criterion.severity.slice(1)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              {renderCriterionCard(criterion)}
+            </SortableItem>
+          ))}
+        </div>
+      </SortableList>
 
       {/* Add Custom Criterion */}
       {allowCustom && (
