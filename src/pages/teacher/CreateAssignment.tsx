@@ -42,8 +42,9 @@ import { useCreateAssignment, useUpdateAssignment, useAssignment, RubricItem } f
 import { useAssignmentQuestions, useAddAssignmentQuestion, useUpdateAssignmentQuestion, useDeleteAssignmentQuestion, AssignmentQuestion } from '@/hooks/useAssignmentQuestions';
 import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
 import { toast } from 'sonner';
-import FormulaInput from '@/components/FormulaInput';
+import VisualEquationBuilder from '@/components/VisualEquationBuilder';
 import FormulaText from '@/components/FormulaText';
+import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBuilder';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
@@ -97,6 +98,7 @@ export default function CreateAssignment() {
   const incrementUsage = useIncrementQuestionUsage();
   
   const [rubric, setRubric] = useState<RubricItem[]>([]);
+  const [riskCriteria, setRiskCriteria] = useState<RiskCriterion[]>([]);
   const [questions, setQuestions] = useState<LocalQuestion[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -171,6 +173,35 @@ export default function CreateAssignment() {
         risk_late_severity: (existingAssignment as any).risk_late_severity || 'low',
       });
       setRubric(existingAssignment.rubric || []);
+      
+      // Initialize risk criteria from existing assignment
+      const initialRiskCriteria: RiskCriterion[] = [
+        {
+          id: crypto.randomUUID(),
+          type: 'missed',
+          name: 'Missed Submission',
+          description: 'Student did not submit by the deadline',
+          enabled: (existingAssignment as any).risk_on_missed || false,
+          severity: (existingAssignment as any).risk_missed_severity || 'high',
+        },
+        {
+          id: crypto.randomUUID(),
+          type: 'below_kkm',
+          name: 'Below Passing Grade (KKM)',
+          description: 'Score is below the minimum passing threshold',
+          enabled: (existingAssignment as any).risk_on_below_kkm || false,
+          severity: (existingAssignment as any).risk_below_kkm_severity || 'medium',
+        },
+        {
+          id: crypto.randomUUID(),
+          type: 'late',
+          name: 'Late Submission',
+          description: 'Submitted after the deadline',
+          enabled: (existingAssignment as any).risk_on_late || false,
+          severity: (existingAssignment as any).risk_late_severity || 'low',
+        },
+      ];
+      setRiskCriteria(initialRiskCriteria);
     }
   }, [isEditMode, existingAssignment, form]);
 
@@ -692,145 +723,33 @@ export default function CreateAssignment() {
                 )}
               </div>
 
-              {/* At-Risk Monitoring */}
-              <div className="space-y-4 pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                  <Label className="font-medium">At-Risk Monitoring</Label>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Configure which conditions will flag students as at-risk for this assignment, with individual severity levels.
-                </p>
-                <div className="space-y-3">
-                  {/* Flag if Missed */}
-                  <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
-                    <FormField
-                      control={form.control}
-                      name="risk_on_missed"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between">
-                          <div>
-                            <FormLabel className="text-sm">Flag if Missed</FormLabel>
-                            <FormDescription className="text-xs">
-                              Not submitted by deadline
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    {form.watch('risk_on_missed') && (
-                      <FormField
-                        control={form.control}
-                        name="risk_missed_severity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="w-full sm:w-40">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="high">High Risk</SelectItem>
-                                <SelectItem value="medium">Medium Risk</SelectItem>
-                                <SelectItem value="low">Low Risk</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Flag if Below KKM */}
-                  <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
-                    <FormField
-                      control={form.control}
-                      name="risk_on_below_kkm"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between">
-                          <div>
-                            <FormLabel className="text-sm">Flag if Below KKM</FormLabel>
-                            <FormDescription className="text-xs">
-                              Score below passing grade
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    {form.watch('risk_on_below_kkm') && (
-                      <FormField
-                        control={form.control}
-                        name="risk_below_kkm_severity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="w-full sm:w-40">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="high">High Risk</SelectItem>
-                                <SelectItem value="medium">Medium Risk</SelectItem>
-                                <SelectItem value="low">Low Risk</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Flag if Late */}
-                  <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
-                    <FormField
-                      control={form.control}
-                      name="risk_on_late"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between">
-                          <div>
-                            <FormLabel className="text-sm">Flag if Late</FormLabel>
-                            <FormDescription className="text-xs">
-                              Submitted after deadline
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    {form.watch('risk_on_late') && (
-                      <FormField
-                        control={form.control}
-                        name="risk_late_severity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="w-full sm:w-40">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="high">High Risk</SelectItem>
-                                <SelectItem value="medium">Medium Risk</SelectItem>
-                                <SelectItem value="low">Low Risk</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
-                </div>
+              {/* At-Risk Monitoring - Unified Risk Criteria Builder */}
+              <div className="pt-4 border-t">
+                <RiskCriteriaBuilder
+                  criteria={riskCriteria}
+                  onChange={(newCriteria) => {
+                    setRiskCriteria(newCriteria);
+                    // Sync with form fields
+                    const missed = newCriteria.find(c => c.type === 'missed');
+                    const belowKkm = newCriteria.find(c => c.type === 'below_kkm');
+                    const late = newCriteria.find(c => c.type === 'late');
+                    
+                    if (missed) {
+                      form.setValue('risk_on_missed', missed.enabled);
+                      form.setValue('risk_missed_severity', missed.severity);
+                    }
+                    if (belowKkm) {
+                      form.setValue('risk_on_below_kkm', belowKkm.enabled);
+                      form.setValue('risk_below_kkm_severity', belowKkm.severity);
+                    }
+                    if (late) {
+                      form.setValue('risk_on_late', late.enabled);
+                      form.setValue('risk_late_severity', late.severity);
+                    }
+                  }}
+                  allowLate={true}
+                  allowCustom={true}
+                />
               </div>
             </CardContent>
           </Card>
@@ -941,8 +860,8 @@ export default function CreateAssignment() {
                             <TabsTrigger value="essay">Essay</TabsTrigger>
                           </TabsList>
 
-                          <FormulaInput
-                            placeholder="Enter your question (use $...$ for formulas)..."
+                          <VisualEquationBuilder
+                            placeholder="Enter your question - use buttons above to insert formulas..."
                             value={newQuestion.question}
                             onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
                           />
@@ -957,7 +876,7 @@ export default function CreateAssignment() {
                                   onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
                                   className="w-4 h-4"
                                 />
-                                <FormulaInput
+                                <VisualEquationBuilder
                                   singleLine
                                   placeholder={`Option ${i + 1}`}
                                   value={opt}
@@ -984,7 +903,7 @@ export default function CreateAssignment() {
                                     setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
                                   }}
                                 />
-                                <FormulaInput
+                                <VisualEquationBuilder
                                   singleLine
                                   placeholder={`Option ${i + 1}`}
                                   value={opt}
@@ -1058,7 +977,7 @@ export default function CreateAssignment() {
                           </div>
                         </div>
 
-                        <FormulaInput
+                        <VisualEquationBuilder
                           value={q.question}
                           onChange={(v) => updateLocalQuestion(index, { question: v })}
                         />
@@ -1074,7 +993,7 @@ export default function CreateAssignment() {
                                   onChange={() => updateLocalQuestion(index, { correct_answer: optIndex })}
                                   className="w-4 h-4"
                                 />
-                                <FormulaInput
+                                <VisualEquationBuilder
                                   singleLine
                                   value={opt}
                                   onChange={(v) => {
@@ -1102,7 +1021,7 @@ export default function CreateAssignment() {
                                     updateLocalQuestion(index, { correct_answers: newAnswers });
                                   }}
                                 />
-                                <FormulaInput
+                                <VisualEquationBuilder
                                   singleLine
                                   value={opt}
                                   onChange={(v) => {
