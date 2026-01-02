@@ -29,6 +29,10 @@ import testimonialEmily from "@/assets/testimonial-emily.jpg";
 const Index = () => {
   const navigate = useNavigate();
 
+  const handleContactDemo = () => {
+    window.open('https://wa.me/6282293675164?text=Halo, saya tertarik untuk demo AjarinAja!', '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -38,7 +42,7 @@ const Index = () => {
             <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-secondary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">EduExam</span>
+            <span className="text-xl font-bold text-foreground">AjarinAja</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -76,21 +80,21 @@ const Index = () => {
                 Trusted by 500+ Schools Worldwide
               </div>
               <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-6 leading-tight">
-                Empower Your School with
-                <span className="text-gradient block">Smart Learning Tools</span>
+                Your Complete
+                <span className="text-gradient block">Learning Management System</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                The complete learning management system for modern educators. Create courses, manage exams, track
-                student progress, and deliver an exceptional learning experience.
+                AjarinAja is the all-in-one LMS platform for modern educators. Manage courses, create assignments & exams, 
+                track student progress, and deliver an exceptional learning experience.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <Button variant="hero" size="xl" onClick={() => navigate("/login")}>
                   Start Teaching Today
                   <ArrowRight className="w-5 h-5" />
                 </Button>
-                <Button variant="outline" size="xl" onClick={() => navigate("/login")}>
+                <Button variant="outline" size="xl" onClick={handleContactDemo}>
                   <Play className="w-4 h-4" />
-                  Watch Demo
+                  Contact for Demo
                 </Button>
               </div>
               <div className="flex items-center gap-6 mt-8 pt-8 border-t border-border">
@@ -105,8 +109,8 @@ const Index = () => {
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">50K+</div>
-                  <div className="text-sm text-muted-foreground">Exams Created</div>
+                  <div className="text-2xl font-bold text-foreground">100K+</div>
+                  <div className="text-sm text-muted-foreground">Lessons Delivered</div>
                 </div>
               </div>
             </div>
@@ -128,8 +132,8 @@ const Index = () => {
                     <CheckCircle className="w-6 h-6 text-green-500" />
                   </div>
                   <div>
-                    <div className="font-semibold text-foreground">Exams Completed</div>
-                    <div className="text-sm text-muted-foreground">1,234 today</div>
+                    <div className="font-semibold text-foreground">Assignments Submitted</div>
+                    <div className="text-sm text-muted-foreground">2,847 today</div>
                   </div>
                 </div>
               </div>
@@ -249,7 +253,7 @@ const Index = () => {
                   <div className="text-sm text-muted-foreground">Support Available</div>
                 </div>
               </div>
-              <Button variant="outline" size="lg" onClick={() => navigate("/login")}>
+              <Button variant="outline" size="lg" onClick={handleContactDemo}>
                 Contact for Demo
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -395,20 +399,20 @@ const Index = () => {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Loved by Educators Worldwide</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              See what teachers and school administrators are saying about EduExam
+              See what teachers and school administrators are saying about AjarinAja
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             <TestimonialCard
-              quote="EduExam has transformed how we manage assessments. What used to take hours now takes minutes. The auto-grading feature alone saves us 10+ hours per week."
+              quote="AjarinAja has transformed how we manage our LMS. What used to take hours now takes minutes. The auto-grading and assignment tracking alone saves us 10+ hours per week."
               name="Dr. Sarah Mitchell"
               role="Department Head, Westfield Academy"
               avatar={testimonialSarah}
               delay={0}
             />
             <TestimonialCard
-              quote="The platform is incredibly intuitive. Our teachers adopted it within days, and students love the clean interface for taking exams."
+              quote="The platform is incredibly intuitive. Our teachers adopted it within days, and students love the clean interface for taking courses and assessments."
               name="Michael Chen"
               role="Principal, Sunrise International School"
               avatar={testimonialJames}
@@ -435,7 +439,7 @@ const Index = () => {
                 Ready to Transform Your School?
               </h2>
               <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-                Join hundreds of schools already using EduExam to deliver exceptional education. Start free today, no
+                Join hundreds of schools already using AjarinAja to deliver exceptional education. Start free today, no
                 credit card required.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -447,9 +451,9 @@ const Index = () => {
                   variant="ghost"
                   size="xl"
                   className="text-primary-foreground hover:bg-primary-foreground/10"
-                  onClick={() => navigate("/login")}
+                  onClick={handleContactDemo}
                 >
-                  Schedule Demo
+                  Contact Demo
                 </Button>
               </div>
             </div>
@@ -466,7 +470,7 @@ const Index = () => {
                 <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
                   <GraduationCap className="w-6 h-6 text-secondary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">EduExam</span>
+                <span className="text-xl font-bold text-foreground">AjarinAja</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 The complete learning management system for modern schools and educators.
@@ -534,7 +538,7 @@ const Index = () => {
             </div>
           </div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© 2024 EduExam. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2024 AjarinAja. All rights reserved.</p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors">
                 Privacy Policy

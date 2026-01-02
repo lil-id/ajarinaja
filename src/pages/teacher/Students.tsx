@@ -19,8 +19,10 @@ const getRiskIcon = (type: RiskFactor['type']) => {
     case 'no_material_views':
       return BookOpen;
     case 'missed_deadline':
+    case 'late_submission':
       return ClipboardList;
     case 'low_score':
+    case 'below_kkm':
       return TrendingDown;
     case 'no_exam_submissions':
       return FileText;
@@ -36,9 +38,12 @@ const getRiskLabel = (type: RiskFactor['type']) => {
     case 'missed_deadline':
       return 'Missed Deadline';
     case 'low_score':
+    case 'below_kkm':
       return 'Below KKM';
     case 'no_exam_submissions':
       return 'Missing Exams';
+    case 'late_submission':
+      return 'Late Submission';
     default:
       return 'Risk Factor';
   }
@@ -49,6 +54,7 @@ const getRiskLink = (factor: RiskFactor, courseId: string) => {
     case 'no_material_views':
       return `/teacher/courses/${factor.courseId || courseId}`;
     case 'missed_deadline':
+    case 'late_submission':
       if (factor.assignmentIds && factor.assignmentIds.length > 0) {
         return `/teacher/assignments/${factor.assignmentIds[0]}/submissions`;
       }
@@ -59,6 +65,15 @@ const getRiskLink = (factor: RiskFactor, courseId: string) => {
         return `/teacher/exams/${factor.examIds[0]}/grade`;
       }
       return `/teacher/exams`;
+    case 'below_kkm':
+      // Navigate to the specific exam or assignment
+      if (factor.examIds && factor.examIds.length > 0) {
+        return `/teacher/exams/${factor.examIds[0]}/grade`;
+      }
+      if (factor.assignmentIds && factor.assignmentIds.length > 0) {
+        return `/teacher/assignments/${factor.assignmentIds[0]}/submissions`;
+      }
+      return `/teacher/courses/${courseId}`;
     default:
       return `/teacher/courses/${courseId}`;
   }

@@ -23,8 +23,10 @@ import {
   Circle,
   Trophy,
   Play,
-  Eye
+  Eye,
+  LogOut
 } from 'lucide-react';
+import { useUnenroll } from '@/hooks/useEnrollments';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
@@ -45,6 +47,7 @@ const StudentCourseDetail = () => {
   const { announcements, isLoading: announcementsLoading } = useAnnouncements();
   const { enrollments } = useEnrollments();
   const markMaterialViewed = useMarkMaterialViewed();
+  const unenroll = useUnenroll();
   
   const course = courses.find(c => c.id === courseId);
   
@@ -154,10 +157,42 @@ const StudentCourseDetail = () => {
 
           {/* Course Info */}
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 flex-1">
+                <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
+                {isEnrolled && (
+                  <Badge variant="default">Enrolled</Badge>
+                )}
+              </div>
               {isEnrolled && (
-                <Badge variant="default">Enrolled</Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to unenroll from this course? You will lose access to all course materials.')) {
+                      unenroll.mutate(courseId!, {
+                        onSuccess: () => {
+                          toast.success('Successfully unenrolled from course');
+                          navigate('/student/courses');
+                        },
+                        onError: () => {
+                          toast.error('Failed to unenroll from course');
+                        },
+                      });
+                    }
+                  }}
+                  disabled={unenroll.isPending}
+                  className="text-destructive hover:text-destructive"
+                >
+                  {unenroll.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Unenroll
+                    </>
+                  )}
+                </Button>
               )}
             </div>
             <p className="text-muted-foreground max-w-2xl mb-4">

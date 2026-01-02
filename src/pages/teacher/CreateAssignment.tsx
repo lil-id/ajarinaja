@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, AlertTriangle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,6 +45,7 @@ import { toast } from 'sonner';
 import VisualEquationBuilder from '@/components/VisualEquationBuilder';
 import FormulaText from '@/components/FormulaText';
 import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBuilder';
+import StudentPreviewMode from '@/components/StudentPreviewMode';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
@@ -1111,6 +1112,20 @@ export default function CreateAssignment() {
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
               Cancel
             </Button>
+            {assignmentType === 'questions' && questions.length > 0 && (
+              <StudentPreviewMode
+                title={form.watch('title')}
+                description={form.watch('description')}
+                questions={questions.map(q => ({
+                  id: q.id,
+                  type: q.type,
+                  question: q.question,
+                  options: q.type !== 'essay' ? q.options : null,
+                  points: q.points,
+                }))}
+                itemType="assignment"
+              />
+            )}
             <Button type="submit" disabled={isPending}>
               {isPending ? (
                 <>

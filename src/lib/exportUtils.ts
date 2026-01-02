@@ -31,7 +31,7 @@ export function exportToCSV(data: AnalyticsData, filename: string = 'analytics-r
   const lines: string[] = [];
   
   // Header
-  lines.push('EduExam Analytics Report');
+  lines.push('AjarinAja Analytics Report');
   lines.push(`Export Date,${data.exportDate}`);
   if (data.courseName) {
     lines.push(`Course,${data.courseName}`);
@@ -74,7 +74,7 @@ export function exportToPDF(data: AnalyticsData, filename: string = 'analytics-r
   // Title
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('EduExam Analytics Report', pageWidth / 2, 20, { align: 'center' });
+  doc.text('AjarinAja Analytics Report', pageWidth / 2, 20, { align: 'center' });
   
   // Subtitle
   doc.setFontSize(10);
@@ -172,7 +172,7 @@ export function exportToPDF(data: AnalyticsData, filename: string = 'analytics-r
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      `Page ${i} of ${pageCount} | EduExam Analytics`,
+      `Page ${i} of ${pageCount} | AjarinAja Analytics`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }

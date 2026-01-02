@@ -88,7 +88,7 @@ const StudentLayout = () => {
                 <GraduationCap className="w-6 h-6 text-sidebar-primary-foreground" />
               </div>
               {!sidebarCollapsed && (
-                <span className="text-xl font-bold text-sidebar-foreground">EduExam</span>
+                <span className="text-xl font-bold text-sidebar-foreground">AjarinAja</span>
               )}
             </div>
             <Button
