@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import FormulaText from '@/components/FormulaText';
 
 export default function SubmitAssignment() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -262,7 +263,7 @@ export default function SubmitAssignment() {
                     )
                   )}>
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium">{index + 1}. {q.question}</p>
+                      <p className="font-medium">{index + 1}. <FormulaText text={q.question} /></p>
                       {submission.graded && q.type !== 'essay' && (
                         <Badge variant={isCorrect ? "default" : "destructive"} className="flex-shrink-0">
                           {isCorrect ? 'Correct' : 'Incorrect'}
@@ -426,7 +427,7 @@ export default function SubmitAssignment() {
                   <div key={q.id} className="p-4 border rounded-lg space-y-3">
                     <div className="flex justify-between items-start gap-2">
                       <p className="font-medium">
-                        {index + 1}. {q.question}
+                        {index + 1}. <FormulaText text={q.question} />
                       </p>
                       <Badge variant="outline">{q.points} pts</Badge>
                     </div>
@@ -439,7 +440,7 @@ export default function SubmitAssignment() {
                         {(q.options as string[]).map((option, optIndex) => (
                           <div key={optIndex} className="flex items-center space-x-2">
                             <RadioGroupItem value={optIndex.toString()} id={`${q.id}-${optIndex}`} />
-                            <Label htmlFor={`${q.id}-${optIndex}`}>{option}</Label>
+                            <Label htmlFor={`${q.id}-${optIndex}`}><FormulaText text={option} /></Label>
                           </div>
                         ))}
                       </RadioGroup>
@@ -457,7 +458,7 @@ export default function SubmitAssignment() {
                                 handleMultiSelectChange(q.id, optIndex, checked as boolean)
                               }
                             />
-                            <Label htmlFor={`${q.id}-${optIndex}`}>{option}</Label>
+                            <Label htmlFor={`${q.id}-${optIndex}`}><FormulaText text={option} /></Label>
                           </div>
                         ))}
                       </div>

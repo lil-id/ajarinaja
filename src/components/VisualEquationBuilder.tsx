@@ -100,6 +100,7 @@ interface VisualEquationBuilderProps {
   rows?: number;
   singleLine?: boolean;
   onBlur?: () => void;
+  compact?: boolean; // Show minimal toolbar for inline use
 }
 
 const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
@@ -110,6 +111,7 @@ const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
   rows = 3,
   singleLine = false,
   onBlur,
+  compact = false,
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [isInMathMode, setIsInMathMode] = useState(false);
@@ -197,7 +199,7 @@ const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
   return (
     <div className={cn('space-y-3', className)}>
       {/* Visual Calculator-Style Toolbar */}
-      <div className="bg-muted/50 rounded-lg p-3 border">
+      <div className={cn("bg-muted/50 rounded-lg border", compact ? "p-2" : "p-3")}>
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <span className="text-xs font-medium text-muted-foreground">Quick Insert:</span>
           {QUICK_BUTTONS.map((btn) => (
@@ -206,7 +208,7 @@ const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
               type="button"
               variant="secondary"
               size="sm"
-              className="h-9 w-9 p-0"
+              className={cn(compact ? "h-7 w-7" : "h-9 w-9", "p-0")}
               onClick={() => insertSymbol(btn.insert.trim())}
               title={btn.label}
             >
@@ -216,56 +218,76 @@ const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
         </div>
 
         {/* Structure buttons - Fraction, Root, Power */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="text-xs font-medium text-muted-foreground">Structures:</span>
-          
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-10 px-3 gap-2"
-            onClick={insertFraction}
-          >
-            <div className="flex flex-col items-center leading-none text-xs">
-              <span className="border-b border-current px-1">a</span>
-              <span className="px-1">b</span>
-            </div>
-            <span className="text-xs">Fraction</span>
-          </Button>
+        {!compact && (
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs font-medium text-muted-foreground">Structures:</span>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 px-3 gap-2"
+              onClick={insertFraction}
+            >
+              <div className="flex flex-col items-center leading-none text-xs">
+                <span className="border-b border-current px-1">a</span>
+                <span className="px-1">b</span>
+              </div>
+              <span className="text-xs">Fraction</span>
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-10 px-3 gap-2"
-            onClick={insertSqrt}
-          >
-            <span className="text-lg">√</span>
-            <span className="text-xs">Square Root</span>
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 px-3 gap-2"
+              onClick={insertSqrt}
+            >
+              <span className="text-lg">√</span>
+              <span className="text-xs">Square Root</span>
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-10 px-3 gap-2"
-            onClick={insertPower}
-          >
-            <span className="text-sm">x<sup className="text-xs">n</sup></span>
-            <span className="text-xs">Power</span>
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 px-3 gap-2"
+              onClick={insertPower}
+            >
+              <span className="text-sm">x<sup className="text-xs">n</sup></span>
+              <span className="text-xs">Power</span>
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-10 px-3 gap-2"
-            onClick={insertSubscript}
-          >
-            <span className="text-sm">x<sub className="text-xs">n</sub></span>
-            <span className="text-xs">Subscript</span>
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 px-3 gap-2"
+              onClick={insertSubscript}
+            >
+              <span className="text-sm">x<sub className="text-xs">n</sub></span>
+              <span className="text-xs">Subscript</span>
+            </Button>
+          </div>
+        )}
+
+        {/* Compact mode structure buttons */}
+        {compact && (
+          <div className="flex flex-wrap items-center gap-1 mb-2">
+            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertFraction}>
+              <span className="text-xs">a/b</span>
+            </Button>
+            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertSqrt}>
+              √
+            </Button>
+            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertPower}>
+              x<sup>n</sup>
+            </Button>
+            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertSubscript}>
+              x<sub>n</sub>
+            </Button>
+          </div>
+        )}
 
         {/* Symbol categories and Templates */}
         <div className="flex flex-wrap items-center gap-2">

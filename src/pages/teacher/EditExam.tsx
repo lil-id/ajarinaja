@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
 import { useUpdateQuestion, useDeleteQuestion, useAddQuestion } from '@/hooks/useQuestions';
 import { useQuestionBank, useIncrementQuestionUsage, useSaveExamQuestionsToBank } from '@/hooks/useQuestionBank';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -16,8 +16,12 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import FormulaInput from '@/components/FormulaInput';
+import VisualEquationBuilder from '@/components/VisualEquationBuilder';
 import FormulaText from '@/components/FormulaText';
+import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBuilder';
+import SortableList from '@/components/SortableContext';
+import SortableItem from '@/components/SortableItem';
+import { arrayMove } from '@dnd-kit/sortable';
 
 const EditExam = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -38,12 +42,9 @@ const EditExam = () => {
     start_date: '',
     end_date: '',
     kkm: 60,
-    risk_on_missed: false,
-    risk_on_below_kkm: false,
-    risk_missed_severity: 'high' as 'high' | 'medium' | 'low',
-    risk_below_kkm_severity: 'medium' as 'high' | 'medium' | 'low',
   });
 
+  const [riskCriteria, setRiskCriteria] = useState<RiskCriterion[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -76,16 +77,37 @@ const EditExam = () => {
         start_date: exam.start_date ? new Date(exam.start_date).toISOString().slice(0, 16) : '',
         end_date: exam.end_date ? new Date(exam.end_date).toISOString().slice(0, 16) : '',
         kkm: (exam as any).kkm || 60,
-        risk_on_missed: (exam as any).risk_on_missed || false,
-        risk_on_below_kkm: (exam as any).risk_on_below_kkm || false,
-        risk_missed_severity: (exam as any).risk_missed_severity || 'high',
-        risk_below_kkm_severity: (exam as any).risk_below_kkm_severity || 'medium',
       });
       setQuestions(exam.questions || []);
+      
+      // Initialize risk criteria from exam data
+      const examData = exam as any;
+      const initialCriteria: RiskCriterion[] = [
+        {
+          id: 'missed',
+          type: 'missed',
+          name: 'Missed Submission',
+          description: 'Student did not submit by the deadline',
+          enabled: examData.risk_on_missed || false,
+          severity: examData.risk_missed_severity || 'high',
+        },
+        {
+          id: 'below_kkm',
+          type: 'below_kkm',
+          name: 'Below Passing Grade (KKM)',
+          description: 'Score is below the minimum passing threshold',
+          enabled: examData.risk_on_below_kkm || false,
+          severity: examData.risk_below_kkm_severity || 'medium',
+        },
+      ];
+      setRiskCriteria(initialCriteria);
     }
   }, [exam]);
 
   const handleSaveExam = async () => {
+    const missedCriterion = riskCriteria.find(c => c.type === 'missed');
+    const belowKkmCriterion = riskCriteria.find(c => c.type === 'below_kkm');
+
     try {
       await updateExam.mutateAsync({
         id: examId!,
@@ -95,10 +117,10 @@ const EditExam = () => {
         start_date: examForm.start_date ? new Date(examForm.start_date).toISOString() : null,
         end_date: examForm.end_date ? new Date(examForm.end_date).toISOString() : null,
         kkm: examForm.kkm,
-        risk_on_missed: examForm.risk_on_missed,
-        risk_on_below_kkm: examForm.risk_on_below_kkm,
-        risk_missed_severity: examForm.risk_missed_severity,
-        risk_below_kkm_severity: examForm.risk_below_kkm_severity,
+        risk_on_missed: missedCriterion?.enabled || false,
+        risk_on_below_kkm: belowKkmCriterion?.enabled || false,
+        risk_missed_severity: missedCriterion?.severity || 'high',
+        risk_below_kkm_severity: belowKkmCriterion?.severity || 'medium',
       });
       toast.success('Exam updated successfully');
     } catch (error) {
@@ -116,6 +138,7 @@ const EditExam = () => {
         correct_answers: q.correct_answers,
         points: q.points,
         type: q.type,
+        order_index: q.order_index,
       });
       toast.success('Question updated');
     } catch (error) {
@@ -174,6 +197,22 @@ const EditExam = () => {
     const newQuestions = [...questions];
     newQuestions[index] = { ...newQuestions[index], ...updates };
     setQuestions(newQuestions);
+  };
+
+  const handleQuestionReorder = async (oldIndex: number, newIndex: number) => {
+    const reordered = arrayMove(questions, oldIndex, newIndex);
+    // Update order_index for all questions
+    const updatedQuestions = reordered.map((q, idx) => ({ ...q, order_index: idx }));
+    setQuestions(updatedQuestions);
+    
+    // Save updated order to database
+    for (const q of updatedQuestions) {
+      await updateQuestion.mutateAsync({
+        id: q.id,
+        order_index: q.order_index,
+      });
+    }
+    toast.success('Question order updated');
   };
 
   const filteredBankQuestions = questionBank.filter((q) =>
@@ -356,78 +395,14 @@ const EditExam = () => {
             <p className="text-xs text-muted-foreground">Percentage required to pass</p>
           </div>
 
-          {/* At-Risk Monitoring */}
-          <div className="space-y-4 pt-4 border-t">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
-              <Label className="font-medium">At-Risk Monitoring</Label>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Configure which conditions will flag students as at-risk for this exam, with individual severity levels.
-            </p>
-            <div className="space-y-3">
-              {/* Flag if Missed */}
-              <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm">Flag if Missed</Label>
-                    <p className="text-xs text-muted-foreground">Student doesn't submit this exam</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={examForm.risk_on_missed}
-                    onChange={(e) => setExamForm({ ...examForm, risk_on_missed: e.target.checked })}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                </div>
-                {examForm.risk_on_missed && (
-                  <Select
-                    value={examForm.risk_missed_severity}
-                    onValueChange={(v: 'high' | 'medium' | 'low') => setExamForm({ ...examForm, risk_missed_severity: v })}
-                  >
-                    <SelectTrigger className="w-full sm:w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="high">High Risk</SelectItem>
-                      <SelectItem value="medium">Medium Risk</SelectItem>
-                      <SelectItem value="low">Low Risk</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-              
-              {/* Flag if Below KKM */}
-              <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm">Flag if Below KKM</Label>
-                    <p className="text-xs text-muted-foreground">Score is below the passing grade</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={examForm.risk_on_below_kkm}
-                    onChange={(e) => setExamForm({ ...examForm, risk_on_below_kkm: e.target.checked })}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                </div>
-                {examForm.risk_on_below_kkm && (
-                  <Select
-                    value={examForm.risk_below_kkm_severity}
-                    onValueChange={(v: 'high' | 'medium' | 'low') => setExamForm({ ...examForm, risk_below_kkm_severity: v })}
-                  >
-                    <SelectTrigger className="w-full sm:w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="high">High Risk</SelectItem>
-                      <SelectItem value="medium">Medium Risk</SelectItem>
-                      <SelectItem value="low">Low Risk</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
+          {/* Risk Criteria Builder */}
+          <div className="pt-4 border-t">
+            <RiskCriteriaBuilder
+              criteria={riskCriteria}
+              onChange={setRiskCriteria}
+              allowLate={false}
+              allowCustom={false}
+            />
           </div>
         </CardContent>
       </Card>
@@ -567,7 +542,7 @@ const EditExam = () => {
                   Add Question
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add New Question</DialogTitle>
                 </DialogHeader>
@@ -582,10 +557,10 @@ const EditExam = () => {
                       <TabsTrigger value="essay">Essay</TabsTrigger>
                     </TabsList>
 
-                    <FormulaInput
-                      placeholder="Enter your question (use $...$ for formulas)..."
+                    <VisualEquationBuilder
                       value={newQuestion.question}
                       onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
+                      placeholder="Enter your question (use the toolbar for formulas)..."
                     />
 
                     <TabsContent value="multiple-choice" className="mt-4 space-y-2">
@@ -598,15 +573,15 @@ const EditExam = () => {
                             onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
                             className="w-4 h-4"
                           />
-                          <FormulaInput
-                            singleLine
-                            placeholder={`Option ${i + 1}`}
+                          <VisualEquationBuilder
                             value={opt}
                             onChange={(v) => {
                               const newOptions = [...newQuestion.options];
                               newOptions[i] = v;
                               setNewQuestion({ ...newQuestion, options: newOptions });
                             }}
+                            placeholder={`Option ${i + 1}`}
+                            compact
                           />
                         </div>
                       ))}
@@ -625,15 +600,15 @@ const EditExam = () => {
                               setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
                             }}
                           />
-                          <FormulaInput
-                            singleLine
-                            placeholder={`Option ${i + 1}`}
+                          <VisualEquationBuilder
                             value={opt}
                             onChange={(v) => {
                               const newOptions = [...newQuestion.options];
                               newOptions[i] = v;
                               setNewQuestion({ ...newQuestion, options: newOptions });
                             }}
+                            placeholder={`Option ${i + 1}`}
+                            compact
                           />
                         </div>
                       ))}
@@ -663,109 +638,119 @@ const EditExam = () => {
           {questions.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">No questions yet. Add your first question!</p>
           ) : (
-            questions.map((q, index) => (
-              <Card key={q.id} className="bg-muted/50">
-                <CardContent className="pt-4 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {q.type === 'multiple-choice' ? (
-                        <CheckCircle className="w-4 h-4 text-secondary" />
-                      ) : q.type === 'multi-select' ? (
-                        <CheckCircle className="w-4 h-4 text-primary" />
-                      ) : (
-                        <AlignLeft className="w-4 h-4 text-primary" />
-                      )}
-                      <span className="font-medium">Q{index + 1}</span>
-                      <span className="capitalize">({q.type})</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        className="w-20 h-8"
-                        value={q.points}
-                        onChange={(e) => updateLocalQuestion(index, { points: Number(e.target.value) })}
-                        onBlur={() => handleUpdateQuestion(questions[index])}
-                      />
-                      <span className="text-xs text-muted-foreground">pts</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive"
-                        onClick={() => handleDeleteQuestion(q.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <FormulaInput
-                    value={q.question}
-                    onChange={(v) => updateLocalQuestion(index, { question: v })}
-                    onBlur={() => handleUpdateQuestion(questions[index])}
-                  />
-
-                  {q.type === 'multiple-choice' && q.options && (
-                    <div className="space-y-2">
-                      {(q.options as string[]).map((opt, optIndex) => (
-                        <div key={optIndex} className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name={`correct-${q.id}`}
-                            checked={q.correct_answer === optIndex}
-                            onChange={() => {
-                              updateLocalQuestion(index, { correct_answer: optIndex });
-                              handleUpdateQuestion({ ...questions[index], correct_answer: optIndex });
-                            }}
-                            className="w-4 h-4"
-                          />
-                          <FormulaInput
-                            singleLine
-                            value={opt}
-                            onChange={(v) => {
-                              const newOptions = [...(q.options as string[])];
-                              newOptions[optIndex] = v;
-                              updateLocalQuestion(index, { options: newOptions });
-                            }}
-                            onBlur={() => handleUpdateQuestion(questions[index])}
-                          />
+            <SortableList
+              items={questions.map(q => q.id)}
+              onReorder={handleQuestionReorder}
+            >
+              <div className="space-y-4">
+                {questions.map((q, index) => (
+                  <SortableItem key={q.id} id={q.id}>
+                    <Card className="bg-muted/50">
+                      <CardContent className="pt-4 space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            {q.type === 'multiple-choice' ? (
+                              <CheckCircle className="w-4 h-4 text-secondary" />
+                            ) : q.type === 'multi-select' ? (
+                              <CheckCircle className="w-4 h-4 text-primary" />
+                            ) : (
+                              <AlignLeft className="w-4 h-4 text-primary" />
+                            )}
+                            <span className="font-medium">Q{index + 1}</span>
+                            <span className="capitalize">({q.type})</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              className="w-20 h-8"
+                              value={q.points}
+                              onChange={(e) => updateLocalQuestion(index, { points: Number(e.target.value) })}
+                              onBlur={() => handleUpdateQuestion(questions[index])}
+                            />
+                            <span className="text-xs text-muted-foreground">pts</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDeleteQuestion(q.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
 
-                  {q.type === 'multi-select' && q.options && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">Select all correct answers</p>
-                      {(q.options as string[]).map((opt, optIndex) => (
-                        <div key={optIndex} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={(q.correct_answers || []).includes(optIndex)}
-                            onCheckedChange={(checked) => {
-                              const currentAnswers = q.correct_answers || [];
-                              const newAnswers = checked
-                                ? [...currentAnswers, optIndex]
-                                : currentAnswers.filter(a => a !== optIndex);
-                              updateLocalQuestion(index, { correct_answers: newAnswers });
-                              handleUpdateQuestion({ ...questions[index], correct_answers: newAnswers });
-                            }}
-                          />
-                          <FormulaInput
-                            singleLine
-                            value={opt}
-                            onChange={(v) => {
-                              const newOptions = [...(q.options as string[])];
-                              newOptions[optIndex] = v;
-                              updateLocalQuestion(index, { options: newOptions });
-                            }}
-                            onBlur={() => handleUpdateQuestion(questions[index])}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
+                        <VisualEquationBuilder
+                          value={q.question}
+                          onChange={(v) => updateLocalQuestion(index, { question: v })}
+                          onBlur={() => handleUpdateQuestion(questions[index])}
+                          compact
+                        />
+
+                        {q.type === 'multiple-choice' && q.options && (
+                          <div className="space-y-2">
+                            {(q.options as string[]).map((opt, optIndex) => (
+                              <div key={optIndex} className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`correct-${q.id}`}
+                                  checked={q.correct_answer === optIndex}
+                                  onChange={() => {
+                                    updateLocalQuestion(index, { correct_answer: optIndex });
+                                    handleUpdateQuestion({ ...questions[index], correct_answer: optIndex });
+                                  }}
+                                  className="w-4 h-4"
+                                />
+                                <VisualEquationBuilder
+                                  value={opt}
+                                  onChange={(v) => {
+                                    const newOptions = [...(q.options as string[])];
+                                    newOptions[optIndex] = v;
+                                    updateLocalQuestion(index, { options: newOptions });
+                                  }}
+                                  onBlur={() => handleUpdateQuestion(questions[index])}
+                                  compact
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {q.type === 'multi-select' && q.options && (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">Select all correct answers</p>
+                            {(q.options as string[]).map((opt, optIndex) => (
+                              <div key={optIndex} className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={(q.correct_answers || []).includes(optIndex)}
+                                  onCheckedChange={(checked) => {
+                                    const currentAnswers = q.correct_answers || [];
+                                    const newAnswers = checked
+                                      ? [...currentAnswers, optIndex]
+                                      : currentAnswers.filter(a => a !== optIndex);
+                                    updateLocalQuestion(index, { correct_answers: newAnswers });
+                                    handleUpdateQuestion({ ...questions[index], correct_answers: newAnswers });
+                                  }}
+                                />
+                                <VisualEquationBuilder
+                                  value={opt}
+                                  onChange={(v) => {
+                                    const newOptions = [...(q.options as string[])];
+                                    newOptions[optIndex] = v;
+                                    updateLocalQuestion(index, { options: newOptions });
+                                  }}
+                                  onBlur={() => handleUpdateQuestion(questions[index])}
+                                  compact
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </SortableItem>
+                ))}
+              </div>
+            </SortableList>
           )}
         </CardContent>
       </Card>
