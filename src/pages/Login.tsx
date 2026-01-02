@@ -67,16 +67,16 @@ const Login = () => {
           <div className="w-12 h-12 bg-secondary/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
             <GraduationCap className="w-7 h-7 text-primary-foreground" />
           </div>
-          <span className="text-2xl font-bold text-primary-foreground">EduExam</span>
+          <span className="text-2xl font-bold text-primary-foreground">AjarinAja</span>
         </div>
         
         <div className="space-y-6">
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight">
-            Welcome to the Future of Education
+            Welcome to AjarinAja
           </h1>
           <p className="text-lg text-primary-foreground/80 max-w-md">
-            Join our platform to create, manage, and take exams with ease. 
-            Designed for both teachers and students.
+            Platform LMS lengkap untuk mengelola kursus, tugas, ujian, dan analitik pembelajaran. 
+            Dirancang untuk guru dan siswa.
           </p>
           
           <div className="grid gap-4 pt-6">
@@ -86,7 +86,7 @@ const Login = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-primary-foreground">For Teachers</h3>
-                <p className="text-sm text-primary-foreground/70">Create courses & exams</p>
+                <p className="text-sm text-primary-foreground/70">Create courses, assignments & exams</p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
@@ -95,14 +95,14 @@ const Login = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-primary-foreground">For Students</h3>
-                <p className="text-sm text-primary-foreground/70">Enroll & take exams</p>
+                <p className="text-sm text-primary-foreground/70">Enroll, learn & take assessments</p>
               </div>
             </div>
           </div>
         </div>
 
         <p className="text-sm text-primary-foreground/60">
-          © 2024 EduExam. All rights reserved.
+          © 2024 AjarinAja. All rights reserved.
         </p>
       </div>
 
@@ -114,7 +114,7 @@ const Login = () => {
             <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-secondary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">EduExam</span>
+            <span className="text-xl font-bold text-foreground">AjarinAja</span>
           </div>
 
           <Card className="shadow-xl border-0 bg-card">
@@ -123,7 +123,7 @@ const Login = () => {
                 {isSignUp ? 'Create Account' : 'Sign In'}
               </CardTitle>
               <CardDescription>
-                {isSignUp ? 'Join EduExam to get started' : 'Welcome back to EduExam'}
+                {isSignUp ? 'Join AjarinAja to get started' : 'Welcome back to AjarinAja'}
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -48,7 +48,7 @@ const ForgotPassword = () => {
           <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
             <GraduationCap className="w-6 h-6 text-secondary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">EduExam</span>
+          <span className="text-xl font-bold text-foreground">AjarinAja</span>
         </div>
 
         <Card className="shadow-xl border-0 bg-card">

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
 import { useUpdateQuestion, useDeleteQuestion, useAddQuestion } from '@/hooks/useQuestions';
 import { useQuestionBank, useIncrementQuestionUsage, useSaveExamQuestionsToBank } from '@/hooks/useQuestionBank';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus, Eye } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -22,6 +22,7 @@ import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBui
 import SortableList from '@/components/SortableContext';
 import SortableItem from '@/components/SortableItem';
 import { arrayMove } from '@dnd-kit/sortable';
+import StudentPreviewMode from '@/components/StudentPreviewMode';
 
 const EditExam = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -322,10 +323,25 @@ const EditExam = () => {
           <h1 className="text-3xl font-bold text-foreground">Edit Exam</h1>
           <p className="text-muted-foreground mt-1">Modify exam details and questions</p>
         </div>
-        <Button onClick={handleSaveExam} disabled={updateExam.isPending}>
-          {updateExam.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Save Changes
-        </Button>
+        <div className="flex items-center gap-2">
+          <StudentPreviewMode
+            title={examForm.title}
+            description={examForm.description}
+            questions={questions.map(q => ({
+              id: q.id,
+              type: q.type,
+              question: q.question,
+              options: q.options as string[] | null,
+              points: q.points,
+            }))}
+            duration={examForm.duration}
+            itemType="exam"
+          />
+          <Button onClick={handleSaveExam} disabled={updateExam.isPending}>
+            {updateExam.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save Changes
+          </Button>
+        </div>
       </div>
 
       {/* Exam Details */}
