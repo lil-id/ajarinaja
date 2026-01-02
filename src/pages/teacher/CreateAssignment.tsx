@@ -61,7 +61,9 @@ const formSchema = z.object({
   risk_on_missed: z.boolean(),
   risk_on_below_kkm: z.boolean(),
   risk_on_late: z.boolean(),
-  risk_severity: z.enum(['high', 'medium', 'low']),
+  risk_missed_severity: z.enum(['high', 'medium', 'low']),
+  risk_below_kkm_severity: z.enum(['high', 'medium', 'low']),
+  risk_late_severity: z.enum(['high', 'medium', 'low']),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -134,7 +136,9 @@ export default function CreateAssignment() {
       risk_on_missed: false,
       risk_on_below_kkm: false,
       risk_on_late: false,
-      risk_severity: 'medium',
+      risk_missed_severity: 'high',
+      risk_below_kkm_severity: 'medium',
+      risk_late_severity: 'low',
     },
   });
 
@@ -162,7 +166,9 @@ export default function CreateAssignment() {
         risk_on_missed: (existingAssignment as any).risk_on_missed || false,
         risk_on_below_kkm: (existingAssignment as any).risk_on_below_kkm || false,
         risk_on_late: (existingAssignment as any).risk_on_late || false,
-        risk_severity: (existingAssignment as any).risk_severity || 'medium',
+        risk_missed_severity: (existingAssignment as any).risk_missed_severity || 'high',
+        risk_below_kkm_severity: (existingAssignment as any).risk_below_kkm_severity || 'medium',
+        risk_late_severity: (existingAssignment as any).risk_late_severity || 'low',
       });
       setRubric(existingAssignment.rubric || []);
     }
@@ -313,7 +319,9 @@ export default function CreateAssignment() {
         risk_on_missed: data.risk_on_missed,
         risk_on_below_kkm: data.risk_on_below_kkm,
         risk_on_late: data.risk_on_late,
-        risk_severity: data.risk_severity,
+        risk_missed_severity: data.risk_missed_severity,
+        risk_below_kkm_severity: data.risk_below_kkm_severity,
+        risk_late_severity: data.risk_late_severity,
       };
 
       if (isEditMode) {
@@ -691,88 +699,138 @@ export default function CreateAssignment() {
                   <Label className="font-medium">At-Risk Monitoring</Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Configure which conditions will flag students as at-risk for this assignment.
+                  Configure which conditions will flag students as at-risk for this assignment, with individual severity levels.
                 </p>
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="risk_on_missed"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                        <div>
-                          <FormLabel className="text-sm">Flag if Missed</FormLabel>
-                          <FormDescription className="text-xs">
-                            Not submitted by deadline
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="risk_on_below_kkm"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                        <div>
-                          <FormLabel className="text-sm">Flag if Below KKM</FormLabel>
-                          <FormDescription className="text-xs">
-                            Score below passing grade
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="risk_on_late"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                        <div>
-                          <FormLabel className="text-sm">Flag if Late</FormLabel>
-                          <FormDescription className="text-xs">
-                            Submitted after deadline
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                {(form.watch('risk_on_missed') || form.watch('risk_on_below_kkm') || form.watch('risk_on_late')) && (
-                  <FormField
-                    control={form.control}
-                    name="risk_severity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Risk Severity</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                <div className="space-y-3">
+                  {/* Flag if Missed */}
+                  <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                    <FormField
+                      control={form.control}
+                      name="risk_on_missed"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between">
+                          <div>
+                            <FormLabel className="text-sm">Flag if Missed</FormLabel>
+                            <FormDescription className="text-xs">
+                              Not submitted by deadline
+                            </FormDescription>
+                          </div>
                           <FormControl>
-                            <SelectTrigger className="w-full sm:w-48">
-                              <SelectValue />
-                            </SelectTrigger>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="high">High Risk</SelectItem>
-                            <SelectItem value="medium">Medium Risk</SelectItem>
-                            <SelectItem value="low">Low Risk</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Choose how this assignment affects a student's overall risk level
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
+                        </FormItem>
+                      )}
+                    />
+                    {form.watch('risk_on_missed') && (
+                      <FormField
+                        control={form.control}
+                        name="risk_missed_severity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="w-full sm:w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="high">High Risk</SelectItem>
+                                <SelectItem value="medium">Medium Risk</SelectItem>
+                                <SelectItem value="low">Low Risk</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
-                )}
+                  </div>
+                  
+                  {/* Flag if Below KKM */}
+                  <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                    <FormField
+                      control={form.control}
+                      name="risk_on_below_kkm"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between">
+                          <div>
+                            <FormLabel className="text-sm">Flag if Below KKM</FormLabel>
+                            <FormDescription className="text-xs">
+                              Score below passing grade
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    {form.watch('risk_on_below_kkm') && (
+                      <FormField
+                        control={form.control}
+                        name="risk_below_kkm_severity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="w-full sm:w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="high">High Risk</SelectItem>
+                                <SelectItem value="medium">Medium Risk</SelectItem>
+                                <SelectItem value="low">Low Risk</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+                  
+                  {/* Flag if Late */}
+                  <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                    <FormField
+                      control={form.control}
+                      name="risk_on_late"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between">
+                          <div>
+                            <FormLabel className="text-sm">Flag if Late</FormLabel>
+                            <FormDescription className="text-xs">
+                              Submitted after deadline
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    {form.watch('risk_on_late') && (
+                      <FormField
+                        control={form.control}
+                        name="risk_late_severity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="w-full sm:w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="high">High Risk</SelectItem>
+                                <SelectItem value="medium">Medium Risk</SelectItem>
+                                <SelectItem value="low">Low Risk</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
