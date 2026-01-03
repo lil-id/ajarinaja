@@ -13,6 +13,7 @@ import {
   Shield,
   Clock,
   Zap,
+  Eye,
 } from "lucide-react";
 import heroClassroom from "@/assets/hero-classroom.jpg";
 import teacherTeaching from "@/assets/teacher-teaching.jpg";
@@ -92,7 +93,11 @@ const Index = () => {
                   Start Teaching Today
                   <ArrowRight className="w-5 h-5" />
                 </Button>
-                <Button variant="outline" size="xl" onClick={handleContactDemo}>
+                <Button variant="outline" size="xl" onClick={() => navigate("/demo/teacher")}>
+                  <Eye className="w-4 h-4" />
+                  Try Demo
+                </Button>
+                <Button variant="ghost" size="xl" onClick={handleContactDemo}>
                   <Play className="w-4 h-4" />
                   Contact for Demo
                 </Button>
