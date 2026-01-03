@@ -846,80 +846,88 @@ export default function CreateAssignment() {
                         Add Question
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent size="lg">
                       <DialogHeader>
                         <DialogTitle>Add New Question</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 pt-4">
+                      <div className="space-y-4 pt-2">
                         <Tabs
                           value={newQuestion.type}
                           onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'multi-select' | 'essay' })}
                         >
-                          <TabsList className="mb-4">
+                          <TabsList className="mb-2">
                             <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
                             <TabsTrigger value="multi-select">Multi-Select</TabsTrigger>
                             <TabsTrigger value="essay">Essay</TabsTrigger>
                           </TabsList>
 
                           <VisualEquationBuilder
-                            placeholder="Enter your question - use buttons above to insert formulas..."
+                            placeholder="Enter your question..."
                             value={newQuestion.question}
                             onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
+                            rows={2}
                           />
 
-                          <TabsContent value="multiple-choice" className="mt-4 space-y-2">
-                            {newQuestion.options.map((opt, i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <input
-                                  type="radio"
-                                  name="newCorrect"
-                                  checked={newQuestion.correctAnswer === i}
-                                  onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
-                                  className="w-4 h-4"
-                                />
-                                <VisualEquationBuilder
-                                  singleLine
-                                  placeholder={`Option ${i + 1}`}
-                                  value={opt}
-                                  onChange={(v) => {
-                                    const newOptions = [...newQuestion.options];
-                                    newOptions[i] = v;
-                                    setNewQuestion({ ...newQuestion, options: newOptions });
-                                  }}
-                                />
-                              </div>
-                            ))}
+                          <TabsContent value="multiple-choice" className="mt-3 space-y-2">
+                            <p className="text-xs text-muted-foreground mb-1">Select the correct answer:</p>
+                            <div className="grid gap-2">
+                              {newQuestion.options.map((opt, i) => (
+                                <div key={i} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+                                  <input
+                                    type="radio"
+                                    name="newCorrect"
+                                    checked={newQuestion.correctAnswer === i}
+                                    onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
+                                    className="w-4 h-4 flex-shrink-0"
+                                  />
+                                  <Input
+                                    placeholder={`Option ${i + 1}`}
+                                    value={opt}
+                                    onChange={(e) => {
+                                      const newOptions = [...newQuestion.options];
+                                      newOptions[i] = e.target.value;
+                                      setNewQuestion({ ...newQuestion, options: newOptions });
+                                    }}
+                                    className="flex-1"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Tip: Use $formula$ syntax for math in options</p>
                           </TabsContent>
 
-                          <TabsContent value="multi-select" className="mt-4 space-y-2">
-                            <p className="text-xs text-muted-foreground mb-2">Select all correct answers</p>
-                            {newQuestion.options.map((opt, i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={newQuestion.correctAnswers.includes(i)}
-                                  onCheckedChange={(checked) => {
-                                    const newAnswers = checked
-                                      ? [...newQuestion.correctAnswers, i]
-                                      : newQuestion.correctAnswers.filter(a => a !== i);
-                                    setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
-                                  }}
-                                />
-                                <VisualEquationBuilder
-                                  singleLine
-                                  placeholder={`Option ${i + 1}`}
-                                  value={opt}
-                                  onChange={(v) => {
-                                    const newOptions = [...newQuestion.options];
-                                    newOptions[i] = v;
-                                    setNewQuestion({ ...newQuestion, options: newOptions });
-                                  }}
-                                />
-                              </div>
-                            ))}
+                          <TabsContent value="multi-select" className="mt-3 space-y-2">
+                            <p className="text-xs text-muted-foreground mb-1">Select all correct answers:</p>
+                            <div className="grid gap-2">
+                              {newQuestion.options.map((opt, i) => (
+                                <div key={i} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+                                  <Checkbox
+                                    checked={newQuestion.correctAnswers.includes(i)}
+                                    onCheckedChange={(checked) => {
+                                      const newAnswers = checked
+                                        ? [...newQuestion.correctAnswers, i]
+                                        : newQuestion.correctAnswers.filter(a => a !== i);
+                                      setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
+                                    }}
+                                  />
+                                  <Input
+                                    placeholder={`Option ${i + 1}`}
+                                    value={opt}
+                                    onChange={(e) => {
+                                      const newOptions = [...newQuestion.options];
+                                      newOptions[i] = e.target.value;
+                                      setNewQuestion({ ...newQuestion, options: newOptions });
+                                    }}
+                                    className="flex-1"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Tip: Use $formula$ syntax for math in options</p>
                           </TabsContent>
                         </Tabs>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 pt-2 border-t">
                           <div className="flex-1">
                             <Label className="text-xs">Points</Label>
                             <Input
