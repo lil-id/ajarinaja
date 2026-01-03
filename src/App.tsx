@@ -61,9 +61,12 @@ import DemoGenericPage from "./pages/demo/DemoGenericPage";
 import DemoTeacherCourses from "./pages/demo/DemoTeacherCourses";
 import DemoTeacherExams from "./pages/demo/DemoTeacherExams";
 import DemoTeacherAssignments from "./pages/demo/DemoTeacherAssignments";
+import DemoTeacherMaterials from "./pages/demo/DemoTeacherMaterials";
+import DemoTeacherAnalytics from "./pages/demo/DemoTeacherAnalytics";
 import DemoStudentCourses from "./pages/demo/DemoStudentCourses";
 import DemoStudentExams from "./pages/demo/DemoStudentExams";
 import DemoStudentAssignments from "./pages/demo/DemoStudentAssignments";
+import DemoStudentAnalytics from "./pages/demo/DemoStudentAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -144,8 +147,9 @@ const App = () => (
               <Route path="teacher/courses" element={<DemoTeacherCourses />} />
               <Route path="teacher/exams" element={<DemoTeacherExams />} />
               <Route path="teacher/assignments" element={<DemoTeacherAssignments />} />
+              <Route path="teacher/materials" element={<DemoTeacherMaterials />} />
               <Route path="teacher/students" element={<DemoGenericPage />} />
-              <Route path="teacher/analytics" element={<DemoGenericPage />} />
+              <Route path="teacher/analytics" element={<DemoTeacherAnalytics />} />
               <Route path="teacher/calendar" element={<DemoGenericPage />} />
               <Route path="teacher/announcements" element={<DemoGenericPage />} />
               
@@ -154,7 +158,7 @@ const App = () => (
               <Route path="student/courses" element={<DemoStudentCourses />} />
               <Route path="student/exams" element={<DemoStudentExams />} />
               <Route path="student/assignments" element={<DemoStudentAssignments />} />
-              <Route path="student/analytics" element={<DemoGenericPage />} />
+              <Route path="student/analytics" element={<DemoStudentAnalytics />} />
               <Route path="student/calendar" element={<DemoGenericPage />} />
               <Route path="student/notifications" element={<DemoGenericPage />} />
             </Route>
