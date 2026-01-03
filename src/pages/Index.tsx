@@ -63,9 +63,6 @@ const Index = () => {
             <Button variant="ghost" disabled className="opacity-50 cursor-not-allowed">
               Sign In
             </Button>
-            <Button variant="hero" disabled className="opacity-50 cursor-not-allowed">
-              Get Started Free
-            </Button>
           </div>
         </div>
       </nav>

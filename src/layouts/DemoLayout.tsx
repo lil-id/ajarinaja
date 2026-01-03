@@ -17,16 +17,19 @@ import {
   MessageSquare,
   GraduationCap,
   Menu,
+  FolderOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDemoContext } from '@/contexts/DemoContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { DemoTour } from '@/components/DemoTour';
 
 const teacherNavItems = [
   { icon: LayoutDashboard, label: 'Overview', path: '/demo/teacher' },
   { icon: BookOpen, label: 'Courses', path: '/demo/teacher/courses' },
   { icon: FileText, label: 'Exams', path: '/demo/teacher/exams' },
   { icon: ClipboardCheck, label: 'Assignments', path: '/demo/teacher/assignments' },
+  { icon: FolderOpen, label: 'Materials', path: '/demo/teacher/materials' },
   { icon: Users, label: 'Students', path: '/demo/teacher/students' },
   { icon: BarChart2, label: 'Analytics', path: '/demo/teacher/analytics' },
   { icon: Calendar, label: 'Calendar', path: '/demo/teacher/calendar' },
@@ -146,37 +149,40 @@ export default function DemoLayout() {
   );
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r bg-card">
-        <NavContent />
-      </aside>
+    <>
+      <DemoTour role={demoRole} />
+      <div className="flex h-screen bg-background">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex w-64 flex-col border-r bg-card">
+          <NavContent />
+        </aside>
 
-      {/* Mobile Header */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="font-bold">AjarinAja</span>
-            <Badge variant="secondary" className="text-xs">Demo</Badge>
-          </div>
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64">
-              <NavContent />
-            </SheetContent>
-          </Sheet>
-        </header>
+        {/* Mobile Header */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              <span className="font-bold">AjarinAja</span>
+              <Badge variant="secondary" className="text-xs">Demo</Badge>
+            </div>
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64">
+                <NavContent />
+              </SheetContent>
+            </Sheet>
+          </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
-        </main>
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

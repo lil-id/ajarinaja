@@ -100,7 +100,7 @@ export default function DemoStudentAssignments() {
 
       {/* Submission Dialog */}
       <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent size="lg">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle>{assignment?.title}</DialogTitle>
@@ -124,22 +124,22 @@ export default function DemoStudentAssignments() {
 
             {/* Submission Area */}
             {assignment?.assignment_type === 'submission' ? (
-              <div className="space-y-4">
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="font-medium">Drag and drop your file here</p>
-                  <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
-                  <Button variant="outline">
+              <div className="space-y-3">
+                <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium">Drag and drop your file here or click to browse</p>
+                  <Button variant="outline" size="sm" className="mt-2">
                     Select File
                   </Button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <label className="text-sm font-medium">Additional Notes (Optional)</label>
                   <Textarea
-                    placeholder="Add any notes about your submission..."
+                    placeholder="Add any notes..."
                     value={submission}
                     onChange={(e) => setSubmission(e.target.value)}
-                    rows={3}
+                    rows={2}
+                    className="text-sm"
                   />
                 </div>
               </div>
@@ -167,15 +167,11 @@ export default function DemoStudentAssignments() {
             )}
 
             {/* Demo Notice */}
-            <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-amber-700">Demo Experience</p>
-                <p className="text-sm text-amber-600">
-                  You can interact with the submission form, but actual submission is disabled.
-                  Contact us for full access!
-                </p>
-              </div>
+            <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-700">
+                <strong>Demo Mode:</strong> Submission is disabled. Contact us for full access!
+              </p>
             </div>
 
             {/* Actions */}
