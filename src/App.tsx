@@ -58,6 +58,12 @@ import DemoLayout from "./layouts/DemoLayout";
 import DemoTeacherOverview from "./pages/demo/DemoTeacherOverview";
 import DemoStudentDashboard from "./pages/demo/DemoStudentDashboard";
 import DemoGenericPage from "./pages/demo/DemoGenericPage";
+import DemoTeacherCourses from "./pages/demo/DemoTeacherCourses";
+import DemoTeacherExams from "./pages/demo/DemoTeacherExams";
+import DemoTeacherAssignments from "./pages/demo/DemoTeacherAssignments";
+import DemoStudentCourses from "./pages/demo/DemoStudentCourses";
+import DemoStudentExams from "./pages/demo/DemoStudentExams";
+import DemoStudentAssignments from "./pages/demo/DemoStudentAssignments";
 
 const queryClient = new QueryClient();
 
@@ -135,9 +141,9 @@ const App = () => (
             }>
               {/* Teacher Demo */}
               <Route path="teacher" element={<DemoTeacherOverview />} />
-              <Route path="teacher/courses" element={<DemoGenericPage />} />
-              <Route path="teacher/exams" element={<DemoGenericPage />} />
-              <Route path="teacher/assignments" element={<DemoGenericPage />} />
+              <Route path="teacher/courses" element={<DemoTeacherCourses />} />
+              <Route path="teacher/exams" element={<DemoTeacherExams />} />
+              <Route path="teacher/assignments" element={<DemoTeacherAssignments />} />
               <Route path="teacher/students" element={<DemoGenericPage />} />
               <Route path="teacher/analytics" element={<DemoGenericPage />} />
               <Route path="teacher/calendar" element={<DemoGenericPage />} />
@@ -145,9 +151,9 @@ const App = () => (
               
               {/* Student Demo */}
               <Route path="student" element={<DemoStudentDashboard />} />
-              <Route path="student/courses" element={<DemoGenericPage />} />
-              <Route path="student/exams" element={<DemoGenericPage />} />
-              <Route path="student/assignments" element={<DemoGenericPage />} />
+              <Route path="student/courses" element={<DemoStudentCourses />} />
+              <Route path="student/exams" element={<DemoStudentExams />} />
+              <Route path="student/assignments" element={<DemoStudentAssignments />} />
               <Route path="student/analytics" element={<DemoGenericPage />} />
               <Route path="student/calendar" element={<DemoGenericPage />} />
               <Route path="student/notifications" element={<DemoGenericPage />} />

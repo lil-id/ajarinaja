@@ -8,7 +8,7 @@ import {
   GraduationCap,
   BarChart3,
   CheckCircle,
-  Play,
+  MessageSquare,
   FileText,
   Shield,
   Clock,
@@ -60,10 +60,10 @@ const Index = () => {
             </a>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/login")}>
+            <Button variant="ghost" disabled className="opacity-50 cursor-not-allowed">
               Sign In
             </Button>
-            <Button variant="hero" onClick={() => navigate("/login")}>
+            <Button variant="hero" disabled className="opacity-50 cursor-not-allowed">
               Get Started Free
             </Button>
           </div>
@@ -89,17 +89,13 @@ const Index = () => {
                 track student progress, and deliver an exceptional learning experience.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4">
-                <Button variant="hero" size="xl" onClick={() => navigate("/login")}>
-                  Start Teaching Today
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
                 <Button variant="outline" size="xl" onClick={() => navigate("/demo/teacher")}>
                   <Eye className="w-4 h-4" />
                   Try Demo
                 </Button>
-                <Button variant="ghost" size="xl" onClick={handleContactDemo}>
-                  <Play className="w-4 h-4" />
-                  Contact for Demo
+                <Button variant="hero" size="xl" onClick={handleContactDemo}>
+                  <MessageSquare className="w-4 h-4" />
+                  Contact for Full Demo
                 </Button>
               </div>
               <div className="flex items-center gap-6 mt-8 pt-8 border-t border-border">
@@ -215,9 +211,9 @@ const Index = () => {
                   </li>
                 ))}
               </ul>
-              <Button variant="hero" size="lg" onClick={() => navigate("/login")}>
-                Start Teaching Free
-                <ArrowRight className="w-4 h-4" />
+              <Button variant="hero" size="lg" onClick={handleContactDemo}>
+                <MessageSquare className="w-4 h-4" />
+                Contact for Full Demo
               </Button>
             </div>
           </div>
