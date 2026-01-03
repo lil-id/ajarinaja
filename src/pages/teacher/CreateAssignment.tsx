@@ -46,6 +46,9 @@ import VisualEquationBuilder from '@/components/VisualEquationBuilder';
 import FormulaText from '@/components/FormulaText';
 import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBuilder';
 import StudentPreviewMode from '@/components/StudentPreviewMode';
+import SortableList from '@/components/SortableContext';
+import SortableItem from '@/components/SortableItem';
+import { arrayMove } from '@dnd-kit/sortable';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
@@ -278,6 +281,13 @@ export default function CreateAssignment() {
 
   const removeQuestion = (index: number) => {
     setQuestions(questions.filter((_, i) => i !== index));
+  };
+
+  const handleQuestionReorder = (oldIndex: number, newIndex: number) => {
+    const reordered = arrayMove(questions, oldIndex, newIndex);
+    const updatedQuestions = reordered.map((q, idx) => ({ ...q, order_index: idx }));
+    setQuestions(updatedQuestions);
+    toast.success('Question order updated');
   };
 
   const filteredBankQuestions = questionBank.filter((q) =>
@@ -951,101 +961,108 @@ export default function CreateAssignment() {
                     No questions yet. Add your first question!
                   </p>
                 ) : (
-                  questions.map((q, index) => (
-                    <Card key={q.id} className="bg-muted/50">
-                      <CardContent className="pt-4 space-y-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            {q.type === 'multiple-choice' ? (
-                              <CheckCircle className="w-4 h-4 text-secondary" />
-                            ) : q.type === 'multi-select' ? (
-                              <CheckCircle className="w-4 h-4 text-primary" />
-                            ) : (
-                              <AlignLeft className="w-4 h-4 text-primary" />
-                            )}
-                            <span className="font-medium">Q{index + 1}</span>
-                            <span className="capitalize">({q.type})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              className="w-20 h-8"
-                              value={q.points}
-                              onChange={(e) => updateLocalQuestion(index, { points: Number(e.target.value) })}
+                  <SortableList
+                    items={questions.map(q => q.id)}
+                    onReorder={handleQuestionReorder}
+                  >
+                    {questions.map((q, index) => (
+                      <SortableItem key={q.id} id={q.id}>
+                        <Card className="bg-muted/50">
+                          <CardContent className="pt-4 space-y-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                {q.type === 'multiple-choice' ? (
+                                  <CheckCircle className="w-4 h-4 text-secondary" />
+                                ) : q.type === 'multi-select' ? (
+                                  <CheckCircle className="w-4 h-4 text-primary" />
+                                ) : (
+                                  <AlignLeft className="w-4 h-4 text-primary" />
+                                )}
+                                <span className="font-medium">Q{index + 1}</span>
+                                <span className="capitalize">({q.type})</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="number"
+                                  className="w-20 h-8"
+                                  value={q.points}
+                                  onChange={(e) => updateLocalQuestion(index, { points: Number(e.target.value) })}
+                                />
+                                <span className="text-xs text-muted-foreground">pts</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive"
+                                  onClick={() => removeQuestion(index)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <VisualEquationBuilder
+                              value={q.question}
+                              onChange={(v) => updateLocalQuestion(index, { question: v })}
                             />
-                            <span className="text-xs text-muted-foreground">pts</span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => removeQuestion(index)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
 
-                        <VisualEquationBuilder
-                          value={q.question}
-                          onChange={(v) => updateLocalQuestion(index, { question: v })}
-                        />
-
-                        {q.type === 'multiple-choice' && q.options && (
-                          <div className="space-y-2">
-                            {q.options.map((opt, optIndex) => (
-                              <div key={optIndex} className="flex items-center gap-2">
-                                <input
-                                  type="radio"
-                                  name={`correct-${q.id}`}
-                                  checked={q.correct_answer === optIndex}
-                                  onChange={() => updateLocalQuestion(index, { correct_answer: optIndex })}
-                                  className="w-4 h-4"
-                                />
-                                <VisualEquationBuilder
-                                  singleLine
-                                  value={opt}
-                                  onChange={(v) => {
-                                    const newOptions = [...q.options];
-                                    newOptions[optIndex] = v;
-                                    updateLocalQuestion(index, { options: newOptions });
-                                  }}
-                                />
+                            {q.type === 'multiple-choice' && q.options && (
+                              <div className="space-y-2">
+                                {q.options.map((opt, optIndex) => (
+                                  <div key={optIndex} className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name={`correct-${q.id}`}
+                                      checked={q.correct_answer === optIndex}
+                                      onChange={() => updateLocalQuestion(index, { correct_answer: optIndex })}
+                                      className="w-4 h-4"
+                                    />
+                                    <VisualEquationBuilder
+                                      singleLine
+                                      value={opt}
+                                      onChange={(v) => {
+                                        const newOptions = [...q.options];
+                                        newOptions[optIndex] = v;
+                                        updateLocalQuestion(index, { options: newOptions });
+                                      }}
+                                    />
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        )}
+                            )}
 
-                        {q.type === 'multi-select' && q.options && (
-                          <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">Select all correct answers</p>
-                            {q.options.map((opt, optIndex) => (
-                              <div key={optIndex} className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={q.correct_answers.includes(optIndex)}
-                                  onCheckedChange={(checked) => {
-                                    const newAnswers = checked
-                                      ? [...q.correct_answers, optIndex]
-                                      : q.correct_answers.filter(a => a !== optIndex);
-                                    updateLocalQuestion(index, { correct_answers: newAnswers });
-                                  }}
-                                />
-                                <VisualEquationBuilder
-                                  singleLine
-                                  value={opt}
-                                  onChange={(v) => {
-                                    const newOptions = [...q.options];
-                                    newOptions[optIndex] = v;
-                                    updateLocalQuestion(index, { options: newOptions });
-                                  }}
-                                />
+                            {q.type === 'multi-select' && q.options && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-muted-foreground">Select all correct answers</p>
+                                {q.options.map((opt, optIndex) => (
+                                  <div key={optIndex} className="flex items-center gap-2">
+                                    <Checkbox
+                                      checked={q.correct_answers.includes(optIndex)}
+                                      onCheckedChange={(checked) => {
+                                        const newAnswers = checked
+                                          ? [...q.correct_answers, optIndex]
+                                          : q.correct_answers.filter(a => a !== optIndex);
+                                        updateLocalQuestion(index, { correct_answers: newAnswers });
+                                      }}
+                                    />
+                                    <VisualEquationBuilder
+                                      singleLine
+                                      value={opt}
+                                      onChange={(v) => {
+                                        const newOptions = [...q.options];
+                                        newOptions[optIndex] = v;
+                                        updateLocalQuestion(index, { options: newOptions });
+                                      }}
+                                    />
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
+                            )}
+                          </CardContent>
+                        </Card>
+                      </SortableItem>
+                    ))}
+                  </SortableList>
                 )}
               </CardContent>
             </Card>

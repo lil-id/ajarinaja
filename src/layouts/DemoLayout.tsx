@@ -72,11 +72,11 @@ export default function DemoLayout() {
           <Eye className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium">Demo Mode</span>
           <Badge variant="secondary" className="ml-auto text-xs">
-            View Only
+            Interactive Preview
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground">
-          Explore features without affecting real data
+          Explore all features - saving is disabled
         </p>
       </div>
 
@@ -139,7 +139,7 @@ export default function DemoLayout() {
           onClick={() => window.open('https://wa.me/6282293675164?text=Hi,%20I%20am%20interested%20in%20AjarinAja%20LMS!', '_blank')}
         >
           <MessageSquare className="h-4 w-4 mr-2" />
-          Contact for Demo
+          Contact for Full Demo
         </Button>
       </div>
     </div>
