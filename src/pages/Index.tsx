@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   BookOpen,
   Users,
@@ -57,6 +58,9 @@ const Index = () => {
             </a>
             <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">
               Testimonials
+            </a>
+            <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">
+              FAQ
             </a>
           </div>
           <div className="flex items-center gap-4">
@@ -424,6 +428,89 @@ const Index = () => {
               delay={200}
             />
           </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 px-6">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+              Everything you need to know about AjarinAja LMS platform
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="space-y-4">
+            <AccordionItem value="item-1" className="bg-card border border-border rounded-xl px-6">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                What is AjarinAja and who is it for?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                AjarinAja is a comprehensive Learning Management System (LMS) designed for schools, educational institutions, 
+                and independent educators. It provides tools for course management, assignment creation, exam administration, 
+                student progress tracking, and analytics — all in one platform.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-card border border-border rounded-xl px-6">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                How does the exam and assignment auto-grading work?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Our platform supports multiple choice, multiple answer, and essay-type questions. Multiple choice and 
+                multiple answer questions are automatically graded instantly upon submission. For essay questions, teachers 
+                can use our rubric-based grading system or provide manual feedback. All scores are automatically recorded 
+                and reflected in student analytics.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-card border border-border rounded-xl px-6">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                Can I upload course materials like PDFs and videos?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Yes! Teachers can upload various types of course materials including PDF documents, videos (via URL or direct upload), 
+                and other learning resources. Students can access these materials directly through their course dashboard, 
+                and teachers can track which materials have been viewed.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-card border border-border rounded-xl px-6">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                How do I track student performance and identify at-risk students?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Our analytics dashboard provides comprehensive insights including score distributions, submission rates, 
+                and performance trends. The platform also includes an "At-Risk Students" feature that automatically 
+                identifies students who may need additional support based on factors like missed assignments, low scores, 
+                or late submissions — allowing for early intervention.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-card border border-border rounded-xl px-6">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                Is there a demo I can try before committing?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Absolutely! We offer an interactive demo that lets you explore the platform from both teacher and student 
+                perspectives. You can try creating courses, assignments, and exams, or experience the student view of 
+                taking assessments. Click the "Try Demo" button above to get started, or contact us for a personalized 
+                walkthrough of all features.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-card border border-border rounded-xl px-6">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                What kind of support do you provide?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                We provide dedicated support via WhatsApp for quick assistance, comprehensive documentation, and 
+                personalized onboarding for new schools. Our team is committed to ensuring a smooth transition and 
+                ongoing success with the platform. Contact us anytime for setup help or training sessions.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
 
