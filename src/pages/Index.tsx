@@ -440,20 +440,14 @@ const Index = () => {
                 Join hundreds of schools already using AjarinAja to deliver exceptional education. Start free today, no
                 credit card required.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="heroOutline" size="xl" onClick={() => navigate("/login")}>
-                  Create Free Account
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="xl"
-                  className="text-primary-foreground hover:bg-primary-foreground/10"
-                  onClick={handleContactDemo}
-                >
-                  Contact Demo
-                </Button>
-              </div>
+              <Button
+                variant="heroOutline"
+                size="xl"
+                onClick={handleContactDemo}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Contact for Full Demo
+              </Button>
             </div>
           </div>
         </div>
