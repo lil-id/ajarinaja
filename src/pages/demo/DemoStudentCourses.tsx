@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { demoCourses, demoMaterials } from '@/data/demoData';
 import { toast } from 'sonner';
 
 export default function DemoStudentCourses() {
+  const navigate = useNavigate();
   const enrolledCourses = demoCourses.filter(c => c.status === 'published');
 
   const handleUnenroll = () => {
@@ -91,7 +93,7 @@ export default function DemoStudentCourses() {
                     <Lock className="h-4 w-4 mr-2" />
                     Unenroll
                   </Button>
-                  <Button className="flex-1">
+                  <Button className="flex-1" onClick={() => navigate(`/demo/student/courses/${course.id}`)}>
                     Continue Learning
                   </Button>
                 </div>

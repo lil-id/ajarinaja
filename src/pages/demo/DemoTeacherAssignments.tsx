@@ -67,84 +67,170 @@ export default function DemoTeacherAssignments() {
                     Questions
                   </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="submission" className="mt-4 space-y-4">
+                  {/* File Submission Fields */}
+                  <div className="space-y-2">
+                    <Label>Assignment Title</Label>
+                    <Input
+                      placeholder="e.g., Essay Submission"
+                      value={newAssignment.title}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Course</Label>
+                    <Select value={newAssignment.course_id} onValueChange={(v) => setNewAssignment({ ...newAssignment, course_id: v })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a course" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {demoCourses.map((course) => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Due Date</Label>
+                      <Input
+                        type="datetime-local"
+                        value={newAssignment.due_date}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Max Points</Label>
+                      <Input
+                        type="number"
+                        value={newAssignment.max_points}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, max_points: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Instructions</Label>
+                    <Textarea
+                      placeholder="Detailed instructions for file submission..."
+                      value={newAssignment.description}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="p-4 border-2 border-dashed rounded-lg text-center text-muted-foreground">
+                    <Upload className="h-8 w-8 mx-auto mb-2" />
+                    <p className="text-sm">Students will upload files here</p>
+                    <p className="text-xs">Supported: PDF, DOC, DOCX, Images</p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="questions" className="mt-4 space-y-4">
+                  {/* Question-based Fields */}
+                  <div className="space-y-2">
+                    <Label>Assignment Title</Label>
+                    <Input
+                      placeholder="e.g., Quiz - Chapter 1"
+                      value={newAssignment.title}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Course</Label>
+                    <Select value={newAssignment.course_id} onValueChange={(v) => setNewAssignment({ ...newAssignment, course_id: v })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a course" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {demoCourses.map((course) => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Due Date</Label>
+                      <Input
+                        type="datetime-local"
+                        value={newAssignment.due_date}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Max Points</Label>
+                      <Input
+                        type="number"
+                        value={newAssignment.max_points}
+                        onChange={(e) => setNewAssignment({ ...newAssignment, max_points: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Instructions</Label>
+                    <Textarea
+                      placeholder="Instructions for answering questions..."
+                      value={newAssignment.description}
+                      onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  {/* Question Builder Preview */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-medium">Questions</Label>
+                      <Button variant="outline" size="sm" onClick={handleCreate}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Question
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">MC</Badge>
+                          <span className="text-sm">Sample: What is 2+2?</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">10 pts</span>
+                      </div>
+                      <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Essay</Badge>
+                          <span className="text-sm">Sample: Explain your answer...</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">20 pts</span>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
               </Tabs>
 
-              {/* Assignment Details */}
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <Label>Assignment Title</Label>
-                  <Input
-                    placeholder="e.g., Homework 1 - Algebra"
-                    value={newAssignment.title}
-                    onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
-                  />
+              {/* Late Submissions - Common for both types */}
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label>Allow Late Submissions</Label>
+                  <p className="text-xs text-muted-foreground">Accept submissions after deadline</p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Course</Label>
-                  <Select value={newAssignment.course_id} onValueChange={(v) => setNewAssignment({ ...newAssignment, course_id: v })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {demoCourses.map((course) => (
-                        <SelectItem key={course.id} value={course.id}>
-                          {course.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Due Date</Label>
-                    <Input
-                      type="datetime-local"
-                      value={newAssignment.due_date}
-                      onChange={(e) => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Max Points</Label>
-                    <Input
-                      type="number"
-                      value={newAssignment.max_points}
-                      onChange={(e) => setNewAssignment({ ...newAssignment, max_points: Number(e.target.value) })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Instructions</Label>
-                  <Textarea
-                    placeholder="Detailed instructions for students..."
-                    value={newAssignment.description}
-                    onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-
-                {/* Late Submissions */}
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <Label>Allow Late Submissions</Label>
-                    <p className="text-xs text-muted-foreground">Accept submissions after deadline</p>
-                  </div>
-                  <Switch
-                    checked={newAssignment.allow_late}
-                    onCheckedChange={(v) => setNewAssignment({ ...newAssignment, allow_late: v })}
-                  />
-                </div>
-
-                {newAssignment.allow_late && (
-                  <div className="space-y-2">
-                    <Label>Late Penalty (%)</Label>
-                    <Input
-                      type="number"
-                      value={newAssignment.late_penalty}
-                      onChange={(e) => setNewAssignment({ ...newAssignment, late_penalty: Number(e.target.value) })}
-                    />
-                  </div>
-                )}
+                <Switch
+                  checked={newAssignment.allow_late}
+                  onCheckedChange={(v) => setNewAssignment({ ...newAssignment, allow_late: v })}
+                />
               </div>
+
+              {newAssignment.allow_late && (
+                <div className="space-y-2">
+                  <Label>Late Penalty (%)</Label>
+                  <Input
+                    type="number"
+                    value={newAssignment.late_penalty}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, late_penalty: Number(e.target.value) })}
+                  />
+                </div>
+              )}
 
               <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <Lock className="h-4 w-4 text-amber-600" />

@@ -285,6 +285,33 @@ export const demoAnnouncements = [
   },
 ];
 
+export const demoCalendarEvents = [
+  {
+    id: 'demo-event-1',
+    title: 'Faculty Meeting',
+    description: 'Monthly faculty meeting to discuss curriculum updates',
+    event_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    event_type: 'custom',
+    course_id: null,
+  },
+  {
+    id: 'demo-event-2',
+    title: 'Parent-Teacher Conference',
+    description: 'Semester review with parents',
+    event_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    event_type: 'custom',
+    course_id: null,
+  },
+  {
+    id: 'demo-event-3',
+    title: 'Curriculum Review',
+    description: 'Review and update course materials',
+    event_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+    event_type: 'custom',
+    course_id: 'demo-course-1',
+  },
+];
+
 export const demoStats = {
   teacher: {
     totalStudents: 77,
