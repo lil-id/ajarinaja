@@ -1,3 +1,4 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -633,66 +634,67 @@ const Index = () => {
   );
 };
 
-function FeatureCard({
-  icon,
-  title,
-  description,
-  delay,
-}: {
+interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
   delay: number;
-}) {
-  return (
-    <div
-      className="bg-card rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 animate-slide-up border border-border/50"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-6">
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold text-foreground mb-3">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  );
 }
 
-function TestimonialCard({
-  quote,
-  name,
-  role,
-  avatar,
-  delay,
-}: {
+const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
+  ({ icon, title, description, delay }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className="bg-card rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 animate-slide-up border border-border/50"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-6">
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold text-foreground mb-3">{title}</h3>
+        <p className="text-muted-foreground leading-relaxed">{description}</p>
+      </div>
+    );
+  }
+);
+FeatureCard.displayName = "FeatureCard";
+
+interface TestimonialCardProps {
   quote: string;
   name: string;
   role: string;
   avatar: string;
   delay: number;
-}) {
-  return (
-    <div
-      className="bg-card rounded-2xl p-8 shadow-card animate-slide-up border border-border/50"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="flex gap-1 mb-4">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-          </svg>
-        ))}
-      </div>
-      <p className="text-foreground mb-6 leading-relaxed">"{quote}"</p>
-      <div className="flex items-center gap-3">
-        <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover" />
-        <div>
-          <div className="font-semibold text-foreground">{name}</div>
-          <div className="text-sm text-muted-foreground">{role}</div>
+}
+
+const TestimonialCard = React.forwardRef<HTMLDivElement, TestimonialCardProps>(
+  ({ quote, name, role, avatar, delay }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className="bg-card rounded-2xl p-8 shadow-card animate-slide-up border border-border/50"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <div className="flex gap-1 mb-4">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+            </svg>
+          ))}
+        </div>
+        <p className="text-foreground mb-6 leading-relaxed">"{quote}"</p>
+        <div className="flex items-center gap-3">
+          <img src={avatar} alt={name} className="w-12 h-12 rounded-full object-cover" />
+          <div>
+            <div className="font-semibold text-foreground">{name}</div>
+            <div className="text-sm text-muted-foreground">{role}</div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
+TestimonialCard.displayName = "TestimonialCard";
 
 export default Index;
