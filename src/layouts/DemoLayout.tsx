@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Menu,
   FolderOpen,
+  Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDemoContext } from '@/contexts/DemoContext';
@@ -30,6 +31,7 @@ const teacherNavItems = [
   { icon: FileText, label: 'Exams', path: '/demo/teacher/exams' },
   { icon: ClipboardCheck, label: 'Assignments', path: '/demo/teacher/assignments' },
   { icon: FolderOpen, label: 'Materials', path: '/demo/teacher/materials' },
+  { icon: Database, label: 'Question Bank', path: '/demo/teacher/question-bank' },
   { icon: Users, label: 'Students', path: '/demo/teacher/students' },
   { icon: BarChart2, label: 'Analytics', path: '/demo/teacher/analytics' },
   { icon: Calendar, label: 'Calendar', path: '/demo/teacher/calendar' },
