@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,14 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Clock, Award, Lock, CheckCircle, AlignLeft, Trash2 } from 'lucide-react';
+import { Plus, Clock, Award, Lock, CheckCircle, AlignLeft, Trash2, ClipboardCheck } from 'lucide-react';
 import { demoExams, demoCourses, demoQuestions } from '@/data/demoData';
 import { toast } from 'sonner';
 import FormulaText from '@/components/FormulaText';
 
 export default function DemoTeacherExams() {
+  const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [newExam, setNewExam] = useState({
@@ -230,7 +231,7 @@ export default function DemoTeacherExams() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-3">{exam.course_title}</p>
-              <div className="flex gap-4 text-sm text-muted-foreground">
+              <div className="flex gap-4 text-sm text-muted-foreground mb-4">
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   {exam.duration} min
@@ -241,6 +242,20 @@ export default function DemoTeacherExams() {
                 </div>
                 <span>KKM: {exam.kkm}%</span>
               </div>
+              {exam.status === 'published' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/demo/teacher/exams/${exam.id}/grade`);
+                  }}
+                >
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                  Grade Submissions
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}

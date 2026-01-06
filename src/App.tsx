@@ -67,6 +67,7 @@ import DemoTeacherCalendar from "./pages/demo/DemoTeacherCalendar";
 import DemoTeacherAnnouncements from "./pages/demo/DemoTeacherAnnouncements";
 import DemoTeacherStudents from "./pages/demo/DemoTeacherStudents";
 import DemoTeacherQuestionBank from "./pages/demo/DemoTeacherQuestionBank";
+import DemoTeacherGradeExam from "./pages/demo/DemoTeacherGradeExam";
 import DemoStudentCourses from "./pages/demo/DemoStudentCourses";
 import DemoStudentCourseDetail from "./pages/demo/DemoStudentCourseDetail";
 import DemoStudentExams from "./pages/demo/DemoStudentExams";
@@ -153,6 +154,7 @@ const App = () => (
               <Route path="teacher" element={<DemoTeacherOverview />} />
               <Route path="teacher/courses" element={<DemoTeacherCourses />} />
               <Route path="teacher/exams" element={<DemoTeacherExams />} />
+              <Route path="teacher/exams/:examId/grade" element={<DemoTeacherGradeExam />} />
               <Route path="teacher/assignments" element={<DemoTeacherAssignments />} />
               <Route path="teacher/materials" element={<DemoTeacherMaterials />} />
               <Route path="teacher/students" element={<DemoTeacherStudents />} />
