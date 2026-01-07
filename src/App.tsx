@@ -68,9 +68,11 @@ import DemoTeacherAnnouncements from "./pages/demo/DemoTeacherAnnouncements";
 import DemoTeacherStudents from "./pages/demo/DemoTeacherStudents";
 import DemoTeacherQuestionBank from "./pages/demo/DemoTeacherQuestionBank";
 import DemoTeacherGradeExam from "./pages/demo/DemoTeacherGradeExam";
+import DemoTeacherGradeAssignment from "./pages/demo/DemoTeacherGradeAssignment";
 import DemoStudentCourses from "./pages/demo/DemoStudentCourses";
 import DemoStudentCourseDetail from "./pages/demo/DemoStudentCourseDetail";
 import DemoStudentExams from "./pages/demo/DemoStudentExams";
+import DemoStudentTakeExam from "./pages/demo/DemoStudentTakeExam";
 import DemoStudentAssignments from "./pages/demo/DemoStudentAssignments";
 import DemoStudentAnalytics from "./pages/demo/DemoStudentAnalytics";
 import DemoStudentCalendar from "./pages/demo/DemoStudentCalendar";
@@ -156,6 +158,7 @@ const App = () => (
               <Route path="teacher/exams" element={<DemoTeacherExams />} />
               <Route path="teacher/exams/:examId/grade" element={<DemoTeacherGradeExam />} />
               <Route path="teacher/assignments" element={<DemoTeacherAssignments />} />
+              <Route path="teacher/assignments/:assignmentId/grade" element={<DemoTeacherGradeAssignment />} />
               <Route path="teacher/materials" element={<DemoTeacherMaterials />} />
               <Route path="teacher/students" element={<DemoTeacherStudents />} />
               <Route path="teacher/question-bank" element={<DemoTeacherQuestionBank />} />
@@ -168,6 +171,7 @@ const App = () => (
               <Route path="student/courses" element={<DemoStudentCourses />} />
               <Route path="student/courses/:courseId" element={<DemoStudentCourseDetail />} />
               <Route path="student/exams" element={<DemoStudentExams />} />
+              <Route path="student/exams/:examId" element={<DemoStudentTakeExam />} />
               <Route path="student/assignments" element={<DemoStudentAssignments />} />
               <Route path="student/analytics" element={<DemoStudentAnalytics />} />
               <Route path="student/calendar" element={<DemoStudentCalendar />} />
