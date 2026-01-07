@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,12 +10,13 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Clock, Award, Lock, FileText, Upload } from 'lucide-react';
+import { Plus, Clock, Award, Lock, FileText, Upload, ClipboardCheck } from 'lucide-react';
 import { demoAssignments, demoCourses } from '@/data/demoData';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 export default function DemoTeacherAssignments() {
+  const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [assignmentType, setAssignmentType] = useState<'submission' | 'questions'>('submission');
   const [newAssignment, setNewAssignment] = useState({
@@ -277,6 +279,14 @@ export default function DemoTeacherAssignments() {
                   <Badge variant="secondary">Late OK (-{assignment.late_penalty_percent}%)</Badge>
                 )}
               </div>
+              <Button 
+                className="w-full mt-4" 
+                variant="outline"
+                onClick={() => navigate(`/demo/teacher/assignments/${assignment.id}/grade`)}
+              >
+                <ClipboardCheck className="h-4 w-4 mr-2" />
+                Grade Submissions
+              </Button>
             </CardContent>
           </Card>
         ))}
