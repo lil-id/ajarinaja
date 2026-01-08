@@ -123,6 +123,40 @@ export const demoAssignments = [
     allow_late_submissions: true,
     late_penalty_percent: 15,
     course_title: 'Physics Fundamentals',
+    max_file_size_mb: 10,
+  },
+];
+
+export const demoAssignmentQuestions = [
+  {
+    id: 'demo-aq-1',
+    assignment_id: 'demo-assignment-1',
+    type: 'multiple-choice',
+    question: 'Solve for x: $5x - 3 = 12$',
+    options: ['x = 3', 'x = 2', 'x = 15', 'x = 1.8'],
+    correct_answer: 0,
+    points: 10,
+    order_index: 0,
+  },
+  {
+    id: 'demo-aq-2',
+    assignment_id: 'demo-assignment-1',
+    type: 'multi-select',
+    question: 'Select all equations that have x = 4 as the solution:',
+    options: ['$x + 6 = 10$', '$2x = 8$', '$x - 1 = 4$', '$3x - 4 = 8$'],
+    correct_answers: [0, 1, 3],
+    points: 15,
+    order_index: 1,
+  },
+  {
+    id: 'demo-aq-3',
+    assignment_id: 'demo-assignment-1',
+    type: 'essay',
+    question: 'Explain the steps to solve a linear equation in one variable. Provide your own example.',
+    options: null,
+    correct_answer: null,
+    points: 25,
+    order_index: 2,
   },
 ];
 
