@@ -78,6 +78,7 @@ import DemoStudentSubmitAssignment from "./pages/demo/DemoStudentSubmitAssignmen
 import DemoStudentAnalytics from "./pages/demo/DemoStudentAnalytics";
 import DemoStudentCalendar from "./pages/demo/DemoStudentCalendar";
 import DemoStudentNotifications from "./pages/demo/DemoStudentNotifications";
+import DemoStudentMaterials from "./pages/demo/DemoStudentMaterials";
 
 const queryClient = new QueryClient();
 
@@ -175,6 +176,7 @@ const App = () => (
               <Route path="student/exams/:examId" element={<DemoStudentTakeExam />} />
               <Route path="student/assignments" element={<DemoStudentAssignments />} />
               <Route path="student/assignments/:assignmentId" element={<DemoStudentSubmitAssignment />} />
+              <Route path="student/materials" element={<DemoStudentMaterials />} />
               <Route path="student/analytics" element={<DemoStudentAnalytics />} />
               <Route path="student/calendar" element={<DemoStudentCalendar />} />
               <Route path="student/notifications" element={<DemoStudentNotifications />} />

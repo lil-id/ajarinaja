@@ -43,6 +43,7 @@ const studentNavItems = [
   { icon: BookOpen, label: 'My Courses', path: '/demo/student/courses' },
   { icon: FileText, label: 'Exams', path: '/demo/student/exams' },
   { icon: ClipboardCheck, label: 'Assignments', path: '/demo/student/assignments' },
+  { icon: FolderOpen, label: 'Materials', path: '/demo/student/materials' },
   { icon: BarChart2, label: 'Analytics', path: '/demo/student/analytics' },
   { icon: Calendar, label: 'Calendar', path: '/demo/student/calendar' },
   { icon: Bell, label: 'Notifications', path: '/demo/student/notifications' },
