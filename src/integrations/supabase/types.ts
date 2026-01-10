@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_periods: {
+        Row: {
+          academic_year: string
+          created_at: string
+          created_by: string
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          semester: number
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year: string
+          created_at?: string
+          created_by: string
+          end_date: string
+          id?: string
+          is_active?: boolean
+          name: string
+          semester: number
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string
+          created_at?: string
+          created_by?: string
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          semester?: number
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           content: string
@@ -783,6 +822,122 @@ export type Database = {
             columns: ["exam_id"]
             isOneToOne: false
             referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_card_entries: {
+        Row: {
+          assignment_average: number | null
+          course_id: string
+          created_at: string
+          exam_average: number | null
+          final_grade: number
+          id: string
+          kkm: number
+          passed: boolean | null
+          report_card_id: string
+          teacher_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          assignment_average?: number | null
+          course_id: string
+          created_at?: string
+          exam_average?: number | null
+          final_grade: number
+          id?: string
+          kkm?: number
+          passed?: boolean | null
+          report_card_id: string
+          teacher_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assignment_average?: number | null
+          course_id?: string
+          created_at?: string
+          exam_average?: number | null
+          final_grade?: number
+          id?: string
+          kkm?: number
+          passed?: boolean | null
+          report_card_id?: string
+          teacher_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_card_entries_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_card_entries_report_card_id_fkey"
+            columns: ["report_card_id"]
+            isOneToOne: false
+            referencedRelation: "report_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_cards: {
+        Row: {
+          created_at: string
+          finalized_at: string | null
+          finalized_by: string | null
+          id: string
+          overall_average: number | null
+          overall_rank: number | null
+          period_id: string
+          principal_signature: string | null
+          status: string
+          student_id: string
+          teacher_notes: string | null
+          teacher_signature: string | null
+          total_courses: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          finalized_at?: string | null
+          finalized_by?: string | null
+          id?: string
+          overall_average?: number | null
+          overall_rank?: number | null
+          period_id: string
+          principal_signature?: string | null
+          status?: string
+          student_id: string
+          teacher_notes?: string | null
+          teacher_signature?: string | null
+          total_courses?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          finalized_at?: string | null
+          finalized_by?: string | null
+          id?: string
+          overall_average?: number | null
+          overall_rank?: number | null
+          period_id?: string
+          principal_signature?: string | null
+          status?: string
+          student_id?: string
+          teacher_notes?: string | null
+          teacher_signature?: string | null
+          total_courses?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_cards_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "academic_periods"
             referencedColumns: ["id"]
           },
         ]
