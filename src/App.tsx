@@ -32,6 +32,8 @@ import AssignmentSubmissions from "./pages/teacher/AssignmentSubmissions";
 import TeacherQuestionBank from "./pages/teacher/QuestionBank";
 import TeacherCalendar from "./pages/teacher/Calendar";
 import TeacherAtRiskStudents from "./pages/teacher/AtRiskStudents";
+import TeacherReportCards from "./pages/teacher/ReportCards";
+import TeacherReportCardDetail from "./pages/teacher/ReportCardDetail";
 
 // Student Pages
 import StudentLayout from "./layouts/StudentLayout";
@@ -52,6 +54,8 @@ import SubmitAssignment from "./pages/student/SubmitAssignment";
 import StudentNotifications from "./pages/student/Notifications";
 import StudentAnalytics from "./pages/student/Analytics";
 import StudentCalendar from "./pages/student/Calendar";
+import StudentReportCards from "./pages/student/ReportCards";
+import StudentReportCardDetail from "./pages/student/ReportCardDetail";
 
 // Demo Pages
 import DemoLayout from "./layouts/DemoLayout";
@@ -118,7 +122,10 @@ const App = () => (
               <Route path="question-bank" element={<TeacherQuestionBank />} />
               <Route path="calendar" element={<TeacherCalendar />} />
               <Route path="at-risk" element={<TeacherAtRiskStudents />} />
+              <Route path="report-cards" element={<TeacherReportCards />} />
+              <Route path="report-cards/:reportCardId" element={<TeacherReportCardDetail />} />
               <Route path="profile" element={<TeacherProfile />} />
+              <Route path="settings" element={<TeacherSettings />} />
               <Route path="settings" element={<TeacherSettings />} />
             </Route>
 
@@ -144,6 +151,8 @@ const App = () => (
               <Route path="notifications" element={<StudentNotifications />} />
               <Route path="analytics" element={<StudentAnalytics />} />
               <Route path="calendar" element={<StudentCalendar />} />
+              <Route path="report-cards" element={<StudentReportCards />} />
+              <Route path="report-cards/:reportCardId" element={<StudentReportCardDetail />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>
