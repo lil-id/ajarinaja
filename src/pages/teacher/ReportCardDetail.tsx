@@ -1,0 +1,652 @@
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  ArrowLeft, 
+  Save, 
+  CheckCircle, 
+  Clock, 
+  Plus, 
+  Trash2,
+  PenTool,
+  Download,
+  BookOpen
+} from 'lucide-react';
+import { useReportCards, useReportCardEntries, type CreateReportCardEntryData } from '@/hooks/useReportCards';
+import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
+import { useCourses } from '@/hooks/useCourses';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+const ReportCardDetail = () => {
+  const { reportCardId } = useParams<{ reportCardId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
+  const [addCourseDialogOpen, setAddCourseDialogOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [teacherNotes, setTeacherNotes] = useState('');
+
+  // Fetch single report card
+  const reportCardQuery = useQuery({
+    queryKey: ['report-card', reportCardId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('report_cards')
+        .select('*')
+        .eq('id', reportCardId!)
+        .single();
+
+      if (error) throw error;
+
+      // Fetch student profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_id, name, email, avatar_url')
+        .eq('user_id', data.student_id)
+        .single();
+
+      // Fetch period info
+      const { data: period } = await supabase
+        .from('academic_periods')
+        .select('*')
+        .eq('id', data.period_id)
+        .single();
+
+      return {
+        ...data,
+        student: profile,
+        period,
+      };
+    },
+    enabled: !!reportCardId,
+  });
+
+  const reportCard = reportCardQuery.data;
+  const { entries, isLoading: entriesLoading, bulkUpsertEntries, deleteEntry } = useReportCardEntries(reportCardId);
+  const { updateReportCard, finalizeReportCard } = useReportCards();
+  const { courses } = useCourses();
+
+  // Local state for entries
+  const [localEntries, setLocalEntries] = useState<Record<string, {
+    exam_average: string;
+    assignment_average: string;
+    final_grade: string;
+    kkm: string;
+    teacher_notes: string;
+  }>>({});
+
+  // Initialize local entries from fetched data
+  useEffect(() => {
+    if (entries.length > 0) {
+      const entriesMap: Record<string, any> = {};
+      entries.forEach(entry => {
+        entriesMap[entry.id] = {
+          exam_average: entry.exam_average?.toString() || '',
+          assignment_average: entry.assignment_average?.toString() || '',
+          final_grade: entry.final_grade.toString(),
+          kkm: entry.kkm.toString(),
+          teacher_notes: entry.teacher_notes || '',
+        };
+      });
+      setLocalEntries(entriesMap);
+    }
+  }, [entries]);
+
+  useEffect(() => {
+    if (reportCard?.teacher_notes) {
+      setTeacherNotes(reportCard.teacher_notes);
+    }
+  }, [reportCard]);
+
+  // Signature canvas drawing
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    
+    setIsDrawing(true);
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const rect = canvas.getBoundingClientRect();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+    }
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+
+  const handleUpdateEntry = (entryId: string, field: string, value: string) => {
+    setLocalEntries(prev => ({
+      ...prev,
+      [entryId]: {
+        ...prev[entryId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSaveEntries = async () => {
+    const entriesToSave: CreateReportCardEntryData[] = Object.entries(localEntries).map(([entryId, data]) => {
+      const entry = entries.find(e => e.id === entryId);
+      return {
+        report_card_id: reportCardId!,
+        course_id: entry!.course_id,
+        exam_average: data.exam_average ? parseFloat(data.exam_average) : undefined,
+        assignment_average: data.assignment_average ? parseFloat(data.assignment_average) : undefined,
+        final_grade: parseFloat(data.final_grade),
+        kkm: parseInt(data.kkm),
+        teacher_notes: data.teacher_notes || undefined,
+      };
+    });
+
+    await bulkUpsertEntries.mutateAsync(entriesToSave);
+
+    // Calculate overall average
+    const validGrades = entriesToSave.filter(e => !isNaN(e.final_grade));
+    const overallAverage = validGrades.length > 0
+      ? validGrades.reduce((sum, e) => sum + e.final_grade, 0) / validGrades.length
+      : null;
+
+    await updateReportCard.mutateAsync({
+      id: reportCardId!,
+      overall_average: overallAverage,
+      total_courses: validGrades.length,
+      teacher_notes: teacherNotes || undefined,
+    });
+  };
+
+  const handleAddCourse = async () => {
+    if (!selectedCourseId || !reportCardId) return;
+
+    const { error } = await supabase
+      .from('report_card_entries')
+      .insert({
+        report_card_id: reportCardId,
+        course_id: selectedCourseId,
+        final_grade: 0,
+        kkm: 60,
+      });
+
+    if (error) {
+      toast.error(`Gagal menambah mata pelajaran: ${error.message}`);
+      return;
+    }
+
+    toast.success('Mata pelajaran berhasil ditambahkan');
+    setAddCourseDialogOpen(false);
+    setSelectedCourseId('');
+    // Refetch entries
+    window.location.reload();
+  };
+
+  const handleFinalize = async () => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+
+    const signature = canvas.toDataURL('image/png');
+    await finalizeReportCard.mutateAsync({
+      id: reportCardId!,
+      signature,
+    });
+    setSignatureDialogOpen(false);
+  };
+
+  const handleDownloadPDF = () => {
+    if (!reportCard) return;
+
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(18);
+    doc.text('RAPOR DIGITAL', 105, 20, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(reportCard.period?.name || '', 105, 28, { align: 'center' });
+
+    // Student info
+    doc.setFontSize(11);
+    doc.text(`Nama: ${reportCard.student?.name || '-'}`, 20, 45);
+    doc.text(`Email: ${reportCard.student?.email || '-'}`, 20, 52);
+    doc.text(`Status: ${reportCard.status === 'finalized' ? 'Final' : 'Draft'}`, 20, 59);
+
+    // Grades table
+    const tableData = entries.map((entry, idx) => [
+      (idx + 1).toString(),
+      entry.course?.title || '-',
+      entry.exam_average?.toString() || '-',
+      entry.assignment_average?.toString() || '-',
+      entry.final_grade.toString(),
+      entry.kkm.toString(),
+      entry.passed ? 'Lulus' : 'Tidak Lulus',
+    ]);
+
+    autoTable(doc, {
+      startY: 70,
+      head: [['No', 'Mata Pelajaran', 'Rata-rata Ujian', 'Rata-rata Tugas', 'Nilai Akhir', 'KKM', 'Status']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246] },
+    });
+
+    // Overall average
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.text(`Rata-rata Keseluruhan: ${reportCard.overall_average?.toFixed(2) || '-'}`, 20, finalY);
+
+    // Teacher notes
+    if (reportCard.teacher_notes) {
+      doc.text('Catatan Guru:', 20, finalY + 10);
+      doc.setFontSize(10);
+      doc.text(reportCard.teacher_notes, 20, finalY + 17);
+    }
+
+    // Signature
+    if (reportCard.teacher_signature) {
+      doc.addImage(reportCard.teacher_signature, 'PNG', 140, finalY + 20, 50, 25);
+      doc.setFontSize(10);
+      doc.text('Tanda Tangan Guru', 165, finalY + 50, { align: 'center' });
+    }
+
+    doc.save(`rapor-${reportCard.student?.name || 'siswa'}-${reportCard.period?.name || 'semester'}.pdf`);
+  };
+
+  // Filter courses not yet added
+  const availableCourses = courses.filter(
+    c => !entries.some(e => e.course_id === c.id)
+  );
+
+  if (reportCardQuery.isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!reportCard) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Rapor tidak ditemukan</p>
+        <Button className="mt-4" onClick={() => navigate('/teacher/report-cards')}>
+          Kembali
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate('/teacher/report-cards')}>
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold">Detail Rapor</h1>
+          <p className="text-muted-foreground">{reportCard.period?.name}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleDownloadPDF}>
+            <Download className="w-4 h-4 mr-2" />
+            Download PDF
+          </Button>
+          <Button 
+            onClick={handleSaveEntries}
+            disabled={bulkUpsertEntries.isPending || reportCard.status === 'finalized'}
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {bulkUpsertEntries.isPending ? 'Menyimpan...' : 'Simpan'}
+          </Button>
+          {reportCard.status !== 'finalized' && (
+            <Button 
+              variant="default"
+              onClick={() => setSignatureDialogOpen(true)}
+            >
+              <PenTool className="w-4 h-4 mr-2" />
+              Finalisasi
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Student Info */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16">
+              <AvatarImage src={reportCard.student?.avatar_url || undefined} />
+              <AvatarFallback className="text-xl bg-primary/10 text-primary">
+                {reportCard.student?.name?.charAt(0) || 'S'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold">{reportCard.student?.name}</h2>
+              <p className="text-muted-foreground">{reportCard.student?.email}</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Rata-rata</p>
+                <p className="text-3xl font-bold text-primary">
+                  {reportCard.overall_average?.toFixed(1) || '-'}
+                </p>
+              </div>
+              <Badge 
+                variant={reportCard.status === 'finalized' ? 'default' : 'secondary'}
+                className="h-8"
+              >
+                {reportCard.status === 'finalized' ? (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Final
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-4 h-4 mr-1" />
+                    Draft
+                  </>
+                )}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Grades Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Nilai per Mata Pelajaran</CardTitle>
+              <CardDescription>Input nilai ujian, tugas, dan nilai akhir</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setAddCourseDialogOpen(true)}
+              disabled={reportCard.status === 'finalized'}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Mata Pelajaran
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {entriesLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground mb-4">Belum ada mata pelajaran</p>
+              <Button variant="outline" onClick={() => setAddCourseDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Tambah Mata Pelajaran
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mata Pelajaran</TableHead>
+                  <TableHead className="w-28">Rata-rata Ujian</TableHead>
+                  <TableHead className="w-28">Rata-rata Tugas</TableHead>
+                  <TableHead className="w-28">Nilai Akhir</TableHead>
+                  <TableHead className="w-20">KKM</TableHead>
+                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="w-48">Catatan</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {entries.map((entry) => {
+                  const localEntry = localEntries[entry.id] || {
+                    exam_average: entry.exam_average?.toString() || '',
+                    assignment_average: entry.assignment_average?.toString() || '',
+                    final_grade: entry.final_grade.toString(),
+                    kkm: entry.kkm.toString(),
+                    teacher_notes: entry.teacher_notes || '',
+                  };
+                  const finalGrade = parseFloat(localEntry.final_grade) || 0;
+                  const kkm = parseInt(localEntry.kkm) || 60;
+                  const passed = finalGrade >= kkm;
+
+                  return (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-medium">{entry.course?.title || '-'}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={localEntry.exam_average}
+                          onChange={(e) => handleUpdateEntry(entry.id, 'exam_average', e.target.value)}
+                          disabled={reportCard.status === 'finalized'}
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={localEntry.assignment_average}
+                          onChange={(e) => handleUpdateEntry(entry.id, 'assignment_average', e.target.value)}
+                          disabled={reportCard.status === 'finalized'}
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={localEntry.final_grade}
+                          onChange={(e) => handleUpdateEntry(entry.id, 'final_grade', e.target.value)}
+                          disabled={reportCard.status === 'finalized'}
+                          className="w-full font-semibold"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={localEntry.kkm}
+                          onChange={(e) => handleUpdateEntry(entry.id, 'kkm', e.target.value)}
+                          disabled={reportCard.status === 'finalized'}
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={passed ? 'default' : 'destructive'}>
+                          {passed ? 'Lulus' : 'Tidak Lulus'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          placeholder="Catatan..."
+                          value={localEntry.teacher_notes}
+                          onChange={(e) => handleUpdateEntry(entry.id, 'teacher_notes', e.target.value)}
+                          disabled={reportCard.status === 'finalized'}
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteEntry.mutate(entry.id)}
+                          disabled={reportCard.status === 'finalized'}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Teacher Notes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Catatan Umum</CardTitle>
+          <CardDescription>Catatan atau pesan untuk siswa</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Tulis catatan umum untuk siswa..."
+            value={teacherNotes}
+            onChange={(e) => setTeacherNotes(e.target.value)}
+            disabled={reportCard.status === 'finalized'}
+            rows={4}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Add Course Dialog */}
+      <Dialog open={addCourseDialogOpen} onOpenChange={setAddCourseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Mata Pelajaran</DialogTitle>
+            <DialogDescription>
+              Pilih mata pelajaran untuk ditambahkan ke rapor
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Mata Pelajaran</Label>
+            <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Pilih mata pelajaran" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCourses.map((course) => (
+                  <SelectItem key={course.id} value={course.id}>
+                    {course.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {availableCourses.length === 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Semua mata pelajaran sudah ditambahkan
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddCourseDialogOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleAddCourse} disabled={!selectedCourseId}>
+              Tambah
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Signature Dialog */}
+      <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tanda Tangan Digital</DialogTitle>
+            <DialogDescription>
+              Gambar tanda tangan Anda di bawah ini untuk memfinalisasi rapor
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="border-2 border-dashed rounded-lg p-1">
+              <canvas
+                ref={signatureCanvasRef}
+                width={380}
+                height={150}
+                className="w-full cursor-crosshair bg-white rounded"
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+              />
+            </div>
+            <Button variant="ghost" size="sm" className="mt-2" onClick={clearSignature}>
+              Hapus Tanda Tangan
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSignatureDialogOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleFinalize} disabled={finalizeReportCard.isPending}>
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {finalizeReportCard.isPending ? 'Memfinalisasi...' : 'Finalisasi Rapor'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default ReportCardDetail;

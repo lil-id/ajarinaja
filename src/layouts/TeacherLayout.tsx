@@ -41,6 +41,7 @@ const navigation = [
   { name: 'Exams', href: '/teacher/exams', icon: FileText },
   { name: 'Question Bank', href: '/teacher/question-bank', icon: Library },
   { name: 'Materials', href: '/teacher/materials', icon: FolderOpen },
+  { name: 'Report Cards', href: '/teacher/report-cards', icon: GraduationCap },
   { name: 'Announcements', href: '/teacher/announcements', icon: Megaphone },
   { name: 'Analytics', href: '/teacher/analytics', icon: BarChart3 },
   { name: 'Students', href: '/teacher/students', icon: Users },
