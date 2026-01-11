@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,27 +33,29 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/NotificationBell';
-
-const navigation = [
-  { name: 'Dashboard', href: '/student', icon: Home },
-  { name: 'My Courses', href: '/student/courses', icon: BookOpen },
-  { name: 'Explore Courses', href: '/student/explore', icon: GraduationCap },
-  { name: 'Calendar', href: '/student/calendar', icon: Calendar },
-  { name: 'Assignments', href: '/student/assignments', icon: ClipboardList },
-  { name: 'Exams', href: '/student/exams', icon: FileText },
-  { name: 'Materials', href: '/student/materials', icon: FolderOpen },
-  { name: 'Report Cards', href: '/student/report-cards', icon: FileText },
-  { name: 'Notifications', href: '/student/notifications', icon: Bell },
-  { name: 'Badges', href: '/student/badges', icon: Award },
-  { name: 'Analytics', href: '/student/analytics', icon: BarChart3 },
-];
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const StudentLayout = () => {
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const navigation = [
+    { name: t('nav.dashboard'), href: '/student', icon: Home },
+    { name: t('nav.courses'), href: '/student/courses', icon: BookOpen },
+    { name: t('nav.exploreCourses'), href: '/student/explore', icon: GraduationCap },
+    { name: t('nav.calendar'), href: '/student/calendar', icon: Calendar },
+    { name: t('nav.assignments'), href: '/student/assignments', icon: ClipboardList },
+    { name: t('nav.exams'), href: '/student/exams', icon: FileText },
+    { name: t('nav.materials'), href: '/student/materials', icon: FolderOpen },
+    { name: t('nav.reportCards'), href: '/student/report-cards', icon: FileText },
+    { name: t('nav.notifications'), href: '/student/notifications', icon: Bell },
+    { name: t('nav.badges'), href: '/student/badges', icon: Award },
+    { name: t('nav.analytics'), href: '/student/analytics', icon: BarChart3 },
+  ];
 
   const handleLogout = async () => {
     await signOut();
@@ -136,7 +139,7 @@ const StudentLayout = () => {
                 navigate('/student/settings');
                 setSidebarOpen(false);
               }}
-              title={sidebarCollapsed ? "Settings" : undefined}
+              title={sidebarCollapsed ? t('common.settings') : undefined}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                 location.pathname === '/student/settings'
@@ -146,7 +149,7 @@ const StudentLayout = () => {
               )}
             >
               <Settings className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Settings</span>}
+              {!sidebarCollapsed && <span>{t('common.settings')}</span>}
             </button>
           </div>
         </div>
@@ -188,6 +191,7 @@ const StudentLayout = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
               <NotificationBell basePath="/student" />
               
               <DropdownMenu>
@@ -200,7 +204,7 @@ const StudentLayout = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                      <p className="text-sm font-medium text-foreground">{profile?.name || 'Student'}</p>
+                      <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.student')}</p>
                       <p className="text-xs text-muted-foreground">{profile?.email}</p>
                     </div>
                   </Button>
@@ -208,16 +212,16 @@ const StudentLayout = () => {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onClick={() => navigate('/student/profile')}>
                     <User className="w-4 h-4 mr-2" />
-                    Profile
+                    {t('common.profile')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/student/settings')}>
                     <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                    {t('common.settings')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
-                    Log out
+                    {t('common.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
