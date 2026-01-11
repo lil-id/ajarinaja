@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,27 +33,29 @@ import {
   PanelLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const navigation = [
-  { name: 'Overview', href: '/teacher', icon: LayoutDashboard },
-  { name: 'Courses', href: '/teacher/courses', icon: BookOpen },
-  { name: 'Calendar', href: '/teacher/calendar', icon: Calendar },
-  { name: 'Assignments', href: '/teacher/assignments', icon: ClipboardList },
-  { name: 'Exams', href: '/teacher/exams', icon: FileText },
-  { name: 'Question Bank', href: '/teacher/question-bank', icon: Library },
-  { name: 'Materials', href: '/teacher/materials', icon: FolderOpen },
-  { name: 'Report Cards', href: '/teacher/report-cards', icon: GraduationCap },
-  { name: 'Announcements', href: '/teacher/announcements', icon: Megaphone },
-  { name: 'Analytics', href: '/teacher/analytics', icon: BarChart3 },
-  { name: 'Students', href: '/teacher/students', icon: Users },
-];
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const TeacherLayout = () => {
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const navigation = [
+    { name: t('nav.overview'), href: '/teacher', icon: LayoutDashboard },
+    { name: t('nav.courses'), href: '/teacher/courses', icon: BookOpen },
+    { name: t('nav.calendar'), href: '/teacher/calendar', icon: Calendar },
+    { name: t('nav.assignments'), href: '/teacher/assignments', icon: ClipboardList },
+    { name: t('nav.exams'), href: '/teacher/exams', icon: FileText },
+    { name: t('nav.questionBank'), href: '/teacher/question-bank', icon: Library },
+    { name: t('nav.materials'), href: '/teacher/materials', icon: FolderOpen },
+    { name: t('nav.reportCards'), href: '/teacher/report-cards', icon: GraduationCap },
+    { name: t('nav.announcements'), href: '/teacher/announcements', icon: Megaphone },
+    { name: t('nav.analytics'), href: '/teacher/analytics', icon: BarChart3 },
+    { name: t('nav.students'), href: '/teacher/students', icon: Users },
+  ];
 
   const handleLogout = async () => {
     await signOut();
@@ -136,7 +139,7 @@ const TeacherLayout = () => {
                 navigate('/teacher/settings');
                 setSidebarOpen(false);
               }}
-              title={sidebarCollapsed ? "Settings" : undefined}
+              title={sidebarCollapsed ? t('common.settings') : undefined}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                 location.pathname === '/teacher/settings'
@@ -146,7 +149,7 @@ const TeacherLayout = () => {
               )}
             >
               <Settings className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Settings</span>}
+              {!sidebarCollapsed && <span>{t('common.settings')}</span>}
             </button>
           </div>
         </div>
@@ -187,37 +190,41 @@ const TeacherLayout = () => {
               </Button>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.name} />
-                    <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                      {profile?.name?.charAt(0) || 'T'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium text-foreground">{profile?.name || 'Teacher'}</p>
-                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate('/teacher/profile')}>
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/teacher/settings')}>
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.name} />
+                      <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
+                        {profile?.name?.charAt(0) || 'T'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:block text-left">
+                      <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.teacher')}</p>
+                      <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/teacher/profile')}>
+                    <User className="w-4 h-4 mr-2" />
+                    {t('common.profile')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/teacher/settings')}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    {t('common.settings')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t('common.logout')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </header>
 
