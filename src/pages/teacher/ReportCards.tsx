@@ -45,8 +45,7 @@ import {
 } from 'lucide-react';
 import { useAcademicPeriods, type CreateAcademicPeriodData } from '@/hooks/useAcademicPeriods';
 import { useReportCards } from '@/hooks/useReportCards';
-import { useEnrollments } from '@/hooks/useEnrollments';
-import { useCourses } from '@/hooks/useCourses';
+import { useAllStudents } from '@/hooks/useEnrollments';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
@@ -68,11 +67,10 @@ const ReportCards = () => {
 
   const { periods, isLoading: periodsLoading, createPeriod, deletePeriod, setActivePeriod } = useAcademicPeriods();
   const { reportCards, isLoading: reportCardsLoading, createReportCard } = useReportCards(selectedPeriod);
-  const { courses } = useCourses();
-  const { enrollments } = useEnrollments(courses[0]?.id);
+  const { data: allStudents = [], isLoading: studentsLoading } = useAllStudents();
   
-  // Get enrolled students from profiles
-  const [enrolledStudents, setEnrolledStudents] = useState<Array<{ user_id: string; name: string; email: string; avatar_url: string | null }>>([]);
+  // Filter students who don't already have a report card for this period
+  const enrolledStudents = allStudents;
 
   // Set default selected period to first active or first period
   useState(() => {
