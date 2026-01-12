@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,11 +46,12 @@ import {
 } from 'lucide-react';
 import { useAcademicPeriods, type CreateAcademicPeriodData } from '@/hooks/useAcademicPeriods';
 import { useReportCards } from '@/hooks/useReportCards';
-import { useAllStudents } from '@/hooks/useEnrollments';
+import { useTeacherStudents } from '@/hooks/useEnrollments';
 import { format } from 'date-fns';
-import { id as idLocale } from 'date-fns/locale';
+import { id as idLocale, enUS } from 'date-fns/locale';
 
 const ReportCards = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
   const [createPeriodOpen, setCreatePeriodOpen] = useState(false);
@@ -67,18 +69,17 @@ const ReportCards = () => {
 
   const { periods, isLoading: periodsLoading, createPeriod, deletePeriod, setActivePeriod } = useAcademicPeriods();
   const { reportCards, isLoading: reportCardsLoading, createReportCard } = useReportCards(selectedPeriod);
-  const { data: allStudents = [], isLoading: studentsLoading } = useAllStudents();
-  
-  // Filter students who don't already have a report card for this period
-  const enrolledStudents = allStudents;
+  const { data: enrolledStudents = [], isLoading: studentsLoading } = useTeacherStudents();
+
+  const dateLocale = i18n.language === 'id' ? idLocale : enUS;
 
   // Set default selected period to first active or first period
-  useState(() => {
+  useEffect(() => {
     if (periods.length > 0 && !selectedPeriod) {
       const activePeriod = periods.find(p => p.is_active);
       setSelectedPeriod(activePeriod?.id || periods[0].id);
     }
-  });
+  }, [periods, selectedPeriod]);
 
   const handleCreatePeriod = async () => {
     if (!newPeriod.name || !newPeriod.academic_year || !newPeriod.start_date || !newPeriod.end_date) return;

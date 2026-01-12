@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams } from '@/hooks/useExams';
@@ -7,6 +8,7 @@ import { BookOpen, Users, FileText, TrendingUp, Loader2, ClipboardList, Calendar
 import { useNavigate } from 'react-router-dom';
 
 const TeacherOverview = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
@@ -24,28 +26,28 @@ const TeacherOverview = () => {
 
   const stats = [
     { 
-      label: 'Total Courses', 
+      label: t('dashboard.totalCourses'), 
       value: courses.length, 
       icon: BookOpen,
       color: 'bg-primary/10 text-primary',
       href: '/teacher/courses'
     },
     { 
-      label: 'Published', 
+      label: t('common.published'), 
       value: publishedCourses, 
       icon: TrendingUp,
       color: 'bg-secondary/10 text-secondary',
       href: '/teacher/courses'
     },
     { 
-      label: 'Total Exams', 
+      label: t('dashboard.totalExams'), 
       value: teacherExams.length, 
       icon: FileText,
       color: 'bg-accent/20 text-accent-foreground',
       href: '/teacher/exams'
     },
     { 
-      label: 'Assignments', 
+      label: t('assignments.title'), 
       value: teacherAssignments.length, 
       icon: ClipboardList,
       color: 'bg-muted text-muted-foreground',
@@ -66,10 +68,10 @@ const TeacherOverview = () => {
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, {profile?.name?.split(' ')[0] || 'Teacher'}!
+          {t('dashboard.welcome')}, {profile?.name?.split(' ')[0] || t('auth.teacher')}!
         </h1>
         <p className="text-muted-foreground mt-1">
-          Here's what's happening with your courses today.
+          {t('dashboard.recentActivity')}
         </p>
       </div>
 
@@ -108,8 +110,8 @@ const TeacherOverview = () => {
               <Calendar className="w-6 h-6 text-secondary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Calendar</h3>
-              <p className="text-sm text-muted-foreground">View upcoming deadlines</p>
+              <h3 className="font-semibold text-foreground">{t('nav.calendar')}</h3>
+              <p className="text-sm text-muted-foreground">{t('dashboard.upcomingDeadlines')}</p>
             </div>
           </CardContent>
         </Card>
@@ -123,8 +125,8 @@ const TeacherOverview = () => {
               <Users className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Students</h3>
-              <p className="text-sm text-muted-foreground">Manage enrolled students</p>
+              <h3 className="font-semibold text-foreground">{t('nav.students')}</h3>
+              <p className="text-sm text-muted-foreground">{t('courses.enrolledStudents')}</p>
             </div>
           </CardContent>
         </Card>
@@ -138,8 +140,8 @@ const TeacherOverview = () => {
               <TrendingUp className="w-6 h-6 text-accent-foreground" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Analytics</h3>
-              <p className="text-sm text-muted-foreground">View performance data</p>
+              <h3 className="font-semibold text-foreground">{t('nav.analytics')}</h3>
+              <p className="text-sm text-muted-foreground">{t('analytics.performance')}</p>
             </div>
           </CardContent>
         </Card>
@@ -148,13 +150,13 @@ const TeacherOverview = () => {
       {/* Recent Courses - Clickable */}
       <Card className="border-0 shadow-card">
         <CardHeader>
-          <CardTitle className="text-xl">Your Courses</CardTitle>
+          <CardTitle className="text-xl">{t('courses.myCourses')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {courses.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
-                You haven't created any courses yet. Go to Courses to create your first one!
+                {t('courses.noCourses')}
               </p>
             ) : (
               courses.slice(0, 5).map((course) => {
@@ -172,7 +174,7 @@ const TeacherOverview = () => {
                       <div>
                         <h3 className="font-semibold text-foreground">{course.title}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {courseExams.length} exams
+                          {courseExams.length} {t('exams.title').toLowerCase()}
                         </p>
                       </div>
                     </div>
@@ -181,7 +183,7 @@ const TeacherOverview = () => {
                         ? 'bg-secondary/10 text-secondary' 
                         : 'bg-muted text-muted-foreground'
                     }`}>
-                      {course.status}
+                      {course.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>
                   </div>
                 );

@@ -172,6 +172,52 @@ export function useAllStudents() {
   });
 }
 
+// Get students enrolled in teacher's courses
+export function useTeacherStudents() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['teacher-students', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      // Get teacher's courses
+      const { data: courses, error: coursesError } = await supabase
+        .from('courses')
+        .select('id')
+        .eq('teacher_id', user.id);
+      
+      if (coursesError) throw coursesError;
+      if (!courses || courses.length === 0) return [];
+      
+      const courseIds = courses.map(c => c.id);
+      
+      // Get enrollments for these courses
+      const { data: enrollments, error: enrollmentsError } = await supabase
+        .from('enrollments')
+        .select('student_id')
+        .in('course_id', courseIds);
+      
+      if (enrollmentsError) throw enrollmentsError;
+      if (!enrollments || enrollments.length === 0) return [];
+      
+      // Get unique student IDs
+      const studentIds = [...new Set(enrollments.map(e => e.student_id))];
+      
+      // Get profiles for these students
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, name, email, avatar_url')
+        .in('user_id', studentIds);
+      
+      if (profilesError) throw profilesError;
+      
+      return profiles || [];
+    },
+    enabled: !!user,
+  });
+}
+
 export function useEnroll() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
