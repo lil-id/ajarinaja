@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const StudentDashboard = () => {
+  const { t } = useTranslation();
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
@@ -79,10 +81,10 @@ const StudentDashboard = () => {
       {/* Welcome */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">
-          Hello, {profile?.name?.split(' ')[0] || 'Student'}!
+          {t('dashboard.welcome')}, {profile?.name?.split(' ')[0] || t('auth.student')}!
         </h1>
         <p className="text-muted-foreground mt-1">
-          Here's your learning dashboard
+          {t('dashboard.recentActivity')}
         </p>
       </div>
 
@@ -95,7 +97,7 @@ const StudentDashboard = () => {
           <CardContent className="p-6 text-center">
             <BookOpen className="w-8 h-8 text-secondary mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{enrolledCourses.length}</p>
-            <p className="text-sm text-muted-foreground">Enrolled Courses</p>
+            <p className="text-sm text-muted-foreground">{t('courses.enrolledStudents')}</p>
           </CardContent>
         </Card>
         <Card 
@@ -105,7 +107,7 @@ const StudentDashboard = () => {
           <CardContent className="p-6 text-center">
             <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{upcomingExams.length}</p>
-            <p className="text-sm text-muted-foreground">Available Exams</p>
+            <p className="text-sm text-muted-foreground">{t('exams.title')}</p>
           </CardContent>
         </Card>
         <Card 
@@ -115,7 +117,7 @@ const StudentDashboard = () => {
           <CardContent className="p-6 text-center">
             <CheckCircle className="w-8 h-8 text-accent mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{completedAssignments}</p>
-            <p className="text-sm text-muted-foreground">Graded Assignments</p>
+            <p className="text-sm text-muted-foreground">{t('assignments.graded')}</p>
           </CardContent>
         </Card>
       </div>
@@ -124,8 +126,8 @@ const StudentDashboard = () => {
       {upcomingExams.length > 0 && (
         <Card className="border-0 shadow-card">
           <CardHeader>
-            <CardTitle>Available Exams</CardTitle>
-            <CardDescription>Take your course exams</CardDescription>
+            <CardTitle>{t('exams.title')}</CardTitle>
+            <CardDescription>{t('exams.takeExam')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -146,7 +148,7 @@ const StudentDashboard = () => {
                       size="sm" 
                       onClick={() => navigate(`/student/exam/${exam.id}`)}
                     >
-                      Take Exam
+                      {t('exams.takeExam')}
                       <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
@@ -161,8 +163,8 @@ const StudentDashboard = () => {
       {availableCourses.length > 0 && (
         <Card className="border-0 shadow-card">
           <CardHeader>
-            <CardTitle>Discover Courses</CardTitle>
-            <CardDescription>Enroll in new courses from our teachers</CardDescription>
+            <CardTitle>{t('nav.exploreCourses')}</CardTitle>
+            <CardDescription>{t('courses.enrollNow')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
@@ -178,7 +180,7 @@ const StudentDashboard = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-foreground">{course.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {course.description || 'No description available'}
+                        {course.description || t('common.noData')}
                       </p>
                       <Button 
                         size="sm" 
@@ -187,7 +189,7 @@ const StudentDashboard = () => {
                         disabled={enroll.isPending}
                       >
                         {enroll.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                        Enroll Now
+                        {t('courses.enrollNow')}
                       </Button>
                     </div>
                   </div>
@@ -202,8 +204,8 @@ const StudentDashboard = () => {
         <Card className="border-0 shadow-card">
           <CardContent className="py-12 text-center">
             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No courses available yet</h3>
-            <p className="text-muted-foreground">Check back later for new courses from teachers.</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('courses.noCourses')}</h3>
+            <p className="text-muted-foreground">{t('courses.noEnrollments')}</p>
           </CardContent>
         </Card>
       )}
