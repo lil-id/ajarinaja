@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))'];
 
 const StudentReportCardDetail = () => {
+  const { t } = useTranslation();
   const { reportCardId } = useParams<{ reportCardId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -70,8 +72,8 @@ const StudentReportCardDetail = () => {
   const passedCount = entries.filter(e => e.passed).length;
   const failedCount = entries.filter(e => !e.passed).length;
   const pieData = [
-    { name: 'Lulus', value: passedCount },
-    { name: 'Tidak Lulus', value: failedCount },
+    { name: t('reportCards.passed'), value: passedCount },
+    { name: t('reportCards.notPassed'), value: failedCount },
   ].filter(d => d.value > 0);
 
   const bestSubject = entries.reduce((best, entry) => 
@@ -150,9 +152,9 @@ const StudentReportCardDetail = () => {
   if (!reportCard) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Rapor tidak ditemukan atau belum difinalisasi</p>
+        <p className="text-muted-foreground">{t('reportCards.reportNotFinalizedOrNotFound')}</p>
         <Button className="mt-4" onClick={() => navigate('/student/report-cards')}>
-          Kembali
+          {t('common.back')}
         </Button>
       </div>
     );
@@ -167,11 +169,11 @@ const StudentReportCardDetail = () => {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{reportCard.period?.name}</h1>
-          <p className="text-muted-foreground">Rapor Digital</p>
+          <p className="text-muted-foreground">{t('reportCards.digitalReportCard')}</p>
         </div>
         <Button onClick={handleDownloadPDF}>
           <Download className="w-4 h-4 mr-2" />
-          Download PDF
+          {t('reportCards.downloadPdf')}
         </Button>
       </div>
 
