@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +11,7 @@ import { useExamSubmissions, useMaterialViews } from '@/hooks/useProgress';
 import { BookOpen, Loader2, ArrowRight } from 'lucide-react';
 
 const StudentCourses = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
@@ -48,9 +50,9 @@ const StudentCourses = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">My Courses</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('courses.myCourses')}</h1>
         <p className="text-muted-foreground mt-1">
-          View your enrolled courses
+          {t('courses.viewEnrolledCourses')}
         </p>
       </div>
 
@@ -60,9 +62,9 @@ const StudentCourses = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <BookOpen className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No courses yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('courses.noCoursesYet')}</h3>
             <p className="text-muted-foreground text-center">
-              Explore and enroll in courses from the dashboard
+              {t('courses.exploreAndEnroll')}
             </p>
           </CardContent>
         </Card>
@@ -89,26 +91,26 @@ const StudentCourses = () => {
                   )}
                   {/* Progress Badge */}
                   <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-foreground">
-                    {progress}% complete
+                    {progress}% {t('courses.complete')}
                   </div>
                 </div>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">{course.title}</CardTitle>
-                  <CardDescription>Enrolled</CardDescription>
+                  <CardDescription>{t('courses.enrolled')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {course.description || 'No description available'}
+                    {course.description || t('courses.noDescriptionAvailable')}
                   </p>
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Progress</span>
+                      <span>{t('dashboard.progress')}</span>
                       <span>{progress}%</span>
                     </div>
                     <Progress value={progress} className="h-2" />
                   </div>
                   <Button variant="outline" size="sm" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    View Details
+                    {t('courses.viewDetails')}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>

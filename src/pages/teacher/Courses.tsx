@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,7 @@ import {
 import { toast } from 'sonner';
 
 const TeacherCourses = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses, isLoading } = useTeacherCourses();
   const createCourse = useCreateCourse();
@@ -28,7 +30,7 @@ const TeacherCourses = () => {
 
   const handleCreateCourse = async () => {
     if (!newCourse.title.trim()) {
-      toast.error('Please enter a course title');
+      toast.error(t('courses.enterCourseTitle'));
       return;
     }
 
@@ -39,27 +41,27 @@ const TeacherCourses = () => {
       });
       setNewCourse({ title: '', description: '' });
       setIsDialogOpen(false);
-      toast.success('Course created successfully!');
+      toast.success(t('courses.courseCreated'));
     } catch (error) {
-      toast.error('Failed to create course');
+      toast.error(t('courses.failedToCreate'));
     }
   };
 
   const handleDeleteCourse = async (courseId: string) => {
     try {
       await deleteCourse.mutateAsync(courseId);
-      toast.success('Course deleted');
+      toast.success(t('courses.courseDeleted'));
     } catch (error) {
-      toast.error('Failed to delete course');
+      toast.error(t('courses.failedToDelete'));
     }
   };
 
   const handlePublishCourse = async (courseId: string) => {
     try {
       await updateCourse.mutateAsync({ id: courseId, status: 'published' });
-      toast.success('Course published!');
+      toast.success(t('courses.coursePublished'));
     } catch (error) {
-      toast.error('Failed to publish course');
+      toast.error(t('courses.failedToPublish'));
     }
   };
 
@@ -76,37 +78,37 @@ const TeacherCourses = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Courses</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('courses.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your courses and content
+            {t('courses.manageYourCourses')}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="hero">
               <Plus className="w-4 h-4" />
-              New Course
+              {t('courses.newCourse')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New Course</DialogTitle>
+              <DialogTitle>{t('courses.createNewCourse')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Course Title</Label>
+                <Label htmlFor="title">{t('courses.courseTitle')}</Label>
                 <Input
                   id="title"
-                  placeholder="e.g., Introduction to Programming"
+                  placeholder={t('courses.courseTitlePlaceholder')}
                   value={newCourse.title}
                   onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('courses.description')}</Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe what students will learn..."
+                  placeholder={t('courses.descriptionPlaceholder')}
                   rows={4}
                   value={newCourse.description}
                   onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
@@ -118,7 +120,7 @@ const TeacherCourses = () => {
                 disabled={createCourse.isPending}
               >
                 {createCourse.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Create Course
+                {t('courses.createCourse')}
               </Button>
             </div>
           </DialogContent>
@@ -132,13 +134,13 @@ const TeacherCourses = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <BookOpen className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No courses yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('courses.noCoursesYet')}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Create your first course to get started
+              {t('courses.createFirstCourse')}
             </p>
             <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
-              Create Course
+              {t('courses.createCourse')}
             </Button>
           </CardContent>
         </Card>
@@ -170,7 +172,7 @@ const TeacherCourses = () => {
                         ? 'bg-secondary/10 text-secondary' 
                         : 'bg-muted text-muted-foreground'
                     }`}>
-                      {course.status}
+                      {course.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>
                     <CardTitle className="text-lg">{course.title}</CardTitle>
                   </div>
@@ -183,16 +185,16 @@ const TeacherCourses = () => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => navigate(`/teacher/courses/${course.id}`)}>
                         <Eye className="w-4 h-4 mr-2" />
-                        View Details
+                        {t('courses.viewDetails')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate(`/teacher/courses/${course.id}`)}>
                         <Edit className="w-4 h-4 mr-2" />
-                        Edit
+                        {t('common.edit')}
                       </DropdownMenuItem>
                       {course.status === 'draft' && (
                         <DropdownMenuItem onClick={() => handlePublishCourse(course.id)}>
                           <BookOpen className="w-4 h-4 mr-2" />
-                          Publish
+                          {t('courses.publish')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem 
@@ -200,20 +202,20 @@ const TeacherCourses = () => {
                         onClick={() => handleDeleteCourse(course.id)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
+                        {t('common.delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
                 <CardDescription className="line-clamp-2">
-                  {course.description || 'No description'}
+                  {course.description || t('common.noDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <FileText className="w-4 h-4" />
-                    Created {new Date(course.created_at).toLocaleDateString()}
+                    {t('common.createdAt')} {new Date(course.created_at).toLocaleDateString()}
                   </div>
                 </div>
               </CardContent>
