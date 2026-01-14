@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 const StudentExams = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
@@ -122,16 +124,16 @@ const StudentExams = () => {
                 <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {exam.duration} min
+                    {exam.duration} {t('common.min')}
                   </span>
                   <span className="flex items-center gap-1">
                     <Award className="w-4 h-4" />
-                    {exam.total_points} pts
+                    {exam.total_points} {t('common.pts')}
                   </span>
                   {exam.end_date && (
                     <span className="flex items-center gap-1 text-destructive">
                       <Calendar className="w-4 h-4" />
-                      Due: {format(new Date(exam.end_date), 'MMM d, h:mm a')}
+                      {t('exams.dueBy')}: {format(new Date(exam.end_date), 'MMM d, h:mm a')}
                     </span>
                   )}
                 </div>
@@ -141,9 +143,9 @@ const StudentExams = () => {
             <div className="flex items-center gap-4">
               {isCompleted && submission && (
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Score</p>
+                  <p className="text-sm text-muted-foreground">{t('assignments.score')}</p>
                   <p className="text-lg font-bold text-secondary">
-                    {submission.score ?? 'Pending'}/{exam.total_points}
+                    {submission.score ?? t('common.pending')}/{exam.total_points}
                   </p>
                 </div>
               )}
@@ -156,7 +158,7 @@ const StudentExams = () => {
                   }}
                 >
                   <Eye className="w-4 h-4 mr-1" />
-                  View Results
+                  {t('exams.viewResults')}
                 </Button>
               ) : (
                 <Button 
@@ -165,7 +167,7 @@ const StudentExams = () => {
                     navigate(`/student/exam/${exam.id}`);
                   }}
                 >
-                  Take Exam
+                  {t('exams.takeExam')}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               )}
@@ -200,18 +202,18 @@ const StudentExams = () => {
                 <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {exam.duration} min
+                    {exam.duration} {t('common.min')}
                   </span>
                   <span className="flex items-center gap-1">
                     <Award className="w-4 h-4" />
-                    {exam.total_points} pts
+                    {exam.total_points} {t('common.pts')}
                   </span>
                 </div>
               </div>
             </div>
             
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Available from</p>
+              <p className="text-sm text-muted-foreground">{t('exams.availableFrom')}</p>
               <p className="text-sm font-medium text-foreground">
                 {format(new Date(exam.start_date!), 'MMM d, yyyy h:mm a')}
               </p>
@@ -226,16 +228,16 @@ const StudentExams = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">My Exams</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('exams.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            View and take your course exams
+            {t('exams.viewAndTakeExams')}
           </p>
         </div>
         <div className="flex gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search exams..."
+              placeholder={t('exams.searchExams')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 w-[200px]"
@@ -243,10 +245,10 @@ const StudentExams = () => {
           </div>
           <Select value={selectedCourse} onValueChange={setSelectedCourse}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All courses" />
+              <SelectValue placeholder={t('common.allCourses')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Courses</SelectItem>
+              <SelectItem value="all">{t('common.allCourses')}</SelectItem>
               {enrolledCourses.map(course => (
                 <SelectItem key={course.id} value={course.id}>
                   {course.title}
@@ -263,11 +265,11 @@ const StudentExams = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No exams available</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('exams.noExams')}</h3>
             <p className="text-muted-foreground text-center">
               {searchQuery || selectedCourse !== 'all' 
-                ? 'No exams match your search criteria' 
-                : 'Enroll in courses to access their exams'}
+                ? t('exams.noExamsMatchSearch') 
+                : t('exams.enrollToAccessExams')}
             </p>
           </CardContent>
         </Card>
@@ -275,13 +277,13 @@ const StudentExams = () => {
         <Tabs defaultValue="available" className="space-y-4">
           <TabsList>
             <TabsTrigger value="available">
-              Available ({pendingExams.length})
+              {t('exams.available')} ({pendingExams.length})
             </TabsTrigger>
             <TabsTrigger value="completed">
-              Completed ({completedExams.length})
+              {t('exams.completed')} ({completedExams.length})
             </TabsTrigger>
             <TabsTrigger value="upcoming">
-              Upcoming ({upcomingExams.length})
+              {t('assignments.upcoming')} ({upcomingExams.length})
             </TabsTrigger>
           </TabsList>
 
@@ -289,7 +291,7 @@ const StudentExams = () => {
             {pendingExams.length === 0 ? (
               <Card className="border-0 shadow-card">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  No available exams to take
+                  {t('exams.noAvailableExams')}
                 </CardContent>
               </Card>
             ) : (
@@ -301,7 +303,7 @@ const StudentExams = () => {
             {completedExams.length === 0 ? (
               <Card className="border-0 shadow-card">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  No completed exams yet
+                  {t('exams.noCompletedExams')}
                 </CardContent>
               </Card>
             ) : (
@@ -313,7 +315,7 @@ const StudentExams = () => {
             {upcomingExams.length === 0 ? (
               <Card className="border-0 shadow-card">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  No upcoming exams scheduled
+                  {t('exams.noUpcomingExams')}
                 </CardContent>
               </Card>
             ) : (

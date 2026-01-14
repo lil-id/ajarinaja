@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ import {
 import { toast } from 'sonner';
 
 const TeacherExams = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses } = useTeacherCourses();
   const { exams, isLoading } = useExams();
@@ -61,7 +63,7 @@ const TeacherExams = () => {
 
   const addQuestion = () => {
     if (!currentQuestion.question?.trim()) {
-      toast.error('Please enter a question');
+      toast.error(t('exams.enterQuestion'));
       return;
     }
     
@@ -83,12 +85,12 @@ const TeacherExams = () => {
       correctAnswer: 0,
       points: 10,
     });
-    toast.success('Question added');
+    toast.success(t('exams.questionAdded'));
   };
 
   const handleCreateExam = async () => {
     if (!selectedCourse || !examForm.title.trim() || questions.length === 0) {
-      toast.error('Please fill in all fields and add at least one question');
+      toast.error(t('exams.fillAllFields'));
       return;
     }
 
@@ -106,36 +108,36 @@ const TeacherExams = () => {
       setQuestions([]);
       setSelectedCourse('');
       setIsDialogOpen(false);
-      toast.success('Exam created successfully!');
+      toast.success(t('exams.examCreated'));
     } catch (error) {
-      toast.error('Failed to create exam');
+      toast.error(t('exams.failedToCreate'));
     }
   };
 
   const handleDeleteExam = async (examId: string) => {
     try {
       await deleteExam.mutateAsync(examId);
-      toast.success('Exam deleted');
+      toast.success(t('exams.examDeleted'));
     } catch (error) {
-      toast.error('Failed to delete exam');
+      toast.error(t('exams.failedToDelete'));
     }
   };
 
   const handlePublishExam = async (examId: string) => {
     try {
       await updateExam.mutateAsync({ id: examId, status: 'published' });
-      toast.success('Exam published!');
+      toast.success(t('exams.examPublished'));
     } catch (error) {
-      toast.error('Failed to publish exam');
+      toast.error(t('exams.failedToPublish'));
     }
   };
 
   const handleArchiveExam = async (examId: string, archive: boolean) => {
     try {
       await updateExam.mutateAsync({ id: examId, archived: archive } as any);
-      toast.success(archive ? 'Exam archived' : 'Exam restored');
+      toast.success(archive ? t('exams.examArchived') : t('exams.examRestored'));
     } catch {
-      toast.error('Failed to update exam');
+      toast.error(t('exams.failedToUpdate'));
     }
   };
 
@@ -195,30 +197,30 @@ const TeacherExams = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Exams</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('exams.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Create and manage course exams
+            {t('exams.manageExams')}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="hero" disabled={courses.length === 0}>
               <Plus className="w-4 h-4" />
-              New Exam
+              {t('exams.newExam')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Exam</DialogTitle>
+              <DialogTitle>{t('exams.createExam')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 pt-4">
               {/* Exam Details */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Select Course</Label>
+                  <Label>{t('exams.selectCourse')}</Label>
                   <Select value={selectedCourse} onValueChange={setSelectedCourse}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose a course" />
+                      <SelectValue placeholder={t('exams.chooseCourse')} />
                     </SelectTrigger>
                     <SelectContent>
                       {courses.map(course => (
@@ -230,16 +232,16 @@ const TeacherExams = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Exam Title</Label>
+                  <Label>{t('exams.examTitle')}</Label>
                   <Input
-                    placeholder="e.g., Midterm Exam"
+                    placeholder={t('exams.examTitlePlaceholder')}
                     value={examForm.title}
                     onChange={(e) => setExamForm({ ...examForm, title: e.target.value })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Duration (minutes)</Label>
+                    <Label>{t('exams.duration')}</Label>
                     <Input
                       type="number"
                       value={examForm.duration}
@@ -247,7 +249,7 @@ const TeacherExams = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Minimum Passing Grade (KKM)</Label>
+                    <Label>{t('exams.minimumPassingGrade')}</Label>
                     <Input
                       type="number"
                       min={0}
@@ -255,14 +257,14 @@ const TeacherExams = () => {
                       value={examForm.kkm}
                       onChange={(e) => setExamForm({ ...examForm, kkm: Number(e.target.value) })}
                     />
-                    <p className="text-xs text-muted-foreground">Percentage required to pass</p>
+                    <p className="text-xs text-muted-foreground">{t('exams.percentageRequired')}</p>
                   </div>
                 </div>
               </div>
 
               {/* Questions Section */}
               <div className="border-t pt-4">
-                <h3 className="font-semibold mb-4">Questions ({questions.length})</h3>
+                <h3 className="font-semibold mb-4">{t('exams.questions')} ({questions.length})</h3>
                 
                 {/* Question List */}
                 {questions.length > 0 && (
@@ -275,7 +277,7 @@ const TeacherExams = () => {
                           <AlignLeft className="w-4 h-4 text-primary" />
                         )}
                         <span className="flex-1 text-sm truncate">{q.question}</span>
-                        <span className="text-xs text-muted-foreground">{q.points} pts</span>
+                        <span className="text-xs text-muted-foreground">{q.points} {t('common.pts')}</span>
                       </div>
                     ))}
                   </div>
@@ -287,13 +289,13 @@ const TeacherExams = () => {
                   onValueChange={(v) => setCurrentQuestion({ ...currentQuestion, type: v as 'multiple-choice' | 'essay' })}
                 >
                   <TabsList className="mb-4">
-                    <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
-                    <TabsTrigger value="essay">Essay</TabsTrigger>
+                    <TabsTrigger value="multiple-choice">{t('exams.questionTypes.multipleChoice')}</TabsTrigger>
+                    <TabsTrigger value="essay">{t('exams.questionTypes.essay')}</TabsTrigger>
                   </TabsList>
 
                   <div className="space-y-4">
                     <Textarea
-                      placeholder="Enter your question..."
+                      placeholder={t('exams.enterQuestion')}
                       value={currentQuestion.question}
                       onChange={(e) => setCurrentQuestion({ ...currentQuestion, question: e.target.value })}
                     />
@@ -323,7 +325,7 @@ const TeacherExams = () => {
 
                     <div className="flex items-center gap-4">
                       <div className="flex-1">
-                        <Label className="text-xs">Points</Label>
+                        <Label className="text-xs">{t('common.points')}</Label>
                         <Input
                           type="number"
                           value={currentQuestion.points}
@@ -331,7 +333,7 @@ const TeacherExams = () => {
                         />
                       </div>
                       <Button onClick={addQuestion} className="mt-5">
-                        Add Question
+                        {t('exams.addQuestion')}
                       </Button>
                     </div>
                   </div>
@@ -345,7 +347,7 @@ const TeacherExams = () => {
                 disabled={createExam.isPending}
               >
                 {createExam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Create Exam
+                {t('exams.createExam')}
               </Button>
             </div>
           </DialogContent>
@@ -357,7 +359,7 @@ const TeacherExams = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search exams..."
+            placeholder={t('exams.searchExams')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -366,10 +368,10 @@ const TeacherExams = () => {
         <Select value={filterCourse} onValueChange={setFilterCourse}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="All Courses" />
+            <SelectValue placeholder={t('common.allCourses')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Courses</SelectItem>
+            <SelectItem value="all">{t('common.allCourses')}</SelectItem>
             {courses.map(c => (
               <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
             ))}
@@ -380,9 +382,9 @@ const TeacherExams = () => {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="published">Published ({counts.published})</TabsTrigger>
-          <TabsTrigger value="draft">Draft ({counts.draft})</TabsTrigger>
-          <TabsTrigger value="archived">Archived ({counts.archived})</TabsTrigger>
+          <TabsTrigger value="published">{t('common.published')} ({counts.published})</TabsTrigger>
+          <TabsTrigger value="draft">{t('common.draft')} ({counts.draft})</TabsTrigger>
+          <TabsTrigger value="archived">{t('common.archived')} ({counts.archived})</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
@@ -390,7 +392,7 @@ const TeacherExams = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground">
-                  Create a course first before adding exams.
+                  {t('exams.createCourseFirst')}
                 </p>
               </CardContent>
             </Card>
@@ -401,17 +403,17 @@ const TeacherExams = () => {
                   <FileText className="w-8 h-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {activeTab === 'archived' ? 'No archived exams' : 'No exams found'}
+                  {activeTab === 'archived' ? t('exams.noArchivedExams') : t('exams.noExamsFound')}
                 </h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  {searchQuery ? 'Try adjusting your search or filters' : 
-                    activeTab === 'archived' ? 'Archived exams will appear here' :
-                    'Create your first exam for your courses'}
+                  {searchQuery ? t('assignments.tryAdjustingSearch') : 
+                    activeTab === 'archived' ? t('exams.archivedExamsAppear') :
+                    t('exams.createFirstExam')}
                 </p>
                 {!searchQuery && activeTab !== 'archived' && (
                   <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
                     <Plus className="w-4 h-4" />
-                    Create Exam
+                    {t('exams.createExam')}
                   </Button>
                 )}
               </CardContent>
@@ -441,7 +443,7 @@ const TeacherExams = () => {
                         ? 'bg-secondary/10 text-secondary' 
                         : 'bg-muted text-muted-foreground'
                     }`}>
-                      {exam.status}
+                      {exam.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>
                     <CardTitle className="text-lg">{exam.title}</CardTitle>
                     <CardDescription className="mt-1">
@@ -463,29 +465,29 @@ const TeacherExams = () => {
                       {exam.status === 'published' && (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/grade`); }}>
                           <ClipboardCheck className="w-4 h-4 mr-2" />
-                          Grade Submissions
+                          {t('exams.gradeExam')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/edit`); }}>
                         <Edit className="w-4 h-4 mr-2" />
-                        Edit
+                        {t('common.edit')}
                       </DropdownMenuItem>
                       {exam.status === 'draft' && (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePublishExam(exam.id); }}>
                           <FileText className="w-4 h-4 mr-2" />
-                          Publish
+                          {t('courses.publish')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       {(exam as any).archived ? (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, false); }}>
                           <ArchiveRestore className="w-4 h-4 mr-2" />
-                          Restore
+                          {t('common.restore')}
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, true); }}>
                           <Archive className="w-4 h-4 mr-2" />
-                          Archive
+                          {t('common.archive')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem 
@@ -493,7 +495,7 @@ const TeacherExams = () => {
                         onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
+                        {t('common.delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -503,11 +505,11 @@ const TeacherExams = () => {
                 <div className="flex items-center gap-6 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    {exam.duration} min
+                    {exam.duration} {t('common.min')}
                   </div>
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4" />
-                    {exam.total_points} pts
+                    {exam.total_points} {t('common.pts')}
                   </div>
                 </div>
               </CardContent>
