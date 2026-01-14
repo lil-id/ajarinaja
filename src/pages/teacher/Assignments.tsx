@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Plus, FileText, Calendar, Users, MoreHorizontal, Pencil, Trash2, Eye, Search, Archive, ArchiveRestore, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,7 @@ import { useAssignments, useDeleteAssignment, useUpdateAssignment } from '@/hook
 import { toast } from 'sonner';
 
 export default function TeacherAssignments() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses = [] } = useTeacherCourses();
   const { data: assignments = [], isLoading } = useAssignments();
@@ -81,9 +83,9 @@ export default function TeacherAssignments() {
     if (!deleteId) return;
     try {
       await deleteAssignment.mutateAsync(deleteId);
-      toast.success('Assignment deleted');
+      toast.success(t('assignments.assignmentDeleted'));
     } catch {
-      toast.error('Failed to delete assignment');
+      toast.error(t('assignments.failedToDelete'));
     }
     setDeleteId(null);
   };
@@ -91,24 +93,24 @@ export default function TeacherAssignments() {
   const handleArchive = async (id: string, archive: boolean) => {
     try {
       await updateAssignment.mutateAsync({ id, archived: archive } as any);
-      toast.success(archive ? 'Assignment archived' : 'Assignment restored');
+      toast.success(archive ? t('assignments.assignmentArchived') : t('assignments.assignmentRestored'));
     } catch {
-      toast.error('Failed to update assignment');
+      toast.error(t('assignments.failedToUpdate'));
     }
   };
 
   const getStatusBadge = (assignment: { status: string; due_date: string }) => {
     const isPastDue = new Date(assignment.due_date) < new Date();
     if ((assignment as any).archived) {
-      return <Badge variant="outline">Archived</Badge>;
+      return <Badge variant="outline">{t('common.archived')}</Badge>;
     }
     if (assignment.status === 'draft') {
-      return <Badge variant="secondary">Draft</Badge>;
+      return <Badge variant="secondary">{t('common.draft')}</Badge>;
     }
     if (isPastDue) {
-      return <Badge variant="destructive">Closed</Badge>;
+      return <Badge variant="destructive">{t('assignments.closed')}</Badge>;
     }
-    return <Badge className="bg-green-500">Active</Badge>;
+    return <Badge className="bg-green-500">{t('common.active')}</Badge>;
   };
 
   const openAssignment = (id: string, status: string) => {
@@ -139,12 +141,12 @@ export default function TeacherAssignments() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Assignments</h1>
-          <p className="text-muted-foreground">Create and manage course assignments</p>
+          <h1 className="text-3xl font-bold">{t('assignments.title')}</h1>
+          <p className="text-muted-foreground">{t('assignments.manageAssignments')}</p>
         </div>
         <Button onClick={() => navigate('/teacher/assignments/new')}>
           <Plus className="h-4 w-4 mr-2" />
-          New Assignment
+          {t('assignments.newAssignment')}
         </Button>
       </div>
 
@@ -153,7 +155,7 @@ export default function TeacherAssignments() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search assignments..."
+            placeholder={t('assignments.searchAssignments')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -162,10 +164,10 @@ export default function TeacherAssignments() {
         <Select value={selectedCourse} onValueChange={setSelectedCourse}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="All Courses" />
+            <SelectValue placeholder={t('common.allCourses')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Courses</SelectItem>
+            <SelectItem value="all">{t('common.allCourses')}</SelectItem>
             {courses.map(c => (
               <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
             ))}
@@ -176,10 +178,10 @@ export default function TeacherAssignments() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="active">Active ({counts.active})</TabsTrigger>
-          <TabsTrigger value="closed">Closed ({counts.closed})</TabsTrigger>
-          <TabsTrigger value="draft">Draft ({counts.draft})</TabsTrigger>
-          <TabsTrigger value="archived">Archived ({counts.archived})</TabsTrigger>
+          <TabsTrigger value="active">{t('common.active')} ({counts.active})</TabsTrigger>
+          <TabsTrigger value="closed">{t('assignments.closed')} ({counts.closed})</TabsTrigger>
+          <TabsTrigger value="draft">{t('common.draft')} ({counts.draft})</TabsTrigger>
+          <TabsTrigger value="archived">{t('common.archived')} ({counts.archived})</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
@@ -188,20 +190,20 @@ export default function TeacherAssignments() {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">
-                  {activeTab === 'archived' ? 'No archived assignments' : 'No assignments found'}
+                  {activeTab === 'archived' ? t('assignments.noArchivedAssignments') : t('assignments.noAssignmentsFound')}
                 </h3>
                 <p className="text-muted-foreground text-center mb-4">
                   {activeTab === 'archived' 
-                    ? 'Archived assignments will appear here'
+                    ? t('assignments.archivedAssignmentsAppear')
                     : searchQuery 
-                      ? 'Try adjusting your search or filters'
-                      : 'Create your first assignment to get started'
+                      ? t('assignments.tryAdjustingSearch')
+                      : t('assignments.createFirstAssignment')
                   }
                 </p>
                 {!searchQuery && activeTab !== 'archived' && (
                   <Button onClick={() => navigate('/teacher/assignments/new')}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Assignment
+                    {t('assignments.createAssignment')}
                   </Button>
                 )}
               </CardContent>
@@ -241,22 +243,22 @@ export default function TeacherAssignments() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/assignments/${assignment.id}/submissions`); }}>
                               <Eye className="h-4 w-4 mr-2" />
-                              View Submissions
+                              {t('assignments.viewSubmissions')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/assignments/${assignment.id}/edit`); }}>
                               <Pencil className="h-4 w-4 mr-2" />
-                              Edit
+                              {t('common.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {(assignment as any).archived ? (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchive(assignment.id, false); }}>
                                 <ArchiveRestore className="h-4 w-4 mr-2" />
-                                Restore
+                                {t('common.restore')}
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchive(assignment.id, true); }}>
                                 <Archive className="h-4 w-4 mr-2" />
-                                Archive
+                                {t('common.archive')}
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem 
@@ -264,7 +266,7 @@ export default function TeacherAssignments() {
                               className="text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
+                              {t('common.delete')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -275,11 +277,11 @@ export default function TeacherAssignments() {
                     <div className="flex items-center gap-6 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        Due: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
+                        {t('assignments.due')}: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        {assignment.max_points} points
+                        {assignment.max_points} {t('common.points')}
                       </div>
                     </div>
                     {assignment.description && (
@@ -296,15 +298,15 @@ export default function TeacherAssignments() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Assignment?</AlertDialogTitle>
+            <AlertDialogTitle>{t('assignments.deleteAssignment')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the assignment and all student submissions. This action cannot be undone.
+              {t('assignments.deleteAssignmentConfirm')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Delete
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

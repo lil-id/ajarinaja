@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, isFuture, differenceInDays } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
 export default function StudentAssignments() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { enrollments = [] } = useEnrollments();
@@ -90,10 +92,10 @@ export default function StudentAssignments() {
 
   const getDaysUntilDue = (dueDate: string) => {
     const days = differenceInDays(new Date(dueDate), new Date());
-    if (days === 0) return 'Due today';
-    if (days === 1) return 'Due tomorrow';
-    if (days < 0) return `${Math.abs(days)} days overdue`;
-    return `${days} days left`;
+    if (days === 0) return t('assignments.dueToday');
+    if (days === 1) return t('assignments.dueTomorrow');
+    if (days < 0) return `${Math.abs(days)} ${t('assignments.daysOverdue')}`;
+    return `${days} ${t('assignments.daysLeft')}`;
   };
 
   const renderAssignmentCard = (assignment: any) => {
@@ -127,19 +129,19 @@ export default function StudentAssignments() {
               {isGraded && (
                 <Badge className="bg-green-500">
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  Graded: {assignment.submission.score}/{assignment.max_points}
+                  {t('assignments.graded')}: {assignment.submission.score}/{assignment.max_points}
                 </Badge>
               )}
               {isSubmitted && !isGraded && (
                 <Badge variant="secondary">
                   <Clock className="h-3 w-3 mr-1" />
-                  Submitted
+                  {t('assignments.submitted')}
                 </Badge>
               )}
               {isOverdue && (
                 <Badge variant="destructive">
                   <AlertCircle className="h-3 w-3 mr-1" />
-                  Overdue
+                  {t('assignments.overdue')}
                 </Badge>
               )}
               {!isSubmitted && !isOverdue && (
@@ -158,7 +160,7 @@ export default function StudentAssignments() {
                 <Calendar className="h-4 w-4" />
                 {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
               </span>
-              <span>{assignment.max_points} points</span>
+              <span>{assignment.max_points} {t('common.points')}</span>
             </div>
             <Button 
               variant={isSubmitted ? 'outline' : 'default'}
@@ -169,11 +171,11 @@ export default function StudentAssignments() {
               }}
             >
               {isSubmitted ? (
-                <>View Submission</>
+                <>{t('assignments.viewSubmission')}</>
               ) : (
                 <>
                   <Upload className="h-4 w-4 mr-2" />
-                  Submit
+                  {t('common.submit')}
                 </>
               )}
             </Button>
@@ -192,15 +194,15 @@ export default function StudentAssignments() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Assignments</h1>
-          <p className="text-muted-foreground">View and submit your course assignments</p>
+          <h1 className="text-3xl font-bold">{t('assignments.title')}</h1>
+          <p className="text-muted-foreground">{t('assignments.viewAndSubmit')}</p>
         </div>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Assignments</h3>
+            <h3 className="text-lg font-medium mb-2">{t('assignments.noAssignments')}</h3>
             <p className="text-muted-foreground text-center">
-              Enroll in courses to see assignments
+              {t('assignments.enrollInCoursesToSeeAssignments')}
             </p>
           </CardContent>
         </Card>
@@ -212,14 +214,14 @@ export default function StudentAssignments() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Assignments</h1>
-          <p className="text-muted-foreground">View and submit your course assignments</p>
+          <h1 className="text-3xl font-bold">{t('assignments.title')}</h1>
+          <p className="text-muted-foreground">{t('assignments.viewAndSubmit')}</p>
         </div>
         <div className="flex gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search assignments..."
+              placeholder={t('assignments.searchAssignments')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 w-[200px]"
@@ -227,10 +229,10 @@ export default function StudentAssignments() {
           </div>
           <Select value={selectedCourse} onValueChange={setSelectedCourse}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All courses" />
+              <SelectValue placeholder={t('common.allCourses')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Courses</SelectItem>
+              <SelectItem value="all">{t('common.allCourses')}</SelectItem>
               {enrolledCourses.map(course => (
                 <SelectItem key={course.id} value={course.id}>
                   {course.title}
@@ -244,25 +246,25 @@ export default function StudentAssignments() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Assignments</CardDescription>
+            <CardDescription>{t('assignments.totalAssignments')}</CardDescription>
             <CardTitle className="text-2xl">{filteredAssignments.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Submitted</CardDescription>
+            <CardDescription>{t('assignments.submitted')}</CardDescription>
             <CardTitle className="text-2xl">{submitted.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Graded</CardDescription>
+            <CardDescription>{t('assignments.graded')}</CardDescription>
             <CardTitle className="text-2xl">{graded.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Completion Rate</CardDescription>
+            <CardDescription>{t('assignments.completionRate')}</CardDescription>
             <CardTitle className="text-2xl">{completionRate}%</CardTitle>
           </CardHeader>
           <CardContent>
@@ -274,13 +276,13 @@ export default function StudentAssignments() {
       <Tabs defaultValue="upcoming" className="space-y-4">
         <TabsList>
           <TabsTrigger value="upcoming">
-            Upcoming ({upcoming.length})
+            {t('assignments.upcoming')} ({upcoming.length})
           </TabsTrigger>
           <TabsTrigger value="pending">
-            Overdue ({pending.length})
+            {t('assignments.overdue')} ({pending.length})
           </TabsTrigger>
           <TabsTrigger value="submitted">
-            Submitted ({submitted.length})
+            {t('assignments.submitted')} ({submitted.length})
           </TabsTrigger>
         </TabsList>
 
@@ -288,7 +290,7 @@ export default function StudentAssignments() {
           {upcoming.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                No upcoming assignments
+                {t('assignments.noUpcomingAssignments')}
               </CardContent>
             </Card>
           ) : (
@@ -300,7 +302,7 @@ export default function StudentAssignments() {
           {pending.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                No overdue assignments
+                {t('assignments.noOverdueAssignments')}
               </CardContent>
             </Card>
           ) : (
@@ -312,7 +314,7 @@ export default function StudentAssignments() {
           {submitted.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                No submitted assignments yet
+                {t('assignments.noSubmittedAssignments')}
               </CardContent>
             </Card>
           ) : (
