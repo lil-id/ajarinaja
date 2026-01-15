@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +55,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const ReportCardDetail = () => {
+  const { t } = useTranslation();
   const { reportCardId } = useParams<{ reportCardId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -229,11 +231,11 @@ const ReportCardDetail = () => {
       });
 
     if (error) {
-      toast.error(`Gagal menambah mata pelajaran: ${error.message}`);
+      toast.error(`${t('reportCards.failedToAddSubject')}: ${error.message}`);
       return;
     }
 
-    toast.success('Mata pelajaran berhasil ditambahkan');
+    toast.success(t('reportCards.subjectAdded'));
     setAddCourseDialogOpen(false);
     setSelectedCourseId('');
     // Refetch entries
@@ -259,15 +261,15 @@ const ReportCardDetail = () => {
     
     // Header
     doc.setFontSize(18);
-    doc.text('RAPOR DIGITAL', 105, 20, { align: 'center' });
+    doc.text(t('reportCards.digitalReportCard').toUpperCase(), 105, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text(reportCard.period?.name || '', 105, 28, { align: 'center' });
 
     // Student info
     doc.setFontSize(11);
-    doc.text(`Nama: ${reportCard.student?.name || '-'}`, 20, 45);
-    doc.text(`Email: ${reportCard.student?.email || '-'}`, 20, 52);
-    doc.text(`Status: ${reportCard.status === 'finalized' ? 'Final' : 'Draft'}`, 20, 59);
+    doc.text(`${t('auth.name')}: ${reportCard.student?.name || '-'}`, 20, 45);
+    doc.text(`${t('auth.email')}: ${reportCard.student?.email || '-'}`, 20, 52);
+    doc.text(`${t('reportCards.status')}: ${reportCard.status === 'finalized' ? t('common.finalized') : t('common.draft')}`, 20, 59);
 
     // Grades table
     const tableData = entries.map((entry, idx) => [
@@ -277,12 +279,20 @@ const ReportCardDetail = () => {
       entry.assignment_average?.toString() || '-',
       entry.final_grade.toString(),
       entry.kkm.toString(),
-      entry.passed ? 'Lulus' : 'Tidak Lulus',
+      entry.passed ? t('reportCards.passed') : t('reportCards.notPassed'),
     ]);
 
     autoTable(doc, {
       startY: 70,
-      head: [['No', 'Mata Pelajaran', 'Rata-rata Ujian', 'Rata-rata Tugas', 'Nilai Akhir', 'KKM', 'Status']],
+      head: [[
+        'No', 
+        t('reportCards.subject'), 
+        t('reportCards.examAverage'), 
+        t('reportCards.assignmentAverage'), 
+        t('reportCards.finalGrade'), 
+        t('reportCards.kkm'), 
+        t('reportCards.status')
+      ]],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [59, 130, 246] },
@@ -291,11 +301,11 @@ const ReportCardDetail = () => {
     // Overall average
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.setFontSize(12);
-    doc.text(`Rata-rata Keseluruhan: ${reportCard.overall_average?.toFixed(2) || '-'}`, 20, finalY);
+    doc.text(`${t('reportCards.average')}: ${reportCard.overall_average?.toFixed(2) || '-'}`, 20, finalY);
 
     // Teacher notes
     if (reportCard.teacher_notes) {
-      doc.text('Catatan Guru:', 20, finalY + 10);
+      doc.text(`${t('reportCards.teacherNotes')}:`, 20, finalY + 10);
       doc.setFontSize(10);
       doc.text(reportCard.teacher_notes, 20, finalY + 17);
     }
@@ -304,10 +314,10 @@ const ReportCardDetail = () => {
     if (reportCard.teacher_signature) {
       doc.addImage(reportCard.teacher_signature, 'PNG', 140, finalY + 20, 50, 25);
       doc.setFontSize(10);
-      doc.text('Tanda Tangan Guru', 165, finalY + 50, { align: 'center' });
+      doc.text(t('reportCards.teacherSignature'), 165, finalY + 50, { align: 'center' });
     }
 
-    doc.save(`rapor-${reportCard.student?.name || 'siswa'}-${reportCard.period?.name || 'semester'}.pdf`);
+    doc.save(`report-${reportCard.student?.name || 'student'}-${reportCard.period?.name || 'semester'}.pdf`);
   };
 
   // Filter courses not yet added
@@ -327,9 +337,9 @@ const ReportCardDetail = () => {
   if (!reportCard) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Rapor tidak ditemukan</p>
+        <p className="text-muted-foreground">{t('reportCards.reportNotFound')}</p>
         <Button className="mt-4" onClick={() => navigate('/teacher/report-cards')}>
-          Kembali
+          {t('common.back')}
         </Button>
       </div>
     );
@@ -343,20 +353,20 @@ const ReportCardDetail = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Detail Rapor</h1>
+          <h1 className="text-2xl font-bold">{t('reportCards.reportCardDetail')}</h1>
           <p className="text-muted-foreground">{reportCard.period?.name}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleDownloadPDF}>
             <Download className="w-4 h-4 mr-2" />
-            Download PDF
+            {t('reportCards.downloadPdf')}
           </Button>
           <Button 
             onClick={handleSaveEntries}
             disabled={bulkUpsertEntries.isPending || reportCard.status === 'finalized'}
           >
             <Save className="w-4 h-4 mr-2" />
-            {bulkUpsertEntries.isPending ? 'Menyimpan...' : 'Simpan'}
+            {bulkUpsertEntries.isPending ? t('common.saving') : t('common.save')}
           </Button>
           {reportCard.status !== 'finalized' && (
             <Button 
@@ -364,7 +374,7 @@ const ReportCardDetail = () => {
               onClick={() => setSignatureDialogOpen(true)}
             >
               <PenTool className="w-4 h-4 mr-2" />
-              Finalisasi
+              {t('reportCards.finalize')}
             </Button>
           )}
         </div>
@@ -386,7 +396,7 @@ const ReportCardDetail = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Rata-rata</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
                 <p className="text-3xl font-bold text-primary">
                   {reportCard.overall_average?.toFixed(1) || '-'}
                 </p>
@@ -398,12 +408,12 @@ const ReportCardDetail = () => {
                 {reportCard.status === 'finalized' ? (
                   <>
                     <CheckCircle className="w-4 h-4 mr-1" />
-                    Final
+                    {t('common.finalized')}
                   </>
                 ) : (
                   <>
                     <Clock className="w-4 h-4 mr-1" />
-                    Draft
+                    {t('common.draft')}
                   </>
                 )}
               </Badge>
@@ -417,8 +427,8 @@ const ReportCardDetail = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Nilai per Mata Pelajaran</CardTitle>
-              <CardDescription>Input nilai ujian, tugas, dan nilai akhir</CardDescription>
+              <CardTitle>{t('reportCards.gradePerSubject')}</CardTitle>
+              <CardDescription>{t('reportCards.inputGradesDescription')}</CardDescription>
             </div>
             <Button
               variant="outline"
@@ -426,7 +436,7 @@ const ReportCardDetail = () => {
               disabled={reportCard.status === 'finalized'}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Tambah Mata Pelajaran
+              {t('reportCards.addSubject')}
             </Button>
           </div>
         </CardHeader>
@@ -438,23 +448,23 @@ const ReportCardDetail = () => {
           ) : entries.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground mb-4">Belum ada mata pelajaran</p>
+              <p className="text-muted-foreground mb-4">{t('reportCards.noSubjectsYet')}</p>
               <Button variant="outline" onClick={() => setAddCourseDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Tambah Mata Pelajaran
+                {t('reportCards.addSubject')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Mata Pelajaran</TableHead>
-                  <TableHead className="w-28">Rata-rata Ujian</TableHead>
-                  <TableHead className="w-28">Rata-rata Tugas</TableHead>
-                  <TableHead className="w-28">Nilai Akhir</TableHead>
-                  <TableHead className="w-20">KKM</TableHead>
-                  <TableHead className="w-24">Status</TableHead>
-                  <TableHead className="w-48">Catatan</TableHead>
+                  <TableHead>{t('reportCards.subject')}</TableHead>
+                  <TableHead className="w-28">{t('reportCards.examAverage')}</TableHead>
+                  <TableHead className="w-28">{t('reportCards.assignmentAverage')}</TableHead>
+                  <TableHead className="w-28">{t('reportCards.finalGrade')}</TableHead>
+                  <TableHead className="w-20">{t('reportCards.kkm')}</TableHead>
+                  <TableHead className="w-24">{t('reportCards.status')}</TableHead>
+                  <TableHead className="w-48">{t('reportCards.notes')}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -520,12 +530,12 @@ const ReportCardDetail = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant={passed ? 'default' : 'destructive'}>
-                          {passed ? 'Lulus' : 'Tidak Lulus'}
+                          {passed ? t('reportCards.passed') : t('reportCards.notPassed')}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Input
-                          placeholder="Catatan..."
+                          placeholder={t('dialogs.notesPlaceholder')}
                           value={localEntry.teacher_notes}
                           onChange={(e) => handleUpdateEntry(entry.id, 'teacher_notes', e.target.value)}
                           disabled={reportCard.status === 'finalized'}
@@ -554,12 +564,12 @@ const ReportCardDetail = () => {
       {/* Teacher Notes */}
       <Card>
         <CardHeader>
-          <CardTitle>Catatan Umum</CardTitle>
-          <CardDescription>Catatan atau pesan untuk siswa</CardDescription>
+          <CardTitle>{t('dialogs.generalNotes')}</CardTitle>
+          <CardDescription>{t('dialogs.notesForStudent')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
-            placeholder="Tulis catatan umum untuk siswa..."
+            placeholder={t('dialogs.writeGeneralNotes')}
             value={teacherNotes}
             onChange={(e) => setTeacherNotes(e.target.value)}
             disabled={reportCard.status === 'finalized'}
@@ -572,16 +582,16 @@ const ReportCardDetail = () => {
       <Dialog open={addCourseDialogOpen} onOpenChange={setAddCourseDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tambah Mata Pelajaran</DialogTitle>
+            <DialogTitle>{t('dialogs.addSubject')}</DialogTitle>
             <DialogDescription>
-              Pilih mata pelajaran untuk ditambahkan ke rapor
+              {t('dialogs.selectSubjectToAdd')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label>Mata Pelajaran</Label>
+            <Label>{t('reportCards.subject')}</Label>
             <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
               <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Pilih mata pelajaran" />
+                <SelectValue placeholder={t('dialogs.chooseSubject')} />
               </SelectTrigger>
               <SelectContent>
                 {availableCourses.map((course) => (
@@ -593,16 +603,16 @@ const ReportCardDetail = () => {
             </Select>
             {availableCourses.length === 0 && (
               <p className="text-sm text-muted-foreground mt-2">
-                Semua mata pelajaran sudah ditambahkan
+                {t('dialogs.allSubjectsAdded')}
               </p>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddCourseDialogOpen(false)}>
-              Batal
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleAddCourse} disabled={!selectedCourseId}>
-              Tambah
+              {t('common.add')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -612,9 +622,9 @@ const ReportCardDetail = () => {
       <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Tanda Tangan Digital</DialogTitle>
+            <DialogTitle>{t('dialogs.signatureAndFinalize')}</DialogTitle>
             <DialogDescription>
-              Gambar tanda tangan Anda di bawah ini untuk memfinalisasi rapor
+              {t('dialogs.drawSignature')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -631,16 +641,16 @@ const ReportCardDetail = () => {
               />
             </div>
             <Button variant="ghost" size="sm" className="mt-2" onClick={clearSignature}>
-              Hapus Tanda Tangan
+              {t('dialogs.clearSignature')}
             </Button>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSignatureDialogOpen(false)}>
-              Batal
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleFinalize} disabled={finalizeReportCard.isPending}>
               <CheckCircle className="w-4 h-4 mr-2" />
-              {finalizeReportCard.isPending ? 'Memfinalisasi...' : 'Finalisasi Rapor'}
+              {finalizeReportCard.isPending ? t('common.loading') : t('dialogs.finalizeReportCard')}
             </Button>
           </DialogFooter>
         </DialogContent>
