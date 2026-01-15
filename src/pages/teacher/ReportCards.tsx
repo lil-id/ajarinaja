@@ -117,9 +117,9 @@ const ReportCards = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Rapor Digital</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('reportCards.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Kelola rapor semester untuk semua siswa Anda
+            {t('reportCards.description')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -127,29 +127,29 @@ const ReportCards = () => {
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Calendar className="w-4 h-4 mr-2" />
-                Buat Periode
+                {t('reportCards.createPeriod')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Buat Periode Akademik Baru</DialogTitle>
+                <DialogTitle>{t('reportCards.createPeriod')}</DialogTitle>
                 <DialogDescription>
-                  Tambahkan tahun ajaran dan semester baru untuk rapor
+                  {t('dialogs.selectSubjectToAdd').replace('subject', 'period')}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="period-name">Nama Periode</Label>
+                  <Label htmlFor="period-name">{t('reportCards.periodName')}</Label>
                   <Input
                     id="period-name"
-                    placeholder="Contoh: 2024/2025 Semester 1"
+                    placeholder="2024/2025 Semester 1"
                     value={newPeriod.name}
                     onChange={(e) => setNewPeriod({ ...newPeriod, name: e.target.value })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="academic-year">Tahun Ajaran</Label>
+                    <Label htmlFor="academic-year">{t('reportCards.academicYear')}</Label>
                     <Input
                       id="academic-year"
                       placeholder="2024/2025"
@@ -158,7 +158,7 @@ const ReportCards = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="semester">Semester</Label>
+                    <Label htmlFor="semester">{t('reportCards.semester')}</Label>
                     <Select
                       value={newPeriod.semester.toString()}
                       onValueChange={(v) => setNewPeriod({ ...newPeriod, semester: parseInt(v) })}
@@ -167,15 +167,15 @@ const ReportCards = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">Semester 1</SelectItem>
-                        <SelectItem value="2">Semester 2</SelectItem>
+                        <SelectItem value="1">{t('reportCards.semester1')}</SelectItem>
+                        <SelectItem value="2">{t('reportCards.semester2')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="start-date">Tanggal Mulai</Label>
+                    <Label htmlFor="start-date">{t('reportCards.startDate')}</Label>
                     <Input
                       id="start-date"
                       type="date"
@@ -184,7 +184,7 @@ const ReportCards = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="end-date">Tanggal Selesai</Label>
+                    <Label htmlFor="end-date">{t('reportCards.endDate')}</Label>
                     <Input
                       id="end-date"
                       type="date"
@@ -196,10 +196,10 @@ const ReportCards = () => {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setCreatePeriodOpen(false)}>
-                  Batal
+                  {t('common.cancel')}
                 </Button>
                 <Button onClick={handleCreatePeriod} disabled={createPeriod.isPending}>
-                  {createPeriod.isPending ? 'Membuat...' : 'Buat Periode'}
+                  {createPeriod.isPending ? t('common.loading') : t('reportCards.createPeriod')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -210,8 +210,8 @@ const ReportCards = () => {
       {/* Period Selector */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Periode Akademik</CardTitle>
-          <CardDescription>Pilih periode untuk mengelola rapor siswa</CardDescription>
+          <CardTitle className="text-lg">{t('reportCards.academicPeriod')}</CardTitle>
+          <CardDescription>{t('reportCards.selectPeriod')}</CardDescription>
         </CardHeader>
         <CardContent>
           {periodsLoading ? (
@@ -222,14 +222,14 @@ const ReportCards = () => {
           ) : periods.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">Belum ada periode akademik</p>
+              <p className="text-muted-foreground">{t('reportCards.noPeriods')}</p>
               <Button 
                 variant="outline" 
                 className="mt-3"
                 onClick={() => setCreatePeriodOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Buat Periode Pertama
+                {t('reportCards.createFirstPeriod')}
               </Button>
             </div>
           ) : (
@@ -244,7 +244,7 @@ const ReportCards = () => {
                     {period.name}
                     {period.is_active && (
                       <Badge variant="secondary" className="ml-2 text-xs">
-                        Aktif
+                        {t('reportCards.periodActive')}
                       </Badge>
                     )}
                   </Button>
@@ -262,14 +262,14 @@ const ReportCards = () => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setActivePeriod.mutate(period.id)}>
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Set Aktif
+                        {t('reportCards.setActive')}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         className="text-destructive"
                         onClick={() => deletePeriod.mutate(period.id)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Hapus
+                        {t('common.delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -288,17 +288,17 @@ const ReportCards = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Daftar Rapor - {currentPeriod?.name}
+                  {t('reportCards.reportCardList')} - {currentPeriod?.name}
                 </CardTitle>
                 <CardDescription>
-                  {currentPeriod && format(new Date(currentPeriod.start_date), 'd MMM yyyy', { locale: idLocale })} - {currentPeriod && format(new Date(currentPeriod.end_date), 'd MMM yyyy', { locale: idLocale })}
+                  {currentPeriod && format(new Date(currentPeriod.start_date), 'd MMM yyyy', { locale: dateLocale })} - {currentPeriod && format(new Date(currentPeriod.end_date), 'd MMM yyyy', { locale: dateLocale })}
                 </CardDescription>
               </div>
               <div className="flex gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Cari siswa..."
+                    placeholder={t('reportCards.searchStudents')}
                     className="pl-9 w-64"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -308,14 +308,14 @@ const ReportCards = () => {
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="w-4 h-4 mr-2" />
-                      Buat Rapor
+                      {t('reportCards.createReportCard')}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Buat Rapor Baru</DialogTitle>
+                      <DialogTitle>{t('reportCards.createReportCard')}</DialogTitle>
                       <DialogDescription>
-                        Pilih siswa untuk membuat rapor semester
+                        {t('reportCards.selectStudent')}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
@@ -343,7 +343,7 @@ const ReportCards = () => {
                         </div>
                       ) : (
                         <p className="text-center text-muted-foreground py-8">
-                          Belum ada siswa yang terdaftar di kursus Anda
+                          {t('reportCards.noStudents')}
                         </p>
                       )}
                     </div>
@@ -362,13 +362,13 @@ const ReportCards = () => {
             ) : filteredReportCards.length === 0 ? (
               <div className="text-center py-12">
                 <GraduationCap className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Belum Ada Rapor</h3>
+                <h3 className="text-lg font-medium mb-2">{t('reportCards.noReportCards')}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Buat rapor untuk siswa di periode ini
+                  {t('reportCards.selectStudent')}
                 </p>
                 <Button onClick={() => setCreateReportOpen(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Buat Rapor Pertama
+                  {t('reportCards.createFirstReportCard')}
                 </Button>
               </div>
             ) : (
@@ -394,7 +394,7 @@ const ReportCards = () => {
                     <div className="flex items-center gap-4">
                       {reportCard.overall_average !== null && (
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Rata-rata</p>
+                          <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
                           <p className="text-xl font-bold">{reportCard.overall_average}</p>
                         </div>
                       )}
@@ -402,12 +402,12 @@ const ReportCards = () => {
                         {reportCard.status === 'finalized' ? (
                           <>
                             <CheckCircle className="w-3 h-3 mr-1" />
-                            Final
+                            {t('common.finalized')}
                           </>
                         ) : (
                           <>
                             <Clock className="w-3 h-3 mr-1" />
-                            Draft
+                            {t('common.draft')}
                           </>
                         )}
                       </Badge>
