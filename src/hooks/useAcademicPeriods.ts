@@ -35,6 +35,7 @@ export function useAcademicPeriods() {
       const { data, error } = await supabase
         .from('academic_periods')
         .select('*')
+        .eq('created_by', user!.id)
         .order('academic_year', { ascending: false })
         .order('semester', { ascending: false });
 

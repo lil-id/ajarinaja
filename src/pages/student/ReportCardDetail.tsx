@@ -87,14 +87,14 @@ const StudentReportCardDetail = () => {
     
     // Header
     doc.setFontSize(18);
-    doc.text('RAPOR DIGITAL', 105, 20, { align: 'center' });
+    doc.text(t('reportCards.title').toUpperCase(), 105, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text(reportCard.period?.name || '', 105, 28, { align: 'center' });
 
     // Student info
     doc.setFontSize(11);
-    doc.text(`Rata-rata Keseluruhan: ${reportCard.overall_average?.toFixed(2) || '-'}`, 20, 45);
-    doc.text(`Jumlah Mata Pelajaran: ${reportCard.total_courses || entries.length}`, 20, 52);
+    doc.text(`${t('reportCards.average')}: ${reportCard.overall_average?.toFixed(2) || '-'}`, 20, 45);
+    doc.text(`${t('reportCards.totalCourses')}: ${reportCard.total_courses || entries.length}`, 20, 52);
 
     // Grades table
     const tableData = entries.map((entry, idx) => [
@@ -104,13 +104,13 @@ const StudentReportCardDetail = () => {
       entry.assignment_average?.toString() || '-',
       entry.final_grade.toString(),
       entry.kkm.toString(),
-      entry.passed ? 'Lulus' : 'Tidak Lulus',
+      entry.passed ? t('reportCards.passed') : t('reportCards.notPassed'),
       entry.teacher_notes || '-',
     ]);
 
     autoTable(doc, {
       startY: 65,
-      head: [['No', 'Mata Pelajaran', 'Ujian', 'Tugas', 'Nilai Akhir', 'KKM', 'Status', 'Catatan']],
+      head: [['No', t('reportCards.subject'), t('reportCards.exam'), t('reportCards.assignment'), t('reportCards.finalGrade'), t('reportCards.kkm'), t('reportCards.status'), t('reportCards.notes')]],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [59, 130, 246] },
@@ -123,7 +123,7 @@ const StudentReportCardDetail = () => {
     // Teacher notes
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     if (reportCard.teacher_notes) {
-      doc.text('Catatan Guru:', 20, finalY);
+      doc.text(`${t('reportCards.teacherNotes')}:`, 20, finalY);
       doc.setFontSize(10);
       const splitNotes = doc.splitTextToSize(reportCard.teacher_notes, 170);
       doc.text(splitNotes, 20, finalY + 7);
@@ -134,10 +134,10 @@ const StudentReportCardDetail = () => {
       const signY = reportCard.teacher_notes ? finalY + 30 : finalY;
       doc.addImage(reportCard.teacher_signature, 'PNG', 140, signY, 50, 25);
       doc.setFontSize(10);
-      doc.text('Tanda Tangan Guru', 165, signY + 30, { align: 'center' });
+      doc.text(t('reportCards.teacherSignature'), 165, signY + 30, { align: 'center' });
     }
 
-    doc.save(`rapor-${reportCard.period?.name || 'semester'}.pdf`);
+    doc.save(`${t('reportCards.digitalReportCard').toLowerCase().replace(/\s+/g, '-')}-${reportCard.period?.name || 'semester'}.pdf`);
   };
 
   if (reportCardQuery.isLoading) {
@@ -186,7 +186,7 @@ const StudentReportCardDetail = () => {
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Rata-rata</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
                 <p className="text-2xl font-bold">{reportCard.overall_average?.toFixed(1) || '-'}</p>
               </div>
             </div>
@@ -200,8 +200,8 @@ const StudentReportCardDetail = () => {
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Lulus</p>
-                <p className="text-2xl font-bold">{passedCount} Mapel</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.passed')}</p>
+                <p className="text-2xl font-bold">{passedCount} {t('reportCards.subjectsCount')}</p>
               </div>
             </div>
           </CardContent>
@@ -214,8 +214,8 @@ const StudentReportCardDetail = () => {
                 <XCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Tidak Lulus</p>
-                <p className="text-2xl font-bold">{failedCount} Mapel</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.notPassed')}</p>
+                <p className="text-2xl font-bold">{failedCount} {t('reportCards.subjectsCount')}</p>
               </div>
             </div>
           </CardContent>
@@ -228,7 +228,7 @@ const StudentReportCardDetail = () => {
                 <Award className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Nilai Tertinggi</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.highestGrade')}</p>
                 <p className="text-2xl font-bold">{bestSubject?.final_grade || '-'}</p>
               </div>
             </div>
@@ -242,7 +242,7 @@ const StudentReportCardDetail = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
-              Detail Nilai per Mata Pelajaran
+              {t('reportCards.detailGradePerSubject')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -252,18 +252,18 @@ const StudentReportCardDetail = () => {
               </div>
             ) : entries.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                Tidak ada data nilai
+                {t('reportCards.noGradeData')}
               </p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Mata Pelajaran</TableHead>
-                    <TableHead className="text-center">Ujian</TableHead>
-                    <TableHead className="text-center">Tugas</TableHead>
-                    <TableHead className="text-center">Nilai Akhir</TableHead>
-                    <TableHead className="text-center">KKM</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead>{t('reportCards.subject')}</TableHead>
+                    <TableHead className="text-center">{t('reportCards.exam')}</TableHead>
+                    <TableHead className="text-center">{t('reportCards.assignment')}</TableHead>
+                    <TableHead className="text-center">{t('reportCards.finalGrade')}</TableHead>
+                    <TableHead className="text-center">{t('reportCards.kkm')}</TableHead>
+                    <TableHead className="text-center">{t('reportCards.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -296,12 +296,12 @@ const StudentReportCardDetail = () => {
                           {entry.passed ? (
                             <>
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              Lulus
+                              {t('reportCards.passed')}
                             </>
                           ) : (
                             <>
                               <XCircle className="w-3 h-3 mr-1" />
-                              Tidak Lulus
+                              {t('reportCards.notPassed')}
                             </>
                           )}
                         </Badge>
@@ -320,7 +320,7 @@ const StudentReportCardDetail = () => {
           {pieData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Ringkasan Kelulusan</CardTitle>
+                <CardTitle className="text-lg">{t('reportCards.passedSummary')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-48">
@@ -356,7 +356,7 @@ const StudentReportCardDetail = () => {
           {reportCard.teacher_notes && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Catatan Guru</CardTitle>
+                <CardTitle className="text-lg">{t('reportCards.teacherNotes')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{reportCard.teacher_notes}</p>
@@ -368,16 +368,16 @@ const StudentReportCardDetail = () => {
           {reportCard.teacher_signature && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Tanda Tangan</CardTitle>
+                <CardTitle className="text-lg">{t('reportCards.signature')}</CardTitle>
               </CardHeader>
               <CardContent className="flex justify-center">
                 <div className="text-center">
                   <img 
                     src={reportCard.teacher_signature} 
-                    alt="Tanda Tangan Guru" 
+                    alt={t('reportCards.teacherSignature')} 
                     className="max-w-full h-20 object-contain"
                   />
-                  <p className="text-sm text-muted-foreground mt-2">Guru</p>
+                  <p className="text-sm text-muted-foreground mt-2">{t('reportCards.teacher')}</p>
                 </div>
               </CardContent>
             </Card>
