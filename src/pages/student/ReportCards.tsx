@@ -1,24 +1,20 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   FileText, 
   Calendar, 
   TrendingUp, 
   Award,
-  Download,
   ChevronRight,
   GraduationCap
 } from 'lucide-react';
 import { useReportCards } from '@/hooks/useReportCards';
-import { format } from 'date-fns';
-import { id as idLocale } from 'date-fns/locale';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const StudentReportCards = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { myReportCards, isLoading } = useReportCards();
 
@@ -40,9 +36,9 @@ const StudentReportCards = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Rapor Digital</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('reportCards.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Lihat dan unduh rapor semester Anda
+          {t('reportCards.myReportCards')}
         </p>
       </div>
 
@@ -55,11 +51,11 @@ const StudentReportCards = () => {
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Rata-rata Terkini</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
                 <p className="text-2xl font-bold">{latestAverage.toFixed(1)}</p>
                 {trend !== 0 && (
                   <p className={`text-sm ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {trend > 0 ? '+' : ''}{trend.toFixed(1)} dari semester lalu
+                    {trend > 0 ? '+' : ''}{trend.toFixed(1)} {t('time.daysAgo', { count: 0 }).replace('0 days ago', '')}
                   </p>
                 )}
               </div>
@@ -74,7 +70,7 @@ const StudentReportCards = () => {
                 <Award className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Nilai Tertinggi</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.highestGrade')}</p>
                 <p className="text-2xl font-bold">{bestGrade.toFixed(1)}</p>
               </div>
             </div>
@@ -88,7 +84,7 @@ const StudentReportCards = () => {
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Rapor</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.totalCourses')}</p>
                 <p className="text-2xl font-bold">{myReportCards.length}</p>
               </div>
             </div>
@@ -102,9 +98,9 @@ const StudentReportCards = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5" />
-              Grafik Perkembangan Nilai
+              {t('reportCards.performanceTrend')}
             </CardTitle>
-            <CardDescription>Perkembangan rata-rata nilai per semester</CardDescription>
+            <CardDescription>{t('reportCards.gradeDistribution')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -128,7 +124,7 @@ const StudentReportCards = () => {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                     }}
-                    formatter={(value: number) => [value.toFixed(1), 'Rata-rata']}
+                    formatter={(value: number) => [value.toFixed(1), t('reportCards.average')]}
                   />
                   <Line 
                     type="monotone" 
@@ -150,9 +146,9 @@ const StudentReportCards = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            Daftar Rapor
+            {t('reportCards.reportCardList')}
           </CardTitle>
-          <CardDescription>Klik untuk melihat detail rapor</CardDescription>
+          <CardDescription>{t('reportCards.viewHistory')}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -162,9 +158,9 @@ const StudentReportCards = () => {
           ) : myReportCards.length === 0 ? (
             <div className="text-center py-12">
               <GraduationCap className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Belum Ada Rapor</h3>
+              <h3 className="text-lg font-medium mb-2">{t('reportCards.noReportCardsStudent')}</h3>
               <p className="text-muted-foreground">
-                Rapor akan tersedia setelah guru memfinalisasi nilai semester Anda
+                {t('reportCards.waitForTeacher')}
               </p>
             </div>
           ) : (
@@ -182,13 +178,13 @@ const StudentReportCards = () => {
                     <div>
                       <h4 className="font-semibold">{reportCard.period?.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {reportCard.total_courses} Mata Pelajaran
+                        {reportCard.total_courses} {t('reportCards.subjectsCount')}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Rata-rata</p>
+                      <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
                       <p className="text-2xl font-bold text-primary">
                         {reportCard.overall_average?.toFixed(1) || '-'}
                       </p>
