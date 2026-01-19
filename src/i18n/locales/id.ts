@@ -499,6 +499,19 @@ export default {
     currentPassword: 'Kata Sandi Saat Ini',
     newPassword: 'Kata Sandi Baru',
     updateProfile: 'Perbarui Profil',
+    managePersonalInfo: 'Kelola informasi pribadi Anda',
+    personalInformation: 'Informasi Pribadi',
+    firstName: 'Nama Depan',
+    lastName: 'Nama Belakang',
+    email: 'Email',
+    emailCannotBeChanged: 'Email tidak dapat diubah',
+    bioPlaceholder: 'Ceritakan tentang diri Anda, pengalaman mengajar, dan keahlian Anda...',
+    bioCharCount: '{{current}}/{{max}} karakter • Terlihat oleh siswa di pratinjau kursus',
+    enterFirstName: 'Masukkan nama depan',
+    enterLastName: 'Masukkan nama belakang',
+    saveChanges: 'Simpan Perubahan',
+    teacher: 'Guru',
+    student: 'Siswa',
   },
 
   // Validation & Errors
@@ -721,5 +734,56 @@ export default {
 
     // Misc
     imageMustBeLessThan: 'Gambar harus kurang dari 5MB',
+
+    // Assignment Submissions
+    scoreMustBeBetween: 'Skor harus antara 0 dan {{max}}',
+
+    // Announcements
+    announcementPosted: 'Pengumuman diposting!',
+    failedToPostAnnouncement: 'Gagal memposting pengumuman',
+    announcementDeleted: 'Pengumuman dihapus',
+    failedToDeleteAnnouncement: 'Gagal menghapus pengumuman',
+  },
+
+  // Announcements
+  announcements: {
+    title: 'Pengumuman',
+    subtitle: 'Posting pembaruan dan berita untuk kursus Anda',
+    newAnnouncement: 'Pengumuman Baru',
+    postAnnouncement: 'Posting Pengumuman',
+    selectCourse: 'Pilih Kursus',
+    chooseCourse: 'Pilih kursus',
+    announcementTitle: 'Judul',
+    titlePlaceholder: 'Judul pengumuman',
+    content: 'Konten',
+    contentPlaceholder: 'Tulis pengumuman Anda...',
+    noAnnouncementsYet: 'Belum ada pengumuman',
+    keepStudentsInformed: 'Beri tahu siswa Anda dengan pembaruan kursus',
+    createCourseFirst: 'Buat kursus terlebih dahulu sebelum memposting pengumuman.',
+    unknownCourse: 'Kursus Tidak Dikenal',
+  },
+
+  // Assignment Submissions Page
+  submissionsPage: {
+    questionBased: 'Berbasis Soal',
+    fileSubmission: 'Pengumpulan File',
+    totalSubmissions: 'Total Pengumpulan',
+    lateSubmissions: 'Pengumpulan Terlambat',
+    noSubmissionsYet: 'Belum ada pengumpulan',
+    studentAnswers: 'Jawaban Siswa',
+    noAnswer: 'Tidak ada jawaban',
+    answer: 'Jawaban',
+    correct: 'Benar',
+    submittedFile: 'File yang Dikumpulkan',
+    textSubmission: 'Pengumpulan Teks',
+    rubricScoring: 'Penilaian Rubrik',
+    totalScore: 'Total Skor',
+    feedback: 'Umpan Balik',
+    feedbackPlaceholder: 'Berikan umpan balik kepada siswa...',
+    saveGrade: 'Simpan Nilai',
+    gradeSubmission: 'Nilai Pengumpulan',
+    viewEdit: 'Lihat/Edit',
+    unknown: 'Tidak Dikenal',
+    assignmentNotFound: 'Tugas tidak ditemukan',
   },
 };

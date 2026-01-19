@@ -11,8 +11,10 @@ import { useAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '
 import { Megaphone, Plus, Trash2, Loader2, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 const TeacherAnnouncements = () => {
+  const { t } = useTranslation();
   const { courses } = useTeacherCourses();
   const courseIds = courses.map(c => c.id);
   
@@ -29,7 +31,7 @@ const TeacherAnnouncements = () => {
 
   const handleCreate = async () => {
     if (!selectedCourse || !form.title.trim() || !form.content.trim()) {
-      toast.error('Please fill in all fields');
+      toast.error(t('toast.fillRequiredFields'));
       return;
     }
 
@@ -42,23 +44,23 @@ const TeacherAnnouncements = () => {
       setForm({ title: '', content: '' });
       setSelectedCourse('');
       setIsDialogOpen(false);
-      toast.success('Announcement posted!');
+      toast.success(t('toast.announcementPosted'));
     } catch (error) {
-      toast.error('Failed to post announcement');
+      toast.error(t('toast.failedToPostAnnouncement'));
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteAnnouncement.mutateAsync(id);
-      toast.success('Announcement deleted');
+      toast.success(t('toast.announcementDeleted'));
     } catch (error) {
-      toast.error('Failed to delete announcement');
+      toast.error(t('toast.failedToDeleteAnnouncement'));
     }
   };
 
   const getCourseTitle = (courseId: string) => {
-    return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+    return courses.find(c => c.id === courseId)?.title || t('announcements.unknownCourse');
   };
 
   if (isLoading) {
