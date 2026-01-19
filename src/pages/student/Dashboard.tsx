@@ -97,7 +97,7 @@ const StudentDashboard = () => {
           <CardContent className="p-6 text-center">
             <BookOpen className="w-8 h-8 text-secondary mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{enrolledCourses.length}</p>
-            <p className="text-sm text-muted-foreground">{t('courses.enrolledStudents')}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.totalCourses')}</p>
           </CardContent>
         </Card>
         <Card 
