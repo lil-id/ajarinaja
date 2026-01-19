@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { AvatarUpload } from '@/components/AvatarUpload';
+import { useTranslation } from 'react-i18next';
 
 const TeacherProfile = () => {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const updateProfile = useUpdateProfile();
   
@@ -40,20 +42,20 @@ const TeacherProfile = () => {
 
   const currentName = `${firstName.trim()} ${lastName.trim()}`.trim();
   const hasChanges = profile?.name !== currentName || (profile?.bio || '') !== bio;
-  const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || 'Teacher';
+  const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || t('profile.teacher');
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('profile.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your personal information
+          {t('profile.managePersonalInfo')}
         </p>
       </div>
 
       <Card className="border-0 shadow-card">
         <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
+          <CardTitle>{t('profile.personalInformation')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Avatar with upload */}
@@ -66,7 +68,7 @@ const TeacherProfile = () => {
             />
             <div className="sm:ml-4">
               <h3 className="font-semibold text-foreground">{displayName}</h3>
-              <p className="text-sm text-muted-foreground">Teacher</p>
+              <p className="text-sm text-muted-foreground">{t('profile.teacher')}</p>
             </div>
           </div>
 
@@ -74,28 +76,28 @@ const TeacherProfile = () => {
           <div className="grid gap-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">{t('profile.firstName')}</Label>
                 <Input 
                   id="firstName" 
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Enter first name"
+                  placeholder={t('profile.enterFirstName')}
                   maxLength={50}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">{t('profile.lastName')}</Label>
                 <Input 
                   id="lastName" 
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Enter last name"
+                  placeholder={t('profile.enterLastName')}
                   maxLength={50}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('profile.email')}</Label>
               <Input 
                 id="email" 
                 type="email" 
@@ -103,19 +105,19 @@ const TeacherProfile = () => {
                 disabled
                 className="bg-muted"
               />
-              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+              <p className="text-xs text-muted-foreground">{t('profile.emailCannotBeChanged')}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio">{t('profile.bio')}</Label>
               <Textarea 
                 id="bio" 
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell students about yourself, your teaching experience, and expertise..."
+                placeholder={t('profile.bioPlaceholder')}
                 maxLength={500}
                 rows={4}
               />
-              <p className="text-xs text-muted-foreground">{bio.length}/500 characters • Visible to students on course previews</p>
+              <p className="text-xs text-muted-foreground">{t('profile.bioCharCount', { current: bio.length, max: 500 })}</p>
             </div>
           </div>
 
@@ -124,7 +126,7 @@ const TeacherProfile = () => {
             disabled={updateProfile.isPending || !hasChanges || !firstName.trim()}
           >
             {updateProfile.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save Changes
+            {t('profile.saveChanges')}
           </Button>
         </CardContent>
       </Card>

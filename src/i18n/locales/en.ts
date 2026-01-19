@@ -499,6 +499,19 @@ export default {
     currentPassword: 'Current Password',
     newPassword: 'New Password',
     updateProfile: 'Update Profile',
+    managePersonalInfo: 'Manage your personal information',
+    personalInformation: 'Personal Information',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    email: 'Email',
+    emailCannotBeChanged: 'Email cannot be changed',
+    bioPlaceholder: 'Tell students about yourself, your teaching experience, and expertise...',
+    bioCharCount: '{{current}}/{{max}} characters • Visible to students on course previews',
+    enterFirstName: 'Enter first name',
+    enterLastName: 'Enter last name',
+    saveChanges: 'Save Changes',
+    teacher: 'Teacher',
+    student: 'Student',
   },
 
   // Validation & Errors
@@ -721,5 +734,56 @@ export default {
 
     // Misc
     imageMustBeLessThan: 'Image must be less than 5MB',
+
+    // Assignment Submissions
+    scoreMustBeBetween: 'Score must be between 0 and {{max}}',
+
+    // Announcements
+    announcementPosted: 'Announcement posted!',
+    failedToPostAnnouncement: 'Failed to post announcement',
+    announcementDeleted: 'Announcement deleted',
+    failedToDeleteAnnouncement: 'Failed to delete announcement',
+  },
+
+  // Announcements
+  announcements: {
+    title: 'Announcements',
+    subtitle: 'Post updates and news for your courses',
+    newAnnouncement: 'New Announcement',
+    postAnnouncement: 'Post Announcement',
+    selectCourse: 'Select Course',
+    chooseCourse: 'Choose a course',
+    announcementTitle: 'Title',
+    titlePlaceholder: 'Announcement title',
+    content: 'Content',
+    contentPlaceholder: 'Write your announcement...',
+    noAnnouncementsYet: 'No announcements yet',
+    keepStudentsInformed: 'Keep your students informed with course updates',
+    createCourseFirst: 'Create a course first before posting announcements.',
+    unknownCourse: 'Unknown Course',
+  },
+
+  // Assignment Submissions Page
+  submissionsPage: {
+    questionBased: 'Question-Based',
+    fileSubmission: 'File Submission',
+    totalSubmissions: 'Total Submissions',
+    lateSubmissions: 'Late Submissions',
+    noSubmissionsYet: 'No submissions yet',
+    studentAnswers: 'Student Answers',
+    noAnswer: 'No answer',
+    answer: 'Answer',
+    correct: 'Correct',
+    submittedFile: 'Submitted File',
+    textSubmission: 'Text Submission',
+    rubricScoring: 'Rubric Scoring',
+    totalScore: 'Total Score',
+    feedback: 'Feedback',
+    feedbackPlaceholder: 'Provide feedback to the student...',
+    saveGrade: 'Save Grade',
+    gradeSubmission: 'Grade Submission',
+    viewEdit: 'View/Edit',
+    unknown: 'Unknown',
+    assignmentNotFound: 'Assignment not found',
   },
 };

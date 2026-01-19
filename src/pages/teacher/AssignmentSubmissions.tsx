@@ -30,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface GradeDialogProps {
   submission: any;
@@ -41,6 +42,7 @@ interface GradeDialogProps {
 }
 
 function GradeDialog({ submission, assignment, questions = [], open, onClose, isQuestionBased }: GradeDialogProps) {
+  const { t } = useTranslation();
   const [score, setScore] = useState(submission?.score?.toString() || '');
   const [feedback, setFeedback] = useState(submission?.feedback || '');
   const [rubricScores, setRubricScores] = useState<Record<string, number>>(
@@ -55,7 +57,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
   const handleGrade = async () => {
     const finalScore = parseInt(score);
     if (isNaN(finalScore) || finalScore < 0 || finalScore > assignment.max_points) {
-      toast.error(`Score must be between 0 and ${assignment.max_points}`);
+      toast.error(t('toast.scoreMustBeBetween', { max: assignment.max_points }));
       return;
     }
 
@@ -73,7 +75,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
         
         if (error) throw error;
         queryClient.invalidateQueries({ queryKey: ['assignment-submissions'] });
-        toast.success('Submission graded');
+        toast.success(t('toast.submissionGraded'));
         onClose();
       } else {
         // Grade file-based submission
@@ -83,11 +85,11 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
           feedback,
           rubricScores: Object.entries(rubricScores).map(([id, score]) => ({ id, score })),
         });
-        toast.success('Submission graded');
+        toast.success(t('toast.submissionGraded'));
         onClose();
       }
     } catch {
-      toast.error('Failed to grade submission');
+      toast.error(t('toast.failedToGradeSubmission'));
     }
   };
 
@@ -95,15 +97,15 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Grade Submission</DialogTitle>
+          <DialogTitle>{t('submissionsPage.gradeSubmission')}</DialogTitle>
           <DialogDescription>
-            Student: {submission?.student?.name || 'Unknown'}
+            {t('students.student')}: {submission?.student?.name || t('submissionsPage.unknown')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label>Submitted</Label>
+            <Label>{t('assignments.submitted')}</Label>
             <p className="text-sm text-muted-foreground">
               {submission?.submitted_at && format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
               {submission?.is_late && (
@@ -115,32 +117,32 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
           {/* Question-based submission view */}
           {isQuestionBased && submission?.answers && (
             <div className="space-y-3">
-              <Label>Student Answers</Label>
+              <Label>{t('submissionsPage.studentAnswers')}</Label>
               {questions.map((q, index) => {
                 const answer = submission.answers[q.id];
                 return (
                   <div key={q.id} className="p-3 border rounded-lg space-y-2">
                     <div className="flex justify-between items-start">
                       <p className="font-medium text-sm">{index + 1}. {q.question}</p>
-                      <Badge variant="outline">{q.points} pts</Badge>
+                      <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
                     </div>
                     <div className="text-sm bg-muted p-2 rounded">
                       {q.type === 'essay' && (
-                        <p className="whitespace-pre-wrap">{answer as string || 'No answer'}</p>
+                        <p className="whitespace-pre-wrap">{answer as string || t('submissionsPage.noAnswer')}</p>
                       )}
                       {q.type === 'multiple-choice' && q.options && (
                         <div>
-                          <p><strong>Answer:</strong> {(q.options as string[])[answer as number] || 'No answer'}</p>
+                          <p><strong>{t('submissionsPage.answer')}:</strong> {(q.options as string[])[answer as number] || t('submissionsPage.noAnswer')}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Correct: {(q.options as string[])[q.correct_answer]}
+                            {t('submissionsPage.correct')}: {(q.options as string[])[q.correct_answer]}
                           </p>
                         </div>
                       )}
                       {q.type === 'multi-select' && q.options && (
                         <div>
-                          <p><strong>Answer:</strong> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || 'No answer'}</p>
+                          <p><strong>{t('submissionsPage.answer')}:</strong> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || t('submissionsPage.noAnswer')}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Correct: {q.correct_answers?.map((i: number) => (q.options as string[])[i]).join(', ')}
+                            {t('submissionsPage.correct')}: {q.correct_answers?.map((i: number) => (q.options as string[])[i]).join(', ')}
                           </p>
                         </div>
                       )}
@@ -154,7 +156,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
           {/* File-based submission view */}
           {!isQuestionBased && submission?.file_name && (
             <div className="space-y-2">
-              <Label>Submitted File</Label>
+              <Label>{t('submissionsPage.submittedFile')}</Label>
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="text-sm">{submission.file_name}</span>
@@ -162,7 +164,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
                   <Button variant="outline" size="sm" asChild>
                     <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                       <Download className="h-4 w-4 mr-1" />
-                      Download
+                      {t('common.download')}
                     </a>
                   </Button>
                 )}
@@ -172,7 +174,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
 
           {!isQuestionBased && submission?.text_content && (
             <div className="space-y-2">
-              <Label>Text Submission</Label>
+              <Label>{t('submissionsPage.textSubmission')}</Label>
               <div className="p-3 bg-muted rounded-md text-sm whitespace-pre-wrap">
                 {submission.text_content}
               </div>
@@ -182,7 +184,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
           {/* Rubric scoring for file-based */}
           {!isQuestionBased && assignment?.rubric?.length > 0 && (
             <div className="space-y-3">
-              <Label>Rubric Scoring</Label>
+              <Label>{t('submissionsPage.rubricScoring')}</Label>
               {assignment.rubric.map((item: any) => (
                 <div key={item.id} className="p-3 border rounded-lg space-y-2">
                   <div className="flex justify-between items-start">
@@ -211,7 +213,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
           )}
 
           <div className="space-y-2">
-            <Label>Total Score</Label>
+            <Label>{t('submissionsPage.totalScore')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
@@ -226,19 +228,19 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
           </div>
 
           <div className="space-y-2">
-            <Label>Feedback</Label>
+            <Label>{t('submissionsPage.feedback')}</Label>
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Provide feedback to the student..."
+              placeholder={t('submissionsPage.feedbackPlaceholder')}
               rows={4}
             />
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
             <Button onClick={handleGrade} disabled={gradeAssignment.isPending}>
-              {gradeAssignment.isPending ? 'Saving...' : 'Save Grade'}
+              {gradeAssignment.isPending ? t('common.saving') : t('submissionsPage.saveGrade')}
             </Button>
           </div>
         </div>
@@ -248,6 +250,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
 }
 
 export default function AssignmentSubmissions() {
+  const { t } = useTranslation();
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const { data: assignment, isLoading: assignmentLoading } = useAssignment(assignmentId!);
@@ -276,7 +279,7 @@ export default function AssignmentSubmissions() {
   }
 
   if (!assignment) {
-    return <div>Assignment not found</div>;
+    return <div>{t('submissionsPage.assignmentNotFound')}</div>;
   }
 
   return (
@@ -289,11 +292,11 @@ export default function AssignmentSubmissions() {
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold">{assignment.title}</h1>
             <Badge variant="outline">
-              {isQuestionBased ? 'Question-Based' : 'File Submission'}
+              {isQuestionBased ? t('submissionsPage.questionBased') : t('submissionsPage.fileSubmission')}
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Due: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
+            {t('assignments.dueDate')}: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
           </p>
         </div>
       </div>
@@ -301,13 +304,13 @@ export default function AssignmentSubmissions() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Submissions</CardDescription>
+            <CardDescription>{t('submissionsPage.totalSubmissions')}</CardDescription>
             <CardTitle className="text-2xl">{submissions.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Graded</CardDescription>
+            <CardDescription>{t('assignments.graded')}</CardDescription>
             <CardTitle className="text-2xl">{gradedCount} / {submissions.length}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -317,14 +320,14 @@ export default function AssignmentSubmissions() {
         {!isQuestionBased && (
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Late Submissions</CardDescription>
+              <CardDescription>{t('submissionsPage.lateSubmissions')}</CardDescription>
               <CardTitle className="text-2xl">{lateCount}</CardTitle>
             </CardHeader>
           </Card>
         )}
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Average Score</CardDescription>
+            <CardDescription>{t('dashboard.averageScore')}</CardDescription>
             <CardTitle className="text-2xl">
               {gradedCount > 0 ? `${avgScore.toFixed(1)} / ${assignment.max_points}` : 'N/A'}
             </CardTitle>
@@ -334,22 +337,22 @@ export default function AssignmentSubmissions() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Submissions</CardTitle>
+          <CardTitle>{t('assignments.submissions')}</CardTitle>
         </CardHeader>
         <CardContent>
           {submissions.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No submissions yet
+              {t('submissionsPage.noSubmissionsYet')}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('students.student')}</TableHead>
+                  <TableHead>{t('assignments.submitted')}</TableHead>
+                  <TableHead>{t('courses.status')}</TableHead>
+                  <TableHead>{t('exams.score')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -357,7 +360,7 @@ export default function AssignmentSubmissions() {
                   <TableRow key={submission.id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{submission.student?.name || 'Unknown'}</p>
+                        <p className="font-medium">{submission.student?.name || t('submissionsPage.unknown')}</p>
                         <p className="text-sm text-muted-foreground">{submission.student?.email}</p>
                       </div>
                     </TableCell>
@@ -366,7 +369,7 @@ export default function AssignmentSubmissions() {
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         {format(new Date(submission.submitted_at), 'MMM d, h:mm a')}
                         {submission.is_late && (
-                          <Badge variant="destructive" className="text-xs">Late</Badge>
+                          <Badge variant="destructive" className="text-xs">{t('assignments.late')}</Badge>
                         )}
                       </div>
                     </TableCell>
@@ -374,12 +377,12 @@ export default function AssignmentSubmissions() {
                       {submission.graded ? (
                         <Badge className="bg-green-500">
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          Graded
+                          {t('assignments.graded')}
                         </Badge>
                       ) : (
                         <Badge variant="secondary">
                           <AlertCircle className="h-3 w-3 mr-1" />
-                          Pending
+                          {t('common.pending')}
                         </Badge>
                       )}
                     </TableCell>
@@ -396,7 +399,7 @@ export default function AssignmentSubmissions() {
                         size="sm"
                         onClick={() => setGradeSubmission(submission)}
                       >
-                        {submission.graded ? 'View/Edit' : 'Grade'}
+                        {submission.graded ? t('submissionsPage.viewEdit') : t('assignments.grade')}
                       </Button>
                     </TableCell>
                   </TableRow>
