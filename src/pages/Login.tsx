@@ -83,8 +83,8 @@ const Login = () => {
           </h1>
           <p className="text-lg text-primary-foreground/80 max-w-md">
             {t('common.language') === 'Bahasa' 
-              ? 'A complete LMS platform for managing courses, assignments, exams, and learning analytics. Designed for teachers and students.'
-              : 'Platform LMS lengkap untuk mengelola kursus, tugas, ujian, dan analitik pembelajaran. Dirancang untuk guru dan siswa.'}
+              ? 'Platform LMS lengkap untuk mengelola kursus, tugas, ujian, dan analitik pembelajaran. Dirancang untuk guru dan siswa.'
+              : 'A complete LMS platform for managing courses, assignments, exams, and learning analytics. Designed for teachers and students.'}
           </p>
           
           <div className="grid gap-4 pt-6">
