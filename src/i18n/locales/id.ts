@@ -580,4 +580,120 @@ export default {
     missingExams: 'Ujian Terlewat',
     lateSubmission: 'Pengumpulan Terlambat',
   },
+
+  // Toast Messages
+  toast: {
+    // Academic Periods
+    periodCreated: 'Periode akademik berhasil dibuat',
+    periodUpdated: 'Periode akademik berhasil diperbarui',
+    periodDeleted: 'Periode akademik berhasil dihapus',
+    activePeriodChanged: 'Periode aktif berhasil diubah',
+    failedToCreatePeriod: 'Gagal membuat periode',
+    failedToUpdatePeriod: 'Gagal memperbarui periode',
+    failedToDeletePeriod: 'Gagal menghapus periode',
+    failedToChangeActivePeriod: 'Gagal mengubah periode aktif',
+
+    // Report Cards
+    reportCardCreated: 'Rapor berhasil dibuat',
+    reportCardUpdated: 'Rapor berhasil diperbarui',
+    reportCardFinalized: 'Rapor berhasil difinalisasi',
+    reportCardDeleted: 'Rapor berhasil dihapus',
+    failedToCreateReportCard: 'Gagal membuat rapor',
+    failedToUpdateReportCard: 'Gagal memperbarui rapor',
+    failedToFinalizeReportCard: 'Gagal memfinalisasi rapor',
+    failedToDeleteReportCard: 'Gagal menghapus rapor',
+
+    // Report Card Entries
+    gradeAdded: 'Nilai berhasil ditambahkan',
+    gradeUpdated: 'Nilai berhasil diperbarui',
+    gradeDeleted: 'Nilai berhasil dihapus',
+    gradesSaved: 'Nilai berhasil disimpan',
+    failedToAddGrade: 'Gagal menambah nilai',
+    failedToUpdateGrade: 'Gagal memperbarui nilai',
+    failedToDeleteGrade: 'Gagal menghapus nilai',
+    failedToSaveGrades: 'Gagal menyimpan nilai',
+
+    // Profile
+    profileUpdated: 'Profil berhasil diperbarui',
+    failedToUpdateProfile: 'Gagal memperbarui profil',
+    avatarUpdated: 'Avatar berhasil diperbarui',
+    avatarRemoved: 'Avatar dihapus',
+    failedToUploadAvatar: 'Gagal mengunggah avatar',
+    failedToRemoveAvatar: 'Gagal menghapus avatar',
+    invalidImageType: 'Harap unggah gambar yang valid (JPG, PNG, GIF, atau WebP)',
+    imageTooLarge: 'Gambar harus kurang dari 5MB',
+
+    // Materials
+    materialUploaded: 'Materi berhasil diunggah!',
+    videoAdded: 'Video berhasil ditambahkan!',
+    materialDeleted: 'Materi dihapus',
+    failedToAddMaterial: 'Gagal menambah materi',
+    failedToDeleteMaterial: 'Gagal menghapus materi',
+    failedToDownloadMaterial: 'Gagal mengunduh materi',
+
+    // Courses
+    courseUpdated: 'Mata pelajaran berhasil diperbarui!',
+    coursePublished: 'Mata pelajaran dipublikasikan!',
+    courseUnpublished: 'Mata pelajaran tidak dipublikasi',
+    courseDeleted: 'Mata pelajaran dihapus',
+    failedToUpdateCourse: 'Gagal memperbarui mata pelajaran',
+    failedToUpdateCourseStatus: 'Gagal memperbarui status mata pelajaran',
+    failedToDeleteCourse: 'Gagal menghapus mata pelajaran',
+    thumbnailUploaded: 'Thumbnail berhasil diunggah!',
+    failedToUploadThumbnail: 'Gagal mengunggah thumbnail',
+    selectImageFile: 'Silakan pilih file gambar',
+
+    // Enrollments
+    studentEnrolled: 'Siswa berhasil didaftarkan!',
+    studentUnenrolled: 'Siswa dibatalkan pendaftarannya',
+    allStudentsUnenrolled: 'Semua siswa dibatalkan pendaftarannya',
+    failedToEnrollStudent: 'Gagal mendaftarkan siswa',
+    failedToUnenrollStudent: 'Gagal membatalkan pendaftaran siswa',
+    pleaseSelectStudent: 'Silakan pilih siswa',
+
+    // Exams
+    examUpdated: 'Ujian berhasil diperbarui',
+    examDeleted: 'Ujian dihapus',
+    failedToUpdateExam: 'Gagal memperbarui ujian',
+    failedToDeleteExam: 'Gagal menghapus ujian',
+    questionDeleted: 'Soal dihapus',
+    failedToDeleteQuestion: 'Gagal menghapus soal',
+
+    // Question Bank
+    questionRequired: 'Teks soal diperlukan',
+    optionsRequired: 'Minimal 2 opsi diperlukan',
+    selectCorrectAnswer: 'Silakan pilih jawaban yang benar',
+    selectCorrectAnswers: 'Silakan pilih minimal satu jawaban yang benar',
+    questionUpdated: 'Soal diperbarui',
+    questionAdded: 'Soal ditambahkan ke bank soal',
+    questionDuplicated: 'Soal diduplikasi',
+    failedToSaveQuestion: 'Gagal menyimpan soal',
+    failedToDeleteQuestionBank: 'Gagal menghapus soal',
+    failedToDuplicateQuestion: 'Gagal menduplikasi soal',
+
+    // Assignments
+    assignmentUpdated: 'Tugas berhasil diperbarui',
+    assignmentCreated: 'Tugas berhasil dibuat',
+    failedToUpdateAssignment: 'Gagal memperbarui tugas',
+    failedToCreateAssignment: 'Gagal membuat tugas',
+    pleaseEnterQuestion: 'Silakan masukkan soal',
+
+    // Submissions
+    assignmentSubmitted: 'Tugas berhasil dikumpulkan!',
+    failedToSubmitAssignment: 'Gagal mengumpulkan tugas',
+    fileTooLarge: 'Ukuran file harus kurang dari {{size}}MB',
+
+    // Auth
+    invalidResetLink: 'Tautan reset tidak valid atau kadaluarsa. Silakan minta yang baru.',
+    passwordTooShort: 'Kata sandi minimal 6 karakter',
+    passwordsDoNotMatch: 'Kata sandi tidak cocok',
+    passwordUpdated: 'Kata sandi berhasil diperbarui!',
+    enterEmail: 'Silakan masukkan alamat email Anda',
+    resetEmailSent: 'Email reset kata sandi terkirim!',
+    errorOccurred: 'Terjadi kesalahan. Silakan coba lagi.',
+
+    // Analytics
+    csvDownloaded: 'Laporan CSV diunduh',
+    pdfDownloaded: 'Laporan PDF diunduh',
+  },
 };

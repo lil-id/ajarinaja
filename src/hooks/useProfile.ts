@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import i18next from 'i18next';
 
 interface UpdateProfileData {
   name?: string;
@@ -28,10 +29,10 @@ export function useUpdateProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('Profile updated successfully');
+      toast.success(i18next.t('toast.profileUpdated'));
     },
     onError: (error) => {
-      toast.error('Failed to update profile: ' + error.message);
+      toast.error(`${i18next.t('toast.failedToUpdateProfile')}: ${error.message}`);
     },
   });
 }

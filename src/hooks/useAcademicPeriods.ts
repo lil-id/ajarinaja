@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import i18next from 'i18next';
 
 export interface AcademicPeriod {
   id: string;
@@ -61,10 +62,10 @@ export function useAcademicPeriods() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academic-periods'] });
-      toast.success('Periode akademik berhasil dibuat');
+      toast.success(i18next.t('toast.periodCreated'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal membuat periode: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToCreatePeriod')}: ${error.message}`);
     },
   });
 
@@ -82,10 +83,10 @@ export function useAcademicPeriods() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academic-periods'] });
-      toast.success('Periode akademik berhasil diperbarui');
+      toast.success(i18next.t('toast.periodUpdated'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal memperbarui periode: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToUpdatePeriod')}: ${error.message}`);
     },
   });
 
@@ -100,10 +101,10 @@ export function useAcademicPeriods() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academic-periods'] });
-      toast.success('Periode akademik berhasil dihapus');
+      toast.success(i18next.t('toast.periodDeleted'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal menghapus periode: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToDeletePeriod')}: ${error.message}`);
     },
   });
 
@@ -128,10 +129,10 @@ export function useAcademicPeriods() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academic-periods'] });
-      toast.success('Periode aktif berhasil diubah');
+      toast.success(i18next.t('toast.activePeriodChanged'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal mengubah periode aktif: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToChangeActivePeriod')}: ${error.message}`);
     },
   });
 

@@ -580,4 +580,120 @@ export default {
     missingExams: 'Missing Exams',
     lateSubmission: 'Late Submission',
   },
+
+  // Toast Messages
+  toast: {
+    // Academic Periods
+    periodCreated: 'Academic period created successfully',
+    periodUpdated: 'Academic period updated successfully',
+    periodDeleted: 'Academic period deleted successfully',
+    activePeriodChanged: 'Active period changed successfully',
+    failedToCreatePeriod: 'Failed to create period',
+    failedToUpdatePeriod: 'Failed to update period',
+    failedToDeletePeriod: 'Failed to delete period',
+    failedToChangeActivePeriod: 'Failed to change active period',
+
+    // Report Cards
+    reportCardCreated: 'Report card created successfully',
+    reportCardUpdated: 'Report card updated successfully',
+    reportCardFinalized: 'Report card finalized successfully',
+    reportCardDeleted: 'Report card deleted successfully',
+    failedToCreateReportCard: 'Failed to create report card',
+    failedToUpdateReportCard: 'Failed to update report card',
+    failedToFinalizeReportCard: 'Failed to finalize report card',
+    failedToDeleteReportCard: 'Failed to delete report card',
+
+    // Report Card Entries
+    gradeAdded: 'Grade added successfully',
+    gradeUpdated: 'Grade updated successfully',
+    gradeDeleted: 'Grade deleted successfully',
+    gradesSaved: 'Grades saved successfully',
+    failedToAddGrade: 'Failed to add grade',
+    failedToUpdateGrade: 'Failed to update grade',
+    failedToDeleteGrade: 'Failed to delete grade',
+    failedToSaveGrades: 'Failed to save grades',
+
+    // Profile
+    profileUpdated: 'Profile updated successfully',
+    failedToUpdateProfile: 'Failed to update profile',
+    avatarUpdated: 'Avatar updated successfully',
+    avatarRemoved: 'Avatar removed',
+    failedToUploadAvatar: 'Failed to upload avatar',
+    failedToRemoveAvatar: 'Failed to remove avatar',
+    invalidImageType: 'Please upload a valid image (JPG, PNG, GIF, or WebP)',
+    imageTooLarge: 'Image must be less than 5MB',
+
+    // Materials
+    materialUploaded: 'Material uploaded successfully!',
+    videoAdded: 'Video added successfully!',
+    materialDeleted: 'Material deleted',
+    failedToAddMaterial: 'Failed to add material',
+    failedToDeleteMaterial: 'Failed to delete material',
+    failedToDownloadMaterial: 'Failed to download material',
+
+    // Courses
+    courseUpdated: 'Course updated successfully!',
+    coursePublished: 'Course published!',
+    courseUnpublished: 'Course unpublished',
+    courseDeleted: 'Course deleted',
+    failedToUpdateCourse: 'Failed to update course',
+    failedToUpdateCourseStatus: 'Failed to update course status',
+    failedToDeleteCourse: 'Failed to delete course',
+    thumbnailUploaded: 'Thumbnail uploaded successfully!',
+    failedToUploadThumbnail: 'Failed to upload thumbnail',
+    selectImageFile: 'Please select an image file',
+
+    // Enrollments
+    studentEnrolled: 'Student enrolled successfully!',
+    studentUnenrolled: 'Student unenrolled',
+    allStudentsUnenrolled: 'All students unenrolled',
+    failedToEnrollStudent: 'Failed to enroll student',
+    failedToUnenrollStudent: 'Failed to unenroll student',
+    pleaseSelectStudent: 'Please select a student',
+
+    // Exams
+    examUpdated: 'Exam updated successfully',
+    examDeleted: 'Exam deleted',
+    failedToUpdateExam: 'Failed to update exam',
+    failedToDeleteExam: 'Failed to delete exam',
+    questionDeleted: 'Question deleted',
+    failedToDeleteQuestion: 'Failed to delete question',
+
+    // Question Bank
+    questionRequired: 'Question text is required',
+    optionsRequired: 'At least 2 options are required',
+    selectCorrectAnswer: 'Please select the correct answer',
+    selectCorrectAnswers: 'Please select at least one correct answer',
+    questionUpdated: 'Question updated',
+    questionAdded: 'Question added to bank',
+    questionDuplicated: 'Question duplicated',
+    failedToSaveQuestion: 'Failed to save question',
+    failedToDeleteQuestionBank: 'Failed to delete question',
+    failedToDuplicateQuestion: 'Failed to duplicate question',
+
+    // Assignments
+    assignmentUpdated: 'Assignment updated successfully',
+    assignmentCreated: 'Assignment created successfully',
+    failedToUpdateAssignment: 'Failed to update assignment',
+    failedToCreateAssignment: 'Failed to create assignment',
+    pleaseEnterQuestion: 'Please enter a question',
+
+    // Submissions
+    assignmentSubmitted: 'Assignment submitted successfully!',
+    failedToSubmitAssignment: 'Failed to submit assignment',
+    fileTooLarge: 'File size must be less than {{size}}MB',
+
+    // Auth
+    invalidResetLink: 'Invalid or expired reset link. Please request a new one.',
+    passwordTooShort: 'Password must be at least 6 characters',
+    passwordsDoNotMatch: 'Passwords do not match',
+    passwordUpdated: 'Password updated successfully!',
+    enterEmail: 'Please enter your email address',
+    resetEmailSent: 'Password reset email sent!',
+    errorOccurred: 'An error occurred. Please try again.',
+
+    // Analytics
+    csvDownloaded: 'CSV report downloaded',
+    pdfDownloaded: 'PDF report downloaded',
+  },
 };
