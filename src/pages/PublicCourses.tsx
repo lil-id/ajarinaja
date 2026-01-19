@@ -33,6 +33,28 @@ import {
 } from "lucide-react";
 import { demoCourses, demoMaterials, demoExams, demoAssignments } from "@/data/demoData";
 
+// Import course thumbnails
+import mathematicsThumbnail from "@/assets/course-thumbnails/mathematics.jpg";
+import physicsThumbnail from "@/assets/course-thumbnails/physics.jpg";
+import chemistryThumbnail from "@/assets/course-thumbnails/chemistry.jpg";
+import biologyThumbnail from "@/assets/course-thumbnails/biology.jpg";
+import historyThumbnail from "@/assets/course-thumbnails/history.jpg";
+import englishThumbnail from "@/assets/course-thumbnails/english.jpg";
+import indonesianThumbnail from "@/assets/course-thumbnails/indonesian.jpg";
+import computerScienceThumbnail from "@/assets/course-thumbnails/computer-science.jpg";
+
+// Subject thumbnail mapping
+const subjectThumbnails: Record<string, string> = {
+  'mathematics': mathematicsThumbnail,
+  'physics': physicsThumbnail,
+  'chemistry': chemistryThumbnail,
+  'biology': biologyThumbnail,
+  'history': historyThumbnail,
+  'english': englishThumbnail,
+  'indonesian': indonesianThumbnail,
+  'computer-science': computerScienceThumbnail,
+};
+
 type SortOption = "newest" | "oldest" | "most-students" | "alphabetical";
 type SubjectFilter = "all" | "mathematics" | "physics" | "chemistry" | "biology" | "history" | "english" | "indonesian" | "computer-science";
 
@@ -294,10 +316,13 @@ const PublicCourses = () => {
                         }`}
                         onClick={() => setSelectedCourse(isSelected ? null : course.id)}
                       >
-                        <div className="relative h-40 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-t-xl overflow-hidden">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <BookOpen className="w-16 h-16 text-primary/40" />
-                          </div>
+                        <div className="relative h-40 rounded-t-xl overflow-hidden">
+                          <img 
+                            src={subjectThumbnails[getSubject(course)] || mathematicsThumbnail} 
+                            alt={course.title}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                           <div className="absolute top-3 right-3">
                             <Badge className="bg-green-500/90 text-white">
                               Published
@@ -359,11 +384,14 @@ const PublicCourses = () => {
             {selectedCourseData && (
               <div className="lg:col-span-2 space-y-6">
                 <Card className="overflow-hidden">
-                  <div className="relative h-48 bg-gradient-to-br from-primary/30 to-secondary/30">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BookOpen className="w-24 h-24 text-primary/30" />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-6">
+                  <div className="relative h-48">
+                    <img 
+                      src={subjectThumbnails[getSubject(selectedCourseData)] || mathematicsThumbnail} 
+                      alt={selectedCourseData.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
                       <Badge variant="secondary" className="mb-2">
                         {getSubjectDisplayName(getSubject(selectedCourseData))}
                       </Badge>
