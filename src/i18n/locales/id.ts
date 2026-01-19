@@ -442,6 +442,21 @@ export default {
     eventDate: 'Tanggal Acara',
     eventType: 'Jenis Acara',
     noEvents: 'Tidak ada acara terjadwal',
+    myCalendar: 'Kalender Saya',
+    trackDeadlines: 'Lacak ujian dan tenggat tugas',
+    deadlinesComingUp: '{{count}} tenggat waktu minggu ini',
+    deadlinesComingUp_plural: '{{count}} tenggat waktu minggu ini',
+    andMore: 'dan {{count}} lagi',
+    more: 'lagi',
+    selectDate: 'Pilih tanggal',
+    clickToView: 'Klik tanggal untuk melihat acaranya',
+    noDeadlines: 'Tidak ada tenggat pada tanggal ini',
+    exam: 'Ujian',
+    assignment: 'Tugas',
+    pastDue: 'Terlambat',
+    opens: 'Dibuka',
+    legend: 'Keterangan',
+    unknown: 'Tidak Dikenal',
     types: {
       assignment: 'Tugas',
       exam: 'Ujian',
@@ -785,5 +800,14 @@ export default {
     viewEdit: 'Lihat/Edit',
     unknown: 'Tidak Dikenal',
     assignmentNotFound: 'Tugas tidak ditemukan',
+  },
+
+  // Student Announcements
+  studentAnnouncements: {
+    title: 'Pengumuman',
+    subtitle: 'Tetap update dengan berita dan pembaruan kursus',
+    noAnnouncementsYet: 'Belum ada pengumuman',
+    enrollToSee: 'Daftar di kursus untuk melihat pengumumannya',
+    noTeacherPosts: 'Guru Anda belum memposting pengumuman',
   },
 };

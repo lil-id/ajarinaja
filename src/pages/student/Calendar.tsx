@@ -9,6 +9,7 @@ import { useAssignments } from '@/hooks/useAssignments';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface CalendarEvent {
   id: string;
@@ -21,6 +22,7 @@ interface CalendarEvent {
 }
 
 export default function StudentCalendar() {
+  const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -55,7 +57,7 @@ export default function StudentCalendar() {
             title: exam.title,
             date: endDate,
             type: 'exam',
-            courseName: courseMap.get(exam.course_id) || 'Unknown',
+            courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
             status: exam.status,
             isPastDue: isPast(endDate),
           });
@@ -64,10 +66,10 @@ export default function StudentCalendar() {
           const startDate = new Date(exam.start_date);
           allEvents.push({
             id: `${exam.id}-start`,
-            title: `${exam.title} (Opens)`,
+            title: `${exam.title} (${t('calendar.opens')})`,
             date: startDate,
             type: 'exam',
-            courseName: courseMap.get(exam.course_id) || 'Unknown',
+            courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
             status: exam.status,
             isPastDue: false,
           });
@@ -85,7 +87,7 @@ export default function StudentCalendar() {
             title: assignment.title,
             date: dueDate,
             type: 'assignment',
-            courseName: courseMap.get(assignment.course_id) || 'Unknown',
+            courseName: courseMap.get(assignment.course_id) || t('calendar.unknown'),
             status: assignment.status,
             isPastDue: isPast(dueDate),
           });
@@ -140,12 +142,12 @@ export default function StudentCalendar() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">My Calendar</h1>
-          <p className="text-muted-foreground">Track exams and assignment deadlines</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('calendar.myCalendar')}</h1>
+          <p className="text-muted-foreground">{t('calendar.trackDeadlines')}</p>
         </div>
         <Button variant="outline" onClick={goToToday}>
           <CalendarIcon className="h-4 w-4 mr-2" />
-          Today
+          {t('calendar.today')}
         </Button>
       </div>
 
@@ -157,11 +159,11 @@ export default function StudentCalendar() {
               <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
               <div>
                 <p className="font-medium text-orange-900 dark:text-orange-200">
-                  {upcomingDeadlines.length} deadline{upcomingDeadlines.length > 1 ? 's' : ''} coming up this week
+                  {t('calendar.deadlinesComingUp', { count: upcomingDeadlines.length })}
                 </p>
                 <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
                   {upcomingDeadlines.slice(0, 3).map(d => d.title).join(', ')}
-                  {upcomingDeadlines.length > 3 && ` and ${upcomingDeadlines.length - 3} more`}
+                  {upcomingDeadlines.length > 3 && ` ${t('calendar.andMore', { count: upcomingDeadlines.length - 3 })}`}
                 </p>
               </div>
             </div>
@@ -242,7 +244,7 @@ export default function StudentCalendar() {
                       ))}
                       {dayEvents.length > 2 && (
                         <div className="text-xs text-muted-foreground px-1">
-                          +{dayEvents.length - 2} more
+                          +{dayEvents.length - 2} {t('calendar.more')}
                         </div>
                       )}
                     </div>
@@ -257,16 +259,16 @@ export default function StudentCalendar() {
         <Card className="border-0 shadow-card">
           <CardHeader>
             <CardTitle className="text-lg">
-              {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
+              {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : t('calendar.selectDate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!selectedDate ? (
               <p className="text-muted-foreground text-sm">
-                Click on a date to view its events
+                {t('calendar.clickToView')}
               </p>
             ) : selectedDateEvents.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No deadlines on this date</p>
+              <p className="text-muted-foreground text-sm">{t('calendar.noDeadlines')}</p>
             ) : (
               <div className="space-y-3">
                 {selectedDateEvents.map((event) => (
@@ -299,11 +301,11 @@ export default function StudentCalendar() {
                               : 'border-orange-500 text-orange-600 dark:text-orange-400'
                           )}
                         >
-                          {event.type === 'exam' ? 'Exam' : 'Assignment'}
+                          {event.type === 'exam' ? t('calendar.exam') : t('calendar.assignment')}
                         </Badge>
                         {event.isPastDue && (
                           <Badge variant="destructive" className="text-xs">
-                            Past Due
+                            {t('calendar.pastDue')}
                           </Badge>
                         )}
                       </div>
@@ -323,14 +325,14 @@ export default function StudentCalendar() {
       <Card className="border-0 shadow-card">
         <CardContent className="py-4">
           <div className="flex flex-wrap gap-4 items-center">
-            <span className="text-sm font-medium text-muted-foreground">Legend:</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('calendar.legend')}:</span>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-destructive/20" />
-              <span className="text-sm">Exam</span>
+              <span className="text-sm">{t('calendar.exam')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-orange-500/20" />
-              <span className="text-sm">Assignment</span>
+              <span className="text-sm">{t('calendar.assignment')}</span>
             </div>
           </div>
         </CardContent>
