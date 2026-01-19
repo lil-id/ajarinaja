@@ -63,6 +63,12 @@ const Index = () => {
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
             </a>
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Courses
+            </button>
             <a href="#for-teachers" className="text-muted-foreground hover:text-foreground transition-colors">
               For Teachers
             </a>
