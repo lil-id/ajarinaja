@@ -42,6 +42,7 @@ import { useCreateAssignment, useUpdateAssignment, useAssignment, RubricItem } f
 import { useAssignmentQuestions, useAddAssignmentQuestion, useUpdateAssignmentQuestion, useDeleteAssignmentQuestion, AssignmentQuestion } from '@/hooks/useAssignmentQuestions';
 import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import VisualEquationBuilder from '@/components/VisualEquationBuilder';
 import FormulaText from '@/components/FormulaText';
 import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBuilder';
@@ -86,6 +87,7 @@ interface LocalQuestion {
 }
 
 export default function CreateAssignment() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const isEditMode = !!assignmentId;
@@ -244,7 +246,7 @@ export default function CreateAssignment() {
 
   const handleAddNewQuestion = () => {
     if (!newQuestion.question.trim()) {
-      toast.error('Please enter a question');
+      toast.error(t('toast.pleaseEnterQuestion'));
       return;
     }
 
@@ -270,7 +272,7 @@ export default function CreateAssignment() {
       points: 10,
     });
     setIsAddDialogOpen(false);
-    toast.success('Question added');
+    toast.success(t('toast.questionAdded'));
   };
 
   const updateLocalQuestion = (index: number, updates: Partial<LocalQuestion>) => {
@@ -287,7 +289,7 @@ export default function CreateAssignment() {
     const reordered = arrayMove(questions, oldIndex, newIndex);
     const updatedQuestions = reordered.map((q, idx) => ({ ...q, order_index: idx }));
     setQuestions(updatedQuestions);
-    toast.success('Question order updated');
+    toast.success(t('toast.questionOrderUpdated'));
   };
 
   const filteredBankQuestions = questionBank.filter((q) =>
@@ -303,7 +305,7 @@ export default function CreateAssignment() {
 
   const handleImportQuestions = async () => {
     if (selectedBankQuestions.length === 0) {
-      toast.error('Please select at least one question');
+      toast.error(t('toast.selectQuestions'));
       return;
     }
 
@@ -335,7 +337,7 @@ export default function CreateAssignment() {
     }
 
     setQuestions([...questions, ...newQuestions]);
-    toast.success(`Imported ${selectedBankQuestions.length} question(s)`);
+    toast.success(t('toast.questionsImported', { count: selectedBankQuestions.length }));
     setSelectedBankQuestions([]);
     setIsImportDialogOpen(false);
   };
@@ -413,7 +415,7 @@ export default function CreateAssignment() {
           }
         }
 
-        toast.success('Assignment updated successfully');
+        toast.success(t('toast.assignmentUpdated'));
       } else {
         const result = await createAssignment.mutateAsync(assignmentData);
 
@@ -434,11 +436,11 @@ export default function CreateAssignment() {
           }
         }
 
-        toast.success('Assignment created successfully');
+        toast.success(t('toast.assignmentCreated'));
       }
       navigate('/teacher/assignments');
     } catch {
-      toast.error(isEditMode ? 'Failed to update assignment' : 'Failed to create assignment');
+      toast.error(isEditMode ? t('toast.failedToUpdateAssignment') : t('toast.failedToCreateAssignment'));
     }
   };
 

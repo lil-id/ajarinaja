@@ -695,5 +695,31 @@ export default {
     // Analytics
     csvDownloaded: 'CSV report downloaded',
     pdfDownloaded: 'PDF report downloaded',
+
+    // Calendar Events
+    customEventCreated: 'Custom event created!',
+    failedToCreateEvent: 'Failed to create event',
+    eventDeleted: 'Event deleted',
+    failedToDeleteEvent: 'Failed to delete event',
+    fillRequiredFields: 'Please fill in all required fields',
+
+    // Grading
+    submissionGraded: 'Submission graded successfully!',
+    failedToGradeSubmission: 'Failed to grade submission',
+    badgeCreated: 'Badge created!',
+    failedToCreateBadge: 'Failed to create badge',
+    enterBadgeName: 'Please enter a badge name',
+
+    // Import/Export Questions
+    questionsImported: 'Imported {{count}} question(s)',
+    failedToImportQuestions: 'Failed to import questions',
+    selectQuestions: 'Please select at least one question',
+    questionsSavedToBank: 'Saved {{count}} question(s) to bank',
+    failedToSaveToBank: 'Failed to save questions to bank',
+    noQuestionsToSave: 'No questions to save',
+    questionOrderUpdated: 'Question order updated',
+
+    // Misc
+    imageMustBeLessThan: 'Image must be less than 5MB',
   },
 };

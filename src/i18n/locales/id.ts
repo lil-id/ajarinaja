@@ -695,5 +695,31 @@ export default {
     // Analytics
     csvDownloaded: 'Laporan CSV diunduh',
     pdfDownloaded: 'Laporan PDF diunduh',
+
+    // Calendar Events
+    customEventCreated: 'Acara kustom dibuat!',
+    failedToCreateEvent: 'Gagal membuat acara',
+    eventDeleted: 'Acara dihapus',
+    failedToDeleteEvent: 'Gagal menghapus acara',
+    fillRequiredFields: 'Harap isi semua bidang yang diperlukan',
+
+    // Grading
+    submissionGraded: 'Pengumpulan berhasil dinilai!',
+    failedToGradeSubmission: 'Gagal menilai pengumpulan',
+    badgeCreated: 'Lencana dibuat!',
+    failedToCreateBadge: 'Gagal membuat lencana',
+    enterBadgeName: 'Silakan masukkan nama lencana',
+
+    // Import/Export Questions
+    questionsImported: '{{count}} soal berhasil diimpor',
+    failedToImportQuestions: 'Gagal mengimpor soal',
+    selectQuestions: 'Silakan pilih minimal satu soal',
+    questionsSavedToBank: '{{count}} soal disimpan ke bank soal',
+    failedToSaveToBank: 'Gagal menyimpan soal ke bank soal',
+    noQuestionsToSave: 'Tidak ada soal untuk disimpan',
+    questionOrderUpdated: 'Urutan soal diperbarui',
+
+    // Misc
+    imageMustBeLessThan: 'Gambar harus kurang dari 5MB',
   },
 };

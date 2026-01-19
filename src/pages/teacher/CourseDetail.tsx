@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +68,7 @@ import { MaterialViewer } from '@/components/MaterialViewer';
 import { extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 
 const TeacherCourseDetail = () => {
+  const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -135,7 +137,7 @@ const TeacherCourseDetail = () => {
 
   const handleSaveEdit = async () => {
     if (!editForm.title.trim()) {
-      toast.error('Please enter a course title');
+      toast.error(t('courses.enterCourseTitle'));
       return;
     }
     try {
@@ -145,9 +147,9 @@ const TeacherCourseDetail = () => {
         description: editForm.description
       });
       setIsEditing(false);
-      toast.success('Course updated successfully!');
+      toast.success(t('toast.courseUpdated'));
     } catch (error) {
-      toast.error('Failed to update course');
+      toast.error(t('toast.failedToUpdateCourse'));
     }
   };
 
@@ -157,19 +159,19 @@ const TeacherCourseDetail = () => {
         id: course.id, 
         status: course.status === 'published' ? 'draft' : 'published' 
       });
-      toast.success(course.status === 'published' ? 'Course unpublished' : 'Course published!');
+      toast.success(course.status === 'published' ? t('toast.courseUnpublished') : t('toast.coursePublished'));
     } catch (error) {
-      toast.error('Failed to update course status');
+      toast.error(t('toast.failedToUpdateCourseStatus'));
     }
   };
 
   const handleDelete = async () => {
     try {
       await deleteCourse.mutateAsync(course.id);
-      toast.success('Course deleted');
+      toast.success(t('toast.courseDeleted'));
       navigate('/teacher/courses');
     } catch (error) {
-      toast.error('Failed to delete course');
+      toast.error(t('toast.failedToDeleteCourse'));
     }
   };
 
@@ -178,53 +180,53 @@ const TeacherCourseDetail = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error(t('toast.selectImageFile'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      toast.error(t('toast.imageMustBeLessThan'));
       return;
     }
 
     try {
       await uploadThumbnail.mutateAsync({ courseId: course.id, file });
-      toast.success('Thumbnail uploaded successfully!');
+      toast.success(t('toast.thumbnailUploaded'));
     } catch (error) {
-      toast.error('Failed to upload thumbnail');
+      toast.error(t('toast.failedToUploadThumbnail'));
     }
   };
 
   const handleEnrollStudent = async () => {
     if (!selectedStudentId) {
-      toast.error('Please select a student');
+      toast.error(t('toast.pleaseSelectStudent'));
       return;
     }
     try {
       await enrollStudent.mutateAsync({ studentId: selectedStudentId, courseId: course.id });
-      toast.success('Student enrolled successfully!');
+      toast.success(t('toast.studentEnrolled'));
       setIsEnrollDialogOpen(false);
       setSelectedStudentId('');
     } catch (error) {
-      toast.error('Failed to enroll student');
+      toast.error(t('toast.failedToEnrollStudent'));
     }
   };
 
   const handleUnenrollStudent = async (enrollmentId: string) => {
     try {
       await unenrollStudent.mutateAsync({ enrollmentId, courseId: course.id });
-      toast.success('Student unenrolled');
+      toast.success(t('toast.studentUnenrolled'));
     } catch (error) {
-      toast.error('Failed to unenroll student');
+      toast.error(t('toast.failedToUnenrollStudent'));
     }
   };
 
   const handleUnenrollAllStudents = async () => {
     try {
       await unenrollAllStudents.mutateAsync(course.id);
-      toast.success(`All ${enrollments.length} students unenrolled`);
+      toast.success(t('toast.allStudentsUnenrolled'));
     } catch (error) {
-      toast.error('Failed to unenroll students');
+      toast.error(t('toast.failedToUnenrollStudent'));
     }
   };
 

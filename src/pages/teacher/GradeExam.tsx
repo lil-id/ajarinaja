@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ const BADGE_COLORS: Record<string, string> = {
 type FilterType = 'all' | 'passed' | 'failed' | 'pending';
 
 const GradeExam = () => {
+  const { t } = useTranslation();
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
   const { data: exam, isLoading: examLoading } = useExamWithQuestions(examId || '');
@@ -145,7 +147,7 @@ const GradeExam = () => {
 
   const handleCreateBadge = async () => {
     if (!newBadge.name.trim()) {
-      toast.error('Please enter a badge name');
+      toast.error(t('toast.enterBadgeName'));
       return;
     }
     try {
@@ -157,9 +159,9 @@ const GradeExam = () => {
       });
       setNewBadge({ name: '', description: '', icon: 'award', color: 'gold' });
       setShowCreateBadge(false);
-      toast.success('Badge created!');
+      toast.success(t('toast.badgeCreated'));
     } catch (error) {
-      toast.error('Failed to create badge');
+      toast.error(t('toast.failedToCreateBadge'));
     }
   };
 
@@ -192,12 +194,12 @@ const GradeExam = () => {
         }
       }
 
-      toast.success('Submission graded successfully!');
+      toast.success(t('toast.submissionGraded'));
       setSelectedSubmission(null);
       setEssayScores({});
       setSelectedBadges([]);
     } catch (error) {
-      toast.error('Failed to grade submission');
+      toast.error(t('toast.failedToGradeSubmission'));
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   Plus, 
   Search, 
@@ -86,6 +87,7 @@ const defaultFormData: QuestionFormData = {
 };
 
 export default function QuestionBank() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterCourse, setFilterCourse] = useState<string>("all");
@@ -134,7 +136,7 @@ export default function QuestionBank() {
 
   const handleSave = async () => {
     if (!formData.question.trim()) {
-      toast.error("Question text is required");
+      toast.error(t('toast.questionRequired'));
       return;
     }
 
@@ -143,15 +145,15 @@ export default function QuestionBank() {
     if (isChoiceType) {
       const filledOptions = formData.options.filter((o) => o.trim());
       if (filledOptions.length < 2) {
-        toast.error("At least 2 options are required");
+        toast.error(t('toast.optionsRequired'));
         return;
       }
       if (formData.type === "multiple_choice" && formData.correct_answer === null) {
-        toast.error("Please select the correct answer");
+        toast.error(t('toast.selectCorrectAnswer'));
         return;
       }
       if (formData.type === "multi_select" && formData.correct_answers.length === 0) {
-        toast.error("Please select at least one correct answer");
+        toast.error(t('toast.selectCorrectAnswers'));
         return;
       }
     }
@@ -172,7 +174,7 @@ export default function QuestionBank() {
           course_id: formData.course_id || null,
           tags: formData.tags,
         });
-        toast.success("Question updated");
+        toast.success(t('toast.questionUpdated'));
       } else {
         await createQuestion.mutateAsync({
           question: formData.question,
@@ -185,12 +187,12 @@ export default function QuestionBank() {
           course_id: formData.course_id || null,
           tags: formData.tags,
         });
-        toast.success("Question added to bank");
+        toast.success(t('toast.questionAdded'));
       }
       setIsDialogOpen(false);
       setNewCategory("");
     } catch (error) {
-      toast.error("Failed to save question");
+      toast.error(t('toast.failedToSaveQuestion'));
     }
   };
 
@@ -198,10 +200,10 @@ export default function QuestionBank() {
     if (!deleteId) return;
     try {
       await deleteQuestion.mutateAsync(deleteId);
-      toast.success("Question deleted");
+      toast.success(t('toast.questionDeleted'));
       setDeleteId(null);
     } catch (error) {
-      toast.error("Failed to delete question");
+      toast.error(t('toast.failedToDeleteQuestionBank'));
     }
   };
 
@@ -218,9 +220,9 @@ export default function QuestionBank() {
         course_id: question.course_id,
         tags: question.tags,
       });
-      toast.success("Question duplicated");
+      toast.success(t('toast.questionDuplicated'));
     } catch (error) {
-      toast.error("Failed to duplicate question");
+      toast.error(t('toast.failedToDuplicateQuestion'));
     }
   };
 

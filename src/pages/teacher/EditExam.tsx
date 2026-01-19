@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import StudentPreviewMode from '@/components/StudentPreviewMode';
 
 const EditExam = () => {
+  const { t } = useTranslation();
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
   const { data: exam, isLoading } = useExamWithQuestions(examId || '');
@@ -123,9 +125,9 @@ const EditExam = () => {
         risk_missed_severity: missedCriterion?.severity || 'high',
         risk_below_kkm_severity: belowKkmCriterion?.severity || 'medium',
       });
-      toast.success('Exam updated successfully');
+      toast.success(t('toast.examUpdated'));
     } catch (error) {
-      toast.error('Failed to update exam');
+      toast.error(t('toast.failedToUpdateExam'));
     }
   };
 
@@ -141,9 +143,9 @@ const EditExam = () => {
         type: q.type,
         order_index: q.order_index,
       });
-      toast.success('Question updated');
+      toast.success(t('toast.questionUpdated'));
     } catch (error) {
-      toast.error('Failed to update question');
+      toast.error(t('toast.failedToSaveQuestion'));
     }
   };
 
@@ -151,15 +153,15 @@ const EditExam = () => {
     try {
       await deleteQuestion.mutateAsync(questionId);
       setQuestions(questions.filter(q => q.id !== questionId));
-      toast.success('Question deleted');
+      toast.success(t('toast.questionDeleted'));
     } catch (error) {
-      toast.error('Failed to delete question');
+      toast.error(t('toast.failedToDeleteQuestion'));
     }
   };
 
   const handleAddNewQuestion = async () => {
     if (!newQuestion.question.trim()) {
-      toast.error('Please enter a question');
+      toast.error(t('toast.pleaseEnterQuestion'));
       return;
     }
 
@@ -188,9 +190,9 @@ const EditExam = () => {
         points: 10,
       });
       setIsAddDialogOpen(false);
-      toast.success('Question added');
+      toast.success(t('toast.questionAdded'));
     } catch (error) {
-      toast.error('Failed to add question');
+      toast.error(t('toast.failedToSaveQuestion'));
     }
   };
 
@@ -213,7 +215,7 @@ const EditExam = () => {
         order_index: q.order_index,
       });
     }
-    toast.success('Question order updated');
+    toast.success(t('toast.questionOrderUpdated'));
   };
 
   const filteredBankQuestions = questionBank.filter((q) =>
@@ -229,7 +231,7 @@ const EditExam = () => {
 
   const handleImportQuestions = async () => {
     if (selectedBankQuestions.length === 0) {
-      toast.error('Please select at least one question');
+      toast.error(t('toast.selectQuestions'));
       return;
     }
 
@@ -256,17 +258,17 @@ const EditExam = () => {
         currentIndex++;
       }
 
-      toast.success(`Imported ${selectedBankQuestions.length} question(s)`);
+      toast.success(t('toast.questionsImported', { count: selectedBankQuestions.length }));
       setSelectedBankQuestions([]);
       setIsImportDialogOpen(false);
     } catch (error) {
-      toast.error('Failed to import questions');
+      toast.error(t('toast.failedToImportQuestions'));
     }
   };
 
   const handleSaveQuestionsToBank = async () => {
     if (questions.length === 0) {
-      toast.error('No questions to save');
+      toast.error(t('toast.noQuestionsToSave'));
       return;
     }
 
@@ -286,10 +288,10 @@ const EditExam = () => {
         category: saveToBankCategory,
       });
 
-      toast.success(`Saved ${questions.length} question(s) to bank`);
+      toast.success(t('toast.questionsSavedToBank', { count: questions.length }));
       setIsSaveToBankDialogOpen(false);
     } catch (error) {
-      toast.error('Failed to save questions to bank');
+      toast.error(t('toast.failedToSaveToBank'));
     }
   };
 
