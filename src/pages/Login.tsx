@@ -82,9 +82,7 @@ const Login = () => {
             {t('dashboard.welcome')} AjarinAja
           </h1>
           <p className="text-lg text-primary-foreground/80 max-w-md">
-            {t('common.language') === 'Bahasa' 
-              ? 'Platform LMS lengkap untuk mengelola kursus, tugas, ujian, dan analitik pembelajaran. Dirancang untuk guru dan siswa.'
-              : 'A complete LMS platform for managing courses, assignments, exams, and learning analytics. Designed for teachers and students.'}
+            {t('landing.platformDescription')}
           </p>
           
           <div className="grid gap-4 pt-6">

@@ -106,6 +106,11 @@ export default {
     welcomeBack: 'Welcome back',
   },
 
+  // Landing/Branding
+  landing: {
+    platformDescription: 'A complete LMS platform for managing courses, assignments, exams, and learning analytics. Designed for teachers and students.',
+  },
+
   // Dashboard
   dashboard: {
     welcome: 'Welcome',

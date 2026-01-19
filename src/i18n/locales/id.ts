@@ -106,6 +106,11 @@ export default {
     welcomeBack: 'Selamat datang kembali',
   },
 
+  // Landing/Branding
+  landing: {
+    platformDescription: 'Platform LMS lengkap untuk mengelola kursus, tugas, ujian, dan analitik pembelajaran. Dirancang untuk guru dan siswa.',
+  },
+
   // Dashboard
   dashboard: {
     welcome: 'Selamat Datang',
