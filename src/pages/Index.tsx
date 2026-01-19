@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ScrollReveal, StaggeredReveal } from "@/components/ScrollReveal";
+import { useParallax } from "@/hooks/useScrollAnimation";
 import {
   BookOpen,
   Users,
@@ -197,7 +199,7 @@ const Index = () => {
       {/* For Teachers Section */}
       <section id="for-teachers" className="py-24 px-6 bg-muted/30">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6">
               <GraduationCap className="w-4 h-4" />
               For Teachers
@@ -208,7 +210,7 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Streamline your workflow, save hours on administrative tasks, and focus on what matters most—inspiring your students.
             </p>
-          </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {[
@@ -249,17 +251,19 @@ const Index = () => {
                 color: "bg-cyan-500/10 text-cyan-600",
               },
             ].map((feature, index) => (
-              <div
+              <ScrollReveal
                 key={index}
-                className="bg-card rounded-2xl p-6 border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
+                animation="fade-up"
+                delay={index * 100}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${feature.color}`}>
-                  {feature.icon}
+                <div className="bg-card rounded-2xl p-6 border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${feature.color}`}>
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
 
@@ -310,7 +314,7 @@ const Index = () => {
       {/* For Schools Section */}
       <section id="for-schools" className="py-24 px-6">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
               <Building2 className="w-4 h-4" />
               For Schools & Institutions
@@ -321,7 +325,7 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               A secure, scalable solution designed for educational institutions of all sizes—from small tutoring centers to large universities.
             </p>
-          </div>
+          </ScrollReveal>
 
           {/* Key Benefits Grid */}
           <div className="grid md:grid-cols-4 gap-6 mb-16">
@@ -331,17 +335,19 @@ const Index = () => {
               { icon: <Lock className="w-6 h-6" />, value: "Enterprise", label: "Grade Security" },
               { icon: <Headphones className="w-6 h-6" />, value: "24/7", label: "Priority Support" },
             ].map((stat, index) => (
-              <div
+              <ScrollReveal
                 key={index}
-                className="bg-card rounded-2xl p-6 border border-border text-center animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
+                animation="scale"
+                delay={index * 100}
               >
-                <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mx-auto mb-4">
-                  {stat.icon}
+                <div className="bg-card rounded-2xl p-6 border border-border text-center h-full">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mx-auto mb-4">
+                    {stat.icon}
+                  </div>
+                  <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </div>
-                <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
 
@@ -431,7 +437,7 @@ const Index = () => {
       {/* Features Section */}
       <section id="features" className="py-24 px-6 bg-muted/30">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6">
               <Zap className="w-4 h-4" />
               Platform Features
@@ -442,7 +448,7 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               A comprehensive suite of tools designed to streamline education—from content creation to performance tracking.
             </p>
-          </div>
+          </ScrollReveal>
 
           {/* Main Features Grid */}
           <div className="grid lg:grid-cols-3 gap-8 mb-12">
@@ -545,49 +551,53 @@ const Index = () => {
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative">
-              <img
-                src={studentsStudying}
-                alt="Students collaborating and studying together"
-                className="rounded-3xl shadow-2xl w-full h-auto object-cover"
-              />
-              <div className="absolute -bottom-6 -right-6 bg-card p-6 rounded-2xl shadow-card">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center">
-                    <Award className="w-8 h-8 text-secondary" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-foreground">4.9/5</div>
-                    <div className="text-sm text-muted-foreground">Student Rating</div>
+            <ScrollReveal animation="fade-right">
+              <div className="relative">
+                <img
+                  src={studentsStudying}
+                  alt="Students collaborating and studying together"
+                  className="rounded-3xl shadow-2xl w-full h-auto object-cover"
+                />
+                <div className="absolute -bottom-6 -right-6 bg-card p-6 rounded-2xl shadow-card">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center">
+                      <Award className="w-8 h-8 text-secondary" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-foreground">4.9/5</div>
+                      <div className="text-sm text-muted-foreground">Student Rating</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                A Seamless Experience for Students
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Give your students an intuitive platform where they can discover courses, access learning materials,
-                take exams, and track their progress all in one place.
-              </p>
-              <ul className="space-y-4">
-                {[
-                  "Browse and enroll in available courses easily",
-                  "View videos and materials directly in the platform",
-                  "Take exams with a clean, distraction-free interface",
-                  "Track grades and progress with visual analytics",
-                  "Receive instant notifications for updates",
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                    </div>
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </ScrollReveal>
+            <ScrollReveal animation="fade-left" delay={200}>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+                  A Seamless Experience for Students
+                </h2>
+                <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                  Give your students an intuitive platform where they can discover courses, access learning materials,
+                  take exams, and track their progress all in one place.
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    "Browse and enroll in available courses easily",
+                    "View videos and materials directly in the platform",
+                    "Take exams with a clean, distraction-free interface",
+                    "Track grades and progress with visual analytics",
+                    "Receive instant notifications for updates",
+                  ].map((item, index) => (
+                    <li key={index} className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      </div>
+                      <span className="text-foreground">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -595,12 +605,12 @@ const Index = () => {
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 px-6 bg-muted/30">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Loved by Educators Worldwide</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               See what teachers and school administrators are saying about AjarinAja
             </p>
-          </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-8">
             <TestimonialCard
@@ -631,14 +641,15 @@ const Index = () => {
       {/* FAQ Section */}
       <section id="faq" className="py-20 px-6">
         <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-16">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Everything you need to know about AjarinAja LMS platform
             </p>
-          </div>
+          </ScrollReveal>
 
-          <Accordion type="single" collapsible className="space-y-4">
+          <ScrollReveal animation="fade-up" delay={100}>
+            <Accordion type="single" collapsible className="space-y-4">
             <AccordionItem value="item-1" className="bg-card border border-border rounded-xl px-6">
               <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
                 What is AjarinAja and who is it for?
@@ -708,32 +719,35 @@ const Index = () => {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-4xl">
-          <div className="bg-gradient-hero rounded-3xl p-12 text-center shadow-xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
-            <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-                Ready to Transform Your School?
-              </h2>
-              <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-                Join hundreds of schools already using AjarinAja to deliver exceptional education. Start free today, no
-                credit card required.
-              </p>
-              <Button
-                variant="heroOutline"
-                size="xl"
-                onClick={handleContactDemo}
-              >
-                <MessageSquare className="w-5 h-5" />
-                Contact for Full Demo
-              </Button>
+          <ScrollReveal animation="scale">
+            <div className="bg-gradient-hero rounded-3xl p-12 text-center shadow-xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
+              <div className="relative">
+                <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+                  Ready to Transform Your School?
+                </h2>
+                <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
+                  Join hundreds of schools already using AjarinAja to deliver exceptional education. Start free today, no
+                  credit card required.
+                </p>
+                <Button
+                  variant="heroOutline"
+                  size="xl"
+                  onClick={handleContactDemo}
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Contact for Full Demo
+                </Button>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -837,24 +851,19 @@ interface FeatureCardProps {
   delay: number;
 }
 
-const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
-  ({ icon, title, description, delay }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className="bg-card rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 animate-slide-up border border-border/50"
-        style={{ animationDelay: `${delay}ms` }}
-      >
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, delay }) => {
+  return (
+    <ScrollReveal animation="fade-up" delay={delay}>
+      <div className="bg-card rounded-2xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 border border-border/50 h-full">
         <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-6">
           {icon}
         </div>
         <h3 className="text-xl font-bold text-foreground mb-3">{title}</h3>
         <p className="text-muted-foreground leading-relaxed">{description}</p>
       </div>
-    );
-  }
-);
-FeatureCard.displayName = "FeatureCard";
+    </ScrollReveal>
+  );
+};
 
 interface TestimonialCardProps {
   quote: string;
@@ -864,14 +873,10 @@ interface TestimonialCardProps {
   delay: number;
 }
 
-const TestimonialCard = React.forwardRef<HTMLDivElement, TestimonialCardProps>(
-  ({ quote, name, role, avatar, delay }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className="bg-card rounded-2xl p-8 shadow-card animate-slide-up border border-border/50"
-        style={{ animationDelay: `${delay}ms` }}
-      >
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, name, role, avatar, delay }) => {
+  return (
+    <ScrollReveal animation="fade-up" delay={delay}>
+      <div className="bg-card rounded-2xl p-8 shadow-card border border-border/50 h-full">
         <div className="flex gap-1 mb-4">
           {[1, 2, 3, 4, 5].map((star) => (
             <svg key={star} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
@@ -888,9 +893,8 @@ const TestimonialCard = React.forwardRef<HTMLDivElement, TestimonialCardProps>(
           </div>
         </div>
       </div>
-    );
-  }
-);
-TestimonialCard.displayName = "TestimonialCard";
+    </ScrollReveal>
+  );
+};
 
 export default Index;
