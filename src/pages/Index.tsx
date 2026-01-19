@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -43,6 +43,15 @@ import testimonialEmily from "@/assets/testimonial-emily.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleContactDemo = () => {
     window.open('https://wa.me/6282293675164?text=Halo, saya tertarik untuk demo AjarinAja!', '_blank');
@@ -137,12 +146,20 @@ const Index = () => {
             </div>
             <div className="relative animate-slide-up">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src={studentsLearning}
-                  alt="Modern university campus with students walking on pathways at golden hour"
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+                <div 
+                  className="w-full h-[400px] md:h-[500px]"
+                  style={{ 
+                    transform: `translateY(${scrollY * 0.15}px) scale(${1 + scrollY * 0.0002})`,
+                    transition: 'transform 0.1s ease-out'
+                  }}
+                >
+                  <img
+                    src={studentsLearning}
+                    alt="Modern university campus with students walking on pathways at golden hour"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent" />
               </div>
               <div
                 className="absolute -bottom-6 -left-6 bg-card p-4 rounded-2xl shadow-card animate-fade-in"
