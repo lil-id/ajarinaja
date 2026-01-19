@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ interface CalendarEvent {
 }
 
 export default function TeacherCalendar() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -157,7 +159,7 @@ export default function TeacherCalendar() {
     } else {
       // Create custom event
       if (!customEventForm.title.trim() || !customEventForm.date) {
-        toast.error('Please fill in all required fields');
+        toast.error(t('toast.fillRequiredFields'));
         return;
       }
       try {
@@ -168,12 +170,12 @@ export default function TeacherCalendar() {
           event_date: eventDateTime.toISOString(),
           event_type: 'custom',
         });
-        toast.success('Custom event created!');
+        toast.success(t('toast.customEventCreated'));
         setIsAddEventOpen(false);
         setCustomEventForm({ title: '', description: '', date: '', time: '09:00' });
         setNewEventType('custom');
       } catch (error) {
-        toast.error('Failed to create event');
+        toast.error(t('toast.failedToCreateEvent'));
       }
     }
   };
@@ -181,9 +183,9 @@ export default function TeacherCalendar() {
   const handleDeleteCustomEvent = async (eventId: string) => {
     try {
       await deleteCustomEvent.mutateAsync(eventId);
-      toast.success('Event deleted');
+      toast.success(t('toast.eventDeleted'));
     } catch (error) {
-      toast.error('Failed to delete event');
+      toast.error(t('toast.failedToDeleteEvent'));
     }
   };
 
