@@ -34,7 +34,7 @@ import {
 import { demoCourses, demoMaterials, demoExams, demoAssignments } from "@/data/demoData";
 
 type SortOption = "newest" | "oldest" | "most-students" | "alphabetical";
-type SubjectFilter = "all" | "mathematics" | "physics" | "chemistry";
+type SubjectFilter = "all" | "mathematics" | "physics" | "chemistry" | "biology" | "history" | "english" | "indonesian" | "computer-science";
 
 const PublicCourses = () => {
   const navigate = useNavigate();
@@ -46,13 +46,35 @@ const PublicCourses = () => {
   // Get published courses only
   const publishedCourses = demoCourses.filter(course => course.status === "published");
 
-  // Get subject from course title for filtering
-  const getSubject = (title: string): string => {
-    const lowerTitle = title.toLowerCase();
+  // Get subject from course data (use subject field or derive from title)
+  const getSubject = (course: typeof demoCourses[0]): string => {
+    if (course.subject) return course.subject.toLowerCase().replace(/\s+/g, '-');
+    const lowerTitle = course.title.toLowerCase();
     if (lowerTitle.includes("math") || lowerTitle.includes("algebra") || lowerTitle.includes("calculus")) return "mathematics";
     if (lowerTitle.includes("physics")) return "physics";
     if (lowerTitle.includes("chemistry")) return "chemistry";
+    if (lowerTitle.includes("biology")) return "biology";
+    if (lowerTitle.includes("history")) return "history";
+    if (lowerTitle.includes("english") || lowerTitle.includes("literature")) return "english";
+    if (lowerTitle.includes("indonesian") || lowerTitle.includes("bahasa")) return "indonesian";
+    if (lowerTitle.includes("computer") || lowerTitle.includes("programming")) return "computer-science";
     return "other";
+  };
+
+  // Get display name for subject
+  const getSubjectDisplayName = (subject: string): string => {
+    const displayNames: Record<string, string> = {
+      'mathematics': 'Mathematics',
+      'physics': 'Physics',
+      'chemistry': 'Chemistry',
+      'biology': 'Biology',
+      'history': 'History',
+      'english': 'English',
+      'indonesian': 'Indonesian',
+      'computer-science': 'Computer Science',
+      'other': 'Other',
+    };
+    return displayNames[subject] || subject.charAt(0).toUpperCase() + subject.slice(1);
   };
 
   // Filter and sort courses
@@ -70,7 +92,7 @@ const PublicCourses = () => {
 
     // Apply subject filter
     if (subjectFilter !== "all") {
-      courses = courses.filter(course => getSubject(course.title) === subjectFilter);
+      courses = courses.filter(course => getSubject(course) === subjectFilter);
     }
 
     // Apply sorting
@@ -205,7 +227,7 @@ const PublicCourses = () => {
               </div>
               <div className="flex gap-3">
                 <Select value={subjectFilter} onValueChange={(v) => setSubjectFilter(v as SubjectFilter)}>
-                  <SelectTrigger className="w-[160px] h-12">
+                  <SelectTrigger className="w-[180px] h-12">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue placeholder="Subject" />
                   </SelectTrigger>
@@ -214,6 +236,11 @@ const PublicCourses = () => {
                     <SelectItem value="mathematics">Mathematics</SelectItem>
                     <SelectItem value="physics">Physics</SelectItem>
                     <SelectItem value="chemistry">Chemistry</SelectItem>
+                    <SelectItem value="biology">Biology</SelectItem>
+                    <SelectItem value="history">History</SelectItem>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="indonesian">Indonesian</SelectItem>
+                    <SelectItem value="computer-science">Computer Science</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
@@ -278,7 +305,7 @@ const PublicCourses = () => {
                           </div>
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4">
                             <Badge variant="secondary" className="text-xs">
-                              {getSubject(course.title).charAt(0).toUpperCase() + getSubject(course.title).slice(1)}
+                              {getSubjectDisplayName(getSubject(course))}
                             </Badge>
                           </div>
                         </div>
@@ -338,7 +365,7 @@ const PublicCourses = () => {
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-6">
                       <Badge variant="secondary" className="mb-2">
-                        {getSubject(selectedCourseData.title).charAt(0).toUpperCase() + getSubject(selectedCourseData.title).slice(1)}
+                        {getSubjectDisplayName(getSubject(selectedCourseData))}
                       </Badge>
                       <h2 className="text-2xl font-bold text-foreground">
                         {selectedCourseData.title}
