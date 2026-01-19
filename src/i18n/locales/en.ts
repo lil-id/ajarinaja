@@ -442,6 +442,21 @@ export default {
     eventDate: 'Event Date',
     eventType: 'Event Type',
     noEvents: 'No events scheduled',
+    myCalendar: 'My Calendar',
+    trackDeadlines: 'Track exams and assignment deadlines',
+    deadlinesComingUp: '{{count}} deadline coming up this week',
+    deadlinesComingUp_plural: '{{count}} deadlines coming up this week',
+    andMore: 'and {{count}} more',
+    more: 'more',
+    selectDate: 'Select a date',
+    clickToView: 'Click on a date to view its events',
+    noDeadlines: 'No deadlines on this date',
+    exam: 'Exam',
+    assignment: 'Assignment',
+    pastDue: 'Past Due',
+    opens: 'Opens',
+    legend: 'Legend',
+    unknown: 'Unknown',
     types: {
       assignment: 'Assignment',
       exam: 'Exam',
@@ -785,5 +800,14 @@ export default {
     viewEdit: 'View/Edit',
     unknown: 'Unknown',
     assignmentNotFound: 'Assignment not found',
+  },
+
+  // Student Announcements
+  studentAnnouncements: {
+    title: 'Announcements',
+    subtitle: 'Stay updated with course news and updates',
+    noAnnouncementsYet: 'No announcements yet',
+    enrollToSee: 'Enroll in courses to see their announcements',
+    noTeacherPosts: "Your teachers haven't posted any announcements yet",
   },
 };
