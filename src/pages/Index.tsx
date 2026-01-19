@@ -16,6 +16,18 @@ import {
   Clock,
   Zap,
   Eye,
+  TrendingUp,
+  Bell,
+  FolderOpen,
+  AlertTriangle,
+  Calendar,
+  PieChart,
+  Building2,
+  Lock,
+  Headphones,
+  Globe,
+  Database,
+  ClipboardCheck,
 } from "lucide-react";
 import heroClassroom from "@/assets/hero-classroom.jpg";
 import teacherTeaching from "@/assets/teacher-teaching.jpg";
@@ -160,56 +172,106 @@ const Index = () => {
       </section>
 
       {/* For Teachers Section */}
-      <section id="for-teachers" className="py-20 px-6 bg-muted/30">
+      <section id="for-teachers" className="py-24 px-6 bg-muted/30">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="order-2 lg:order-1">
-              <div className="grid grid-cols-2 gap-4">
-                <img
-                  src={teacherSmartboard}
-                  alt="Teacher explaining content on digital smartboard to engaged students"
-                  className="rounded-2xl shadow-lg w-full h-56 object-cover animate-slide-up col-span-2"
-                  style={{ animationDelay: "100ms" }}
-                />
-                <img
-                  src={teacherAnalytics}
-                  alt="Teacher reviewing student performance analytics on computer"
-                  className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
-                  style={{ animationDelay: "200ms" }}
-                />
-                <div
-                  className="bg-gradient-hero rounded-2xl p-6 flex flex-col justify-center items-center text-center animate-slide-up"
-                  style={{ animationDelay: "300ms" }}
-                >
-                  <div className="text-4xl font-bold text-primary-foreground">75%</div>
-                  <div className="text-sm text-primary-foreground/80">Time Saved on Grading</div>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6">
+              <GraduationCap className="w-4 h-4" />
+              For Teachers
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Empower Your Teaching Journey
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Streamline your workflow, save hours on administrative tasks, and focus on what matters most—inspiring your students.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {[
+              {
+                icon: <BookOpen className="w-6 h-6" />,
+                title: "Course Builder",
+                description: "Create engaging courses with videos, PDFs, and rich content. Organize materials by modules.",
+                color: "bg-blue-500/10 text-blue-600",
+              },
+              {
+                icon: <FileText className="w-6 h-6" />,
+                title: "Smart Exam Creator",
+                description: "Build MCQ, multiple-select & essay exams. Reuse questions from your question bank.",
+                color: "bg-purple-500/10 text-purple-600",
+              },
+              {
+                icon: <ClipboardCheck className="w-6 h-6" />,
+                title: "Auto-Grading",
+                description: "MCQ exams grade instantly. Save hours with automatic score calculation and feedback.",
+                color: "bg-green-500/10 text-green-600",
+              },
+              {
+                icon: <TrendingUp className="w-6 h-6" />,
+                title: "Performance Analytics",
+                description: "Track class averages, identify struggling students, and export detailed reports.",
+                color: "bg-orange-500/10 text-orange-600",
+              },
+              {
+                icon: <AlertTriangle className="w-6 h-6" />,
+                title: "At-Risk Detection",
+                description: "Get alerts when students miss deadlines or score below KKM. Intervene early.",
+                color: "bg-red-500/10 text-red-600",
+              },
+              {
+                icon: <Calendar className="w-6 h-6" />,
+                title: "Schedule Management",
+                description: "Visual calendar for exams and assignments. Never miss an important deadline.",
+                color: "bg-cyan-500/10 text-cyan-600",
+              },
+            ].map((feature, index) => (
+              <div
+                key={index}
+                className="bg-card rounded-2xl p-6 border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${feature.color}`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div className="relative">
+              <img
+                src={teacherSmartboard}
+                alt="Teacher explaining content on digital smartboard"
+                className="rounded-3xl shadow-2xl w-full h-auto object-cover"
+              />
+              <div className="absolute -bottom-4 -right-4 bg-card p-4 rounded-2xl shadow-card border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-foreground">75%</div>
+                    <div className="text-xs text-muted-foreground">Time Saved on Grading</div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6">
-                <GraduationCap className="w-4 h-4" />
-                For Teachers
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Everything You Need to Teach Effectively
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Create engaging courses, design comprehensive exams, and track student progress with powerful analytics.
-                Spend less time on administration and more time teaching.
-              </p>
-              <ul className="space-y-4 mb-8">
+            <div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Why Teachers Love AjarinAja</h3>
+              <ul className="space-y-4 mb-6">
                 {[
-                  { icon: <BookOpen className="w-4 h-4" />, text: "Create unlimited courses with rich content" },
-                  { icon: <FileText className="w-4 h-4" />, text: "Design multiple choice & essay exams with rubrics" },
-                  { icon: <BarChart3 className="w-4 h-4" />, text: "Auto-grading with detailed performance analytics" },
-                  { icon: <Clock className="w-4 h-4" />, text: "Assignment management with deadline tracking" },
+                  "Reusable question bank saves hours of exam creation",
+                  "Rubric-based grading ensures fair, consistent scoring",
+                  "Bulk import questions from existing documents",
+                  "Student progress tracking with exportable reports",
+                  "Announcement system keeps students informed",
                 ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 text-secondary">
-                      {item.icon}
-                    </div>
-                    <span className="text-foreground">{item.text}</span>
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -223,123 +285,234 @@ const Index = () => {
       </section>
 
       {/* For Schools Section */}
-      <section id="for-schools" className="py-20 px-6">
+      <section id="for-schools" className="py-24 px-6">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
+              <Building2 className="w-4 h-4" />
+              For Schools & Institutions
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Enterprise-Ready Education Platform
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              A secure, scalable solution designed for educational institutions of all sizes—from small tutoring centers to large universities.
+            </p>
+          </div>
+
+          {/* Key Benefits Grid */}
+          <div className="grid md:grid-cols-4 gap-6 mb-16">
+            {[
+              { icon: <Users className="w-6 h-6" />, value: "Unlimited", label: "Students & Teachers" },
+              { icon: <BookOpen className="w-6 h-6" />, value: "Unlimited", label: "Courses & Materials" },
+              { icon: <Lock className="w-6 h-6" />, value: "Enterprise", label: "Grade Security" },
+              { icon: <Headphones className="w-6 h-6" />, value: "24/7", label: "Priority Support" },
+            ].map((stat, index) => (
+              <div
+                key={index}
+                className="bg-card rounded-2xl p-6 border border-border text-center animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mx-auto mb-4">
+                  {stat.icon}
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Features for Institutions */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
-                <Shield className="w-4 h-4" />
-                For Schools & Institutions
+              <h3 className="text-2xl font-bold text-foreground mb-6">Complete Institution Management</h3>
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: <FolderOpen className="w-5 h-5" />,
+                    title: "Centralized Content Library",
+                    description: "Store all learning materials in one secure location accessible to authorized teachers and students.",
+                  },
+                  {
+                    icon: <PieChart className="w-5 h-5" />,
+                    title: "Institution-Wide Analytics",
+                    description: "Track performance across all courses, identify trends, and generate comprehensive reports for stakeholders.",
+                  },
+                  {
+                    icon: <Bell className="w-5 h-5" />,
+                    title: "Automated Notifications",
+                    description: "Keep everyone informed with automated alerts for deadlines, grades, and announcements.",
+                  },
+                  {
+                    icon: <Database className="w-5 h-5" />,
+                    title: "Academic Period Management",
+                    description: "Organize courses by semester, generate report cards, and maintain academic records.",
+                  },
+                ].map((feature, index) => (
+                  <div key={index} className="flex gap-4 p-4 bg-muted/50 rounded-xl">
+                    <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary flex-shrink-0">
+                      {feature.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-1">{feature.title}</h4>
+                      <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Scale Your Institution with Confidence
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                A comprehensive platform designed to support educational institutions of all sizes. From course
-                management to student enrollment, everything you need in one secure place.
-              </p>
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-card p-4 rounded-xl border border-border">
-                  <div className="text-2xl font-bold text-foreground mb-1">Unlimited</div>
-                  <div className="text-sm text-muted-foreground">Courses & Students</div>
-                </div>
-                <div className="bg-card p-4 rounded-xl border border-border">
-                  <div className="text-2xl font-bold text-foreground mb-1">Enterprise</div>
-                  <div className="text-sm text-muted-foreground">Grade Security</div>
-                </div>
-                <div className="bg-card p-4 rounded-xl border border-border">
-                  <div className="text-2xl font-bold text-foreground mb-1">Real-time</div>
-                  <div className="text-sm text-muted-foreground">Progress Tracking</div>
-                </div>
-                <div className="bg-card p-4 rounded-xl border border-border">
-                  <div className="text-2xl font-bold text-foreground mb-1">24/7</div>
-                  <div className="text-sm text-muted-foreground">Support Available</div>
-                </div>
-              </div>
-              <Button variant="outline" size="lg" onClick={handleContactDemo}>
-                Contact for Demo
-                <ArrowRight className="w-4 h-4" />
-              </Button>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <img
                 src={heroClassroom}
-                alt="Modern classroom environment with students and teacher"
+                alt="Modern classroom environment"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
-                style={{ animationDelay: "100ms" }}
               />
               <img
                 src={teacherTeaching}
-                alt="Teacher actively teaching in classroom"
+                alt="Teacher actively teaching"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover mt-8 animate-slide-up"
-                style={{ animationDelay: "200ms" }}
+                style={{ animationDelay: "100ms" }}
               />
               <img
                 src={studentOnlineExam}
-                alt="Student taking online exam on laptop"
+                alt="Student taking online exam"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
-                style={{ animationDelay: "300ms" }}
+                style={{ animationDelay: "200ms" }}
               />
               <div
                 className="bg-gradient-secondary rounded-2xl p-6 flex flex-col justify-center items-center text-center mt-8 animate-slide-up"
-                style={{ animationDelay: "400ms" }}
+                style={{ animationDelay: "300ms" }}
               >
                 <div className="text-4xl font-bold text-secondary-foreground">98%</div>
                 <div className="text-sm text-secondary-foreground/80">Satisfaction Rate</div>
               </div>
             </div>
           </div>
+
+          {/* CTA for Schools */}
+          <div className="bg-gradient-to-r from-secondary/10 via-primary/5 to-secondary/10 rounded-3xl p-8 md:p-12 text-center">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Ready to Transform Your Institution?
+            </h3>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+              Join 500+ schools already using AjarinAja. Get a personalized demo and see how we can help your institution thrive.
+            </p>
+            <Button variant="hero" size="lg" onClick={handleContactDemo}>
+              <MessageSquare className="w-4 h-4" />
+              Schedule Institution Demo
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
+      <section id="features" className="py-24 px-6 bg-muted/30">
+        <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Powerful Features for Modern Education
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6">
+              <Zap className="w-4 h-4" />
+              Platform Features
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Everything You Need in One Platform
             </h2>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Everything you need to deliver exceptional learning experiences
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              A comprehensive suite of tools designed to streamline education—from content creation to performance tracking.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Main Features Grid */}
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            {/* Large Feature Card */}
+            <div className="lg:col-span-2 bg-card rounded-3xl p-8 border border-border/50 shadow-card">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-16 h-16 bg-gradient-hero rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">Comprehensive Course Management</h3>
+                  <p className="text-muted-foreground mb-4 leading-relaxed">
+                    Build rich, engaging courses with multiple content types. Upload videos, PDFs, and documents. 
+                    Students access materials directly in-platform with our built-in viewer—no downloads required.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Video Support", "PDF Viewer", "YouTube Embed", "Organized Modules"].map((tag) => (
+                      <span key={tag} className="px-3 py-1 bg-muted rounded-full text-xs font-medium text-muted-foreground">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Smaller Feature Card */}
+            <div className="bg-card rounded-3xl p-8 border border-border/50 shadow-card">
+              <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4">
+                <FileText className="w-7 h-7 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-3">Flexible Exam Builder</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                Create MCQ, multiple-select, and essay questions. Set time limits, schedule exams, and configure auto-grading with KKM thresholds.
+              </p>
+              <ul className="space-y-2">
+                {["Question Bank", "Rubric Grading", "Time Limits"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Second Row */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard
-              icon={<BookOpen className="w-8 h-8" />}
-              title="Course Management"
-              description="Create and organize courses with videos, documents, and learning materials. Students can access content directly in the platform."
+              icon={<BarChart3 className="w-7 h-7" />}
+              title="Analytics Dashboard"
+              description="Visual charts showing class performance, grade distributions, and student progress over time."
               delay={0}
             />
             <FeatureCard
-              icon={<FileText className="w-8 h-8" />}
-              title="Comprehensive Exams"
-              description="Design multiple choice. multiple select and essay exams with customizable rubrics. Auto-grade MCQ and manually review essays."
+              icon={<AlertTriangle className="w-7 h-7" />}
+              title="At-Risk Alerts"
+              description="Automatic detection of struggling students based on missed deadlines and low scores."
               delay={100}
             />
             <FeatureCard
-              icon={<BarChart3 className="w-8 h-8" />}
-              title="Advanced Analytics"
-              description="Track student performance with detailed reports. Export data to CSV or PDF for institutional reporting."
+              icon={<Calendar className="w-7 h-7" />}
+              title="Smart Calendar"
+              description="Unified view of all exams, assignments, and events. Never miss an important deadline."
               delay={200}
             />
             <FeatureCard
-              icon={<Users className="w-8 h-8" />}
-              title="Student Enrollment"
-              description="Students can browse and enroll in courses. Manage enrollment status and track participation."
+              icon={<Bell className="w-7 h-7" />}
+              title="Instant Notifications"
+              description="Real-time alerts for new grades, materials, announcements, and upcoming deadlines."
               delay={300}
             />
+          </div>
+
+          {/* Additional Features Row */}
+          <div className="grid md:grid-cols-3 gap-6 mt-6">
             <FeatureCard
-              icon={<Clock className="w-8 h-8" />}
-              title="Assignment Tracking"
-              description="Create assignments with deadlines, accept file submissions, and provide feedback with grades."
+              icon={<Award className="w-7 h-7" />}
+              title="Badges & Gamification"
+              description="Motivate students with achievement badges for excellent performance and milestones."
               delay={400}
             />
             <FeatureCard
-              icon={<Zap className="w-8 h-8" />}
-              title="Real-time Updates"
-              description="Students receive instant notifications for new materials, grades, and announcements."
+              icon={<ClipboardCheck className="w-7 h-7" />}
+              title="Report Cards"
+              description="Generate comprehensive semester report cards with grades, averages, and teacher notes."
               delay={500}
+            />
+            <FeatureCard
+              icon={<Globe className="w-7 h-7" />}
+              title="Multi-Language Support"
+              description="Full interface available in English and Indonesian with easy language switching."
+              delay={600}
             />
           </div>
         </div>
