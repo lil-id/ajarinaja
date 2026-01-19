@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2, Trash2 } from 'lucide-react';
@@ -31,6 +32,7 @@ export const AvatarUpload = ({
   onAvatarChange,
   size = 'md',
 }: AvatarUploadProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -43,12 +45,12 @@ export const AvatarUpload = ({
     // Validate file
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Please upload a valid image (JPG, PNG, GIF, or WebP)');
+      toast.error(t('toast.invalidImageType'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      toast.error(t('toast.imageTooLarge'));
       return;
     }
 
@@ -82,10 +84,10 @@ export const AvatarUpload = ({
       if (updateError) throw updateError;
 
       onAvatarChange(data.publicUrl);
-      toast.success('Avatar updated successfully');
+      toast.success(t('toast.avatarUpdated'));
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload avatar');
+      toast.error(t('toast.failedToUploadAvatar'));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -112,10 +114,10 @@ export const AvatarUpload = ({
       if (updateError) throw updateError;
 
       onAvatarChange(null);
-      toast.success('Avatar removed');
+      toast.success(t('toast.avatarRemoved'));
     } catch (error) {
       console.error('Remove error:', error);
-      toast.error('Failed to remove avatar');
+      toast.error(t('toast.failedToRemoveAvatar'));
     } finally {
       setIsDeleting(false);
     }

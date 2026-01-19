@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import i18next from 'i18next';
 
 export interface ReportCard {
   id: string;
@@ -153,10 +154,10 @@ export function useReportCards(periodId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-cards'] });
-      toast.success('Rapor berhasil dibuat');
+      toast.success(i18next.t('toast.reportCardCreated'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal membuat rapor: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToCreateReportCard')}: ${error.message}`);
     },
   });
 
@@ -175,10 +176,10 @@ export function useReportCards(periodId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-cards'] });
-      toast.success('Rapor berhasil diperbarui');
+      toast.success(i18next.t('toast.reportCardUpdated'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal memperbarui rapor: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToUpdateReportCard')}: ${error.message}`);
     },
   });
 
@@ -202,10 +203,10 @@ export function useReportCards(periodId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-cards'] });
-      toast.success('Rapor berhasil difinalisasi');
+      toast.success(i18next.t('toast.reportCardFinalized'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal memfinalisasi rapor: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToFinalizeReportCard')}: ${error.message}`);
     },
   });
 
@@ -221,10 +222,10 @@ export function useReportCards(periodId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-cards'] });
-      toast.success('Rapor berhasil dihapus');
+      toast.success(i18next.t('toast.reportCardDeleted'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal menghapus rapor: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToDeleteReportCard')}: ${error.message}`);
     },
   });
 
@@ -289,10 +290,10 @@ export function useReportCardEntries(reportCardId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-card-entries'] });
-      toast.success('Nilai berhasil ditambahkan');
+      toast.success(i18next.t('toast.gradeAdded'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal menambah nilai: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToAddGrade')}: ${error.message}`);
     },
   });
 
@@ -311,10 +312,10 @@ export function useReportCardEntries(reportCardId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-card-entries'] });
-      toast.success('Nilai berhasil diperbarui');
+      toast.success(i18next.t('toast.gradeUpdated'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal memperbarui nilai: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToUpdateGrade')}: ${error.message}`);
     },
   });
 
@@ -330,10 +331,10 @@ export function useReportCardEntries(reportCardId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-card-entries'] });
-      toast.success('Nilai berhasil dihapus');
+      toast.success(i18next.t('toast.gradeDeleted'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal menghapus nilai: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToDeleteGrade')}: ${error.message}`);
     },
   });
 
@@ -350,10 +351,10 @@ export function useReportCardEntries(reportCardId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-card-entries'] });
-      toast.success('Nilai berhasil disimpan');
+      toast.success(i18next.t('toast.gradesSaved'));
     },
     onError: (error: Error) => {
-      toast.error(`Gagal menyimpan nilai: ${error.message}`);
+      toast.error(`${i18next.t('toast.failedToSaveGrades')}: ${error.message}`);
     },
   });
 

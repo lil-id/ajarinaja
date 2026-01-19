@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader2, Download, ExternalLink, X, FileText, File, Video, FileImage } from 'lucide-react';
@@ -28,6 +29,7 @@ const getFileIcon = (fileType: string | null) => {
 };
 
 export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProps) => {
+  const { t } = useTranslation();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,7 +64,7 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
         .download(material.file_path);
       
       if (error) {
-        toast.error('Failed to download material');
+        toast.error(t('toast.failedToDownloadMaterial'));
         return;
       }
       
@@ -75,7 +77,7 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Failed to download material');
+      toast.error(t('toast.failedToDownloadMaterial'));
     }
   };
 

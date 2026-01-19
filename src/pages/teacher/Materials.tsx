@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ const formatFileSize = (bytes: number | null) => {
 };
 
 const TeacherMaterials = () => {
+  const { t } = useTranslation();
   const { courses } = useTeacherCourses();
   const courseIds = courses.map(c => c.id);
   
@@ -152,9 +154,9 @@ const TeacherMaterials = () => {
       setSelectedFile(null);
       setUploadType('file');
       setIsDialogOpen(false);
-      toast.success(uploadType === 'file' ? 'Material uploaded successfully!' : 'Video added successfully!');
+      toast.success(uploadType === 'file' ? t('toast.materialUploaded') : t('toast.videoAdded'));
     } catch (error) {
-      toast.error('Failed to add material');
+      toast.error(t('toast.failedToAddMaterial'));
     }
   };
 
@@ -162,9 +164,9 @@ const TeacherMaterials = () => {
     e.stopPropagation();
     try {
       await deleteMaterial.mutateAsync({ id, filePath });
-      toast.success('Material deleted');
+      toast.success(t('toast.materialDeleted'));
     } catch (error) {
-      toast.error('Failed to delete material');
+      toast.error(t('toast.failedToDeleteMaterial'));
     }
   };
 
