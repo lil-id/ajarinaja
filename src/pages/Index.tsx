@@ -33,7 +33,7 @@ import heroClassroom from "@/assets/hero-classroom.jpg";
 import teacherTeaching from "@/assets/teacher-teaching.jpg";
 import studentsStudying from "@/assets/students-studying.jpg";
 import studentExam from "@/assets/student-exam.jpg";
-import studentsLearning from "@/assets/students-learning.jpg";
+import studentsLearning from "@/assets/hero-university.jpg";
 import teacherSmartboard from "@/assets/teacher-smartboard.jpg";
 import studentOnlineExam from "@/assets/student-online-exam.jpg";
 import teacherAnalytics from "@/assets/teacher-analytics.jpg";
@@ -139,7 +139,7 @@ const Index = () => {
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img
                   src={studentsLearning}
-                  alt="Students engaged in digital learning with laptops in a modern classroom"
+                  alt="Modern university campus with students walking on pathways at golden hour"
                   className="w-full h-auto object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
