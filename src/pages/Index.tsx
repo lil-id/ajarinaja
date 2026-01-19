@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollReveal, StaggeredReveal } from "@/components/ScrollReveal";
 import { useParallax } from "@/hooks/useScrollAnimation";
 import {
@@ -30,6 +31,8 @@ import {
   Globe,
   Database,
   ClipboardCheck,
+  Menu,
+  X,
 } from "lucide-react";
 import heroClassroom from "@/assets/hero-classroom.jpg";
 import teacherTeaching from "@/assets/teacher-teaching.jpg";
@@ -46,6 +49,7 @@ import testimonialEmily from "@/assets/testimonial-emily.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,6 +63,24 @@ const Index = () => {
     window.open('https://wa.me/6282293675164?text=Halo, saya tertarik untuk demo AjarinAja!', '_blank');
   };
 
+  const navLinks = [
+    { href: "#features", label: "Features" },
+    { href: "#for-teachers", label: "For Teachers" },
+    { href: "#for-schools", label: "For Schools" },
+    { href: "#testimonials", label: "Testimonials" },
+    { href: "#faq", label: "FAQ" },
+  ];
+
+  const handleNavClick = (href: string) => {
+    setMobileMenuOpen(false);
+    if (href === "/courses") {
+      navigate("/courses");
+    } else {
+      const element = document.querySelector(href);
+      element?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -70,33 +92,99 @@ const Index = () => {
             </div>
             <span className="text-xl font-bold text-foreground">AjarinAja</span>
           </div>
+          
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
             <button
               onClick={() => navigate("/courses")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Courses
             </button>
-            <a href="#for-teachers" className="text-muted-foreground hover:text-foreground transition-colors">
-              For Teachers
-            </a>
-            <a href="#for-schools" className="text-muted-foreground hover:text-foreground transition-colors">
-              For Schools
-            </a>
-            <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">
-              Testimonials
-            </a>
-            <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
-            </a>
           </div>
+          
           <div className="flex items-center gap-4">
-            <Button variant="ghost" disabled className="opacity-50 cursor-not-allowed">
+            <Button variant="ghost" disabled className="hidden sm:flex opacity-50 cursor-not-allowed">
               Sign In
             </Button>
+            
+            {/* Mobile Hamburger Menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon" aria-label="Open menu">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
+                <div className="flex flex-col h-full">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
+                        <GraduationCap className="w-6 h-6 text-secondary-foreground" />
+                      </div>
+                      <span className="text-xl font-bold text-foreground">AjarinAja</span>
+                    </div>
+                  </div>
+                  
+                  {/* Navigation Links */}
+                  <div className="flex-1 overflow-auto py-6">
+                    <div className="flex flex-col space-y-1 px-4">
+                      {navLinks.map((link) => (
+                        <button
+                          key={link.href}
+                          onClick={() => handleNavClick(link.href)}
+                          className="flex items-center px-4 py-3 text-lg text-foreground hover:bg-muted rounded-lg transition-colors text-left"
+                        >
+                          {link.label}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => handleNavClick("/courses")}
+                        className="flex items-center px-4 py-3 text-lg text-foreground hover:bg-muted rounded-lg transition-colors text-left"
+                      >
+                        Courses
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Footer Actions */}
+                  <div className="p-6 border-t border-border space-y-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full" 
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate("/demo/teacher");
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                      Try Demo
+                    </Button>
+                    <Button 
+                      variant="hero" 
+                      className="w-full" 
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleContactDemo();
+                      }}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Contact for Full Demo
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
