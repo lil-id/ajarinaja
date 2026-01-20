@@ -1,7 +1,5 @@
 # AjarinAja - Complete Learning Management System
 
-![AjarinAja Logo](https://storage.googleapis.com/gpt-engineer-file-uploads/c6EaTBSGRlVKdUrmn397C8vhE872/uploads/1768788712721-graduation-hat.png)
-
 **AjarinAja** is a comprehensive, modern Learning Management System (LMS) designed for educational institutions, schools, and independent educators. It provides a complete platform for managing courses, assignments, exams, student progress tracking, and analytics—all in one place.
 
 ## 🎯 Project Overview
