@@ -97,12 +97,21 @@ const TeacherCourseDetail = () => {
   const [editForm, setEditForm] = useState({ title: '', description: '' });
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [studentEmailSearch, setStudentEmailSearch] = useState('');
   const [viewingMaterial, setViewingMaterial] = useState<typeof courseMaterials[0] | null>(null);
   const [activeTab, setActiveTab] = useState('students');
 
-  // Get students not already enrolled
+  // Get students not already enrolled and filter by search
   const enrolledStudentIds = new Set(enrollments.map(e => e.student_id));
   const availableStudents = allStudents.filter(s => !enrolledStudentIds.has(s.user_id));
+  
+  // Filter by email search
+  const filteredStudents = studentEmailSearch.trim() 
+    ? availableStudents.filter(s => 
+        s.email.toLowerCase().includes(studentEmailSearch.toLowerCase()) ||
+        s.name.toLowerCase().includes(studentEmailSearch.toLowerCase())
+      )
+    : availableStudents;
 
   if (coursesLoading) {
     return (
@@ -207,6 +216,7 @@ const TeacherCourseDetail = () => {
       toast.success(t('toast.studentEnrolled'));
       setIsEnrollDialogOpen(false);
       setSelectedStudentId('');
+      setStudentEmailSearch('');
     } catch (error) {
       toast.error(t('toast.failedToEnrollStudent'));
     }
@@ -487,35 +497,59 @@ const TeacherCourseDetail = () => {
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-secondary" />
                     </div>
-                  ) : availableStudents.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">
-                      No students available to enroll
-                    </p>
                   ) : (
                     <>
                       <div className="space-y-2">
-                        <Label>Select Student</Label>
-                        <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose a student" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableStudents.map(student => (
-                              <SelectItem key={student.user_id} value={student.user_id}>
-                                {student.name} ({student.email})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="student-email-search">Search by Email or Name</Label>
+                        <Input
+                          id="student-email-search"
+                          placeholder="Enter student email or name..."
+                          value={studentEmailSearch}
+                          onChange={(e) => {
+                            setStudentEmailSearch(e.target.value);
+                            setSelectedStudentId('');
+                          }}
+                        />
                       </div>
-                      <Button 
-                        onClick={handleEnrollStudent} 
-                        className="w-full"
-                        disabled={enrollStudent.isPending || !selectedStudentId}
-                      >
-                        {enrollStudent.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                        Enroll Student
-                      </Button>
+                      
+                      {availableStudents.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-4">
+                          No students available to enroll. All registered students are already enrolled.
+                        </p>
+                      ) : filteredStudents.length === 0 && studentEmailSearch.trim() ? (
+                        <p className="text-muted-foreground text-center py-4">
+                          No student found with that email or name. Make sure the student has registered an account first.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Select Student</Label>
+                            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose a student" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {filteredStudents.map(student => (
+                                  <SelectItem key={student.user_id} value={student.user_id}>
+                                    <div className="flex flex-col items-start">
+                                      <span>{student.name}</span>
+                                      <span className="text-xs text-muted-foreground">{student.email}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button 
+                            onClick={handleEnrollStudent} 
+                            className="w-full"
+                            disabled={enrollStudent.isPending || !selectedStudentId}
+                          >
+                            {enrollStudent.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                            Enroll Student
+                          </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
