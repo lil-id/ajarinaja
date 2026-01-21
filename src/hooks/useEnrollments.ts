@@ -270,20 +270,21 @@ export function useTeacherEnrollStudent() {
       
       if (error) throw error;
 
-      // Send enrollment notification email
+      // Send enrollment notification email using the new unified service
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await fetch(`${supabaseUrl}/functions/v1/send-enrollment-email`, {
+        await fetch(`${supabaseUrl}/functions/v1/send-course-notification`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            studentEmail,
-            studentName,
+            recipients: [{ email: studentEmail, name: studentName }],
             courseName,
             teacherName,
+            contentType: 'enrollment',
+            contentTitle: courseName,
           }),
         });
         console.log('Enrollment email sent successfully');

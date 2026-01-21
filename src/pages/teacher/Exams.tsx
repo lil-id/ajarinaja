@@ -20,6 +20,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { sendCourseNotification, getEnrolledStudents } from '@/lib/notificationService';
+import { supabase } from '@/integrations/supabase/client';
 
 const TeacherExams = () => {
   const { t } = useTranslation();
@@ -125,7 +127,32 @@ const TeacherExams = () => {
 
   const handlePublishExam = async (examId: string) => {
     try {
+      const exam = teacherExams.find(e => e.id === examId);
       await updateExam.mutateAsync({ id: examId, status: 'published' });
+      
+      // Send notification to enrolled students
+      if (exam) {
+        const recipients = await getEnrolledStudents(supabase, exam.course_id);
+        if (recipients.length > 0) {
+          const course = courses.find(c => c.id === exam.course_id);
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+            .single();
+          
+          await sendCourseNotification({
+            recipients,
+            courseName: course?.title || 'Course',
+            teacherName: profile?.name || 'Teacher',
+            contentType: 'exam',
+            contentTitle: exam.title,
+            duration: exam.duration,
+            description: exam.description || undefined,
+          });
+        }
+      }
+      
       toast.success(t('exams.examPublished'));
     } catch (error) {
       toast.error(t('exams.failedToPublish'));

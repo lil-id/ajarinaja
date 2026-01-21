@@ -50,6 +50,9 @@ import StudentPreviewMode from '@/components/StudentPreviewMode';
 import SortableList from '@/components/SortableContext';
 import SortableItem from '@/components/SortableItem';
 import { arrayMove } from '@dnd-kit/sortable';
+import { sendCourseNotification, getEnrolledStudents } from '@/lib/notificationService';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
@@ -368,7 +371,34 @@ export default function CreateAssignment() {
         risk_late_severity: data.risk_late_severity,
       };
 
+      // Helper to send notifications when published
+      const sendNotificationIfPublished = async (status: string, courseId: string, title: string, dueDate: string, description?: string) => {
+        if (status === 'published') {
+          const recipients = await getEnrolledStudents(supabase, courseId);
+          if (recipients.length > 0) {
+            const course = courses.find(c => c.id === courseId);
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+              .single();
+            
+            await sendCourseNotification({
+              recipients,
+              courseName: course?.title || 'Course',
+              teacherName: profile?.name || 'Teacher',
+              contentType: 'assignment',
+              contentTitle: title,
+              dueDate,
+              description,
+            });
+          }
+        }
+      };
+
       if (isEditMode) {
+        const wasPublished = existingAssignment?.status === 'published';
+        
         await updateAssignment.mutateAsync({
           id: assignmentId!,
           ...assignmentData,
@@ -415,6 +445,11 @@ export default function CreateAssignment() {
           }
         }
 
+        // Send notification only if just published (was draft, now published)
+        if (!wasPublished && data.status === 'published') {
+          await sendNotificationIfPublished(data.status, data.course_id, data.title, data.due_date, data.description);
+        }
+
         toast.success(t('toast.assignmentUpdated'));
       } else {
         const result = await createAssignment.mutateAsync(assignmentData);
@@ -435,6 +470,9 @@ export default function CreateAssignment() {
             });
           }
         }
+
+        // Send notification if created as published
+        await sendNotificationIfPublished(data.status, data.course_id, data.title, data.due_date, data.description);
 
         toast.success(t('toast.assignmentCreated'));
       }
