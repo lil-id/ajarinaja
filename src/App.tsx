@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoProvider } from "@/contexts/DemoContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import PublicCourses from "./pages/PublicCourses";
@@ -104,7 +105,9 @@ const App = () => (
             {/* Teacher Routes */}
             <Route path="/teacher" element={
               <ProtectedRoute requiredRole="teacher">
-                <TeacherLayout />
+                <SidebarProvider>
+                  <TeacherLayout />
+                </SidebarProvider>
               </ProtectedRoute>
             }>
               <Route index element={<TeacherOverview />} />
