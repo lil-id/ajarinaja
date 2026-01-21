@@ -2,3 +2,6 @@ project_id = "tzqakziepfzudcjtxoxy"
 
 [functions.send-enrollment-email]
 verify_jwt = false
+
+[functions.send-course-notification]
+verify_jwt = false
