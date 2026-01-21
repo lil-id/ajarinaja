@@ -24,11 +24,13 @@ import SortableList from '@/components/SortableContext';
 import SortableItem from '@/components/SortableItem';
 import { arrayMove } from '@dnd-kit/sortable';
 import StudentPreviewMode from '@/components/StudentPreviewMode';
+import { useSidebarContext } from '@/contexts/SidebarContext';
 
 const EditExam = () => {
   const { t } = useTranslation();
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
+  const { sidebarCollapsed } = useSidebarContext();
   const { data: exam, isLoading } = useExamWithQuestions(examId || '');
   const updateExam = useUpdateExam();
   const updateQuestion = useUpdateQuestion();
@@ -338,6 +340,7 @@ const EditExam = () => {
             }))}
             duration={examForm.duration}
             itemType="exam"
+            sidebarCollapsed={sidebarCollapsed}
           />
           <Button onClick={handleSaveExam} disabled={updateExam.isPending}>
             {updateExam.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

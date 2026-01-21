@@ -20,6 +20,7 @@ interface StudentPreviewModeProps {
   questions: Question[];
   duration?: number;
   itemType: 'exam' | 'assignment';
+  sidebarCollapsed?: boolean;
 }
 
 export default function StudentPreviewMode({
@@ -28,6 +29,7 @@ export default function StudentPreviewMode({
   questions,
   duration,
   itemType,
+  sidebarCollapsed = false,
 }: StudentPreviewModeProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -46,7 +48,11 @@ export default function StudentPreviewMode({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm overflow-auto">
+    <div className={cn(
+      "fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm overflow-auto transition-all duration-300",
+      "lg:left-64", // Account for expanded sidebar on desktop
+      sidebarCollapsed && "lg:left-16" // Adjust for collapsed sidebar
+    )}>
       <div className="container mx-auto max-w-4xl pt-20 pb-8 px-4">
         {/* Preview Header - sticky so Exit button is always visible */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm -mx-4 px-4 py-4 flex items-center justify-between mb-6">
