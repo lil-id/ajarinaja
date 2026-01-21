@@ -32,6 +32,7 @@ import {
   Lock,
 } from "lucide-react";
 import { demoCourses, demoMaterials, demoExams, demoAssignments } from "@/data/demoData";
+import { sharedStats } from "@/data/sharedStats";
 
 // Import course thumbnails
 import mathematicsThumbnail from "@/assets/course-thumbnails/mathematics.jpg";
@@ -213,18 +214,18 @@ const PublicCourses = () => {
           {/* Stats */}
           <div className="flex justify-center gap-8 mb-8">
             <div className="text-center px-6 py-3 bg-card rounded-2xl shadow-card">
-              <div className="text-2xl font-bold text-foreground">{publishedCourses.length}</div>
+              <div className="text-2xl font-bold text-foreground">{sharedStats.publishedCoursesCount}</div>
               <div className="text-sm text-muted-foreground">Published Courses</div>
             </div>
             <div className="text-center px-6 py-3 bg-card rounded-2xl shadow-card">
               <div className="text-2xl font-bold text-foreground">
-                {publishedCourses.reduce((acc, c) => acc + (c.enrolled_count || 0), 0)}
+                {sharedStats.activeStudents}
               </div>
               <div className="text-sm text-muted-foreground">Active Students</div>
             </div>
             <div className="text-center px-6 py-3 bg-card rounded-2xl shadow-card">
               <div className="text-2xl font-bold text-foreground">
-                {demoMaterials.length}
+                {sharedStats.totalMaterials}
               </div>
               <div className="text-sm text-muted-foreground">Learning Materials</div>
             </div>
