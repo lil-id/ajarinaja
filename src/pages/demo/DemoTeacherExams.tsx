@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Clock, Award, Lock, CheckCircle, AlignLeft, Trash2, ClipboardCheck } from 'lucide-react';
+import { Plus, Clock, Award, Lock, CheckCircle, AlignLeft, Trash2, ClipboardCheck, ListChecks, Library } from 'lucide-react';
 import { demoExams, demoCourses, demoQuestions } from '@/data/demoData';
 import { toast } from 'sonner';
 import FormulaText from '@/components/FormulaText';
@@ -26,9 +26,10 @@ export default function DemoTeacherExams() {
   });
   const [questions, setQuestions] = useState<Array<{
     id: string;
-    type: 'multiple-choice' | 'essay';
+    type: 'multiple-choice' | 'multi-select' | 'essay';
     question: string;
     options: string[];
+    correctAnswers: number[];
     points: number;
   }>>([]);
 
@@ -41,14 +42,15 @@ export default function DemoTeacherExams() {
     });
   };
 
-  const addQuestion = (type: 'multiple-choice' | 'essay') => {
+  const addQuestion = (type: 'multiple-choice' | 'multi-select' | 'essay') => {
     setQuestions([
       ...questions,
       {
         id: crypto.randomUUID(),
         type,
         question: '',
-        options: type === 'multiple-choice' ? ['', '', '', ''] : [],
+        options: type !== 'essay' ? ['', '', '', ''] : [],
+        correctAnswers: [],
         points: 10,
       },
     ]);
@@ -122,10 +124,18 @@ export default function DemoTeacherExams() {
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-medium">Questions ({questions.length})</h3>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" size="sm" disabled>
+                      <Library className="h-4 w-4 mr-1" />
+                      Import from Bank
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => addQuestion('multiple-choice')}>
                       <CheckCircle className="h-4 w-4 mr-1" />
                       Add MCQ
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => addQuestion('multi-select')}>
+                      <ListChecks className="h-4 w-4 mr-1" />
+                      Add Multi-Select
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => addQuestion('essay')}>
                       <AlignLeft className="h-4 w-4 mr-1" />

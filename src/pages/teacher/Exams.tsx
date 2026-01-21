@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams, useCreateExam, useUpdateExam, useDeleteExam, Question } from '@/hooks/useExams';
-import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore } from 'lucide-react';
+import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
+import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, CheckCircle, AlignLeft, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore, Library, ListChecks } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +20,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { sendCourseNotification, getEnrolledStudents } from '@/lib/notificationService';
 import { supabase } from '@/integrations/supabase/client';
+import FormulaText from '@/components/FormulaText';
 
 const TeacherExams = () => {
   const { t } = useTranslation();
@@ -36,11 +41,20 @@ const TeacherExams = () => {
   const teacherCourseIds = courses.map(c => c.id);
   const teacherExams = exams.filter(e => teacherCourseIds.includes(e.course_id));
 
+  // Question bank
+  const { data: questionBank = [] } = useQuestionBank();
+  const incrementUsage = useIncrementQuestionUsage();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCourse, setFilterCourse] = useState('all');
   const [activeTab, setActiveTab] = useState('published');
+  
+  // Import from bank state
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importSearch, setImportSearch] = useState('');
+  const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([]);
   
   const [examForm, setExamForm] = useState({
     title: '',
@@ -50,16 +64,18 @@ const TeacherExams = () => {
   });
   const [questions, setQuestions] = useState<Omit<Question, 'id' | 'exam_id'>[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<{
-    type: 'multiple-choice' | 'essay';
+    type: 'multiple-choice' | 'multi-select' | 'essay';
     question: string;
     options: string[];
     correctAnswer: number;
+    correctAnswers: number[];
     points: number;
   }>({
     type: 'multiple-choice',
     question: '',
     options: ['', '', '', ''],
     correctAnswer: 0,
+    correctAnswers: [],
     points: 10,
   });
 
@@ -68,15 +84,17 @@ const TeacherExams = () => {
       toast.error(t('exams.enterQuestion'));
       return;
     }
+
+    const isChoice = currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'multi-select';
     
     const newQuestion: Omit<Question, 'id' | 'exam_id'> = {
       type: currentQuestion.type,
       question: currentQuestion.question,
       points: currentQuestion.points,
       order_index: questions.length,
-      options: currentQuestion.type === 'multiple-choice' ? currentQuestion.options : null,
+      options: isChoice ? currentQuestion.options : null,
       correct_answer: currentQuestion.type === 'multiple-choice' ? currentQuestion.correctAnswer : null,
-      correct_answers: null,
+      correct_answers: currentQuestion.type === 'multi-select' ? currentQuestion.correctAnswers : null,
     };
     
     setQuestions([...questions, newQuestion]);
@@ -85,9 +103,64 @@ const TeacherExams = () => {
       question: '',
       options: ['', '', '', ''],
       correctAnswer: 0,
+      correctAnswers: [],
       points: 10,
     });
     toast.success(t('exams.questionAdded'));
+  };
+
+  const toggleCorrectAnswer = (index: number) => {
+    setCurrentQuestion(prev => ({
+      ...prev,
+      correctAnswers: prev.correctAnswers.includes(index)
+        ? prev.correctAnswers.filter(i => i !== index)
+        : [...prev.correctAnswers, index],
+    }));
+  };
+
+  const filteredBankQuestions = questionBank.filter((q) =>
+    q.question.toLowerCase().includes(importSearch.toLowerCase()) ||
+    q.category.toLowerCase().includes(importSearch.toLowerCase())
+  );
+
+  const toggleBankQuestion = (id: string) => {
+    setSelectedBankQuestions((prev) =>
+      prev.includes(id) ? prev.filter((qId) => qId !== id) : [...prev, id]
+    );
+  };
+
+  const handleImportFromBank = async () => {
+    if (selectedBankQuestions.length === 0) {
+      toast.error(t('toast.selectQuestions'));
+      return;
+    }
+
+    let currentIndex = questions.length;
+    const importedQuestions: Omit<Question, 'id' | 'exam_id'>[] = [];
+    
+    for (const bankId of selectedBankQuestions) {
+      const bankQ = questionBank.find((q) => q.id === bankId);
+      if (!bankQ) continue;
+
+      importedQuestions.push({
+        type: bankQ.type === 'multiple_choice' ? 'multiple-choice' : bankQ.type,
+        question: bankQ.question,
+        options: bankQ.options,
+        correct_answer: bankQ.correct_answer,
+        correct_answers: bankQ.correct_answers,
+        points: bankQ.points,
+        order_index: currentIndex,
+      });
+      
+      // Increment usage count
+      await incrementUsage.mutateAsync(bankId);
+      currentIndex++;
+    }
+
+    setQuestions([...questions, ...importedQuestions]);
+    toast.success(t('toast.questionsImported', { count: selectedBankQuestions.length }));
+    setSelectedBankQuestions([]);
+    setIsImportDialogOpen(false);
   };
 
   const handleCreateExam = async () => {
@@ -291,7 +364,18 @@ const TeacherExams = () => {
 
               {/* Questions Section */}
               <div className="border-t pt-4">
-                <h3 className="font-semibold mb-4">{t('exams.questions')} ({questions.length})</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">{t('exams.questions')} ({questions.length})</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsImportDialogOpen(true)}
+                    disabled={!selectedCourse}
+                  >
+                    <Library className="w-4 h-4" />
+                    {t('common.importFromBank')}
+                  </Button>
+                </div>
                 
                 {/* Question List */}
                 {questions.length > 0 && (
@@ -300,11 +384,22 @@ const TeacherExams = () => {
                       <div key={i} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                         {q.type === 'multiple-choice' ? (
                           <CheckCircle className="w-4 h-4 text-secondary" />
+                        ) : q.type === 'multi-select' ? (
+                          <ListChecks className="w-4 h-4 text-accent" />
                         ) : (
                           <AlignLeft className="w-4 h-4 text-primary" />
                         )}
                         <span className="flex-1 text-sm truncate">{q.question}</span>
+                        <Badge variant="outline" className="text-xs">{q.type}</Badge>
                         <span className="text-xs text-muted-foreground">{q.points} {t('common.pts')}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => setQuestions(questions.filter((_, idx) => idx !== i))}
+                        >
+                          <Trash2 className="w-3 h-3 text-destructive" />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -313,10 +408,11 @@ const TeacherExams = () => {
                 {/* Add Question Form */}
                 <Tabs 
                   value={currentQuestion.type} 
-                  onValueChange={(v) => setCurrentQuestion({ ...currentQuestion, type: v as 'multiple-choice' | 'essay' })}
+                  onValueChange={(v) => setCurrentQuestion({ ...currentQuestion, type: v as 'multiple-choice' | 'multi-select' | 'essay', correctAnswers: [] })}
                 >
                   <TabsList className="mb-4">
                     <TabsTrigger value="multiple-choice">{t('exams.questionTypes.multipleChoice')}</TabsTrigger>
+                    <TabsTrigger value="multi-select">{t('exams.questionTypes.multiSelect')}</TabsTrigger>
                     <TabsTrigger value="essay">{t('exams.questionTypes.essay')}</TabsTrigger>
                   </TabsList>
 
@@ -328,6 +424,7 @@ const TeacherExams = () => {
                     />
 
                     <TabsContent value="multiple-choice" className="mt-0 space-y-2">
+                      <p className="text-xs text-muted-foreground mb-1">{t('exams.selectCorrectAnswer')}</p>
                       {currentQuestion.options?.map((opt, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <input
@@ -336,6 +433,27 @@ const TeacherExams = () => {
                             checked={currentQuestion.correctAnswer === i}
                             onChange={() => setCurrentQuestion({ ...currentQuestion, correctAnswer: i })}
                             className="w-4 h-4"
+                          />
+                          <Input
+                            placeholder={`Option ${i + 1}`}
+                            value={opt}
+                            onChange={(e) => {
+                              const newOptions = [...(currentQuestion.options || [])];
+                              newOptions[i] = e.target.value;
+                              setCurrentQuestion({ ...currentQuestion, options: newOptions });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="multi-select" className="mt-0 space-y-2">
+                      <p className="text-xs text-muted-foreground mb-1">{t('exams.selectAllCorrectAnswers')}</p>
+                      {currentQuestion.options?.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={currentQuestion.correctAnswers.includes(i)}
+                            onCheckedChange={() => toggleCorrectAnswer(i)}
                           />
                           <Input
                             placeholder={`Option ${i + 1}`}
@@ -376,6 +494,81 @@ const TeacherExams = () => {
                 {createExam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t('exams.createExam')}
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Import from Question Bank Dialog */}
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{t('exams.importFromBank')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('common.searchQuestions')}
+                  value={importSearch}
+                  onChange={(e) => setImportSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <ScrollArea className="h-[400px] border rounded-lg p-2">
+                {filteredBankQuestions.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    {questionBank.length === 0
+                      ? t('exams.noQuestionsInBank')
+                      : t('common.noMatchingQuestions')}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredBankQuestions.map((q) => (
+                      <div
+                        key={q.id}
+                        className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                        onClick={() => toggleBankQuestion(q.id)}
+                      >
+                        <Checkbox
+                          checked={selectedBankQuestions.includes(q.id)}
+                          onCheckedChange={() => toggleBankQuestion(q.id)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex gap-2 mb-1 flex-wrap">
+                            <Badge variant="secondary" className="text-xs">
+                              {q.category}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {q.type === 'multiple_choice' ? 'MCQ' : q.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {q.points} pts
+                            </Badge>
+                          </div>
+                          <p className="text-sm line-clamp-2"><FormulaText text={q.question} /></p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-sm text-muted-foreground">
+                  {selectedBankQuestions.length} {t('common.selected')}
+                </span>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    onClick={handleImportFromBank}
+                    disabled={selectedBankQuestions.length === 0 || incrementUsage.isPending}
+                  >
+                    {incrementUsage.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {t('common.importSelected')}
+                  </Button>
+                </div>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
