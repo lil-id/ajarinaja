@@ -186,6 +186,7 @@ export function useCreateExam() {
           question: q.question,
           options: q.options,
           correct_answer: q.correct_answer,
+          correct_answers: q.correct_answers,
           points: q.points,
           order_index: index,
         }));

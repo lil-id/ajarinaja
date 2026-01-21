@@ -79,6 +79,12 @@ const TeacherExams = () => {
     points: 10,
   });
 
+  const mapBankTypeToExamType = (type: string): 'multiple-choice' | 'multi-select' | 'essay' => {
+    if (type === 'multiple_choice' || type === 'multiple-choice') return 'multiple-choice';
+    if (type === 'multi_select' || type === 'multi-select') return 'multi-select';
+    return 'essay';
+  };
+
   const addQuestion = () => {
     if (!currentQuestion.question?.trim()) {
       toast.error(t('exams.enterQuestion'));
@@ -143,7 +149,7 @@ const TeacherExams = () => {
       if (!bankQ) continue;
 
       importedQuestions.push({
-        type: bankQ.type === 'multiple_choice' ? 'multiple-choice' : bankQ.type,
+          type: mapBankTypeToExamType(bankQ.type),
         question: bankQ.question,
         options: bankQ.options,
         correct_answer: bankQ.correct_answer,
@@ -539,7 +545,13 @@ const TeacherExams = () => {
                               {q.category}
                             </Badge>
                             <Badge variant="outline" className="text-xs">
-                              {q.type === 'multiple_choice' ? 'MCQ' : q.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
+                              {q.type === 'multiple_choice'
+                                ? 'MCQ'
+                                : q.type === 'multi_select'
+                                  ? 'Multi-Select'
+                                  : q.type === 'multi-select'
+                                    ? 'Multi-Select'
+                                    : 'Essay'}
                             </Badge>
                             <Badge variant="outline" className="text-xs">
                               {q.points} pts

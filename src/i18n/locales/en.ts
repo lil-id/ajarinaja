@@ -62,6 +62,13 @@ export default {
     dangerZone: 'Danger Zone',
     irreversibleActions: 'Irreversible actions',
     deleteAccount: 'Delete Account',
+
+    // Shared actions (exam/question bank)
+    selected: 'selected',
+    importFromBank: 'Import from Bank',
+    importSelected: 'Import Selected',
+    searchQuestions: 'Search questions...',
+    noMatchingQuestions: 'No questions match your search',
   },
 
   // Navigation
@@ -298,6 +305,12 @@ export default {
     noExamsMatchSearch: 'No exams match your search criteria',
     enrollToAccessExams: 'Enroll in courses to access their exams',
     dueBy: 'Due',
+
+    // Exam question builder
+    selectCorrectAnswer: 'Select the correct answer',
+    selectAllCorrectAnswers: 'Select all correct answers',
+    importFromBank: 'Import from Question Bank',
+    noQuestionsInBank: 'No questions in your bank yet',
   },
 
   // Materials
