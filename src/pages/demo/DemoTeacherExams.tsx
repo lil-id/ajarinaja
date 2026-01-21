@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { toast } from 'sonner';
 import FormulaText from '@/components/FormulaText';
 
 export default function DemoTeacherExams() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
@@ -123,30 +125,30 @@ export default function DemoTeacherExams() {
               {/* Questions */}
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium">Questions ({questions.length})</h3>
+                  <h3 className="font-medium">{t('exams.questions')} ({questions.length})</h3>
                   <div className="flex gap-2 flex-wrap">
                     <Button variant="outline" size="sm" disabled>
                       <Library className="h-4 w-4 mr-1" />
-                      Import from Bank
+                      {t('common.importFromBank')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => addQuestion('multiple-choice')}>
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      Add MCQ
+                      {t('exams.addMCQ')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => addQuestion('multi-select')}>
                       <ListChecks className="h-4 w-4 mr-1" />
-                      Add Multi-Select
+                      {t('exams.addMultiSelect')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => addQuestion('essay')}>
                       <AlignLeft className="h-4 w-4 mr-1" />
-                      Add Essay
+                      {t('exams.addEssay')}
                     </Button>
                   </div>
                 </div>
 
                 {questions.length === 0 ? (
                   <p className="text-center text-muted-foreground py-6">
-                    No questions yet. Add your first question!
+                    {t('exams.noQuestionsYet')}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -157,10 +159,12 @@ export default function DemoTeacherExams() {
                             <div className="flex items-center gap-2">
                               {q.type === 'multiple-choice' ? (
                                 <CheckCircle className="h-4 w-4 text-primary" />
+                              ) : q.type === 'multi-select' ? (
+                                <ListChecks className="h-4 w-4 text-primary" />
                               ) : (
                                 <AlignLeft className="h-4 w-4 text-primary" />
                               )}
-                              <span className="font-medium">Question {index + 1}</span>
+                              <span className="font-medium">{t('exams.questionNumber', { number: index + 1 })}</span>
                               <Badge variant="outline">{q.type}</Badge>
                             </div>
                             <Button

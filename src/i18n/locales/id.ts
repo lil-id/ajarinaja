@@ -62,6 +62,13 @@ export default {
     dangerZone: 'Zona Berbahaya',
     irreversibleActions: 'Tindakan tidak dapat dibatalkan',
     deleteAccount: 'Hapus Akun',
+
+    // Shared actions (exam/question bank)
+    selected: 'dipilih',
+    importFromBank: 'Impor dari Bank Soal',
+    importSelected: 'Impor yang Dipilih',
+    searchQuestions: 'Cari soal...',
+    noMatchingQuestions: 'Tidak ada soal yang cocok',
   },
 
   // Navigation
@@ -298,6 +305,17 @@ export default {
     noExamsMatchSearch: 'Tidak ada ujian yang cocok dengan pencarian Anda',
     enrollToAccessExams: 'Daftar kursus untuk mengakses ujian',
     dueBy: 'Tenggat',
+
+    // Exam question builder
+    selectCorrectAnswer: 'Pilih jawaban yang benar',
+    selectAllCorrectAnswers: 'Pilih semua jawaban yang benar',
+    importFromBank: 'Impor dari Bank Soal',
+    noQuestionsInBank: 'Belum ada soal di bank Anda',
+    addMCQ: 'Tambah PG',
+    addMultiSelect: 'Tambah Multi-Pilihan',
+    addEssay: 'Tambah Esai',
+    noQuestionsYet: 'Belum ada soal. Tambahkan soal pertama Anda!',
+    questionNumber: 'Soal {{number}}',
   },
 
   // Materials

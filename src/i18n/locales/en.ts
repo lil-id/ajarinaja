@@ -311,6 +311,11 @@ export default {
     selectAllCorrectAnswers: 'Select all correct answers',
     importFromBank: 'Import from Question Bank',
     noQuestionsInBank: 'No questions in your bank yet',
+    addMCQ: 'Add MCQ',
+    addMultiSelect: 'Add Multi-Select',
+    addEssay: 'Add Essay',
+    noQuestionsYet: 'No questions yet. Add your first question!',
+    questionNumber: 'Question {{number}}',
   },
 
   // Materials
