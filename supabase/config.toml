@@ -1,1 +1,4 @@
 project_id = "tzqakziepfzudcjtxoxy"
+
+[functions.send-enrollment-email]
+verify_jwt = false

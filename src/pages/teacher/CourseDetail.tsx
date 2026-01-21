@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,7 @@ const TeacherCourseDetail = () => {
   const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
@@ -211,8 +213,23 @@ const TeacherCourseDetail = () => {
       toast.error(t('toast.pleaseSelectStudent'));
       return;
     }
+    
+    // Find the selected student's details
+    const selectedStudent = allStudents.find(s => s.user_id === selectedStudentId);
+    if (!selectedStudent) {
+      toast.error(t('toast.studentNotFound'));
+      return;
+    }
+
     try {
-      await enrollStudent.mutateAsync({ studentId: selectedStudentId, courseId: course.id });
+      await enrollStudent.mutateAsync({ 
+        studentId: selectedStudentId, 
+        courseId: course.id,
+        studentEmail: selectedStudent.email,
+        studentName: selectedStudent.name,
+        courseName: course.title,
+        teacherName: profile?.name || 'Your Instructor',
+      });
       toast.success(t('toast.studentEnrolled'));
       setIsEnrollDialogOpen(false);
       setSelectedStudentId('');

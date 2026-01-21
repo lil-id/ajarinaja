@@ -245,11 +245,20 @@ export function useEnroll() {
   });
 }
 
+interface EnrollStudentParams {
+  studentId: string;
+  courseId: string;
+  studentEmail: string;
+  studentName: string;
+  courseName: string;
+  teacherName: string;
+}
+
 export function useTeacherEnrollStudent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ studentId, courseId }: { studentId: string; courseId: string }) => {
+    mutationFn: async ({ studentId, courseId, studentEmail, studentName, courseName, teacherName }: EnrollStudentParams) => {
       const { data, error } = await supabase
         .from('enrollments')
         .insert({
@@ -260,6 +269,29 @@ export function useTeacherEnrollStudent() {
         .single();
       
       if (error) throw error;
+
+      // Send enrollment notification email
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        await fetch(`${supabaseUrl}/functions/v1/send-enrollment-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            studentEmail,
+            studentName,
+            courseName,
+            teacherName,
+          }),
+        });
+        console.log('Enrollment email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send enrollment email:', emailError);
+        // Don't throw - enrollment succeeded, email is secondary
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
