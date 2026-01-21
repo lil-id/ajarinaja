@@ -24,13 +24,13 @@ interface NotificationEmailRequest {
 const getEmailContent = (data: NotificationEmailRequest) => {
   const appUrl = Deno.env.get("APP_URL") || "https://ajarinaja.lovable.app";
   
-  const contentTypeLabels = {
-    assignment: { label: 'Assignment', icon: '📝', link: '/student/assignments', color: '#10b981' },
-    exam: { label: 'Exam', icon: '📋', link: '/student/exams', color: '#f59e0b' },
-    enrollment: { label: 'Course', icon: '🎓', link: '/student/courses', color: '#6366f1' },
+  const contentTypeConfig = {
+    assignment: { label: 'Assignment', link: '/student/assignments', color: '#10b981', bgColor: '#ecfdf5' },
+    exam: { label: 'Exam', link: '/student/exams', color: '#f59e0b', bgColor: '#fffbeb' },
+    enrollment: { label: 'Course', link: '/student/courses', color: '#6366f1', bgColor: '#eef2ff' },
   };
   
-  const config = contentTypeLabels[data.contentType];
+  const config = contentTypeConfig[data.contentType];
   
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
@@ -50,112 +50,158 @@ const getEmailContent = (data: NotificationEmailRequest) => {
     enrollment: `Welcome to ${data.courseName}!`,
   };
 
+  const getHeaderText = () => {
+    if (data.contentType === 'enrollment') return 'Course Enrollment';
+    if (data.contentType === 'assignment') return 'New Assignment';
+    return 'New Exam';
+  };
+
   const getDetailsHtml = () => {
     if (data.contentType === 'enrollment') {
       return `
-        <p style="color: #64748b; font-size: 15px; margin: 0 0 20px 0;">
-          You've been enrolled in <strong>${data.courseName}</strong>. 
-          Access course materials, assignments, and exams from your dashboard.
-        </p>
+        <tr>
+          <td style="padding: 0 0 24px 0;">
+            <p style="color: #64748b; font-size: 15px; margin: 0; line-height: 1.6;">
+              You've been enrolled in <strong style="color: #334155;">${data.courseName}</strong>. 
+              Access course materials, assignments, and exams from your dashboard.
+            </p>
+          </td>
+        </tr>
       `;
     }
     
-    let details = '';
+    let detailsRows = '';
     if (data.dueDate) {
-      details += `
-        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-          <span style="color: #94a3b8; width: 100px;">Due Date</span>
-          <span style="color: #1e293b; font-weight: 500;">${formatDate(data.dueDate)}</span>
-        </div>
+      detailsRows += `
+        <tr>
+          <td style="padding: 8px 0;">
+            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #94a3b8; font-size: 14px; width: 100px; vertical-align: top;">Due Date</td>
+                <td style="color: #1e293b; font-size: 14px; font-weight: 500;">${formatDate(data.dueDate)}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
       `;
     }
     if (data.duration) {
-      details += `
-        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-          <span style="color: #94a3b8; width: 100px;">Duration</span>
-          <span style="color: #1e293b; font-weight: 500;">${data.duration} minutes</span>
-        </div>
+      detailsRows += `
+        <tr>
+          <td style="padding: 8px 0;">
+            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #94a3b8; font-size: 14px; width: 100px; vertical-align: top;">Duration</td>
+                <td style="color: #1e293b; font-size: 14px; font-weight: 500;">${data.duration} minutes</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
       `;
     }
     if (data.description) {
-      details += `
-        <div style="margin-top: 16px;">
-          <span style="color: #94a3b8; display: block; margin-bottom: 8px;">Description</span>
-          <p style="color: #475569; margin: 0; line-height: 1.6;">${data.description}</p>
-        </div>
+      detailsRows += `
+        <tr>
+          <td style="padding: 16px 0 0 0;">
+            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 8px 0;">Description</p>
+            <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">${data.description}</p>
+          </td>
+        </tr>
       `;
     }
-    return details;
+    return detailsRows ? `<table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">${detailsRows}</table>` : '';
   };
 
-  const html = `
-<!DOCTYPE html>
-<html>
+  const html = `<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>${subjectMap[data.contentType]}</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f1f5f9;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f1f5f9; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f1f5f9;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <table role="presentation" style="width: 100%; max-width: 520px; border-collapse: collapse;">
           
-          <!-- Logo & Header -->
+          <!-- Header Badge -->
           <tr>
-            <td style="text-align: center; padding-bottom: 32px;">
-              <div style="display: inline-block; background: linear-gradient(135deg, ${config.color} 0%, ${config.color}dd 100%); padding: 16px 24px; border-radius: 16px;">
-                <span style="font-size: 28px;">${config.icon}</span>
-              </div>
+            <td align="center" style="padding-bottom: 24px;">
+              <table role="presentation" style="border-collapse: collapse;">
+                <tr>
+                  <td style="background-color: ${config.bgColor}; padding: 12px 20px; border-radius: 8px;">
+                    <span style="color: ${config.color}; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${getHeaderText()}</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           
           <!-- Main Card -->
           <tr>
-            <td style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);">
-              
-              <!-- Accent Bar -->
-              <div style="height: 4px; background: linear-gradient(90deg, ${config.color} 0%, ${config.color}88 100%); border-radius: 16px 16px 0 0;"></div>
-              
+            <td style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                
+                <!-- Top Accent -->
                 <tr>
-                  <td style="padding: 32px 32px 24px;">
-                    
-                    <!-- Greeting -->
-                    <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Hello, {{recipientName}}
-                    </p>
-                    
-                    <!-- Title -->
-                    <h1 style="color: #0f172a; font-size: 24px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.3;">
-                      ${data.contentType === 'enrollment' ? `Welcome to ${data.courseName}` : data.contentTitle}
-                    </h1>
-                    
-                    <!-- Course Badge -->
-                    <div style="display: inline-block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 16px; margin-bottom: 20px;">
-                      <span style="color: #64748b; font-size: 13px;">Course: </span>
-                      <span style="color: #334155; font-weight: 600; font-size: 13px;">${data.courseName}</span>
-                    </div>
-                    
-                    <!-- Details -->
-                    ${getDetailsHtml()}
-                    
-                  </td>
+                  <td style="height: 4px; background-color: ${config.color}; border-radius: 12px 12px 0 0;"></td>
                 </tr>
                 
-                <!-- CTA Button -->
+                <!-- Content -->
                 <tr>
-                  <td style="padding: 0 32px 32px;">
+                  <td style="padding: 32px;">
                     <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                      
+                      <!-- Greeting -->
                       <tr>
-                        <td align="center">
-                          <a href="${appUrl}${config.link}" 
-                             style="display: inline-block; background: ${config.color}; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: all 0.2s;">
-                            View ${config.label}${data.contentType !== 'enrollment' ? 's' : ''}
-                          </a>
+                        <td style="padding-bottom: 8px;">
+                          <p style="color: #94a3b8; font-size: 14px; margin: 0;">Hello, {{recipientName}}</p>
                         </td>
                       </tr>
+                      
+                      <!-- Title -->
+                      <tr>
+                        <td style="padding-bottom: 20px;">
+                          <h1 style="color: #0f172a; font-size: 22px; font-weight: 700; margin: 0; line-height: 1.3;">
+                            ${data.contentType === 'enrollment' ? `Welcome to ${data.courseName}` : data.contentTitle}
+                          </h1>
+                        </td>
+                      </tr>
+                      
+                      <!-- Course Info -->
+                      <tr>
+                        <td style="padding-bottom: 20px;">
+                          <table role="presentation" style="border-collapse: collapse;">
+                            <tr>
+                              <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px;">
+                                <span style="color: #64748b; font-size: 13px;">Course: </span>
+                                <span style="color: #334155; font-size: 13px; font-weight: 600;">${data.courseName}</span>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      
+                      <!-- Details -->
+                      ${getDetailsHtml()}
+                      
+                      <!-- CTA Button -->
+                      <tr>
+                        <td align="center" style="padding-top: 8px;">
+                          <table role="presentation" style="border-collapse: collapse;">
+                            <tr>
+                              <td style="background-color: ${config.color}; border-radius: 8px;">
+                                <a href="${appUrl}${config.link}" style="display: block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px;">
+                                  View ${config.label}${data.contentType !== 'enrollment' ? 's' : ''}
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      
                     </table>
                   </td>
                 </tr>
@@ -167,12 +213,10 @@ const getEmailContent = (data: NotificationEmailRequest) => {
           <!-- Footer -->
           <tr>
             <td style="padding: 24px 16px; text-align: center;">
-              <p style="color: #94a3b8; font-size: 13px; margin: 0 0 8px 0;">
-                Sent by <strong style="color: #64748b;">${data.teacherName}</strong>
+              <p style="color: #94a3b8; font-size: 13px; margin: 0 0 4px 0;">
+                Sent by <span style="color: #64748b; font-weight: 500;">${data.teacherName}</span>
               </p>
-              <p style="color: #cbd5e1; font-size: 12px; margin: 0;">
-                AjarinAja Learning Platform
-              </p>
+              <p style="color: #cbd5e1; font-size: 12px; margin: 0;">AjarinAja Learning Platform</p>
             </td>
           </tr>
           
@@ -181,8 +225,7 @@ const getEmailContent = (data: NotificationEmailRequest) => {
     </tr>
   </table>
 </body>
-</html>
-  `;
+</html>`;
 
   return {
     subject: subjectMap[data.contentType],
