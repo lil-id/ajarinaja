@@ -46,10 +46,10 @@ export default function StudentPreviewMode({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-auto">
-      <div className="container mx-auto max-w-4xl py-8 px-4">
-        {/* Preview Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm overflow-auto">
+      <div className="container mx-auto max-w-4xl pt-20 pb-8 px-4">
+        {/* Preview Header - sticky so Exit button is always visible */}
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm -mx-4 px-4 py-4 flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-primary" />
