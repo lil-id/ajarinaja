@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollReveal, StaggeredReveal } from "@/components/ScrollReveal";
 import { useParallax } from "@/hooks/useScrollAnimation";
+import { sharedStats } from "@/data/sharedStats";
 import {
   BookOpen,
   Users,
@@ -219,17 +220,17 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-6 mt-8 pt-8 border-t border-border">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">10K+</div>
+                  <div className="text-2xl font-bold text-foreground">{sharedStats.activeStudentsDisplay}</div>
                   <div className="text-sm text-muted-foreground">Active Students</div>
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">500+</div>
+                  <div className="text-2xl font-bold text-foreground">{sharedStats.schoolsDisplay}</div>
                   <div className="text-sm text-muted-foreground">Schools</div>
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">100K+</div>
+                  <div className="text-2xl font-bold text-foreground">{sharedStats.lessonsDeliveredDisplay}</div>
                   <div className="text-sm text-muted-foreground">Lessons Delivered</div>
                 </div>
               </div>
@@ -256,12 +257,12 @@ const Index = () => {
                 style={{ animationDelay: "300ms" }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-green-500" />
+                  <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-accent-foreground" />
                   </div>
                   <div>
                     <div className="font-semibold text-foreground">Assignments Submitted</div>
-                    <div className="text-sm text-muted-foreground">2,847 today</div>
+                    <div className="text-sm text-muted-foreground">{sharedStats.assignmentsSubmittedTodayDisplay}</div>
                   </div>
                 </div>
               </div>
@@ -275,7 +276,7 @@ const Index = () => {
                   </div>
                   <div>
                     <div className="font-semibold text-foreground">Teachers Online</div>
-                    <div className="text-sm text-muted-foreground">342 active</div>
+                    <div className="text-sm text-muted-foreground">{sharedStats.teachersOnlineDisplay}</div>
                   </div>
                 </div>
               </div>
