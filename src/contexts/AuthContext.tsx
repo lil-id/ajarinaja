@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import i18n from '@/i18n';
 
 interface Profile {
   id: string;
@@ -9,6 +10,7 @@ interface Profile {
   name: string;
   avatar_url: string | null;
   bio: string | null;
+  language_preference: string;
 }
 
 interface AuthContextType {
@@ -19,6 +21,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string, role: 'teacher' | 'student') => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  updateLanguagePreference: (language: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -48,7 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (profileData) {
-        setProfile(profileData);
+        setProfile(profileData as Profile);
+        // Apply saved language preference
+        if (profileData.language_preference) {
+          i18n.changeLanguage(profileData.language_preference);
+        }
       }
 
       const { data: roleData } = await supabase
@@ -62,6 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const updateLanguagePreference = async (language: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ language_preference: language })
+        .eq('user_id', user.id);
+
+      if (!error && profile) {
+        setProfile({ ...profile, language_preference: language });
+      }
+    } catch (error) {
+      console.error('Error updating language preference:', error);
     }
   };
 
@@ -142,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
+      updateLanguagePreference,
       isLoading
     }}>
       {children}
