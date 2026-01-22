@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -71,9 +71,11 @@ const Login = () => {
   };
 
   // Redirect if already logged in with a role
-  if (role) {
-    navigate(role === 'teacher' ? '/teacher' : '/student');
-  }
+  useEffect(() => {
+    if (role) {
+      navigate(role === 'teacher' ? '/teacher' : '/student');
+    }
+  }, [role, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex">

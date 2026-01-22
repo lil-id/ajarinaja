@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -15,17 +16,23 @@ const languages = [
 
 /**
  * Component for switching between supported languages.
- * Requires `react-i18next` configuration.
+ * Persists language preference to database for logged-in users.
  * 
  * @returns {JSX.Element} The language switcher dropdown.
  */
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const { user, updateLanguagePreference } = useAuth();
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  const changeLanguage = (langCode: string) => {
+  const changeLanguage = async (langCode: string) => {
     i18n.changeLanguage(langCode);
+    
+    // Persist to database if user is logged in
+    if (user) {
+      await updateLanguagePreference(langCode);
+    }
   };
 
   return (
