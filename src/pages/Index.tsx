@@ -555,99 +555,77 @@ const Index = () => {
             </p>
           </ScrollReveal>
 
-          {/* Main Features Grid */}
-          <div className="grid lg:grid-cols-3 gap-8 mb-12">
-            {/* Large Feature Card */}
-            <div className="lg:col-span-2 bg-card rounded-3xl p-8 border border-border/50 shadow-card">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-16 h-16 bg-gradient-hero rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-8 h-8 text-primary-foreground" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground mb-3">Comprehensive Course Management</h3>
-                  <p className="text-muted-foreground mb-4 leading-relaxed">
-                    Build rich, engaging courses with multiple content types. Upload videos, PDFs, and documents.
-                    Students access materials directly in-platform with our built-in viewer—no downloads required.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {["Video Support", "PDF Viewer", "YouTube Embed", "Organized Modules"].map((tag) => (
-                      <span key={tag} className="px-3 py-1 bg-muted rounded-full text-xs font-medium text-muted-foreground">
-                        {tag}
-                      </span>
-                    ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <BookOpen className="w-6 h-6" />,
+                title: "Course Management",
+                description: "Build rich courses with videos, PDFs, and documents. Students access materials directly in-platform.",
+                color: "bg-blue-500/10 text-blue-600",
+              },
+              {
+                icon: <FileText className="w-6 h-6" />,
+                title: "Flexible Exam Builder",
+                description: "Create MCQ, multiple-select & essay exams. Set time limits and configure auto-grading.",
+                color: "bg-purple-500/10 text-purple-600",
+              },
+              {
+                icon: <BarChart3 className="w-6 h-6" />,
+                title: "Analytics Dashboard",
+                description: "Visual charts showing class performance, grade distributions, and student progress.",
+                color: "bg-green-500/10 text-green-600",
+              },
+              {
+                icon: <AlertTriangle className="w-6 h-6" />,
+                title: "At-Risk Alerts",
+                description: "Automatic detection of struggling students based on missed deadlines and low scores.",
+                color: "bg-red-500/10 text-red-600",
+              },
+              {
+                icon: <Calendar className="w-6 h-6" />,
+                title: "Smart Calendar",
+                description: "Unified view of all exams, assignments, and events. Never miss an important deadline.",
+                color: "bg-cyan-500/10 text-cyan-600",
+              },
+              {
+                icon: <Bell className="w-6 h-6" />,
+                title: "Instant Notifications",
+                description: "Real-time alerts for new grades, materials, announcements, and upcoming deadlines.",
+                color: "bg-orange-500/10 text-orange-600",
+              },
+              {
+                icon: <Award className="w-6 h-6" />,
+                title: "Badges & Gamification",
+                description: "Motivate students with achievement badges for excellent performance and milestones.",
+                color: "bg-yellow-500/10 text-yellow-600",
+              },
+              {
+                icon: <ClipboardCheck className="w-6 h-6" />,
+                title: "Report Cards",
+                description: "Generate comprehensive semester report cards with grades, averages, and teacher notes.",
+                color: "bg-indigo-500/10 text-indigo-600",
+              },
+              {
+                icon: <Globe className="w-6 h-6" />,
+                title: "Multi-Language Support",
+                description: "Full interface available in English and Indonesian with easy language switching.",
+                color: "bg-pink-500/10 text-pink-600",
+              },
+            ].map((feature, index) => (
+              <ScrollReveal
+                key={index}
+                animation="fade-up"
+                delay={index * 100}
+              >
+                <div className="bg-card rounded-2xl p-6 border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${feature.color}`}>
+                    {feature.icon}
                   </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
-              </div>
-            </div>
-
-            {/* Smaller Feature Card */}
-            <div className="bg-card rounded-3xl p-8 border border-border/50 shadow-card">
-              <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4">
-                <FileText className="w-7 h-7 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-3">Flexible Exam Builder</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                Create MCQ, multiple-select, and essay questions. Set time limits, schedule exams, and configure auto-grading with KKM thresholds.
-              </p>
-              <ul className="space-y-2">
-                {["Question Bank", "Rubric Grading", "Time Limits"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Second Row */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <FeatureCard
-              icon={<BarChart3 className="w-7 h-7" />}
-              title="Analytics Dashboard"
-              description="Visual charts showing class performance, grade distributions, and student progress over time."
-              delay={0}
-            />
-            <FeatureCard
-              icon={<AlertTriangle className="w-7 h-7" />}
-              title="At-Risk Alerts"
-              description="Automatic detection of struggling students based on missed deadlines and low scores."
-              delay={100}
-            />
-            <FeatureCard
-              icon={<Calendar className="w-7 h-7" />}
-              title="Smart Calendar"
-              description="Unified view of all exams, assignments, and events. Never miss an important deadline."
-              delay={200}
-            />
-            <FeatureCard
-              icon={<Bell className="w-7 h-7" />}
-              title="Instant Notifications"
-              description="Real-time alerts for new grades, materials, announcements, and upcoming deadlines."
-              delay={300}
-            />
-          </div>
-
-          {/* Additional Features Row */}
-          <div className="grid md:grid-cols-3 gap-6 mt-6">
-            <FeatureCard
-              icon={<Award className="w-7 h-7" />}
-              title="Badges & Gamification"
-              description="Motivate students with achievement badges for excellent performance and milestones."
-              delay={400}
-            />
-            <FeatureCard
-              icon={<ClipboardCheck className="w-7 h-7" />}
-              title="Report Cards"
-              description="Generate comprehensive semester report cards with grades, averages, and teacher notes."
-              delay={500}
-            />
-            <FeatureCard
-              icon={<Globe className="w-7 h-7" />}
-              title="Multi-Language Support"
-              description="Full interface available in English and Indonesian with easy language switching."
-              delay={600}
-            />
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </section>
