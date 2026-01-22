@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -54,6 +55,7 @@ interface NotificationBellProps {
  * @returns {JSX.Element} The notification bell with popover.
  */
 export const NotificationBell = ({ basePath }: NotificationBellProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: notifications, isLoading } = useNotifications();
   const unreadCount = useUnreadNotificationCount();
@@ -84,17 +86,17 @@ export const NotificationBell = ({ basePath }: NotificationBellProps) => {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-4 border-b">
-          <h4 className="font-semibold">Notifications</h4>
+          <h4 className="font-semibold">{t('notificationBell.notifications')}</h4>
           {unreadCount > 0 && (
             <Badge variant="secondary" className="text-xs">
-              {unreadCount} new
+              {unreadCount} {t('notificationBell.new')}
             </Badge>
           )}
         </div>
         <ScrollArea className="h-[300px]">
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground text-sm">
-              Loading...
+              {t('notificationBell.loading')}
             </div>
           ) : recentNotifications.length > 0 ? (
             <div className="divide-y">
@@ -131,7 +133,7 @@ export const NotificationBell = ({ basePath }: NotificationBellProps) => {
             <div className="p-8 text-center">
               <Bell className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                No notifications yet
+                {t('notificationBell.noNotificationsYet')}
               </p>
             </div>
           )}
@@ -142,7 +144,7 @@ export const NotificationBell = ({ basePath }: NotificationBellProps) => {
             className="w-full text-sm"
             onClick={() => navigate(`${basePath}/notifications`)}
           >
-            View all notifications
+            {t('notificationBell.viewAllNotifications')}
           </Button>
         </div>
       </PopoverContent>

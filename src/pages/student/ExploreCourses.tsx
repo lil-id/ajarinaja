@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ import CoursePreviewModal from '@/components/CoursePreviewModal';
  * @returns {JSX.Element} The rendered Explore Courses page.
  */
 const ExploreCourses = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -51,20 +53,20 @@ const ExploreCourses = () => {
   const handleEnroll = async (courseId: string) => {
     try {
       await enroll.mutateAsync(courseId);
-      toast.success('Successfully enrolled in course!');
+      toast.success(t('exploreCourses.enrollSuccess'));
       setIsPreviewOpen(false);
     } catch (error) {
-      toast.error('Failed to enroll in course');
+      toast.error(t('exploreCourses.enrollFailed'));
     }
   };
 
   const handleUnenroll = async (courseId: string) => {
     try {
       await unenroll.mutateAsync(courseId);
-      toast.success('Successfully unenrolled from course');
+      toast.success(t('exploreCourses.unenrollSuccess'));
       setIsPreviewOpen(false);
     } catch (error) {
-      toast.error('Failed to unenroll from course');
+      toast.error(t('exploreCourses.unenrollFailed'));
     }
   };
 
@@ -85,21 +87,58 @@ const ExploreCourses = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Explore Courses</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('exploreCourses.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Discover and enroll in new courses
+            {t('exploreCourses.subtitle')}
           </p>
         </div>
 
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search courses..."
+            placeholder={t('exploreCourses.searchCourses')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
         </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid sm:grid-cols-3 gap-4">
+        <Card className="border-0 shadow-card">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{availableCourses.length}</p>
+              <p className="text-sm text-muted-foreground">{t('exploreCourses.availableCourses')}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-card">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-secondary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{enrollments.length}</p>
+              <p className="text-sm text-muted-foreground">{t('exploreCourses.enrolledCourses')}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-card">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Users className="w-5 h-5 text-accent" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{publishedCourses.length}</p>
+              <p className="text-sm text-muted-foreground">{t('exploreCourses.totalCourses')}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Stats */}
@@ -145,9 +184,9 @@ const ExploreCourses = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <BookOpen className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No courses found</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('exploreCourses.noCoursesFound')}</h3>
             <p className="text-muted-foreground text-center">
-              {searchQuery ? 'Try a different search term' : 'No courses available at the moment'}
+              {searchQuery ? t('exploreCourses.tryDifferentSearch') : t('exploreCourses.noCoursesAvailable')}
             </p>
           </CardContent>
         </Card>
@@ -156,7 +195,7 @@ const ExploreCourses = () => {
           {/* Enrolled Courses Section */}
           {enrolledCourses.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Your Enrolled Courses</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-4">{t('exploreCourses.yourEnrolledCourses')}</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {enrolledCourses.map((course, index) => (
                   <Card
@@ -177,13 +216,13 @@ const ExploreCourses = () => {
                       )}
                       <Badge className="absolute top-3 right-3 bg-green-500/90 hover:bg-green-500">
                         <CheckCircle2 className="w-3 h-3 mr-1" />
-                        Enrolled
+                        {t('courses.enrolled')}
                       </Badge>
                     </div>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
                       <CardDescription className="line-clamp-2">
-                        {course.description || 'No description available'}
+                        {course.description || t('courses.noDescriptionAvailable')}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0 flex gap-2">
@@ -195,7 +234,7 @@ const ExploreCourses = () => {
                           navigate(`/student/courses/${course.id}`);
                         }}
                       >
-                        Go to Course
+                        {t('exploreCourses.goToCourse')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -217,7 +256,7 @@ const ExploreCourses = () => {
           {/* Available Courses Section */}
           {availableCourses.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Available to Enroll</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-4">{t('exploreCourses.availableToEnroll')}</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableCourses.map((course, index) => (
                   <Card
@@ -240,7 +279,7 @@ const ExploreCourses = () => {
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
                       <CardDescription className="line-clamp-2">
-                        {course.description || 'No description available'}
+                        {course.description || t('courses.noDescriptionAvailable')}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0 flex gap-2">
@@ -256,7 +295,7 @@ const ExploreCourses = () => {
                         {enroll.isPending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          'Enroll Now'
+                          t('exploreCourses.enrollNow')
                         )}
                       </Button>
                       <Button

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,7 @@ import MaterialViewer from '@/components/MaterialViewer';
  * @returns {JSX.Element} The rendered Exam Results page.
  */
 const ExamResults = () => {
+  const { t } = useTranslation();
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
   const { data: exam, isLoading: examLoading } = useExamResults(examId || '');
@@ -47,10 +49,10 @@ const ExamResults = () => {
   if (!exam || !submission) {
     return (
       <div className="text-center py-16">
-        <p className="text-muted-foreground">Results not found</p>
+        <p className="text-muted-foreground">{t('examResults.resultsNotFound')}</p>
         <Button variant="ghost" onClick={() => navigate('/student/exams')} className="mt-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Exams
+          {t('examResults.backToExams')}
         </Button>
       </div>
     );
@@ -88,11 +90,11 @@ const ExamResults = () => {
     : 0;
 
   const getGradeLabel = (percentage: number) => {
-    if (percentage >= 90) return { label: 'Excellent', color: 'text-green-600' };
-    if (percentage >= 80) return { label: 'Great', color: 'text-emerald-600' };
-    if (percentage >= 70) return { label: 'Good', color: 'text-blue-600' };
-    if (percentage >= 60) return { label: 'Satisfactory', color: 'text-amber-600' };
-    return { label: 'Needs Improvement', color: 'text-red-600' };
+    if (percentage >= 90) return { label: t('examResults.excellent'), color: 'text-green-600' };
+    if (percentage >= 80) return { label: t('examResults.great'), color: 'text-emerald-600' };
+    if (percentage >= 70) return { label: t('examResults.good'), color: 'text-blue-600' };
+    if (percentage >= 60) return { label: t('examResults.satisfactory'), color: 'text-amber-600' };
+    return { label: t('examResults.needsImprovement'), color: 'text-red-600' };
   };
 
   const grade = getGradeLabel(scorePercentage);
@@ -112,7 +114,7 @@ const ExamResults = () => {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-foreground">{exam.title}</h1>
-          <p className="text-muted-foreground">Exam Results</p>
+          <p className="text-muted-foreground">{t('examResults.title')}</p>
         </div>
       </div>
 
@@ -121,7 +123,7 @@ const ExamResults = () => {
         <div className="bg-gradient-hero p-6 text-primary-foreground">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-primary-foreground/80 text-sm mb-1">Your Score</p>
+              <p className="text-primary-foreground/80 text-sm mb-1">{t('examResults.yourScore')}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-bold">
                   {submission.graded ? submission.score : '—'}
@@ -138,16 +140,16 @@ const ExamResults = () => {
               {submission.graded ? (
                 <Badge variant="secondary" className="text-sm px-4 py-1">
                   <CheckCircle className="w-4 h-4 mr-1" />
-                  Graded
+                  {t('examResults.graded')}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-sm px-4 py-1 bg-amber-100 text-amber-700 border-amber-300">
                   <Clock className="w-4 h-4 mr-1" />
-                  Awaiting Grade
+                  {t('examResults.awaitingGrade')}
                 </Badge>
               )}
               <p className="text-sm text-primary-foreground/70">
-                Submitted {new Date(submission.submitted_at).toLocaleDateString()}
+                {t('examResults.submitted')} {new Date(submission.submitted_at).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -166,28 +168,28 @@ const ExamResults = () => {
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">{mcCorrect + msCorrect}</p>
-              <p className="text-sm text-muted-foreground">Correct</p>
+              <p className="text-sm text-muted-foreground">{t('examResults.correct')}</p>
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-2">
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">{(mcTotal - mcCorrect) + (msTotal - msCorrect)}</p>
-              <p className="text-sm text-muted-foreground">Incorrect</p>
+              <p className="text-sm text-muted-foreground">{t('examResults.incorrect')}</p>
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-2">
                 <CheckCircle className="w-6 h-6 text-purple-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">{msTotal}</p>
-              <p className="text-sm text-muted-foreground">Multi-Select</p>
+              <p className="text-sm text-muted-foreground">{t('examResults.multiSelect')}</p>
             </div>
             <div>
               <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
                 <AlignLeft className="w-6 h-6 text-blue-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">{essayQuestions.length}</p>
-              <p className="text-sm text-muted-foreground">Essays</p>
+              <p className="text-sm text-muted-foreground">{t('examResults.essays')}</p>
             </div>
           </div>
         </CardContent>
@@ -199,10 +201,10 @@ const ExamResults = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-secondary" />
-              Review Learning Materials
+              {t('examResults.reviewMaterials')}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Revisit course materials to strengthen your understanding
+              {t('examResults.reviewMaterialsSubtitle')}
             </p>
           </CardHeader>
           <CardContent>
@@ -231,7 +233,7 @@ const ExamResults = () => {
                   className="w-full mt-2"
                   onClick={() => navigate('/student/materials')}
                 >
-                  View all {materials.length} materials
+                  {t('examResults.viewAllMaterials', { count: materials.length })}
                 </Button>
               )}
             </div>
@@ -241,7 +243,7 @@ const ExamResults = () => {
 
       {/* Questions Review */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">Question Review</h2>
+        <h2 className="text-xl font-semibold text-foreground">{t('examResults.questionReview')}</h2>
 
         {/* Multiple Choice Questions */}
         {mcQuestions.map((q: Question, idx: number) => {
@@ -271,7 +273,7 @@ const ExamResults = () => {
                     "font-medium",
                     isCorrect ? "text-green-700" : "text-red-700"
                   )}>
-                    {isCorrect ? 'Correct' : 'Incorrect'}
+                    {isCorrect ? t('examResults.correct') : t('examResults.incorrect')}
                   </span>
                 </div>
                 <Badge variant="outline" className="bg-background">
@@ -316,11 +318,11 @@ const ExamResults = () => {
                         {isCorrectOption && (
                           <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
                             <CheckCircle className="w-3 h-3 mr-1" />
-                            Correct Answer
+                            {t('examResults.correctAnswer')}
                           </Badge>
                         )}
                         {isSelected && !isCorrectOption && (
-                          <span className="text-xs text-red-600 font-medium">Your answer</span>
+                          <span className="text-xs text-red-600 font-medium">{t('examResults.yourAnswer')}</span>
                         )}
                       </div>
                     );
@@ -332,7 +334,7 @@ const ExamResults = () => {
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-sm text-blue-700 font-medium mb-2 flex items-center gap-2">
                       <BookOpen className="w-4 h-4" />
-                      Review related materials:
+                      {t('examResults.reviewRelatedMaterials')}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {materials.slice(0, 3).map((material) => (
@@ -361,7 +363,7 @@ const ExamResults = () => {
             <Separator className="my-6" />
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-purple-600" />
-              Multi-Select Questions
+              {t('examResults.multiSelectQuestions')}
             </h3>
 
             {multiSelectQuestions.map((q: Question, idx: number) => {
@@ -461,7 +463,7 @@ const ExamResults = () => {
                       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm text-blue-700 font-medium mb-2 flex items-center gap-2">
                           <BookOpen className="w-4 h-4" />
-                          Review related materials:
+                          {t('examResults.reviewRelatedMaterials')}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {materials.slice(0, 3).map((material) => (
@@ -492,7 +494,7 @@ const ExamResults = () => {
             <Separator className="my-6" />
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <AlignLeft className="w-5 h-5" />
-              Essay Questions
+              {t('examResults.essayQuestions')}
             </h3>
 
             {essayQuestions.map((q: Question, idx: number) => {
@@ -537,7 +539,7 @@ const ExamResults = () => {
       <div className="flex justify-center pt-4">
         <Button variant="outline" size="lg" onClick={() => navigate('/student/exams')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Exams
+          {t('examResults.backToExams')}
         </Button>
       </div>
 
