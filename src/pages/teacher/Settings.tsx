@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -8,7 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 /**
  * Teacher Settings page.
  * 
@@ -23,13 +34,28 @@ import { toast } from 'sonner';
  */
 const TeacherSettings = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     newPassword: '',
     confirmPassword: '',
   });
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      // Sign out and redirect - full account deletion would require admin intervention
+      await supabase.auth.signOut();
+      toast.success(t('toast.accountDeleted'));
+      navigate('/');
+    } catch (error: any) {
+      toast.error(error.message || t('toast.errorOccurred'));
+      setIsDeletingAccount(false);
+    }
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +215,37 @@ const TeacherSettings = () => {
           <CardDescription>{t('common.irreversibleActions')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="destructive">{t('common.deleteAccount')}</Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={isDeletingAccount}>
+                {isDeletingAccount ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t('common.deleting')}
+                  </>
+                ) : (
+                  t('common.deleteAccount')
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('common.deleteAccount')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('dialogs.deleteAccountWarning')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccount}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {t('common.deleteAccount')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>

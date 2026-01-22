@@ -629,7 +629,7 @@ const TeacherCourseDetail = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{courseMaterials.length}</p>
-              <p className="text-sm text-muted-foreground">{t('nav.files')}</p>
+              <p className="text-sm text-muted-foreground">{t('nav.materials')}</p>
             </div>
           </CardContent>
         </Card>
@@ -655,7 +655,7 @@ const TeacherCourseDetail = () => {
           <TabsTrigger value="students">Students ({enrollments.length})</TabsTrigger>
           <TabsTrigger value="exams">Exams ({courseExams.length})</TabsTrigger>
           <TabsTrigger value="assignments">Assignments ({courseAssignments.length})</TabsTrigger>
-          <TabsTrigger value="materials">{t('nav.files')} ({courseMaterials.length})</TabsTrigger>
+          <TabsTrigger value="materials">{t('nav.materials')} ({courseMaterials.length})</TabsTrigger>
           <TabsTrigger value="announcements">Announcements ({courseAnnouncements.length})</TabsTrigger>
         </TabsList>
 
@@ -847,11 +847,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No exams created for this course</p>
-                <Button variant="hero" onClick={() => navigate(`/teacher/exams?courseId=${courseId}`)}>
-                  <Plus className="w-4 h-4" />
-                  Create Exam
-                </Button>
+                <p className="text-muted-foreground">No exams created for this course</p>
               </CardContent>
             </Card>
           ) : (
@@ -908,11 +904,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <ClipboardList className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No assignments created for this course</p>
-                <Button variant="hero" onClick={() => navigate(`/teacher/assignments/new?courseId=${courseId}`)}>
-                  <Plus className="w-4 h-4" />
-                  Create Assignment
-                </Button>
+                <p className="text-muted-foreground">No assignments created for this course</p>
               </CardContent>
             </Card>
           ) : (
@@ -1120,11 +1112,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <BookOpen className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No materials uploaded for this course</p>
-                <Button variant="hero" onClick={() => setIsMaterialDialogOpen(true)}>
-                  <Upload className="w-4 h-4" />
-                  Upload File
-                </Button>
+                <p className="text-muted-foreground">No materials uploaded for this course</p>
               </CardContent>
             </Card>
           ) : (
@@ -1243,11 +1231,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Megaphone className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No announcements for this course</p>
-                <Button variant="hero" onClick={() => setIsAnnouncementDialogOpen(true)}>
-                  <Plus className="w-4 h-4" />
-                  Post Announcement
-                </Button>
+                <p className="text-muted-foreground">No announcements for this course</p>
               </CardContent>
             </Card>
           ) : (
