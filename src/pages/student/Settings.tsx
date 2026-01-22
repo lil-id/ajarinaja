@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 /**
  * Student Settings page.
  * 
  * Application settings and preferences.
  * Features:
+ * - Security settings (Change password)
  * - Notification preferences (Email, Exam reminders, Grades)
  * - Account management (Danger zone)
  * 
@@ -16,6 +22,43 @@ import { Label } from '@/components/ui/label';
  */
 const StudentSettings = () => {
   const { t } = useTranslation();
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (passwordForm.newPassword.length < 6) {
+      toast.error(t('toast.passwordTooShort'));
+      return;
+    }
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error(t('toast.passwordsDoNotMatch'));
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success(t('toast.passwordUpdated'));
+      setPasswordForm({ newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      toast.error(error.message || t('toast.errorOccurred'));
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
@@ -25,6 +68,77 @@ const StudentSettings = () => {
           {t('settings.subtitle')}
         </p>
       </div>
+
+      {/* Security Section */}
+      <Card className="border-0 shadow-card">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-primary" />
+            <CardTitle>{t('settings.security')}</CardTitle>
+          </div>
+          <CardDescription>{t('settings.securityDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-1">{t('settings.changePassword')}</h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                {t('settings.changePasswordDescription')}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">{t('settings.newPassword')}</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">{t('settings.confirmNewPassword')}</Label>
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <Button type="submit" disabled={isChangingPassword || !passwordForm.newPassword || !passwordForm.confirmPassword}>
+              {isChangingPassword ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('common.saving')}
+                </>
+              ) : (
+                t('settings.updatePassword')
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Notifications */}
       <Card className="border-0 shadow-card">
