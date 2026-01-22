@@ -12,6 +12,17 @@ import { demoCourses, demoAnnouncements } from '@/data/demoData';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * Demo Teacher Announcements page.
+ * 
+ * Allows teachers to post and manage course announcements.
+ * Features:
+ * - List of existing announcements with course badges
+ * - "Create Announcement" modal dialog
+ * - Simulated save/delete actions (with demo mode toast alerts)
+ * 
+ * @returns {JSX.Element} The rendered Teacher Announcements page.
+ */
 export default function DemoTeacherAnnouncements() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');

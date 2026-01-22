@@ -2,12 +2,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Question } from './useExams';
 
+/**
+ * Mutation hook to update a specific question in an exam.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateQuestion() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
+    mutationFn: async ({
+      id,
       question,
       options,
       correct_answer,
@@ -21,7 +26,7 @@ export function useUpdateQuestion() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -32,6 +37,11 @@ export function useUpdateQuestion() {
   });
 }
 
+/**
+ * Mutation hook to delete a question from an exam.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteQuestion() {
   const queryClient = useQueryClient();
 
@@ -41,7 +51,7 @@ export function useDeleteQuestion() {
         .from('questions')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -51,11 +61,16 @@ export function useDeleteQuestion() {
   });
 }
 
+/**
+ * Mutation hook to add a new question to an exam.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useAddQuestion() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
+    mutationFn: async ({
       examId,
       question,
       options,
@@ -79,7 +94,7 @@ export function useAddQuestion() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },

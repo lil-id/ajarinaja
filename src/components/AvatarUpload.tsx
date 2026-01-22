@@ -7,6 +7,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
+/**
+ * Props for the AvatarUpload component.
+ */
 interface AvatarUploadProps {
   currentAvatarUrl: string | null;
   userName: string;
@@ -26,6 +29,13 @@ const textSizeClasses = {
   lg: 'text-3xl',
 };
 
+/**
+ * Component for uploading and managing user avatar images.
+ * Handles file selection, validation, upload to storage, and profile update.
+ * 
+ * @param {AvatarUploadProps} props - Component props.
+ * @returns {JSX.Element} The avatar upload component.
+ */
 export const AvatarUpload = ({
   currentAvatarUrl,
   userName,
@@ -139,7 +149,7 @@ export const AvatarUpload = ({
             {initials || 'U'}
           </AvatarFallback>
         </Avatar>
-        
+
         {/* Upload overlay */}
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -173,7 +183,7 @@ export const AvatarUpload = ({
             </>
           )}
         </Button>
-        
+
         {currentAvatarUrl && (
           <Button
             variant="ghost"

@@ -89,12 +89,27 @@ interface LocalQuestion {
   isNew?: boolean;
 }
 
+/**
+ * Create/Edit Assignment page.
+ * 
+ * Form for creating or editing an assignment.
+ * Features:
+ * - Basic info (Title, description, instructions)
+ * - Settings (Due date, max points, late submissions)
+ * - Assignment Types:
+ *   - File Submission: With max file size
+ *   - Question Based: With interactive question builder (MCQ, Essay, etc.)
+ * - Risk Criteria configuration
+ * - Validations using zod schema
+ * 
+ * @returns {JSX.Element} The rendered Create/Edit Assignment page.
+ */
 export default function CreateAssignment() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const isEditMode = !!assignmentId;
-  
+
   const { courses = [] } = useTeacherCourses();
   const { data: existingAssignment, isLoading: assignmentLoading } = useAssignment(assignmentId || '');
   const { data: existingQuestions = [] } = useAssignmentQuestions(assignmentId || '');
@@ -105,7 +120,7 @@ export default function CreateAssignment() {
   const deleteQuestion = useDeleteAssignmentQuestion();
   const { data: questionBank = [] } = useQuestionBank();
   const incrementUsage = useIncrementQuestionUsage();
-  
+
   const [rubric, setRubric] = useState<RubricItem[]>([]);
   const [riskCriteria, setRiskCriteria] = useState<RiskCriterion[]>([]);
   const [questions, setQuestions] = useState<LocalQuestion[]>([]);
@@ -164,8 +179,8 @@ export default function CreateAssignment() {
         title: existingAssignment.title,
         description: existingAssignment.description || '',
         instructions: existingAssignment.instructions || '',
-        due_date: existingAssignment.due_date 
-          ? new Date(existingAssignment.due_date).toISOString().slice(0, 16) 
+        due_date: existingAssignment.due_date
+          ? new Date(existingAssignment.due_date).toISOString().slice(0, 16)
           : '',
         max_points: existingAssignment.max_points,
         allow_late_submissions: existingAssignment.allow_late_submissions,
@@ -182,7 +197,7 @@ export default function CreateAssignment() {
         risk_late_severity: (existingAssignment as any).risk_late_severity || 'low',
       });
       setRubric(existingAssignment.rubric || []);
-      
+
       // Initialize risk criteria from existing assignment
       const initialRiskCriteria: RiskCriterion[] = [
         {
@@ -238,7 +253,7 @@ export default function CreateAssignment() {
   };
 
   const updateRubricItem = (id: string, field: keyof RubricItem, value: string | number) => {
-    setRubric(rubric.map(item => 
+    setRubric(rubric.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
@@ -319,9 +334,9 @@ export default function CreateAssignment() {
       const bankQ = questionBank.find((q) => q.id === bankId);
       if (!bankQ) continue;
 
-      const type = bankQ.type === 'multiple_choice' ? 'multiple-choice' : 
-                   bankQ.type === 'multi_select' ? 'multi-select' : 
-                   bankQ.type as 'multiple-choice' | 'multi-select' | 'essay';
+      const type = bankQ.type === 'multiple_choice' ? 'multiple-choice' :
+        bankQ.type === 'multi_select' ? 'multi-select' :
+          bankQ.type as 'multiple-choice' | 'multi-select' | 'essay';
 
       newQuestions.push({
         id: crypto.randomUUID(),
@@ -353,8 +368,8 @@ export default function CreateAssignment() {
         description: data.description,
         instructions: data.instructions,
         due_date: data.due_date,
-        max_points: data.assignment_type === 'questions' 
-          ? questions.reduce((sum, q) => sum + q.points, 0) 
+        max_points: data.assignment_type === 'questions'
+          ? questions.reduce((sum, q) => sum + q.points, 0)
           : data.max_points,
         allow_late_submissions: data.allow_late_submissions,
         late_penalty_percent: data.late_penalty_percent,
@@ -382,7 +397,7 @@ export default function CreateAssignment() {
               .select('name')
               .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
               .single();
-            
+
             await sendCourseNotification({
               recipients,
               courseName: course?.title || 'Course',
@@ -398,7 +413,7 @@ export default function CreateAssignment() {
 
       if (isEditMode) {
         const wasPublished = existingAssignment?.status === 'published';
-        
+
         await updateAssignment.mutateAsync({
           id: assignmentId!,
           ...assignmentData,
@@ -410,7 +425,7 @@ export default function CreateAssignment() {
           const existingIds = existingQuestions.map(q => q.id);
           const currentIds = questions.filter(q => !q.isNew).map(q => q.id);
           const deletedIds = existingIds.filter(id => !currentIds.includes(id));
-          
+
           for (const id of deletedIds) {
             await deleteQuestion.mutateAsync({ id, assignmentId: assignmentId! });
           }
@@ -567,8 +582,8 @@ export default function CreateAssignment() {
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      {field.value === 'submission' 
-                        ? 'Students submit files or text content' 
+                      {field.value === 'submission'
+                        ? 'Students submit files or text content'
                         : 'Students answer questions (essay, multiple choice, multi-select)'}
                     </FormDescription>
                     <FormMessage />
@@ -597,9 +612,9 @@ export default function CreateAssignment() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Brief description of the assignment" 
-                        {...field} 
+                      <Textarea
+                        placeholder="Brief description of the assignment"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -614,10 +629,10 @@ export default function CreateAssignment() {
                   <FormItem>
                     <FormLabel>Instructions</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Detailed instructions for students" 
+                      <Textarea
+                        placeholder="Detailed instructions for students"
                         rows={5}
-                        {...field} 
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -666,10 +681,10 @@ export default function CreateAssignment() {
                 {assignmentType === 'questions' && (
                   <div className="space-y-2">
                     <Label>Total Points</Label>
-                    <Input 
-                      type="number" 
-                      value={questions.reduce((sum, q) => sum + q.points, 0)} 
-                      disabled 
+                    <Input
+                      type="number"
+                      value={questions.reduce((sum, q) => sum + q.points, 0)}
+                      disabled
                     />
                     <p className="text-xs text-muted-foreground">
                       Auto-calculated from question points
@@ -784,7 +799,7 @@ export default function CreateAssignment() {
                     const missed = newCriteria.find(c => c.type === 'missed');
                     const belowKkm = newCriteria.find(c => c.type === 'below_kkm');
                     const late = newCriteria.find(c => c.type === 'late');
-                    
+
                     if (missed) {
                       form.setValue('risk_on_missed', missed.enabled);
                       form.setValue('risk_missed_severity', missed.severity);

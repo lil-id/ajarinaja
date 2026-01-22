@@ -17,6 +17,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
+/**
+ * Teacher Courses Management page.
+ * 
+ * Dashboard for managing courses.
+ * Features:
+ * - List of created courses (Draft/Published)
+ * - Create new course
+ * - Publish/Unpublish/Delete course actions
+ * - Navigate to course details
+ * 
+ * @returns {JSX.Element} The rendered Courses page.
+ */
 const TeacherCourses = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -24,7 +36,7 @@ const TeacherCourses = () => {
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
   const deleteCourse = useDeleteCourse();
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCourse, setNewCourse] = useState({ title: '', description: '' });
 
@@ -114,8 +126,8 @@ const TeacherCourses = () => {
                   onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
                 />
               </div>
-              <Button 
-                onClick={handleCreateCourse} 
+              <Button
+                onClick={handleCreateCourse}
                 className="w-full"
                 disabled={createCourse.isPending}
               >
@@ -147,7 +159,7 @@ const TeacherCourses = () => {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course, index) => (
-            <Card 
+            <Card
               key={course.id}
               className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden cursor-pointer"
               style={{ animationDelay: `${index * 100}ms` }}
@@ -155,8 +167,8 @@ const TeacherCourses = () => {
             >
               <div className="h-32 bg-gradient-hero flex items-center justify-center overflow-hidden">
                 {course.thumbnail_url ? (
-                  <img 
-                    src={course.thumbnail_url} 
+                  <img
+                    src={course.thumbnail_url}
                     alt={course.title}
                     className="w-full h-full object-cover"
                   />
@@ -167,11 +179,10 @@ const TeacherCourses = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-2 ${
-                      course.status === 'published' 
-                        ? 'bg-secondary/10 text-secondary' 
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-2 ${course.status === 'published'
+                        ? 'bg-secondary/10 text-secondary'
                         : 'bg-muted text-muted-foreground'
-                    }`}>
+                      }`}>
                       {course.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>
                     <CardTitle className="text-lg">{course.title}</CardTitle>
@@ -197,7 +208,7 @@ const TeacherCourses = () => {
                           {t('courses.publish')}
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         className="text-destructive"
                         onClick={() => handleDeleteCourse(course.id)}
                       >

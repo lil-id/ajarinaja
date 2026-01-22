@@ -29,6 +29,18 @@ interface CalendarEvent {
   isCustom?: boolean;
 }
 
+/**
+ * Teacher Calendar page.
+ * 
+ * Calendar view of all course events.
+ * Features:
+ * - Monthly view with event indicators
+ * - Day detail view
+ * - Event types: Exams, Assignments, Custom Events
+ * - Create/Delete custom events
+ * 
+ * @returns {JSX.Element} The rendered Calendar page.
+ */
 export default function TeacherCalendar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -45,7 +57,7 @@ export default function TeacherCalendar() {
 
   const { courses } = useTeacherCourses();
   const courseIds = courses.map((c) => c.id);
-  
+
   // Fetch all exams and assignments
   const { exams, isLoading: examsLoading } = useExams();
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
@@ -372,8 +384,8 @@ export default function TeacherCalendar() {
                             event.type === 'exam'
                               ? 'bg-destructive/20 text-destructive'
                               : event.type === 'assignment'
-                              ? 'bg-orange-500/20 text-orange-600 dark:text-orange-400'
-                              : 'bg-primary/20 text-primary'
+                                ? 'bg-orange-500/20 text-orange-600 dark:text-orange-400'
+                                : 'bg-primary/20 text-primary'
                           )}
                         >
                           {event.title}
@@ -420,11 +432,11 @@ export default function TeacherCalendar() {
                     <div
                       className={cn(
                         'p-2 rounded-lg',
-                        event.type === 'exam' 
-                          ? 'bg-destructive/10' 
-                          : event.type === 'assignment' 
-                          ? 'bg-orange-500/10'
-                          : 'bg-primary/10'
+                        event.type === 'exam'
+                          ? 'bg-destructive/10'
+                          : event.type === 'assignment'
+                            ? 'bg-orange-500/10'
+                            : 'bg-primary/10'
                       )}
                     >
                       {event.type === 'exam' ? (
@@ -441,11 +453,11 @@ export default function TeacherCalendar() {
                       <div className="flex gap-2 mt-1">
                         <Badge variant="outline" className={cn(
                           "text-xs",
-                          event.type === 'exam' 
-                            ? 'border-destructive text-destructive' 
-                            : event.type === 'assignment' 
-                            ? 'border-orange-500 text-orange-600'
-                            : 'border-primary text-primary'
+                          event.type === 'exam'
+                            ? 'border-destructive text-destructive'
+                            : event.type === 'assignment'
+                              ? 'border-orange-500 text-orange-600'
+                              : 'border-primary text-primary'
                         )}>
                           {event.type === 'exam' ? 'Exam' : event.type === 'assignment' ? 'Assignment' : 'Custom'}
                         </Badge>

@@ -10,6 +10,21 @@ import { demoExams, demoQuestions } from '@/data/demoData';
 import { toast } from 'sonner';
 import FormulaText from '@/components/FormulaText';
 
+/**
+ * Demo Student Exams list page.
+ * 
+ * Lists available published exams for the student to take.
+ * Features:
+ * - Exam details (duration, points, KKM)
+ * - "Start Exam" functionality (opens a simulated exam dialog)
+ * - Simulated exam interface with:
+ *   - Timer
+ *   - Progress tracking
+ *   - Question navigation
+ *   - Multiple choice and essay question support
+ * 
+ * @returns {JSX.Element} The rendered Student Exams page.
+ */
 export default function DemoStudentExams() {
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [isExamOpen, setIsExamOpen] = useState(false);
@@ -20,6 +35,10 @@ export default function DemoStudentExams() {
   const publishedExams = demoExams.filter(e => e.status === 'published');
   const currentExamQuestions = demoQuestions.filter(q => q.exam_id === selectedExam);
 
+  /**
+   * Initializes the exam session in the demo modal.
+   * @param {string} examId - The ID of the exam to start.
+   */
   const handleStartExam = (examId: string) => {
     setSelectedExam(examId);
     setCurrentQuestion(0);
@@ -153,16 +172,14 @@ export default function DemoStudentExams() {
                       {question.options.map((option, index) => (
                         <div
                           key={index}
-                          className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                            answers[question.id] === index
+                          className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${answers[question.id] === index
                               ? 'bg-primary/10 border-primary'
                               : 'hover:bg-muted'
-                          }`}
+                            }`}
                           onClick={() => setAnswers({ ...answers, [question.id]: index })}
                         >
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            answers[question.id] === index ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground'
-                          }`}>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${answers[question.id] === index ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground'
+                            }`}>
                             {String.fromCharCode(65 + index)}
                           </div>
                           <span><FormulaText text={option} /></span>

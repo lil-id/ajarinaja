@@ -6,6 +6,17 @@ import { Megaphone, Loader2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Student Announcements page.
+ * 
+ * Displays announcements from enrolled courses.
+ * Features:
+ * - Aggregated feed of announcements
+ * - Course context tags
+ * - Empty state handling
+ * 
+ * @returns {JSX.Element} The rendered Announcements page.
+ */
 const StudentAnnouncements = () => {
   const { t } = useTranslation();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
@@ -15,7 +26,7 @@ const StudentAnnouncements = () => {
   const isLoading = enrollmentsLoading || coursesLoading || announcementsLoading;
 
   const enrolledCourseIds = enrollments.map(e => e.course_id);
-  
+
   // Filter announcements for enrolled courses
   const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
 
@@ -48,7 +59,7 @@ const StudentAnnouncements = () => {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">{t('studentAnnouncements.noAnnouncementsYet')}</h3>
             <p className="text-muted-foreground text-center">
-              {enrolledCourseIds.length === 0 
+              {enrolledCourseIds.length === 0
                 ? t('studentAnnouncements.enrollToSee')
                 : t('studentAnnouncements.noTeacherPosts')}
             </p>
@@ -57,7 +68,7 @@ const StudentAnnouncements = () => {
       ) : (
         <div className="space-y-4">
           {myAnnouncements.map((announcement, index) => (
-            <Card 
+            <Card
               key={announcement.id}
               className="border-0 shadow-card animate-slide-up"
               style={{ animationDelay: `${index * 50}ms` }}

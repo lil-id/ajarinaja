@@ -13,6 +13,12 @@ const languages = [
   { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
 ];
 
+/**
+ * Component for switching between supported languages.
+ * Requires `react-i18next` configuration.
+ * 
+ * @returns {JSX.Element} The language switcher dropdown.
+ */
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
 

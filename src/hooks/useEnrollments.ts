@@ -19,6 +19,11 @@ export interface EnrollmentWithStudent extends Enrollment {
   };
 }
 
+/**
+ * Custom hook to fetch enrollments for the current student.
+ * 
+ * @returns {object} The enrollments, loading state, and error.
+ */
 export function useEnrollments() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -27,12 +32,12 @@ export function useEnrollments() {
     queryKey: ['enrollments', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      
+
       const { data, error } = await supabase
         .from('enrollments')
         .select('*')
         .eq('student_id', user.id);
-      
+
       if (error) throw error;
       return data as Enrollment[];
     },
@@ -67,6 +72,12 @@ export function useEnrollments() {
   return { enrollments, isLoading, error };
 }
 
+/**
+ * Custom hook to fetch enrollments for a specific course (teacher view).
+ * 
+ * @param {string} courseId - The ID of the course.
+ * @returns {object} The course enrollments with student details, loading state, and error.
+ */
 export function useCourseEnrollments(courseId: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -84,22 +95,22 @@ export function useCourseEnrollments(courseId: string) {
         `)
         .eq('course_id', courseId)
         .order('enrolled_at', { ascending: false });
-      
+
       if (error) throw error;
 
       // Fetch student profiles
       if (data.length === 0) return [];
-      
+
       const studentIds = data.map(e => e.student_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, name, email, avatar_url')
         .in('user_id', studentIds);
-      
+
       if (profilesError) throw profilesError;
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-      
+
       return data.map(enrollment => ({
         ...enrollment,
         student: profileMap.get(enrollment.student_id) || {
@@ -141,6 +152,11 @@ export function useCourseEnrollments(courseId: string) {
   return { enrollments, isLoading, error };
 }
 
+/**
+ * Custom hook to fetch all students in the system.
+ * 
+ * @returns {UseQueryResult} The query result containing all student profiles.
+ */
 export function useAllStudents() {
   const { user } = useAuth();
 
@@ -152,20 +168,20 @@ export function useAllStudents() {
         .from('user_roles')
         .select('user_id')
         .eq('role', 'student');
-      
+
       if (rolesError) throw rolesError;
-      
+
       if (!studentRoles || studentRoles.length === 0) return [];
-      
+
       const studentUserIds = studentRoles.map(r => r.user_id);
-      
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, name, email, avatar_url')
         .in('user_id', studentUserIds);
-      
+
       if (profilesError) throw profilesError;
-      
+
       return profiles || [];
     },
     enabled: !!user,
@@ -173,6 +189,11 @@ export function useAllStudents() {
 }
 
 // Get students enrolled in teacher's courses
+/**
+ * Custom hook to fetch students enrolled in any of the current teacher's courses.
+ * 
+ * @returns {UseQueryResult} The query result containing teacher's student profiles.
+ */
 export function useTeacherStudents() {
   const { user } = useAuth();
 
@@ -180,44 +201,49 @@ export function useTeacherStudents() {
     queryKey: ['teacher-students', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      
+
       // Get teacher's courses
       const { data: courses, error: coursesError } = await supabase
         .from('courses')
         .select('id')
         .eq('teacher_id', user.id);
-      
+
       if (coursesError) throw coursesError;
       if (!courses || courses.length === 0) return [];
-      
+
       const courseIds = courses.map(c => c.id);
-      
+
       // Get enrollments for these courses
       const { data: enrollments, error: enrollmentsError } = await supabase
         .from('enrollments')
         .select('student_id')
         .in('course_id', courseIds);
-      
+
       if (enrollmentsError) throw enrollmentsError;
       if (!enrollments || enrollments.length === 0) return [];
-      
+
       // Get unique student IDs
       const studentIds = [...new Set(enrollments.map(e => e.student_id))];
-      
+
       // Get profiles for these students
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, name, email, avatar_url')
         .in('user_id', studentIds);
-      
+
       if (profilesError) throw profilesError;
-      
+
       return profiles || [];
     },
     enabled: !!user,
   });
 }
 
+/**
+ * Mutation hook to enroll in a course (student side).
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useEnroll() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -225,7 +251,7 @@ export function useEnroll() {
   return useMutation({
     mutationFn: async (courseId: string) => {
       if (!user) throw new Error('Not authenticated');
-      
+
       const { data, error } = await supabase
         .from('enrollments')
         .insert({
@@ -234,7 +260,7 @@ export function useEnroll() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -254,6 +280,11 @@ interface EnrollStudentParams {
   teacherName: string;
 }
 
+/**
+ * Mutation hook to enroll a student in a course (teacher side).
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useTeacherEnrollStudent() {
   const queryClient = useQueryClient();
 
@@ -267,7 +298,7 @@ export function useTeacherEnrollStudent() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
 
       // Send enrollment notification email using the new unified service
@@ -302,6 +333,11 @@ export function useTeacherEnrollStudent() {
   });
 }
 
+/**
+ * Mutation hook to unenroll a student from a course (teacher side).
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useTeacherUnenrollStudent() {
   const queryClient = useQueryClient();
 
@@ -311,7 +347,7 @@ export function useTeacherUnenrollStudent() {
         .from('enrollments')
         .delete()
         .eq('id', enrollmentId);
-      
+
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
@@ -321,6 +357,11 @@ export function useTeacherUnenrollStudent() {
   });
 }
 
+/**
+ * Mutation hook to unenroll all students from a course.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useTeacherUnenrollAllStudents() {
   const queryClient = useQueryClient();
 
@@ -330,7 +371,7 @@ export function useTeacherUnenrollAllStudents() {
         .from('enrollments')
         .delete()
         .eq('course_id', courseId);
-      
+
       if (error) throw error;
     },
     onSuccess: (_, courseId) => {
@@ -340,6 +381,11 @@ export function useTeacherUnenrollAllStudents() {
   });
 }
 
+/**
+ * Mutation hook to unenroll from a course (student side).
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUnenroll() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -347,13 +393,13 @@ export function useUnenroll() {
   return useMutation({
     mutationFn: async (courseId: string) => {
       if (!user) throw new Error('Not authenticated');
-      
+
       const { error } = await supabase
         .from('enrollments')
         .delete()
         .eq('student_id', user.id)
         .eq('course_id', courseId);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

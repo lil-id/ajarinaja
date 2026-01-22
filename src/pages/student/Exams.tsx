@@ -13,6 +13,18 @@ import { FileText, Clock, Award, ArrowRight, CheckCircle, Loader2, Eye, Calendar
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
+/**
+ * Student Exams page.
+ * 
+ * Hub for all exam-related activities.
+ * Features:
+ * - Exam list filtering (Available, Completed, Upcoming)
+ * - Status indicators (Taken, Graded, Pending)
+ * - Timed availability checks
+ * - Search and course filtering
+ * 
+ * @returns {JSX.Element} The rendered Exams page.
+ */
 const StudentExams = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -28,18 +40,18 @@ const StudentExams = () => {
 
   const enrolledCourseIds = enrollments.map(e => e.course_id);
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
-  
+
   const now = new Date();
-  
+
   // Filter exams: published, enrolled, and within schedule (if set)
   const allAvailableExams = exams.filter(e => {
     if (e.status !== 'published') return false;
     if (!enrolledCourseIds.includes(e.course_id)) return false;
-    
+
     // Check schedule if dates are set
     if (e.start_date && new Date(e.start_date) > now) return false;
     if (e.end_date && new Date(e.end_date) < now) return false;
-    
+
     return true;
   });
 
@@ -64,7 +76,7 @@ const StudentExams = () => {
 
   const availableExams = filterExams(allAvailableExams);
   const upcomingExams = filterExams(allUpcomingExams);
-  
+
   const completedExamIds = submissions.map(s => s.exam_id);
   const completedExams = availableExams.filter(e => completedExamIds.includes(e.id));
   const pendingExams = availableExams.filter(e => !completedExamIds.includes(e.id));
@@ -106,9 +118,8 @@ const StudentExams = () => {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                isCompleted ? 'bg-secondary/10' : 'bg-primary/10'
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isCompleted ? 'bg-secondary/10' : 'bg-primary/10'
+                }`}>
                 {isCompleted ? (
                   <CheckCircle className="w-6 h-6 text-secondary" />
                 ) : (
@@ -139,7 +150,7 @@ const StudentExams = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               {isCompleted && submission && (
                 <div className="text-right">
@@ -150,7 +161,7 @@ const StudentExams = () => {
                 </div>
               )}
               {isCompleted ? (
-                <Button 
+                <Button
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -161,7 +172,7 @@ const StudentExams = () => {
                   {t('exams.viewResults')}
                 </Button>
               ) : (
-                <Button 
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/student/exam/${exam.id}`);
@@ -182,7 +193,7 @@ const StudentExams = () => {
     const course = courses.find(c => c.id === exam.course_id);
 
     return (
-      <Card 
+      <Card
         key={exam.id}
         className="border-0 shadow-card opacity-75 animate-slide-up"
         style={{ animationDelay: `${index * 100}ms` }}
@@ -211,7 +222,7 @@ const StudentExams = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="text-right">
               <p className="text-sm text-muted-foreground">{t('exams.availableFrom')}</p>
               <p className="text-sm font-medium text-foreground">
@@ -267,8 +278,8 @@ const StudentExams = () => {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">{t('exams.noExams')}</h3>
             <p className="text-muted-foreground text-center">
-              {searchQuery || selectedCourse !== 'all' 
-                ? t('exams.noExamsMatchSearch') 
+              {searchQuery || selectedCourse !== 'all'
+                ? t('exams.noExamsMatchSearch')
                 : t('exams.enrollToAccessExams')}
             </p>
           </CardContent>

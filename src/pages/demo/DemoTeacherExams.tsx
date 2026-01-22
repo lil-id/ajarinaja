@@ -14,6 +14,19 @@ import { demoExams, demoCourses, demoQuestions } from '@/data/demoData';
 import { toast } from 'sonner';
 import FormulaText from '@/components/FormulaText';
 
+/**
+ * Demo Teacher Exams management page.
+ * 
+ * Comprehensive interface for creating and managing exams.
+ * Features:
+ * - Exam list with status and details
+ * - Detailed exam creation wizard
+ * - Question management (Add/Remove questions)
+ * - Support for multiple question types (MCQ, Multi-select, Essay)
+ * - Exam preview panel
+ * 
+ * @returns {JSX.Element} The rendered Teacher Exams page.
+ */
 export default function DemoTeacherExams() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -170,7 +183,7 @@ export default function DemoTeacherExams() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setQuestions(questions.filter((_,i) => i !== index))}
+                              onClick={() => setQuestions(questions.filter((_, i) => i !== index))}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>

@@ -14,6 +14,11 @@ export interface Notification {
   created_at: string;
 }
 
+/**
+ * Custom hook to fetch notifications for the current user.
+ * 
+ * @returns {UseQueryResult} The query result containing notifications.
+ */
 export const useNotifications = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -22,7 +27,7 @@ export const useNotifications = () => {
     queryKey: ['notifications', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
+
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -89,11 +94,21 @@ export const useNotifications = () => {
   return query;
 };
 
+/**
+ * Custom hook to get the count of unread notifications.
+ * 
+ * @returns {number} The number of unread notifications.
+ */
 export const useUnreadNotificationCount = () => {
   const { data: notifications } = useNotifications();
   return notifications?.filter((n) => !n.read).length || 0;
 };
 
+/**
+ * Mutation hook to mark a notification as read.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export const useMarkNotificationRead = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -113,6 +128,11 @@ export const useMarkNotificationRead = () => {
   });
 };
 
+/**
+ * Mutation hook to mark all notifications as read.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export const useMarkAllNotificationsRead = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -120,7 +140,7 @@ export const useMarkAllNotificationsRead = () => {
   return useMutation({
     mutationFn: async () => {
       if (!user?.id) return;
-      
+
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })

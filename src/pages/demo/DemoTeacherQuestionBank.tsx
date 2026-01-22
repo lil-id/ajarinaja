@@ -8,15 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Database, 
-  Plus, 
-  Search, 
-  Filter, 
-  Tag, 
-  BookOpen, 
-  Edit, 
-  Trash2, 
+import {
+  Database,
+  Plus,
+  Search,
+  Filter,
+  Tag,
+  BookOpen,
+  Edit,
+  Trash2,
   Copy,
   Lock,
   CheckCircle2
@@ -26,6 +26,18 @@ import { toast } from 'sonner';
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 
+/**
+ * Demo Teacher Question Bank page.
+ * 
+ * A centralized repository for managing exam questions.
+ * Features:
+ * - Question list with filtering (Category, Type) and search
+ * - Support for LaTeX rendering in questions
+ * - "Add Question" modal
+ * - Detailed view of question usage stats
+ * 
+ * @returns {JSX.Element} The rendered Question Bank page.
+ */
 export default function DemoTeacherQuestionBank() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -126,7 +138,7 @@ export default function DemoTeacherQuestionBank() {
               </div>
               <div className="space-y-2">
                 <Label>Question</Label>
-                <Textarea 
+                <Textarea
                   placeholder="Enter your question here. Use $...$ for LaTeX formulas."
                   className="min-h-[100px]"
                 />
@@ -256,8 +268,8 @@ export default function DemoTeacherQuestionBank() {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <QuestionList 
-            questions={filteredQuestions} 
+          <QuestionList
+            questions={filteredQuestions}
             renderQuestion={renderQuestion}
             getTypeColor={getTypeColor}
             handleAction={handleAction}
@@ -266,8 +278,8 @@ export default function DemoTeacherQuestionBank() {
 
         {categories.map(cat => (
           <TabsContent key={cat} value={cat} className="space-y-4">
-            <QuestionList 
-              questions={filteredQuestions.filter(q => q.category === cat)} 
+            <QuestionList
+              questions={filteredQuestions.filter(q => q.category === cat)}
               renderQuestion={renderQuestion}
               getTypeColor={getTypeColor}
               handleAction={handleAction}
@@ -312,7 +324,7 @@ function QuestionList({ questions, renderQuestion, getTypeColor, handleAction }:
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={getTypeColor(question.type)}>
                     {question.type === 'multiple-choice' ? 'Multiple Choice' :
-                     question.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
+                      question.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
                   </Badge>
                   <Badge variant="outline">{question.category}</Badge>
                   <Badge variant="secondary">{question.points} pts</Badge>
@@ -324,13 +336,12 @@ function QuestionList({ questions, renderQuestion, getTypeColor, handleAction }:
                 {question.options && (
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {question.options.map((opt, idx) => (
-                      <div 
-                        key={idx} 
-                        className={`text-xs p-2 rounded border ${
-                          question.type === 'multi-select' 
+                      <div
+                        key={idx}
+                        className={`text-xs p-2 rounded border ${question.type === 'multi-select'
                             ? (question.correct_answers?.includes(idx) ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : '')
                             : (question.correct_answer === idx ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : '')
-                        }`}
+                          }`}
                       >
                         {renderQuestion(opt)}
                         {question.type === 'multi-select' && question.correct_answers?.includes(idx) && (

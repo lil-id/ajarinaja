@@ -4,6 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
+/**
+ * Student Settings page.
+ * 
+ * Application settings and preferences.
+ * Features:
+ * - Notification preferences (Email, Exam reminders, Grades)
+ * - Account management (Danger zone)
+ * 
+ * @returns {JSX.Element} The rendered Settings page.
+ */
 const StudentSettings = () => {
   const { t } = useTranslation();
 

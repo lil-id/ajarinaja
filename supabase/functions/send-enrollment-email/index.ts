@@ -7,6 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Interface for the enrollment email request payload.
+ */
 interface EnrollmentEmailRequest {
   studentEmail: string;
   studentName: string;
@@ -14,6 +17,13 @@ interface EnrollmentEmailRequest {
   teacherName: string;
 }
 
+/**
+ * Request handler for the send-enrollment-email edge function.
+ * Handles CORS, parses request body, and sends enrollment confirmation via Gmail SMTP.
+ * 
+ * @param {Request} req - The incoming request.
+ * @returns {Promise<Response>} The response object.
+ */
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {

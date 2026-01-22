@@ -13,15 +13,26 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Teacher Announcements page.
+ * 
+ * Allows teachers to manage course announcements.
+ * Features:
+ * - Create new announcements for specific courses
+ * - View history of posted announcements
+ * - Delete announcements
+ * 
+ * @returns {JSX.Element} The rendered Announcements page.
+ */
 const TeacherAnnouncements = () => {
   const { t } = useTranslation();
   const { courses } = useTeacherCourses();
   const courseIds = courses.map(c => c.id);
-  
+
   // Fetch all announcements for teacher's courses
   const { announcements, isLoading } = useAnnouncements();
   const teacherAnnouncements = announcements.filter(a => courseIds.includes(a.course_id));
-  
+
   const createAnnouncement = useCreateAnnouncement();
   const deleteAnnouncement = useDeleteAnnouncement();
 
@@ -170,7 +181,7 @@ const TeacherAnnouncements = () => {
       ) : (
         <div className="space-y-4">
           {teacherAnnouncements.map((announcement, index) => (
-            <Card 
+            <Card
               key={announcement.id}
               className="border-0 shadow-card animate-slide-up"
               style={{ animationDelay: `${index * 50}ms` }}

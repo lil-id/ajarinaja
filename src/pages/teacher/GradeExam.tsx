@@ -34,6 +34,19 @@ const BADGE_COLORS: Record<string, string> = {
 
 type FilterType = 'all' | 'passed' | 'failed' | 'pending';
 
+/**
+ * Grade Exam page.
+ * 
+ * Interface for grading student exam submissions.
+ * Features:
+ * - List of submissions with status
+ * - Auto-grading for objective questions (MCQ, Multi-select)
+ * - Manual grading for Essay questions
+ * - Awarding badges to students
+ * - Detailed submission review
+ * 
+ * @returns {JSX.Element} The rendered Grade Exam page.
+ */
 const GradeExam = () => {
   const { t } = useTranslation();
   const { examId } = useParams<{ examId: string }>();
@@ -45,7 +58,7 @@ const GradeExam = () => {
   const { data: studentBadges = [] } = useStudentBadges();
   const awardBadge = useAwardBadge();
   const createBadge = useCreateBadge();
-  
+
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionWithStudent | null>(null);
   const [essayScores, setEssayScores] = useState<Record<string, number>>({});
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
@@ -114,8 +127,8 @@ const GradeExam = () => {
         const studentAnswers = answer.map(Number).sort();
         const correctSorted = [...correctAnswers].sort();
         // Check if arrays are equal
-        if (studentAnswers.length === correctSorted.length && 
-            studentAnswers.every((val, idx) => val === correctSorted[idx])) {
+        if (studentAnswers.length === correctSorted.length &&
+          studentAnswers.every((val, idx) => val === correctSorted[idx])) {
           score += q.points;
         }
       }
@@ -138,8 +151,8 @@ const GradeExam = () => {
   };
 
   const handleToggleBadge = (badgeId: string) => {
-    setSelectedBadges(prev => 
-      prev.includes(badgeId) 
+    setSelectedBadges(prev =>
+      prev.includes(badgeId)
         ? prev.filter(id => id !== badgeId)
         : [...prev, badgeId]
     );
@@ -183,7 +196,7 @@ const GradeExam = () => {
       for (const badgeId of selectedBadges) {
         const alreadyAwarded = getStudentBadgesForExam(selectedSubmission.student_id)
           .some(sb => sb.badge_id === badgeId);
-        
+
         if (!alreadyAwarded) {
           await awardBadge.mutateAsync({
             studentId: selectedSubmission.student_id,
@@ -205,7 +218,7 @@ const GradeExam = () => {
 
   const ungradedCount = submissions.filter(s => !s.graded).length;
   const gradedCount = submissions.filter(s => s.graded).length;
-  
+
   // Pass/fail counting based on KKM (direct integer comparison)
   const gradedSubmissions = submissions.filter(s => s.graded && s.score !== null);
   const passedCount = kkm > 0 ? gradedSubmissions.filter(s => s.score !== null && s.score >= kkm).length : 0;
@@ -265,7 +278,7 @@ const GradeExam = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
           {filteredSubmissions.length === 0 ? (
             <Card className="border-0 shadow-card">
               <CardContent className="py-8 text-center">
@@ -280,7 +293,7 @@ const GradeExam = () => {
                 const submissionBadges = getStudentBadgesForExam(submission.student_id);
                 const passStatus = getPassStatus(submission);
                 return (
-                  <Card 
+                  <Card
                     key={submission.id}
                     className={cn(
                       "border-0 shadow-card cursor-pointer transition-all hover:shadow-card-hover",
@@ -315,8 +328,8 @@ const GradeExam = () => {
                                 {new Date(submission.submitted_at).toLocaleDateString()}
                               </p>
                               {passStatus && (
-                                <Badge 
-                                  variant="outline" 
+                                <Badge
+                                  variant="outline"
                                   className={cn(
                                     "text-[10px] px-1.5 py-0",
                                     passStatus === 'passed' && "bg-green-50 text-green-700 border-green-300",
@@ -335,7 +348,7 @@ const GradeExam = () => {
                               {submissionBadges.slice(0, 3).map((sb) => {
                                 const BadgeIcon = BADGE_ICONS[sb.badge?.icon || 'award'] || Award;
                                 return (
-                                  <div 
+                                  <div
                                     key={sb.id}
                                     className={cn(
                                       "w-6 h-6 rounded-full border flex items-center justify-center",
@@ -349,8 +362,8 @@ const GradeExam = () => {
                             </div>
                           )}
                           {submission.graded ? (
-                            <Badge 
-                              variant="secondary" 
+                            <Badge
+                              variant="secondary"
                               className={cn(
                                 "gap-1",
                                 passStatus === 'passed' && "bg-green-100 text-green-700",
@@ -409,8 +422,8 @@ const GradeExam = () => {
                         const answer = selectedSubmission.answers[q.id];
                         const isCorrect = answer !== undefined && Number(answer) === q.correct_answer;
                         return (
-                          <div 
-                            key={q.id} 
+                          <div
+                            key={q.id}
                             className={cn(
                               "p-4 rounded-lg border",
                               isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
@@ -458,8 +471,8 @@ const GradeExam = () => {
                         if (Array.isArray(answer) && correctAnswers.length > 0) {
                           const studentAnswers = answer.map(Number).sort();
                           const correctSorted = [...correctAnswers].sort();
-                          if (studentAnswers.length === correctSorted.length && 
-                              studentAnswers.every((val, idx) => val === correctSorted[idx])) {
+                          if (studentAnswers.length === correctSorted.length &&
+                            studentAnswers.every((val, idx) => val === correctSorted[idx])) {
                             return sum + q.points;
                           }
                         }
@@ -472,12 +485,12 @@ const GradeExam = () => {
                         const correctAnswers = q.correct_answers || [];
                         const studentAnswers = Array.isArray(answer) ? answer.map(Number).sort() : [];
                         const correctSorted = [...correctAnswers].sort();
-                        const isCorrect = studentAnswers.length === correctSorted.length && 
+                        const isCorrect = studentAnswers.length === correctSorted.length &&
                           studentAnswers.every((val, idx) => val === correctSorted[idx]);
-                        
+
                         return (
-                          <div 
-                            key={q.id} 
+                          <div
+                            key={q.id}
                             className={cn(
                               "p-4 rounded-lg border",
                               isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
@@ -490,9 +503,9 @@ const GradeExam = () => {
                                   {q.options?.map((option: string, optIdx: number) => {
                                     const wasSelected = studentAnswers.includes(optIdx);
                                     const isCorrectAnswer = correctAnswers.includes(optIdx);
-                                    
+
                                     return (
-                                      <div 
+                                      <div
                                         key={optIdx}
                                         className={cn(
                                           "flex items-center gap-2 text-sm px-2 py-1 rounded",
@@ -663,7 +676,7 @@ const GradeExam = () => {
                       const isSelected = selectedBadges.includes(badge.id);
                       const alreadyAwarded = getStudentBadgesForExam(selectedSubmission.student_id)
                         .some(sb => sb.badge_id === badge.id);
-                      
+
                       return (
                         <button
                           key={badge.id}
@@ -671,9 +684,9 @@ const GradeExam = () => {
                           disabled={alreadyAwarded}
                           className={cn(
                             "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
-                            alreadyAwarded 
-                              ? "opacity-50 cursor-not-allowed bg-muted" 
-                              : isSelected 
+                            alreadyAwarded
+                              ? "opacity-50 cursor-not-allowed bg-muted"
+                              : isSelected
                                 ? cn(BADGE_COLORS[badge.color], "ring-2 ring-offset-1 ring-secondary")
                                 : "hover:bg-muted"
                           )}
@@ -710,9 +723,9 @@ const GradeExam = () => {
                       <span className="text-muted-foreground font-normal text-lg">/{exam.total_points}</span>
                     </p>
                   </div>
-                  <Button 
-                    variant="hero" 
-                    size="lg" 
+                  <Button
+                    variant="hero"
+                    size="lg"
                     onClick={handleGrade}
                     disabled={gradeSubmission.isPending || awardBadge.isPending}
                   >

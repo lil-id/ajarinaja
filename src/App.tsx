@@ -88,6 +88,24 @@ import DemoStudentMaterials from "./pages/demo/DemoStudentMaterials";
 
 const queryClient = new QueryClient();
 
+/**
+ * Root Application Component.
+ * 
+ * Configures global providers:
+ * - QueryClientProvider: React Query cache
+ * - AuthProvider: User authentication state
+ * - TooltipProvider: UI tooltips
+ * - Toaster: Toast notifications
+ * - BrowserRouter: Client-side routing
+ * 
+ * Defines all application routes:
+ * - Public routes (Home, Login, Reset Password)
+ * - Teacher routes (Protected, /teacher/*)
+ * - Student routes (Protected, /student/*)
+ * - Demo routes (/demo/*)
+ * 
+ * @returns {JSX.Element} The root application tree.
+ */
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -101,7 +119,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            
+
             {/* Teacher Routes */}
             <Route path="/teacher" element={
               <ProtectedRoute requiredRole="teacher">
@@ -168,7 +186,7 @@ const App = () => (
                 <DemoLayout />
               </DemoProvider>
             }>
-            {/* Teacher Demo */}
+              {/* Teacher Demo */}
               <Route path="teacher" element={<DemoTeacherOverview />} />
               <Route path="teacher/courses" element={<DemoTeacherCourses />} />
               <Route path="teacher/exams" element={<DemoTeacherExams />} />
@@ -181,7 +199,7 @@ const App = () => (
               <Route path="teacher/analytics" element={<DemoTeacherAnalytics />} />
               <Route path="teacher/calendar" element={<DemoTeacherCalendar />} />
               <Route path="teacher/announcements" element={<DemoTeacherAnnouncements />} />
-              
+
               {/* Student Demo */}
               <Route path="student" element={<DemoStudentDashboard />} />
               <Route path="student/courses" element={<DemoStudentCourses />} />

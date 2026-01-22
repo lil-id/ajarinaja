@@ -92,6 +92,9 @@ const SYMBOLS = {
   ],
 };
 
+/**
+ * Props for the VisualEquationBuilder component.
+ */
 interface VisualEquationBuilderProps {
   value: string;
   onChange: (value: string) => void;
@@ -103,6 +106,13 @@ interface VisualEquationBuilderProps {
   compact?: boolean; // Show minimal toolbar for inline use
 }
 
+/**
+ * A visual editor for building geometric and scientific equations.
+ * Provides a toolbar with common math symbols, templates, and a preview.
+ * 
+ * @param {VisualEquationBuilderProps} props - Component props.
+ * @returns {JSX.Element} The visual equation builder component.
+ */
 const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
   value,
   onChange,
@@ -221,7 +231,7 @@ const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
         {!compact && (
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="text-xs font-medium text-muted-foreground">Structures:</span>
-            
+
             <Button
               type="button"
               variant="outline"

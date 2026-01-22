@@ -9,6 +9,11 @@ interface UpdateProfileData {
   bio?: string;
 }
 
+/**
+ * Mutation hook to update the user's profile.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -16,14 +21,14 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: async (updates: UpdateProfileData) => {
       if (!user) throw new Error('Not authenticated');
-      
+
       const { data, error } = await supabase
         .from('profiles')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('user_id', user.id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },

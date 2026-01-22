@@ -18,6 +18,9 @@ import { arrayMove } from '@dnd-kit/sortable';
 import SortableList from '@/components/SortableContext';
 import SortableItem from '@/components/SortableItem';
 
+/**
+ * Interface representing a risk criterion configuration.
+ */
 export interface RiskCriterion {
   id: string;
   type: 'missed' | 'below_kkm' | 'late' | 'custom';
@@ -52,6 +55,9 @@ const PRESET_CRITERIA: Omit<RiskCriterion, 'id'>[] = [
   },
 ];
 
+/**
+ * Props for the RiskCriteriaBuilder component.
+ */
 interface RiskCriteriaBuilderProps {
   criteria: RiskCriterion[];
   onChange: (criteria: RiskCriterion[]) => void;
@@ -79,6 +85,13 @@ const typeIcons = {
   custom: AlertTriangle,
 };
 
+/**
+ * Component for configuring risk criteria for students.
+ * Allows teachers to enable/disable preset criteria and add custom ones.
+ * 
+ * @param {RiskCriteriaBuilderProps} props - Component props.
+ * @returns {JSX.Element} The risk criteria builder interface.
+ */
 const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
   criteria,
   onChange,
@@ -134,10 +147,10 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
     const isPreset = criterion.type !== 'custom';
 
     return (
-      <Card 
+      <Card
         className={cn(
           'transition-all',
-          criterion.enabled 
+          criterion.enabled
             ? severityColors[criterion.severity]
             : 'opacity-60 border-dashed'
         )}
@@ -151,10 +164,10 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
             )}>
               <Icon className={cn(
                 'h-5 w-5',
-                criterion.enabled 
+                criterion.enabled
                   ? criterion.severity === 'high' ? 'text-destructive'
                     : criterion.severity === 'medium' ? 'text-orange-500'
-                    : 'text-yellow-500'
+                      : 'text-yellow-500'
                   : 'text-muted-foreground'
               )} />
             </div>
@@ -186,7 +199,7 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                     </>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-3 ml-4">
                   <Switch
                     checked={criterion.enabled}
@@ -212,7 +225,7 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                   <Label className="text-sm text-muted-foreground">Risk Level:</Label>
                   <Select
                     value={criterion.severity}
-                    onValueChange={(v: 'high' | 'medium' | 'low') => 
+                    onValueChange={(v: 'high' | 'medium' | 'low') =>
                       updateCriterion(criterion.id, { severity: v })
                     }
                   >
@@ -240,7 +253,7 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                  
+
                   {/* Severity badge preview */}
                   <span className={cn(
                     'text-xs px-2 py-0.5 rounded-full font-medium',
@@ -266,7 +279,7 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
           <div>
             <h3 className="font-medium">Risk Monitoring Criteria</h3>
             <p className="text-sm text-muted-foreground">
-              {enabledCount > 0 
+              {enabledCount > 0
                 ? `${enabledCount} criteria active - students matching these will be flagged as at-risk`
                 : 'Enable criteria to monitor student performance'}
             </p>
@@ -281,8 +294,8 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
       >
         <div className="space-y-3">
           {criteria.map((criterion) => (
-            <SortableItem 
-              key={criterion.id} 
+            <SortableItem
+              key={criterion.id}
               id={criterion.id}
               showHandle={criterion.type === 'custom'}
             >

@@ -24,6 +24,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Context provider for authentication state and methods.
+ * Handles user sessions, profile fetching, and role management.
+ * 
+ * @param {object} props - Component props.
+ * @param {ReactNode} props.children - Child components to render.
+ * @returns {JSX.Element} The provider component.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -38,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
-      
+
       if (profileData) {
         setProfile(profileData);
       }
@@ -48,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('role')
         .eq('user_id', userId)
         .maybeSingle();
-      
+
       if (roleData) {
         setRole(roleData.role as 'teacher' | 'student');
       }
@@ -63,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           // Defer profile fetch to avoid deadlock
           setTimeout(() => {
@@ -92,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string, role: 'teacher' | 'student') => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -104,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
-    
+
     return { error };
   };
 
@@ -113,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
     });
-    
+
     return { error };
   };
 
@@ -126,21 +134,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      profile, 
-      role, 
-      signUp, 
-      signIn, 
-      signOut, 
-      isLoading 
+    <AuthContext.Provider value={{
+      user,
+      session,
+      profile,
+      role,
+      signUp,
+      signIn,
+      signOut,
+      isLoading
     }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+/**
+ * Custom hook to access the authentication context.
+ * 
+ * @returns {AuthContextType} The authentication context value.
+ * @throws {Error} If used outside of an AuthProvider.
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

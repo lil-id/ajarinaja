@@ -16,12 +16,12 @@ import { useExams } from '@/hooks/useExams';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { useAssignments } from '@/hooks/useAssignments';
 import { exportToCSV, exportToPDF } from '@/lib/exportUtils';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { 
-  TrendingUp, Users, Award, Target, BookOpen, 
+import {
+  TrendingUp, Users, Award, Target, BookOpen,
   CheckCircle, XCircle, Loader2, BarChart3, PieChartIcon,
   Download, FileText, FileSpreadsheet, ClipboardList
 } from 'lucide-react';
@@ -31,6 +31,18 @@ import { useQuery } from '@tanstack/react-query';
 
 const CHART_COLORS = ['hsl(var(--secondary))', 'hsl(var(--primary))', '#f59e0b', '#ef4444', '#8b5cf6'];
 
+/**
+ * Teacher Analytics page.
+ * 
+ * Provides comprehensive analytics for teacher's courses.
+ * Features:
+ * - Stats overview (Total students, submissions, avg score, pass rate)
+ * - Performance charts (Bar chart for scores, Pie chart for status)
+ * - Detailed table data for exams and assignments
+ * - Export functionality (CSV, PDF)
+ * 
+ * @returns {JSX.Element} The rendered Analytics page.
+ */
 const TeacherAnalytics = () => {
   const navigate = useNavigate();
 
@@ -38,7 +50,7 @@ const TeacherAnalytics = () => {
   const { exams, isLoading: examsLoading } = useExams();
   const { submissions: examSubmissions, isLoading: examSubmissionsLoading } = useSubmissions();
   const { data: allAssignments = [], isLoading: assignmentsLoading } = useAssignments();
-  
+
   // Fetch assignment submissions
   const { data: assignmentSubmissions = [], isLoading: assignmentSubmissionsLoading } = useQuery({
     queryKey: ['all-assignment-submissions'],
@@ -61,12 +73,12 @@ const TeacherAnalytics = () => {
       return data;
     },
   });
-  
+
   // Default to first course instead of 'all'
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [analyticsType, setAnalyticsType] = useState<string>('exams');
 
-  const isLoading = coursesLoading || examsLoading || examSubmissionsLoading || 
+  const isLoading = coursesLoading || examsLoading || examSubmissionsLoading ||
     assignmentsLoading || assignmentSubmissionsLoading || questionSubmissionsLoading;
 
   // Set default course when courses load
@@ -78,8 +90,8 @@ const TeacherAnalytics = () => {
   const teacherCourseIds = courses.map(c => c.id);
   const teacherExams = exams.filter(e => teacherCourseIds.includes(e.course_id));
   const teacherAssignments = allAssignments.filter(a => teacherCourseIds.includes(a.course_id));
-  
-  const filteredExams = selectedCourse 
+
+  const filteredExams = selectedCourse
     ? teacherExams.filter(e => e.course_id === selectedCourse)
     : teacherExams;
 
@@ -105,8 +117,8 @@ const TeacherAnalytics = () => {
     const kkm = (exam as any).kkm || 60;
     return (s.score || 0) >= kkm;
   }).length;
-  const examPassRate = gradedExamSubmissions.length > 0 
-    ? Math.round((examPassCount / gradedExamSubmissions.length) * 100) 
+  const examPassRate = gradedExamSubmissions.length > 0
+    ? Math.round((examPassCount / gradedExamSubmissions.length) * 100)
     : 0;
 
   // Assignment analytics calculations
@@ -130,8 +142,8 @@ const TeacherAnalytics = () => {
     const kkm = (assignment as any).kkm || 60;
     return (s.score || 0) >= kkm;
   }).length;
-  const assignmentPassRate = gradedAssignmentSubs.length > 0 
-    ? Math.round((assignmentPassCount / gradedAssignmentSubs.length) * 100) 
+  const assignmentPassRate = gradedAssignmentSubs.length > 0
+    ? Math.round((assignmentPassCount / gradedAssignmentSubs.length) * 100)
     : 0;
 
   // Score distribution for exams
@@ -182,7 +194,7 @@ const TeacherAnalytics = () => {
     const totalScore = subs.reduce((sum, s) => sum + (s.score || 0), 0);
     const avgScore = subs.length > 0 ? Math.round(totalScore / subs.length) : 0;
     const passedCount = subs.filter(s => (s.score || 0) >= kkm).length;
-    
+
     return {
       id: exam.id,
       name: exam.title.length > 20 ? exam.title.substring(0, 20) + '...' : exam.title,
@@ -203,7 +215,7 @@ const TeacherAnalytics = () => {
     const totalScore = subs.reduce((sum, s) => sum + (s.score || 0), 0);
     const avgScore = subs.length > 0 ? Math.round(totalScore / subs.length) : 0;
     const passedCount = subs.filter(s => (s.score || 0) >= kkm).length;
-    
+
     return {
       id: assignment.id,
       name: assignment.title.length > 20 ? assignment.title.substring(0, 20) + '...' : assignment.title,
@@ -218,7 +230,7 @@ const TeacherAnalytics = () => {
   }).filter(a => a.submissions > 0);
 
   // Current analytics data based on type
-  const currentStats = analyticsType === 'exams' 
+  const currentStats = analyticsType === 'exams'
     ? { students: examTotalStudents, submissions: examTotalSubmissions, avgScore: examAvgScore, passRate: examPassRate, kkm: examKKM }
     : { students: assignmentTotalStudents, submissions: assignmentTotalSubmissions, avgScore: assignmentAvgScore, passRate: assignmentPassRate, kkm: assignmentKKM };
 
@@ -228,16 +240,16 @@ const TeacherAnalytics = () => {
 
   // Export handlers
   const handleExportCSV = () => {
-    const courseName = selectedCourse 
+    const courseName = selectedCourse
       ? courses.find(c => c.id === selectedCourse)?.title
       : 'All Courses';
-    
+
     // Map performance data to have consistent totalPoints field
     const performanceData = currentPerformance.map(p => ({
       ...p,
       totalPoints: (p as any).totalPoints || (p as any).maxPoints || 0,
     }));
-    
+
     exportToCSV({
       totalStudents: currentStats.students,
       totalSubmissions: currentStats.submissions,
@@ -248,21 +260,21 @@ const TeacherAnalytics = () => {
       courseName,
       exportDate: new Date().toLocaleDateString(),
     }, `${analyticsType}-analytics-${new Date().toISOString().split('T')[0]}`);
-    
+
     toast.success('CSV report downloaded');
   };
 
   const handleExportPDF = () => {
-    const courseName = selectedCourse 
+    const courseName = selectedCourse
       ? courses.find(c => c.id === selectedCourse)?.title
       : undefined;
-    
+
     // Map performance data to have consistent totalPoints field
     const performanceData = currentPerformance.map(p => ({
       ...p,
       totalPoints: (p as any).totalPoints || (p as any).maxPoints || 0,
     }));
-    
+
     exportToPDF({
       totalStudents: currentStats.students,
       totalSubmissions: currentStats.submissions,
@@ -273,7 +285,7 @@ const TeacherAnalytics = () => {
       courseName,
       exportDate: new Date().toLocaleDateString(),
     }, `${analyticsType}-analytics-${new Date().toISOString().split('T')[0]}`);
-    
+
     toast.success('PDF report downloaded');
   };
 
@@ -295,7 +307,7 @@ const TeacherAnalytics = () => {
             Track student performance across exams and assignments
           </p>
         </div>
-        
+
         <div className="flex gap-3">
           <Select value={selectedCourse} onValueChange={setSelectedCourse}>
             <SelectTrigger className="w-[200px]">
@@ -309,7 +321,7 @@ const TeacherAnalytics = () => {
               ))}
             </SelectContent>
           </Select>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -365,7 +377,7 @@ const TeacherAnalytics = () => {
   );
 
   function renderAnalyticsContent(type: 'exams' | 'assignments') {
-    const stats = type === 'exams' 
+    const stats = type === 'exams'
       ? { students: examTotalStudents, submissions: examTotalSubmissions, avgScore: examAvgScore, passRate: examPassRate, kkm: examKKM }
       : { students: assignmentTotalStudents, submissions: assignmentTotalSubmissions, avgScore: assignmentAvgScore, passRate: assignmentPassRate, kkm: assignmentKKM };
 
@@ -452,20 +464,20 @@ const TeacherAnalytics = () => {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={performance}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
+                    <XAxis
+                      dataKey="name"
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
                     />
-                    <YAxis 
+                    <YAxis
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
                       label={{ value: 'Avg Score', angle: -90, position: 'insideLeft' }}
                       allowDecimals={false}
                       tickFormatter={(value) => Math.floor(value).toString()}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
+                    <Tooltip
+                      contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'
@@ -480,9 +492,9 @@ const TeacherAnalytics = () => {
                         return item?.fullName || label;
                       }}
                     />
-                    <Bar 
-                      dataKey="avgScore" 
-                      fill="hsl(var(--secondary))" 
+                    <Bar
+                      dataKey="avgScore"
+                      fill="hsl(var(--secondary))"
                       radius={[4, 4, 0, 0]}
                       name="avgScore"
                     />
@@ -523,8 +535,8 @@ const TeacherAnalytics = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
+                    <Tooltip
+                      contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'

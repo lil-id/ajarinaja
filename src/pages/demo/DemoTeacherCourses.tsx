@@ -10,6 +10,17 @@ import { Plus, BookOpen, Users, FileText, Lock } from 'lucide-react';
 import { demoCourses } from '@/data/demoData';
 import { toast } from 'sonner';
 
+/**
+ * Demo Teacher Courses management page.
+ * 
+ * Displays and manages the teacher's courses.
+ * Features:
+ * - Course grid with quick stats (enrolled students, exams count)
+ * - "Create Course" modal
+ * - Status badges (Published/Draft)
+ * 
+ * @returns {JSX.Element} The rendered Teacher Courses page.
+ */
 export default function DemoTeacherCourses() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newCourse, setNewCourse] = useState({ title: '', description: '' });

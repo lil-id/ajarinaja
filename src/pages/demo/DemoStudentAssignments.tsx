@@ -6,6 +6,19 @@ import { Clock, Award, Upload, FileText, AlertCircle } from 'lucide-react';
 import { demoAssignments } from '@/data/demoData';
 import { format } from 'date-fns';
 
+/**
+ * Demo Student Assignments page.
+ * 
+ * Lists all assignments for the student demo user.
+ * Features:
+ * - Status indicators (Pending, Overdue)
+ * - Assignment type badges (File Upload, Questions)
+ * - Due date and points display
+ * - Late submission penalty notices
+ * - Navigation to assignment submission detail
+ * 
+ * @returns {JSX.Element} The rendered Student Assignments page.
+ */
 export default function DemoStudentAssignments() {
   const navigate = useNavigate();
   const publishedAssignments = demoAssignments.filter(a => a.status === 'published');
@@ -21,7 +34,7 @@ export default function DemoStudentAssignments() {
         {publishedAssignments.map((assignment) => {
           const dueDate = new Date(assignment.due_date);
           const isOverdue = dueDate < new Date();
-          
+
           return (
             <Card key={assignment.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -34,7 +47,7 @@ export default function DemoStudentAssignments() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">{assignment.course_title}</p>
-                
+
                 <div className="flex flex-wrap gap-2 text-sm">
                   <Badge variant="outline">
                     <Award className="h-3 w-3 mr-1" />

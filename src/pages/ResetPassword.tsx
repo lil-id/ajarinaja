@@ -8,6 +8,16 @@ import { GraduationCap, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * ResetPassword component.
+ * 
+ * Handles the actual password reset process after the user clicks the link in their email.
+ * Verifies the validity of the current session (link validity).
+ * Allows the user to set a new password.
+ * Redirects to login upon success.
+ * 
+ * @returns {JSX.Element} The rendered Reset Password page.
+ */
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,13 +38,13 @@ const ResetPassword = () => {
         navigate('/forgot-password');
       }
     };
-    
+
     checkSession();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
@@ -54,7 +64,7 @@ const ResetPassword = () => {
       } else {
         setIsSuccess(true);
         toast.success('Password updated successfully!');
-        
+
         // Sign out and redirect to login after 2 seconds
         setTimeout(async () => {
           await supabase.auth.signOut();
@@ -93,7 +103,7 @@ const ResetPassword = () => {
               {isSuccess ? 'Password Updated' : 'Reset Password'}
             </CardTitle>
             <CardDescription>
-              {isSuccess 
+              {isSuccess
                 ? 'Your password has been successfully updated'
                 : 'Enter your new password below'}
             </CardDescription>

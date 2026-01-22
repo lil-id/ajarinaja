@@ -5,14 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  FileText, Video, File, FileImage, Download, Play, Eye, Search, 
-  Filter, BookOpen, Clock, CheckCircle 
+import {
+  FileText, Video, File, FileImage, Download, Play, Eye, Search,
+  Filter, BookOpen, Clock, CheckCircle
 } from 'lucide-react';
 import { demoCourses } from '@/data/demoData';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * Interface representing a course material item in the demo.
+ * @interface DemoMaterial
+ */
 interface DemoMaterial {
   id: string;
   course_id: string;
@@ -112,6 +116,11 @@ const extendedDemoMaterials: DemoMaterial[] = [
   },
 ];
 
+/**
+ * Selects an appropriate icon based on the material type.
+ * @param {DemoMaterial} material - The material item.
+ * @returns {import('lucide-react').LucideIcon} The Lucide icon component.
+ */
 const getFileIcon = (material: DemoMaterial) => {
   if (material.video_url) return Video;
   if (!material.file_type) return File;
@@ -134,6 +143,18 @@ const extractYouTubeId = (url: string) => {
   return match && match[2].length === 11 ? match[2] : null;
 };
 
+/**
+ * Demo Student Materials page.
+ * 
+ * Provides a centralized view of all learning materials across enrolled courses.
+ * Features:
+ * - Search and filtering (by course, by type)
+ * - Quick stats (total, watched, etc.)
+ * - Grouped or flat list view of materials
+ * - Integrated material viewer (simulated video/PDF)
+ * 
+ * @returns {JSX.Element} The rendered Student Materials page.
+ */
 const DemoStudentMaterials = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [courseFilter, setCourseFilter] = useState<string>('all');
@@ -178,7 +199,7 @@ const DemoStudentMaterials = () => {
   const renderMaterialCard = (material: DemoMaterial) => {
     const FileIcon = getFileIcon(material);
     const isVideo = !!material.video_url;
-    
+
     return (
       <div
         key={material.id}
@@ -416,7 +437,7 @@ const DemoStudentMaterials = () => {
                 <FileText className="h-20 w-20 text-blue-500 mb-4" />
                 <h3 className="font-semibold text-lg mb-2">{selectedMaterial.file_name}</h3>
                 <p className="text-muted-foreground text-center max-w-md mb-6">
-                  Demo Mode: PDF preview is simulated. In the full version, 
+                  Demo Mode: PDF preview is simulated. In the full version,
                   documents are displayed with full navigation and zoom controls.
                 </p>
                 <div className="flex gap-4">
@@ -425,11 +446,11 @@ const DemoStudentMaterials = () => {
                     Download PDF
                   </Button>
                 </div>
-                
+
                 {/* Simulated PDF pages */}
                 <div className="mt-8 flex gap-4">
                   {[1, 2, 3].map(page => (
-                    <div 
+                    <div
                       key={page}
                       className="w-24 h-32 bg-white border-2 border-gray-200 rounded shadow-sm flex items-center justify-center"
                     >

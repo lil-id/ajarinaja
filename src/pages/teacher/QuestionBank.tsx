@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Trash2, 
-  Edit, 
-  Copy, 
+import {
+  Plus,
+  Search,
+  Filter,
+  Trash2,
+  Edit,
+  Copy,
   Library,
   Tag,
   Loader2,
@@ -62,6 +62,9 @@ import {
 import FormulaInput from "@/components/FormulaInput";
 import FormulaText from "@/components/FormulaText";
 
+/**
+ * Form data structure for creating/editing questions.
+ */
 interface QuestionFormData {
   question: string;
   type: string;
@@ -86,6 +89,19 @@ const defaultFormData: QuestionFormData = {
   tags: [],
 };
 
+/**
+ * Question Bank management page.
+ * 
+ * Repository for storing and organizing exam questions.
+ * Features:
+ * - List questions with filters (Category, Course, Type)
+ * - Create new questions (MCQ, Multi-select, Essay)
+ * - Edit/Duplicate/Delete questions
+ * - Organize by custom categories and courses
+ * - Search functionality
+ * 
+ * @returns {JSX.Element} The rendered Question Bank page.
+ */
 export default function QuestionBank() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,7 +157,7 @@ export default function QuestionBank() {
     }
 
     const isChoiceType = formData.type === "multiple_choice" || formData.type === "multi_select";
-    
+
     if (isChoiceType) {
       const filledOptions = formData.options.filter((o) => o.trim());
       if (filledOptions.length < 2) {

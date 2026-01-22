@@ -11,19 +11,22 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTeacherCourses } from '@/hooks/useCourses';
-import { 
-  useCourseMaterials, 
-  useUploadMaterial, 
+import {
+  useCourseMaterials,
+  useUploadMaterial,
   useAddVideoMaterial,
-  useDeleteMaterial, 
+  useDeleteMaterial,
   extractYouTubeId,
-  getYouTubeThumbnail 
+  getYouTubeThumbnail
 } from '@/hooks/useCourseMaterials';
 import { FileText, Plus, Trash2, Loader2, Upload, File, Video, FileImage, Youtube, Link, Eye, ChevronDown, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MaterialViewer } from '@/components/MaterialViewer';
 
+/**
+ * Helper to determine icon based on file type.
+ */
 const getFileIcon = (fileType: string | null) => {
   if (!fileType) return File;
   if (fileType.startsWith('video/')) return Video;
@@ -40,14 +43,27 @@ const formatFileSize = (bytes: number | null) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+/**
+ * Teacher Course Materials page.
+ * 
+ * Dashboard for managing course resources.
+ * Features:
+ * - Upload files (PDF, Docs, Images, etc.)
+ * - Add YouTube video links
+ * - Organize materials by course
+ * - Preview materials
+ * - Delete materials
+ * 
+ * @returns {JSX.Element} The rendered Materials page.
+ */
 const TeacherMaterials = () => {
   const { t } = useTranslation();
   const { courses } = useTeacherCourses();
   const courseIds = courses.map(c => c.id);
-  
+
   const { materials, isLoading } = useCourseMaterials();
   const teacherMaterials = materials.filter(m => courseIds.includes(m.course_id));
-  
+
   const uploadMaterial = useUploadMaterial();
   const addVideoMaterial = useAddVideoMaterial();
   const deleteMaterial = useDeleteMaterial();
@@ -63,8 +79,8 @@ const TeacherMaterials = () => {
   const [expandedCourses, setExpandedCourses] = useState<Set<string>>(new Set());
 
   // Apply course filter
-  const filteredMaterials = selectedCourseFilter === 'all' 
-    ? teacherMaterials 
+  const filteredMaterials = selectedCourseFilter === 'all'
+    ? teacherMaterials
     : teacherMaterials.filter(m => m.course_id === selectedCourseFilter);
 
   // Group materials by course
@@ -232,7 +248,7 @@ const TeacherMaterials = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {uploadType === 'file' ? (
                 <div className="space-y-2">
                   <Label>File</Label>
@@ -282,8 +298,8 @@ const TeacherMaterials = () => {
                   </div>
                   {form.videoUrl && extractYouTubeId(form.videoUrl) && (
                     <div className="mt-2 rounded-lg overflow-hidden border">
-                      <img 
-                        src={getYouTubeThumbnail(extractYouTubeId(form.videoUrl)!)} 
+                      <img
+                        src={getYouTubeThumbnail(extractYouTubeId(form.videoUrl)!)}
                         alt="Video thumbnail"
                         className="w-full h-32 object-cover"
                       />
@@ -304,7 +320,7 @@ const TeacherMaterials = () => {
                   maxLength={200}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Description (optional)</Label>
                 <Textarea
@@ -315,7 +331,7 @@ const TeacherMaterials = () => {
                   maxLength={500}
                 />
               </div>
-              
+
               <Button
                 onClick={handleUpload}
                 className="w-full"
@@ -410,7 +426,7 @@ const TeacherMaterials = () => {
         <div className="space-y-4">
           {Object.entries(materialsByCourse).map(([courseId, courseMaterials]) => {
             const isExpanded = expandedCourses.has(courseId);
-            
+
             return (
               <Collapsible
                 key={courseId}
@@ -431,10 +447,9 @@ const TeacherMaterials = () => {
                           </p>
                         </div>
                       </div>
-                      <ChevronDown 
-                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`} 
+                      <ChevronDown
+                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </div>
                   </CollapsibleTrigger>
@@ -444,9 +459,9 @@ const TeacherMaterials = () => {
                         const isVideo = !!material.video_url;
                         const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
                         const FileIcon = isVideo ? Youtube : getFileIcon(material.file_type);
-                        
+
                         return (
-                          <div 
+                          <div
                             key={material.id}
                             className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors animate-slide-up cursor-pointer"
                             style={{ animationDelay: `${index * 50}ms` }}
@@ -454,8 +469,8 @@ const TeacherMaterials = () => {
                           >
                             {isVideo && videoId ? (
                               <div className="w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                                <img 
-                                  src={getYouTubeThumbnail(videoId)} 
+                                <img
+                                  src={getYouTubeThumbnail(videoId)}
                                   alt={material.title}
                                   className="w-full h-full object-cover"
                                 />

@@ -21,6 +21,18 @@ interface CalendarEvent {
   isPastDue: boolean;
 }
 
+/**
+ * Student Calendar page.
+ * 
+ * Timeline view of course deadlines.
+ * Features:
+ * - Monthly calendar view
+ * - Event indicators for Exams and Assignments
+ * - Interactive date selection for daily details
+ * - "Upcoming Deadlines" alert system
+ * 
+ * @returns {JSX.Element} The rendered Calendar page.
+ */
 export default function StudentCalendar() {
   const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -292,12 +304,12 @@ export default function StudentCalendar() {
                       <p className="font-medium text-sm truncate">{event.title}</p>
                       <p className="text-xs text-muted-foreground">{event.courseName}</p>
                       <div className="flex gap-2 mt-1 flex-wrap">
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className={cn(
                             "text-xs",
-                            event.type === 'exam' 
-                              ? 'border-destructive text-destructive' 
+                            event.type === 'exam'
+                              ? 'border-destructive text-destructive'
                               : 'border-orange-500 text-orange-600 dark:text-orange-400'
                           )}
                         >

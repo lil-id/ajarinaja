@@ -53,18 +53,24 @@ export interface AssignmentSubmission {
   rubric_scores: { id: string; score: number }[];
 }
 
+/**
+ * Custom hook to fetch assignments for a specific course.
+ * 
+ * @param {string} [courseId] - The ID of the course.
+ * @returns {UseQueryResult} The query result containing assignments.
+ */
 export function useAssignments(courseId?: string) {
   return useQuery({
     queryKey: ['assignments', courseId],
     queryFn: async () => {
       let query = supabase.from('assignments').select('*');
-      
+
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
-      
+
       const { data, error } = await query.order('due_date', { ascending: true });
-      
+
       if (error) throw error;
       return (data || []).map(a => ({
         ...a,
@@ -74,6 +80,12 @@ export function useAssignments(courseId?: string) {
   });
 }
 
+/**
+ * Custom hook to fetch a single assignment by ID.
+ * 
+ * @param {string} assignmentId - The ID of the assignment.
+ * @returns {UseQueryResult} The query result containing the assignment details.
+ */
 export function useAssignment(assignmentId: string) {
   return useQuery({
     queryKey: ['assignment', assignmentId],
@@ -83,7 +95,7 @@ export function useAssignment(assignmentId: string) {
         .select('*')
         .eq('id', assignmentId)
         .single();
-      
+
       if (error) throw error;
       return {
         ...data,
@@ -94,6 +106,11 @@ export function useAssignment(assignmentId: string) {
   });
 }
 
+/**
+ * Mutation hook to create a new assignment.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateAssignment() {
   const queryClient = useQueryClient();
 
@@ -120,7 +137,7 @@ export function useCreateAssignment() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -130,6 +147,11 @@ export function useCreateAssignment() {
   });
 }
 
+/**
+ * Mutation hook to update an existing assignment.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateAssignment() {
   const queryClient = useQueryClient();
 
@@ -144,7 +166,7 @@ export function useUpdateAssignment() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -154,6 +176,11 @@ export function useUpdateAssignment() {
   });
 }
 
+/**
+ * Mutation hook to delete an assignment.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteAssignment() {
   const queryClient = useQueryClient();
 
@@ -163,7 +190,7 @@ export function useDeleteAssignment() {
         .from('assignments')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -173,6 +200,13 @@ export function useDeleteAssignment() {
 }
 
 // Submissions hooks - handles both file-based and question-based submissions
+/**
+ * Custom hook to fetch submissions for an assignment.
+ * 
+ * @param {string} assignmentId - The ID of the assignment.
+ * @param {string} [assignmentType] - The type of the assignment (e.g., 'questions' or 'file').
+ * @returns {UseQueryResult} The query result containing assignment submissions.
+ */
 export function useAssignmentSubmissions(assignmentId: string, assignmentType?: string) {
   return useQuery({
     queryKey: ['assignment-submissions', assignmentId, assignmentType],
@@ -183,13 +217,13 @@ export function useAssignmentSubmissions(assignmentId: string, assignmentType?: 
           .from('assignment_question_submissions')
           .select('*')
           .eq('assignment_id', assignmentId);
-        
+
         if (error) throw error;
 
         const studentIds = [...new Set(submissions?.map(s => s.student_id) || [])];
-        
+
         if (studentIds.length === 0) return [];
-        
+
         const { data: profiles } = await supabase
           .from('profiles')
           .select('user_id, name, email')
@@ -203,20 +237,20 @@ export function useAssignmentSubmissions(assignmentId: string, assignmentType?: 
           student: profileMap.get(s.student_id) || null,
         }));
       }
-      
+
       // For file-based assignments (default)
       const { data: submissions, error } = await supabase
         .from('assignment_submissions')
         .select('*')
         .eq('assignment_id', assignmentId);
-      
+
       if (error) throw error;
 
       // Fetch student profiles separately
       const studentIds = [...new Set(submissions?.map(s => s.student_id) || [])];
-      
+
       if (studentIds.length === 0) return [];
-      
+
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, name, email')
@@ -234,6 +268,13 @@ export function useAssignmentSubmissions(assignmentId: string, assignmentType?: 
   });
 }
 
+/**
+ * Custom hook to fetch the current user's submission for an assignment.
+ * 
+ * @param {string} assignmentId - The ID of the assignment.
+ * @param {string} [assignmentType] - The type of the assignment.
+ * @returns {UseQueryResult} The query result containing the submission.
+ */
 export function useMyAssignmentSubmission(assignmentId: string, assignmentType?: string) {
   const { user } = useAuth();
 
@@ -241,7 +282,7 @@ export function useMyAssignmentSubmission(assignmentId: string, assignmentType?:
     queryKey: ['my-assignment-submission', assignmentId, user?.id, assignmentType],
     queryFn: async () => {
       if (!user) return null;
-      
+
       // For question-based assignments
       if (assignmentType === 'questions') {
         const { data, error } = await supabase
@@ -250,14 +291,14 @@ export function useMyAssignmentSubmission(assignmentId: string, assignmentType?:
           .eq('assignment_id', assignmentId)
           .eq('student_id', user.id)
           .maybeSingle();
-        
+
         if (error) throw error;
         return data ? {
           ...data,
           answers: data.answers as Record<string, string | number | number[]>,
         } : null;
       }
-      
+
       // For file-based assignments (default)
       const { data, error } = await supabase
         .from('assignment_submissions')
@@ -265,7 +306,7 @@ export function useMyAssignmentSubmission(assignmentId: string, assignmentType?:
         .eq('assignment_id', assignmentId)
         .eq('student_id', user.id)
         .maybeSingle();
-      
+
       if (error) throw error;
       return data ? {
         ...data,
@@ -276,6 +317,11 @@ export function useMyAssignmentSubmission(assignmentId: string, assignmentType?:
   });
 }
 
+/**
+ * Mutation hook to submit an assignment.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useSubmitAssignment() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -302,11 +348,11 @@ export function useSubmitAssignment() {
       if (file) {
         const ext = file.name.split('.').pop();
         filePath = `${user.id}/${assignmentId}/${Date.now()}.${ext}`;
-        
+
         const { error: uploadError } = await supabase.storage
           .from('assignment-submissions')
           .upload(filePath, file);
-        
+
         if (uploadError) throw uploadError;
 
         fileName = file.name;
@@ -333,7 +379,7 @@ export function useSubmitAssignment() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -344,6 +390,11 @@ export function useSubmitAssignment() {
   });
 }
 
+/**
+ * Mutation hook to grade an assignment submission.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useGradeAssignment() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -375,7 +426,7 @@ export function useGradeAssignment() {
         .eq('id', submissionId)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -385,16 +436,22 @@ export function useGradeAssignment() {
   });
 }
 
+/**
+ * Custom hook to get a signed URL for a submission file.
+ * 
+ * @param {string | null} filePath - The path to the file in storage.
+ * @returns {UseQueryResult} The query result containing the signed URL.
+ */
 export function useSubmissionFileUrl(filePath: string | null) {
   return useQuery({
     queryKey: ['submission-file-url', filePath],
     queryFn: async () => {
       if (!filePath) return null;
-      
+
       const { data, error } = await supabase.storage
         .from('assignment-submissions')
         .createSignedUrl(filePath, 3600);
-      
+
       if (error) throw error;
       return data.signedUrl;
     },

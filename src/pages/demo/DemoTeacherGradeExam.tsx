@@ -139,6 +139,19 @@ const BADGE_COLORS: Record<string, string> = {
 
 type FilterType = 'all' | 'passed' | 'failed' | 'pending';
 
+/**
+ * Demo Teacher Grade Exam page.
+ * 
+ * Interface for grading student exam submissions.
+ * Features:
+ * - Submission list with status indicators
+ * - Detailed grading view for answers
+ * - Automated scoring for objective questions
+ * - Manual grading for essays
+ * - Gamification: Badge awarding interface
+ * 
+ * @returns {JSX.Element} The rendered Grade Exam page.
+ */
 export default function DemoTeacherGradeExam() {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -162,6 +175,10 @@ export default function DemoTeacherGradeExam() {
     return getPassStatus(sub) === statusFilter;
   });
 
+  /**
+   * Calculates the total score for auto-gradable questions.
+   * @returns {number} The calculated score.
+   */
   const calculateMCScore = () => {
     if (!selectedSubmission) return 0;
     let score = 0;

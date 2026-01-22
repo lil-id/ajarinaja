@@ -15,6 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAtRiskStudents, RiskFactor } from '@/hooks/useAtRiskStudents';
 import { cn } from '@/lib/utils';
 
+/**
+ * Helper to get icon for specific risk factor types.
+ */
 const getRiskIcon = (type: RiskFactor['type']) => {
   switch (type) {
     case 'no_material_views': return BookOpen;
@@ -31,6 +34,19 @@ type SortField = 'name' | 'status' | 'courses';
 type SortOrder = 'asc' | 'desc';
 const ITEMS_PER_PAGE = 10;
 
+/**
+ * Teacher Students Management page.
+ * 
+ * Dashboard for monitoring student performance and enrollment.
+ * Features:
+ * - List of all enrolled students
+ * - At-Risk Student analysis (High/Medium/Low risk)
+ * - Filtering by status and course
+ * - Sorting/Pagination
+ * - Detailed risk factor display
+ * 
+ * @returns {JSX.Element} The rendered Students page.
+ */
 const TeacherStudents = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -41,7 +57,7 @@ const TeacherStudents = () => {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const courseIds = courses.map(c => c.id);
   const { atRiskStudents, isLoading: atRiskLoading, highRiskCount, mediumRiskCount, lowRiskCount } = useAtRiskStudents();

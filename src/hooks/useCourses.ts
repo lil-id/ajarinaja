@@ -21,6 +21,11 @@ export interface CourseWithTeacher extends Course {
   exam_count: number;
 }
 
+/**
+ * Custom hook to fetch all courses.
+ * 
+ * @returns {object} The courses, loading state, and error.
+ */
 export function useCourses() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -32,7 +37,7 @@ export function useCourses() {
         .from('courses')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Course[];
     },
@@ -67,6 +72,11 @@ export function useCourses() {
   return { courses, isLoading, error };
 }
 
+/**
+ * Custom hook to fetch courses created by the current teacher.
+ * 
+ * @returns {object} The teacher's courses, loading state, and error.
+ */
 export function useTeacherCourses() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -75,13 +85,13 @@ export function useTeacherCourses() {
     queryKey: ['teacher-courses', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      
+
       const { data, error } = await supabase
         .from('courses')
         .select('*')
         .eq('teacher_id', user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Course[];
     },
@@ -116,6 +126,11 @@ export function useTeacherCourses() {
   return { courses, isLoading, error };
 }
 
+/**
+ * Mutation hook to create a new course.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateCourse() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -123,7 +138,7 @@ export function useCreateCourse() {
   return useMutation({
     mutationFn: async ({ title, description }: { title: string; description: string }) => {
       if (!user) throw new Error('Not authenticated');
-      
+
       const { data, error } = await supabase
         .from('courses')
         .insert({
@@ -134,7 +149,7 @@ export function useCreateCourse() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -145,6 +160,11 @@ export function useCreateCourse() {
   });
 }
 
+/**
+ * Mutation hook to upload a course thumbnail.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUploadCourseThumbnail() {
   const queryClient = useQueryClient();
 
@@ -153,16 +173,16 @@ export function useUploadCourseThumbnail() {
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
       const filePath = `${courseId}/thumbnail.${fileExt}`;
-      
+
       // Delete existing thumbnail if any
       await supabase.storage
         .from('course-thumbnails')
         .remove([filePath]);
-      
+
       const { error: uploadError } = await supabase.storage
         .from('course-thumbnails')
         .upload(filePath, file, { upsert: true });
-      
+
       if (uploadError) throw uploadError;
 
       // Get public URL
@@ -177,7 +197,7 @@ export function useUploadCourseThumbnail() {
         .eq('id', courseId)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -188,6 +208,11 @@ export function useUploadCourseThumbnail() {
   });
 }
 
+/**
+ * Mutation hook to update an existing course.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateCourse() {
   const queryClient = useQueryClient();
 
@@ -199,7 +224,7 @@ export function useUpdateCourse() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -210,6 +235,11 @@ export function useUpdateCourse() {
   });
 }
 
+/**
+ * Mutation hook to delete a course.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteCourse() {
   const queryClient = useQueryClient();
 
@@ -219,7 +249,7 @@ export function useDeleteCourse() {
         .from('courses')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

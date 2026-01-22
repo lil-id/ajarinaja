@@ -20,6 +20,12 @@ export interface ExamWithResults {
 
 // This hook fetches exam data with correct answers for a student who has already submitted
 // It verifies the student has a submission before returning correct answers
+/**
+ * Custom hook to fetch exam results including correct answers for a student who has submitted.
+ * 
+ * @param {string} examId - The ID of the exam.
+ * @returns {UseQueryResult} The query result containing exam details and questions with correct answers.
+ */
 export function useExamResults(examId: string) {
   const { user } = useAuth();
 

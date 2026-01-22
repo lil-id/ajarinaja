@@ -8,6 +8,14 @@ import { GraduationCap, Loader2, ArrowLeft, Mail, CheckCircle } from 'lucide-rea
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * ForgotPassword component that allows users to request a password reset email.
+ * 
+ * This page provides a form for users to enter their email address.
+ * Use Supabase auth to send a password reset link to the provided email.
+ * 
+ * @returns {JSX.Element} The rendered Forgot Password page.
+ */
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +23,7 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       toast.error('Please enter your email address');
       return;
@@ -57,7 +65,7 @@ const ForgotPassword = () => {
               {isSuccess ? 'Check Your Email' : 'Forgot Password'}
             </CardTitle>
             <CardDescription>
-              {isSuccess 
+              {isSuccess
                 ? 'We\'ve sent you a password reset link'
                 : 'Enter your email to receive a password reset link'}
             </CardDescription>
@@ -70,14 +78,14 @@ const ForgotPassword = () => {
                     <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                   </div>
                   <p className="text-sm text-muted-foreground text-center">
-                    We've sent a password reset link to <strong>{email}</strong>. 
+                    We've sent a password reset link to <strong>{email}</strong>.
                     Please check your inbox and click the link to reset your password.
                   </p>
                 </div>
-                
+
                 <div className="space-y-3">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full"
                     onClick={() => {
                       setIsSuccess(false);
@@ -87,7 +95,7 @@ const ForgotPassword = () => {
                     <Mail className="w-4 h-4 mr-2" />
                     Try a different email
                   </Button>
-                  
+
                   <Link to="/login" className="block">
                     <Button variant="ghost" className="w-full">
                       <ArrowLeft className="w-4 h-4 mr-2" />

@@ -24,6 +24,12 @@ export interface RiskFactor {
   itemTitle?: string;
 }
 
+/**
+ * Custom hook to identify and analyze at-risk students based on various criteria.
+ * Criteria include: material engagement, missed deadlines, late submissions, and low scores.
+ * 
+ * @returns {object} Analysis results including at-risk students, statistics, and loading state.
+ */
 export function useAtRiskStudents() {
   const { user } = useAuth();
 
@@ -170,28 +176,28 @@ export function useAtRiskStudents() {
   const atRiskStudents = useMemo(() => {
     const courseMap = new Map(teacherCourses.map(c => [c.id, c.title]));
     const profileMap = new Map(profiles.map(p => [p.user_id, p]));
-    
+
     const results: AtRiskStudent[] = [];
-    
+
     // Group enrollments by student and course
     enrollments.forEach(enrollment => {
       const profile = profileMap.get(enrollment.student_id);
       if (!profile) return;
-      
+
       const courseId = enrollment.course_id;
       const courseName = courseMap.get(courseId) || 'Unknown Course';
       const riskFactors: RiskFactor[] = [];
-      
+
       // Check for low material views (as general engagement indicator)
       const courseMaterials = materials.filter(m => m.course_id === courseId);
       const studentMaterialViews = materialViews.filter(
         (v: any) => v.student_id === enrollment.student_id && v.course_materials?.course_id === courseId
       );
-      
-      const materialViewPercent = courseMaterials.length > 0 
-        ? (studentMaterialViews.length / courseMaterials.length) * 100 
+
+      const materialViewPercent = courseMaterials.length > 0
+        ? (studentMaterialViews.length / courseMaterials.length) * 100
         : 100;
-      
+
       // Low material engagement (general indicator, always checked)
       if (courseMaterials.length > 0 && materialViewPercent < 50 && studentMaterialViews.length === 0) {
         riskFactors.push({
@@ -201,19 +207,19 @@ export function useAtRiskStudents() {
           courseId,
         });
       }
-      
+
       // Check exams with per-item risk criteria
       const courseExams = exams.filter((e: any) => e.course_id === courseId);
       const studentExamSubmissions = examSubmissions.filter(
         (s: any) => s.student_id === enrollment.student_id && s.exams?.course_id === courseId
       );
-      
+
       courseExams.forEach((exam: any) => {
         const submission = studentExamSubmissions.find((s: any) => s.exam_id === exam.id);
         const now = new Date();
         const endDate = exam.end_date ? new Date(exam.end_date) : null;
         const isPastDeadline = endDate && now > endDate;
-        
+
         // Check if exam has risk_on_missed enabled and student hasn't submitted
         if (exam.risk_on_missed && isPastDeadline && !submission) {
           const severity = exam.risk_missed_severity || 'high';
@@ -225,7 +231,7 @@ export function useAtRiskStudents() {
             itemTitle: exam.title,
           });
         }
-        
+
         // Check if exam has risk_on_below_kkm enabled and score is below KKM
         if (exam.risk_on_below_kkm && submission && submission.graded && submission.score !== null) {
           if (exam.kkm && submission.score < exam.kkm) {
@@ -240,20 +246,20 @@ export function useAtRiskStudents() {
           }
         }
       });
-      
+
       // Check assignments with per-item risk criteria
       const courseAssignments = assignments.filter((a: any) => a.course_id === courseId);
       const studentAssignmentSubmissions = assignmentSubmissions.filter(
         (s: any) => s.student_id === enrollment.student_id && s.assignments?.course_id === courseId
       );
-      
+
       const now = new Date();
-      
+
       courseAssignments.forEach((assignment: any) => {
         const submission = studentAssignmentSubmissions.find((s: any) => s.assignment_id === assignment.id);
         const dueDate = new Date(assignment.due_date);
         const isPastDeadline = now > dueDate;
-        
+
         // Check if assignment has risk_on_missed enabled and student hasn't submitted
         if (assignment.risk_on_missed && isPastDeadline && !submission) {
           const severity = assignment.risk_missed_severity || 'high';
@@ -265,7 +271,7 @@ export function useAtRiskStudents() {
             itemTitle: assignment.title,
           });
         }
-        
+
         // Check if assignment has risk_on_late enabled and submission is late
         if (assignment.risk_on_late && submission && submission.is_late) {
           const severity = assignment.risk_late_severity || 'low';
@@ -277,7 +283,7 @@ export function useAtRiskStudents() {
             itemTitle: assignment.title,
           });
         }
-        
+
         // Check if assignment has risk_on_below_kkm enabled and score is below KKM
         if (assignment.risk_on_below_kkm && submission && submission.graded && submission.score !== null) {
           if (assignment.kkm && submission.score < assignment.kkm) {
@@ -292,19 +298,19 @@ export function useAtRiskStudents() {
           }
         }
       });
-      
+
       // Only add if there are risk factors
       if (riskFactors.length > 0) {
         const highCount = riskFactors.filter(r => r.severity === 'high').length;
         const mediumCount = riskFactors.filter(r => r.severity === 'medium').length;
-        
+
         let riskLevel: 'high' | 'medium' | 'low' = 'low';
         if (highCount >= 2 || (highCount >= 1 && mediumCount >= 1)) {
           riskLevel = 'high';
         } else if (highCount >= 1 || mediumCount >= 2) {
           riskLevel = 'medium';
         }
-        
+
         results.push({
           studentId: enrollment.student_id,
           studentName: profile.name,
@@ -316,7 +322,7 @@ export function useAtRiskStudents() {
         });
       }
     });
-    
+
     // Sort by risk level
     return results.sort((a, b) => {
       const riskOrder = { high: 0, medium: 1, low: 2 };

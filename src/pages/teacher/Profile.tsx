@@ -10,11 +10,22 @@ import { Loader2 } from 'lucide-react';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Teacher Profile page.
+ * 
+ * Manages teacher's personal information.
+ * Features:
+ * - Update name and bio
+ * - Upload avatar image
+ * - View email (read-only)
+ * 
+ * @returns {JSX.Element} The rendered Profile page.
+ */
 const TeacherProfile = () => {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const updateProfile = useUpdateProfile();
-  
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [bio, setBio] = useState('');
@@ -77,8 +88,8 @@ const TeacherProfile = () => {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">{t('profile.firstName')}</Label>
-                <Input 
-                  id="firstName" 
+                <Input
+                  id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder={t('profile.enterFirstName')}
@@ -87,8 +98,8 @@ const TeacherProfile = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">{t('profile.lastName')}</Label>
-                <Input 
-                  id="lastName" 
+                <Input
+                  id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder={t('profile.enterLastName')}
@@ -98,10 +109,10 @@ const TeacherProfile = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t('profile.email')}</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                defaultValue={profile?.email} 
+              <Input
+                id="email"
+                type="email"
+                defaultValue={profile?.email}
                 disabled
                 className="bg-muted"
               />
@@ -109,8 +120,8 @@ const TeacherProfile = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="bio">{t('profile.bio')}</Label>
-              <Textarea 
-                id="bio" 
+              <Textarea
+                id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder={t('profile.bioPlaceholder')}
@@ -121,8 +132,8 @@ const TeacherProfile = () => {
             </div>
           </div>
 
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={updateProfile.isPending || !hasChanges || !firstName.trim()}
           >
             {updateProfile.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

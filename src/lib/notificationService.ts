@@ -14,6 +14,12 @@ interface SendNotificationParams {
   description?: string;
 }
 
+/**
+ * Sends a course-related notification email via Supabase Edge Function.
+ * 
+ * @param {SendNotificationParams} params - The notification parameters.
+ * @returns {Promise<void>} A promise that resolves when the notification is sent (or logged on error).
+ */
 export async function sendCourseNotification(params: SendNotificationParams): Promise<void> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -38,8 +44,15 @@ export async function sendCourseNotification(params: SendNotificationParams): Pr
   }
 }
 
+/**
+ * Fetches the list of students enrolled in a specific course.
+ * 
+ * @param {any} supabase - The Supabase client instance.
+ * @param {string} courseId - The ID of the course.
+ * @returns {Promise<NotificationRecipient[]>} A promise that resolves to an array of recipients (email and name).
+ */
 export async function getEnrolledStudents(
-  supabase: any, 
+  supabase: any,
   courseId: string
 ): Promise<NotificationRecipient[]> {
   const { data: enrollments, error } = await supabase

@@ -7,6 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Users, FileText, TrendingUp, Loader2, ClipboardList, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Teacher Dashboard Overview page.
+ * 
+ * Main landing page for teachers.
+ * Features:
+ * - Key statistics (Total courses, Published, Exams, Assignments)
+ * - Quick actions shortcuts
+ * - Recent courses list
+ * - Welcome message with teacher name
+ * 
+ * @returns {JSX.Element} The rendered Overview page.
+ */
 const TeacherOverview = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -21,34 +33,34 @@ const TeacherOverview = () => {
   const teacherCourseIds = courses.map(c => c.id);
   const teacherExams = exams.filter(e => teacherCourseIds.includes(e.course_id));
   const teacherAssignments = assignments.filter(a => teacherCourseIds.includes(a.course_id));
-  
+
   const publishedCourses = courses.filter(c => c.status === 'published').length;
 
   const stats = [
-    { 
-      label: t('dashboard.totalCourses'), 
-      value: courses.length, 
+    {
+      label: t('dashboard.totalCourses'),
+      value: courses.length,
       icon: BookOpen,
       color: 'bg-primary/10 text-primary',
       href: '/teacher/courses'
     },
-    { 
-      label: t('common.published'), 
-      value: publishedCourses, 
+    {
+      label: t('common.published'),
+      value: publishedCourses,
       icon: TrendingUp,
       color: 'bg-secondary/10 text-secondary',
       href: '/teacher/courses'
     },
-    { 
-      label: t('dashboard.totalExams'), 
-      value: teacherExams.length, 
+    {
+      label: t('dashboard.totalExams'),
+      value: teacherExams.length,
       icon: FileText,
       color: 'bg-accent/20 text-accent-foreground',
       href: '/teacher/exams'
     },
-    { 
-      label: t('assignments.title'), 
-      value: teacherAssignments.length, 
+    {
+      label: t('assignments.title'),
+      value: teacherAssignments.length,
       icon: ClipboardList,
       color: 'bg-muted text-muted-foreground',
       href: '/teacher/assignments'
@@ -78,8 +90,8 @@ const TeacherOverview = () => {
       {/* Stats Grid - Clickable */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <Card 
-            key={stat.label} 
+          <Card
+            key={stat.label}
             className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
             style={{ animationDelay: `${index * 100}ms` }}
             onClick={() => navigate(stat.href)}
@@ -101,7 +113,7 @@ const TeacherOverview = () => {
 
       {/* Quick Actions */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card 
+        <Card
           className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
           onClick={() => navigate('/teacher/calendar')}
         >
@@ -115,8 +127,8 @@ const TeacherOverview = () => {
             </div>
           </CardContent>
         </Card>
-        
-        <Card 
+
+        <Card
           className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
           onClick={() => navigate('/teacher/students')}
         >
@@ -130,8 +142,8 @@ const TeacherOverview = () => {
             </div>
           </CardContent>
         </Card>
-        
-        <Card 
+
+        <Card
           className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
           onClick={() => navigate('/teacher/analytics')}
         >
@@ -162,7 +174,7 @@ const TeacherOverview = () => {
               courses.slice(0, 5).map((course) => {
                 const courseExams = teacherExams.filter(e => e.course_id === course.id);
                 return (
-                  <div 
+                  <div
                     key={course.id}
                     onClick={() => navigate(`/teacher/courses/${course.id}`)}
                     className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
@@ -178,11 +190,10 @@ const TeacherOverview = () => {
                         </p>
                       </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      course.status === 'published' 
-                        ? 'bg-secondary/10 text-secondary' 
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${course.status === 'published'
+                        ? 'bg-secondary/10 text-secondary'
                         : 'bg-muted text-muted-foreground'
-                    }`}>
+                      }`}>
                       {course.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>
                   </div>

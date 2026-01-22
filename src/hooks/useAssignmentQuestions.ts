@@ -15,6 +15,12 @@ export interface AssignmentQuestion {
   created_at: string;
 }
 
+/**
+ * Custom hook to fetch questions for a specific assignment.
+ * 
+ * @param {string} assignmentId - The ID of the assignment.
+ * @returns {UseQueryResult} The query result containing assignment questions.
+ */
 export function useAssignmentQuestions(assignmentId: string) {
   return useQuery({
     queryKey: ['assignment-questions', assignmentId],
@@ -24,7 +30,7 @@ export function useAssignmentQuestions(assignmentId: string) {
         .select('*')
         .eq('assignment_id', assignmentId)
         .order('order_index', { ascending: true });
-      
+
       if (error) throw error;
       return (data || []).map(q => ({
         ...q,
@@ -35,6 +41,11 @@ export function useAssignmentQuestions(assignmentId: string) {
   });
 }
 
+/**
+ * Mutation hook to add a new question to an assignment.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useAddAssignmentQuestion() {
   const queryClient = useQueryClient();
 
@@ -72,7 +83,7 @@ export function useAddAssignmentQuestion() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return {
         ...data,
@@ -85,6 +96,11 @@ export function useAddAssignmentQuestion() {
   });
 }
 
+/**
+ * Mutation hook to update an existing assignment question.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateAssignmentQuestion() {
   const queryClient = useQueryClient();
 
@@ -103,7 +119,7 @@ export function useUpdateAssignmentQuestion() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -113,6 +129,11 @@ export function useUpdateAssignmentQuestion() {
   });
 }
 
+/**
+ * Mutation hook to delete an assignment question.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteAssignmentQuestion() {
   const queryClient = useQueryClient();
 
@@ -122,7 +143,7 @@ export function useDeleteAssignmentQuestion() {
         .from('assignment_questions')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: (_, { assignmentId }) => {

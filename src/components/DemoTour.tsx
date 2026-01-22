@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  X, ChevronRight, ChevronLeft, BookOpen, FileText, 
-  ClipboardList, Users, BarChart2, GraduationCap, MessageSquare 
+import {
+  X, ChevronRight, ChevronLeft, BookOpen, FileText,
+  ClipboardList, Users, BarChart2, GraduationCap, MessageSquare
 } from 'lucide-react';
 
 interface TourStep {
@@ -93,11 +93,21 @@ const studentTourSteps: TourStep[] = [
   },
 ];
 
+/**
+ * Props for the DemoTour component.
+ */
 interface DemoTourProps {
   role: 'teacher' | 'student';
   onComplete?: () => void;
 }
 
+/**
+ * Interactive tour component for the demo mode.
+ * Guides users through key features based on their role (teacher/student).
+ * 
+ * @param {DemoTourProps} props - Component props.
+ * @returns {JSX.Element | null} The tour component overlay.
+ */
 export function DemoTour({ role, onComplete }: DemoTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -108,7 +118,7 @@ export function DemoTour({ role, onComplete }: DemoTourProps) {
     // Check if tour has been seen
     const tourKey = `demo-tour-${role}-seen`;
     const hasSeen = sessionStorage.getItem(tourKey);
-    
+
     if (!hasSeen) {
       // Small delay to let the page load
       const timer = setTimeout(() => setIsVisible(true), 500);
@@ -149,9 +159,9 @@ export function DemoTour({ role, onComplete }: DemoTourProps) {
       <Card className="w-full max-w-md mx-4 shadow-2xl border-2">
         <CardContent className="p-6">
           {/* Close button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="absolute top-2 right-2"
             onClick={handleSkip}
           >
@@ -174,23 +184,22 @@ export function DemoTour({ role, onComplete }: DemoTourProps) {
           {/* Progress dots */}
           <div className="flex justify-center gap-1.5 mb-6">
             {tourSteps.map((_, index) => (
-              <div 
+              <div
                 key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentStep 
-                    ? 'bg-primary' 
-                    : index < currentStep 
-                      ? 'bg-primary/50' 
+                className={`w-2 h-2 rounded-full transition-colors ${index === currentStep
+                    ? 'bg-primary'
+                    : index < currentStep
+                      ? 'bg-primary/50'
                       : 'bg-muted-foreground/30'
-                }`}
+                  }`}
               />
             ))}
           </div>
 
           {/* Navigation */}
           <div className="flex justify-between items-center">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={handlePrev}
               disabled={currentStep === 0}
             >

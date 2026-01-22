@@ -3,6 +3,17 @@ import { Badge } from '@/components/ui/badge';
 import { Users, BookOpen, FileText, ClipboardCheck, AlertTriangle, TrendingUp } from 'lucide-react';
 import { demoStats, demoCourses, demoExams, demoAssignments, demoStudents } from '@/data/demoData';
 
+/**
+ * Demo Teacher Overview page.
+ * 
+ * The main dashboard for the teacher demo.
+ * Displays:
+ * - Aggregate statistics (Students, Courses, Exams)
+ * - At-risk students alerts
+ * - Recent activity and course list
+ * 
+ * @returns {JSX.Element} The rendered Teacher Overview page.
+ */
 export default function DemoTeacherOverview() {
   const stats = demoStats.teacher;
   const atRiskStudents = demoStudents.filter(s => s.status === 'at-risk');

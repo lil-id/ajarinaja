@@ -47,6 +47,22 @@ import testimonialJames from "@/assets/testimonial-james.jpg";
 import testimonialSarah from "@/assets/testimonial-sarah.jpg";
 import testimonialEmily from "@/assets/testimonial-emily.jpg";
 
+/**
+ * Landing page component (`/`).
+ * 
+ * This is the main public page of the application, featuring:
+ * - Hero section with call-to-action
+ * - Features overview
+ * - Teacher-focused section
+ * - School/Institution section
+ * - Testimonials
+ * - FAQ
+ * - Footer
+ * 
+ * Uses `ScrollReveal` for animations and `lucide-react` for icons.
+ * 
+ * @returns {JSX.Element} The rendered landing page.
+ */
 const Index = () => {
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
@@ -93,7 +109,7 @@ const Index = () => {
             </div>
             <span className="text-xl font-bold text-foreground">AjarinAja</span>
           </div>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
@@ -112,12 +128,12 @@ const Index = () => {
               Courses
             </button>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <Button variant="ghost" disabled className="hidden sm:flex opacity-50 cursor-not-allowed">
               Sign In
             </Button>
-            
+
             {/* Mobile Hamburger Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild className="md:hidden">
@@ -136,7 +152,7 @@ const Index = () => {
                       <span className="text-xl font-bold text-foreground">AjarinAja</span>
                     </div>
                   </div>
-                  
+
                   {/* Navigation Links */}
                   <div className="flex-1 overflow-auto py-6">
                     <div className="flex flex-col space-y-1 px-4">
@@ -157,12 +173,12 @@ const Index = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Footer Actions */}
                   <div className="p-6 border-t border-border space-y-3">
-                    <Button 
-                      variant="outline" 
-                      className="w-full" 
+                    <Button
+                      variant="outline"
+                      className="w-full"
                       onClick={() => {
                         setMobileMenuOpen(false);
                         navigate("/demo/teacher");
@@ -171,9 +187,9 @@ const Index = () => {
                       <Eye className="w-4 h-4" />
                       Try Demo
                     </Button>
-                    <Button 
-                      variant="hero" 
-                      className="w-full" 
+                    <Button
+                      variant="hero"
+                      className="w-full"
                       onClick={() => {
                         setMobileMenuOpen(false);
                         handleContactDemo();
@@ -205,7 +221,7 @@ const Index = () => {
                 <span className="text-gradient block">Learning Management System</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                AjarinAja is the all-in-one LMS platform for modern educators. Manage courses, create assignments & exams, 
+                AjarinAja is the all-in-one LMS platform for modern educators. Manage courses, create assignments & exams,
                 track student progress, and deliver an exceptional learning experience.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -237,9 +253,9 @@ const Index = () => {
             </div>
             <div className="relative animate-slide-up">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <div 
+                <div
                   className="w-full h-[400px] md:h-[500px]"
-                  style={{ 
+                  style={{
                     transform: `translateY(${scrollY * 0.15}px) scale(${1 + scrollY * 0.0002})`,
                     transition: 'transform 0.1s ease-out'
                   }}
@@ -550,7 +566,7 @@ const Index = () => {
                 <div>
                   <h3 className="text-2xl font-bold text-foreground mb-3">Comprehensive Course Management</h3>
                   <p className="text-muted-foreground mb-4 leading-relaxed">
-                    Build rich, engaging courses with multiple content types. Upload videos, PDFs, and documents. 
+                    Build rich, engaging courses with multiple content types. Upload videos, PDFs, and documents.
                     Students access materials directly in-platform with our built-in viewer—no downloads required.
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -739,75 +755,75 @@ const Index = () => {
 
           <ScrollReveal animation="fade-up" delay={100}>
             <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="item-1" className="bg-card border border-border rounded-xl px-6">
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                What is AjarinAja and who is it for?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">
-                AjarinAja is a comprehensive Learning Management System (LMS) designed for schools, educational institutions, 
-                and independent educators. It provides tools for course management, assignment creation, exam administration, 
-                student progress tracking, and analytics — all in one platform.
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem value="item-1" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  What is AjarinAja and who is it for?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  AjarinAja is a comprehensive Learning Management System (LMS) designed for schools, educational institutions,
+                  and independent educators. It provides tools for course management, assignment creation, exam administration,
+                  student progress tracking, and analytics — all in one platform.
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="item-2" className="bg-card border border-border rounded-xl px-6">
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                How does the exam and assignment auto-grading work?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">
-                Our platform supports multiple choice, multiple answer, and essay-type questions. Multiple choice and 
-                multiple answer questions are automatically graded instantly upon submission. For essay questions, teachers 
-                can use our rubric-based grading system or provide manual feedback. All scores are automatically recorded 
-                and reflected in student analytics.
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem value="item-2" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  How does the exam and assignment auto-grading work?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Our platform supports multiple choice, multiple answer, and essay-type questions. Multiple choice and
+                  multiple answer questions are automatically graded instantly upon submission. For essay questions, teachers
+                  can use our rubric-based grading system or provide manual feedback. All scores are automatically recorded
+                  and reflected in student analytics.
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="item-3" className="bg-card border border-border rounded-xl px-6">
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                Can I upload course materials like PDFs and videos?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">
-                Yes! Teachers can upload various types of course materials including PDF documents, videos (via URL or direct upload), 
-                and other learning resources. Students can access these materials directly through their course dashboard, 
-                and teachers can track which materials have been viewed.
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem value="item-3" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  Can I upload course materials like PDFs and videos?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Yes! Teachers can upload various types of course materials including PDF documents, videos (via URL or direct upload),
+                  and other learning resources. Students can access these materials directly through their course dashboard,
+                  and teachers can track which materials have been viewed.
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="item-4" className="bg-card border border-border rounded-xl px-6">
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                How do I track student performance and identify at-risk students?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">
-                Our analytics dashboard provides comprehensive insights including score distributions, submission rates, 
-                and performance trends. The platform also includes an "At-Risk Students" feature that automatically 
-                identifies students who may need additional support based on factors like missed assignments, low scores, 
-                or late submissions — allowing for early intervention.
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem value="item-4" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  How do I track student performance and identify at-risk students?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Our analytics dashboard provides comprehensive insights including score distributions, submission rates,
+                  and performance trends. The platform also includes an "At-Risk Students" feature that automatically
+                  identifies students who may need additional support based on factors like missed assignments, low scores,
+                  or late submissions — allowing for early intervention.
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="item-5" className="bg-card border border-border rounded-xl px-6">
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                Is there a demo I can try before committing?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">
-                Absolutely! We offer an interactive demo that lets you explore the platform from both teacher and student 
-                perspectives. You can try creating courses, assignments, and exams, or experience the student view of 
-                taking assessments. Click the "Try Demo" button above to get started, or contact us for a personalized 
-                walkthrough of all features.
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem value="item-5" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  Is there a demo I can try before committing?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Absolutely! We offer an interactive demo that lets you explore the platform from both teacher and student
+                  perspectives. You can try creating courses, assignments, and exams, or experience the student view of
+                  taking assessments. Click the "Try Demo" button above to get started, or contact us for a personalized
+                  walkthrough of all features.
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="item-6" className="bg-card border border-border rounded-xl px-6">
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
-                What kind of support do you provide?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-5">
-                We provide dedicated support via WhatsApp for quick assistance, comprehensive documentation, and 
-                personalized onboarding for new schools. Our team is committed to ensuring a smooth transition and 
-                ongoing success with the platform. Contact us anytime for setup help or training sessions.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              <AccordionItem value="item-6" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  What kind of support do you provide?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  We provide dedicated support via WhatsApp for quick assistance, comprehensive documentation, and
+                  personalized onboarding for new schools. Our team is committed to ensuring a smooth transition and
+                  ongoing success with the platform. Contact us anytime for setup help or training sessions.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </ScrollReveal>
         </div>
       </section>
@@ -933,6 +949,10 @@ const Index = () => {
   );
 };
 
+/**
+ * Props for the FeatureCard component.
+ * @interface FeatureCardProps
+ */
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
@@ -940,6 +960,12 @@ interface FeatureCardProps {
   delay: number;
 }
 
+/**
+ * A card component to display a feature with an icon, title, and description.
+ * 
+ * @param {FeatureCardProps} props - The component props.
+ * @returns {JSX.Element} The rendered feature card.
+ */
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, delay }) => {
   return (
     <ScrollReveal animation="fade-up" delay={delay}>
@@ -954,6 +980,10 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, del
   );
 };
 
+/**
+ * Props for the TestimonialCard component.
+ * @interface TestimonialCardProps
+ */
 interface TestimonialCardProps {
   quote: string;
   name: string;
@@ -962,6 +992,12 @@ interface TestimonialCardProps {
   delay: number;
 }
 
+/**
+ * A card component to display a user testimonial.
+ * 
+ * @param {TestimonialCardProps} props - The component props.
+ * @returns {JSX.Element} The rendered testimonial card.
+ */
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, name, role, avatar, delay }) => {
   return (
     <ScrollReveal animation="fade-up" delay={delay}>

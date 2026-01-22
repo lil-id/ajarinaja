@@ -26,6 +26,19 @@ import { arrayMove } from '@dnd-kit/sortable';
 import StudentPreviewMode from '@/components/StudentPreviewMode';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 
+/**
+ * Edit Exam page.
+ * 
+ * Interface for modifying an existing exam.
+ * Features:
+ * - Edit exam details (Title, duration, dates)
+ * - Manage questions (Add, Edit, Delete, Reorder)
+ * - Question Bank integration (Import/Save)
+ * - Student Preview mode
+ * - Risk Criteria configuration
+ * 
+ * @returns {JSX.Element} The rendered Edit Exam page.
+ */
 const EditExam = () => {
   const { t } = useTranslation();
   const { examId } = useParams<{ examId: string }>();
@@ -84,7 +97,7 @@ const EditExam = () => {
         kkm: (exam as any).kkm || 60,
       });
       setQuestions(exam.questions || []);
-      
+
       // Initialize risk criteria from exam data
       const examData = exam as any;
       const initialCriteria: RiskCriterion[] = [
@@ -209,7 +222,7 @@ const EditExam = () => {
     // Update order_index for all questions
     const updatedQuestions = reordered.map((q, idx) => ({ ...q, order_index: idx }));
     setQuestions(updatedQuestions);
-    
+
     // Save updated order to database
     for (const q of updatedQuestions) {
       await updateQuestion.mutateAsync({

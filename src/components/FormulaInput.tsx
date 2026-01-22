@@ -99,6 +99,9 @@ const QUICK_SYMBOLS = [
   { label: '∫', latex: '\\int' },
 ];
 
+/**
+ * Props for the FormulaInput component.
+ */
 interface FormulaInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -112,6 +115,13 @@ interface FormulaInputProps {
   showLivePreview?: boolean;
 }
 
+/**
+ * Input component with LaTeX support for mathematical formulas.
+ * Includes a toolbar for common math symbols and live preview.
+ * 
+ * @param {FormulaInputProps} props - Component props.
+ * @returns {JSX.Element} The formula input component.
+ */
 const FormulaInput: React.FC<FormulaInputProps> = ({
   value,
   onChange,
@@ -130,10 +140,10 @@ const FormulaInput: React.FC<FormulaInputProps> = ({
   const checkIfInFormula = useCallback(() => {
     const input = inputRef.current;
     if (!input) return false;
-    
+
     const cursorPos = input.selectionStart || 0;
     const beforeCursor = value.slice(0, cursorPos);
-    
+
     // Count $ signs before cursor
     const dollarCount = (beforeCursor.match(/\$/g) || []).length;
     // If odd number of $, we're inside a formula
@@ -158,21 +168,21 @@ const FormulaInput: React.FC<FormulaInputProps> = ({
 
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
-    
+
     // Check if we're inside a formula
     const beforeCursor = value.slice(0, start);
     const dollarCount = (beforeCursor.match(/\$/g) || []).length;
     const inFormula = dollarCount % 2 === 1;
-    
+
     let insertText = latex;
     let newCursorOffset = cursorOffset;
-    
+
     // If not in formula, wrap the symbol with $...$
     if (!inFormula) {
       insertText = `$${latex}$`;
       newCursorOffset = cursorOffset ? cursorOffset + 1 : latex.length + 1;
     }
-    
+
     const newValue = value.slice(0, start) + insertText + value.slice(end);
     onChange(newValue);
 
@@ -194,10 +204,10 @@ const FormulaInput: React.FC<FormulaInputProps> = ({
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
     const selectedText = value.slice(start, end);
-    
+
     let newValue: string;
     let cursorPos: number;
-    
+
     if (selectedText) {
       // Wrap selection
       newValue = value.slice(0, start) + '$' + selectedText + '$' + value.slice(end);
@@ -207,9 +217,9 @@ const FormulaInput: React.FC<FormulaInputProps> = ({
       newValue = value.slice(0, start) + '$$' + value.slice(end);
       cursorPos = start + 1;
     }
-    
+
     onChange(newValue);
-    
+
     requestAnimationFrame(() => {
       input.setSelectionRange(cursorPos, cursorPos);
       input.focus();
@@ -342,7 +352,7 @@ const FormulaInput: React.FC<FormulaInputProps> = ({
               className={cn(isInFormula && 'ring-2 ring-primary/50')}
             />
           )}
-          
+
           {/* Live preview below input when there are formulas */}
           {showLivePreview && hasFormulas && previewMode === 'live' && (
             <div className="p-2 rounded-md border border-dashed bg-muted/20 text-sm">

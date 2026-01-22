@@ -6,6 +6,12 @@ interface UseScrollAnimationOptions {
   triggerOnce?: boolean;
 }
 
+/**
+ * Custom hook to trigger animations on scroll.
+ * 
+ * @param {UseScrollAnimationOptions} [options] - The intersection observer options.
+ * @returns {object} The ref to attach to the element and the visibility state.
+ */
 export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
   const { threshold = 0.1, rootMargin = '0px', triggerOnce = true } = options;
   const ref = useRef<HTMLDivElement>(null);
@@ -37,6 +43,12 @@ export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
 };
 
 // Parallax hook for scroll-based transforms
+/**
+ * Custom hook for parallax scroll effects.
+ * 
+ * @param {number} [speed=0.5] - The parallax speed factor.
+ * @returns {object} The ref to attach to the element and the offset value.
+ */
 export const useParallax = (speed: number = 0.5) => {
   const [offset, setOffset] = useState(0);
   const ref = useRef<HTMLDivElement>(null);

@@ -6,6 +6,10 @@ import { useAtRiskStudents, RiskFactor } from '@/hooks/useAtRiskStudents';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Helper to get icon for risk factor type.
+ * @param type - Risk factor type
+ */
 const getRiskIcon = (type: RiskFactor['type']) => {
   switch (type) {
     case 'no_material_views':
@@ -74,6 +78,17 @@ const getRiskLink = (factor: RiskFactor, courseId: string) => {
   }
 };
 
+/**
+ * At-Risk Students Dashboard.
+ * 
+ * Monitors students who might be struggling based on defined criteria.
+ * Criteria include:
+ * - Low scores
+ * - Missed deadlines
+ * - Low engagement (material views)
+ * 
+ * @returns {JSX.Element} The rendered At-Risk Students page.
+ */
 export default function AtRiskStudents() {
   const navigate = useNavigate();
   const { atRiskStudents, isLoading, highRiskCount, mediumRiskCount, lowRiskCount } = useAtRiskStudents();
@@ -197,7 +212,7 @@ export default function AtRiskStudents() {
                       </div>
                       <p className="text-sm text-muted-foreground">{student.studentEmail}</p>
                       <p className="text-sm text-muted-foreground mb-3">Course: {student.courseName}</p>
-                      
+
                       {/* Risk Factors - now clickable */}
                       <div className="flex flex-wrap gap-2">
                         {student.riskFactors.map((factor, index) => {

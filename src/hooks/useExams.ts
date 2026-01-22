@@ -34,6 +34,12 @@ export interface Question {
   order_index: number;
 }
 
+/**
+ * Custom hook to fetch exams.
+ * 
+ * @param {string} [courseId] - The ID of the course.
+ * @returns {object} The exams, loading state, and error.
+ */
 export function useExams(courseId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -42,13 +48,13 @@ export function useExams(courseId?: string) {
     queryKey: ['exams', courseId],
     queryFn: async () => {
       let query = supabase.from('exams').select('*');
-      
+
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
-      
+
       const { data, error } = await query.order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Exam[];
     },
@@ -82,6 +88,13 @@ export function useExams(courseId?: string) {
   return { exams, isLoading, error };
 }
 
+/**
+ * Custom hook to fetch an exam with its questions.
+ * Teachers see correct answers; students do not.
+ * 
+ * @param {string} examId - The ID of the exam.
+ * @returns {UseQueryResult} The query result containing the exam and questions.
+ */
 export function useExamWithQuestions(examId: string) {
   const { user, role } = useAuth();
   const isTeacher = role === 'teacher';
@@ -94,19 +107,19 @@ export function useExamWithQuestions(examId: string) {
         .select('*')
         .eq('id', examId)
         .single();
-      
+
       if (examError) throw examError;
 
       // Teachers query questions table (with correct_answer), students query filtered view (without correct_answer)
       let questions: Question[];
-      
+
       if (isTeacher) {
         const { data, error } = await supabase
           .from('questions')
           .select('*')
           .eq('exam_id', examId)
           .order('order_index');
-        
+
         if (error) throw error;
         questions = data as Question[];
       } else {
@@ -115,7 +128,7 @@ export function useExamWithQuestions(examId: string) {
           .select('*')
           .eq('exam_id', examId)
           .order('order_index');
-        
+
         if (error) throw error;
         // Student view doesn't include correct_answer or correct_answers
         questions = (data ?? []).map(q => ({
@@ -140,28 +153,33 @@ export function useExamWithQuestions(examId: string) {
   });
 }
 
+/**
+ * Mutation hook to create a new exam with questions.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateExam() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      courseId, 
-      title, 
-      description, 
+    mutationFn: async ({
+      courseId,
+      title,
+      description,
       duration,
       kkm,
-      questions 
-    }: { 
-      courseId: string; 
-      title: string; 
-      description?: string; 
+      questions
+    }: {
+      courseId: string;
+      title: string;
+      description?: string;
       duration: number;
       kkm?: number;
       questions: Omit<Question, 'id' | 'exam_id'>[];
     }) => {
       // Create exam
       const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
-      
+
       const { data: exam, error: examError } = await supabase
         .from('exams')
         .insert({
@@ -175,7 +193,7 @@ export function useCreateExam() {
         })
         .select()
         .single();
-      
+
       if (examError) throw examError;
 
       // Create questions
@@ -194,7 +212,7 @@ export function useCreateExam() {
         const { error: questionsError } = await supabase
           .from('questions')
           .insert(questionsToInsert);
-        
+
         if (questionsError) throw questionsError;
       }
 
@@ -206,6 +224,11 @@ export function useCreateExam() {
   });
 }
 
+/**
+ * Mutation hook to update an existing exam.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateExam() {
   const queryClient = useQueryClient();
 
@@ -217,7 +240,7 @@ export function useUpdateExam() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -227,6 +250,11 @@ export function useUpdateExam() {
   });
 }
 
+/**
+ * Mutation hook to delete an exam.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteExam() {
   const queryClient = useQueryClient();
 
@@ -236,7 +264,7 @@ export function useDeleteExam() {
         .from('exams')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

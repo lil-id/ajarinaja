@@ -3,11 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
+/**
+ * Props for the ProtectedRoute component.
+ */
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRole?: 'teacher' | 'student';
 }
 
+/**
+ * Higher-order component to protect routes based on authentication and role.
+ * Redirects to login if unauthenticated or appropriate dashboard if unauthorized.
+ * 
+ * @param {ProtectedRouteProps} props - Component props.
+ * @returns {JSX.Element | null} The protected content or null while redirecting/loading.
+ */
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, role, isLoading } = useAuth();
   const navigate = useNavigate();

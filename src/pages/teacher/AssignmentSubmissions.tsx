@@ -41,6 +41,17 @@ interface GradeDialogProps {
   isQuestionBased: boolean;
 }
 
+/**
+ * Dialog for grading a submission.
+ * Handles both file-based (rubric/manual) and question-based grading.
+ * 
+ * @param props.submission - The submission to grade
+ * @param props.assignment - The parent assignment
+ * @param props.questions - Questions list (if question-based)
+ * @param props.open - Dialog open state
+ * @param props.onClose - Close handler
+ * @param props.isQuestionBased - Whether it's a quiz-style assignment
+ */
 function GradeDialog({ submission, assignment, questions = [], open, onClose, isQuestionBased }: GradeDialogProps) {
   const { t } = useTranslation();
   const [score, setScore] = useState(submission?.score?.toString() || '');
@@ -48,7 +59,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
   const [rubricScores, setRubricScores] = useState<Record<string, number>>(
     Object.fromEntries(submission?.rubric_scores?.map((r: any) => [r.id, r.score]) || [])
   );
-  
+
   const gradeAssignment = useGradeAssignment();
   const { data: fileUrl } = useSubmissionFileUrl(submission?.file_path);
   const { user } = useAuth();
@@ -72,7 +83,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
             feedback: feedback || null,
           })
           .eq('id', submission.id);
-        
+
         if (error) throw error;
         queryClient.invalidateQueries({ queryKey: ['assignment-submissions'] });
         toast.success(t('toast.submissionGraded'));
@@ -249,15 +260,27 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
   );
 }
 
+/**
+ * Assignment Submissions page.
+ * 
+ * Displays list of submissions for a specific assignment.
+ * Features:
+ * - List of all students (submitted vs missing)
+ * - Grading interface (via GradeDialog)
+ * - Status badges (Late, Graded, Pending)
+ * - Stats overview
+ * 
+ * @returns {JSX.Element} The rendered Submissions page.
+ */
 export default function AssignmentSubmissions() {
   const { t } = useTranslation();
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const { data: assignment, isLoading: assignmentLoading } = useAssignment(assignmentId!);
-  
+
   const isQuestionBased = (assignment as any)?.assignment_type === 'questions';
   const { data: submissions = [], isLoading: submissionsLoading } = useAssignmentSubmissions(
-    assignmentId!, 
+    assignmentId!,
     isQuestionBased ? 'questions' : 'submission'
   );
   const { data: questions = [] } = useAssignmentQuestions(assignmentId!);
@@ -394,8 +417,8 @@ export default function AssignmentSubmissions() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setGradeSubmission(submission)}
                       >

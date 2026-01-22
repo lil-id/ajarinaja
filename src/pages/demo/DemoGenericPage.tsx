@@ -5,12 +5,32 @@ import { Lock, Eye } from 'lucide-react';
 import { demoCourses, demoExams, demoAssignments, demoStudents, demoMaterials, demoAnnouncements } from '@/data/demoData';
 import { format } from 'date-fns';
 
+/**
+ * Generic page component for demo routes that don't have a specific implementation yet or share a common layout.
+ * 
+ * Handles routing for various sections like:
+ * - courses
+ * - exams
+ * - assignments
+ * - students
+ * - analytics
+ * - calendar
+ * - announcements/notifications
+ * 
+ * Renders read-only views with demo data based on the current URL path segments.
+ * 
+ * @returns {JSX.Element} The rendered generic page content based on the active section.
+ */
 export default function DemoGenericPage() {
   const location = useLocation();
   const pathParts = location.pathname.split('/');
   const section = pathParts[pathParts.length - 1];
   const role = pathParts[2]; // teacher or student
 
+  /**
+   * Renders the specific content based on the current section derived from the URL.
+   * @returns {JSX.Element} The section content.
+   */
   const getSectionContent = () => {
     switch (section) {
       case 'courses':

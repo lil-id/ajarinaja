@@ -7,6 +7,10 @@ import { ChevronLeft, ChevronRight, FileText, ClipboardList, Calendar as Calenda
 import { demoCourses, demoExams, demoAssignments } from '@/data/demoData';
 import { cn } from '@/lib/utils';
 
+/**
+ * Represents a calendar event (exam or assignment).
+ * @interface CalendarEvent
+ */
 interface CalendarEvent {
   id: string;
   title: string;
@@ -16,6 +20,18 @@ interface CalendarEvent {
   isPastDue: boolean;
 }
 
+/**
+ * Demo Student Calendar page.
+ * 
+ * Provides an interactive calendar view of upcoming exams and assignment deadlines.
+ * Features:
+ * - Monthly view with navigation
+ * - Day selection to view specific events
+ * - Visual indicators for different event types (Exams vs Assignments)
+ * - Alert for upcoming deadlines within the next 7 days
+ * 
+ * @returns {JSX.Element} The rendered Student Calendar page.
+ */
 export default function DemoStudentCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());

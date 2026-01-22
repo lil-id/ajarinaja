@@ -4,6 +4,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Props for the SortableItem component.
+ */
 interface SortableItemProps {
   id: string;
   children: React.ReactNode;
@@ -11,11 +14,18 @@ interface SortableItemProps {
   showHandle?: boolean;
 }
 
-export const SortableItem: React.FC<SortableItemProps> = ({ 
-  id, 
-  children, 
+/**
+ * Individual sortable item component for use within a SortableList.
+ * Provides drag handle and drag styles.
+ * 
+ * @param {SortableItemProps} props - Component props.
+ * @returns {JSX.Element} The sortable item wrapper.
+ */
+export const SortableItem: React.FC<SortableItemProps> = ({
+  id,
+  children,
   className,
-  showHandle = true 
+  showHandle = true
 }) => {
   const {
     attributes,

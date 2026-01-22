@@ -7,6 +7,9 @@ import { getMaterialSignedUrl, extractYouTubeId } from '@/hooks/useCourseMateria
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Props for the MaterialViewer component.
+ */
 interface MaterialViewerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,6 +31,13 @@ const getFileIcon = (fileType: string | null) => {
   return File;
 };
 
+/**
+ * Modal component for viewing course materials (PDFs, images, videos, YouTube).
+ * Handles signed URL generation for secure files.
+ * 
+ * @param {MaterialViewerProps} props - Component props.
+ * @returns {JSX.Element | null} The material viewer modal or null if no material provided.
+ */
 export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProps) => {
   const { t } = useTranslation();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
@@ -39,7 +49,7 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
         setSignedUrl(null);
         return;
       }
-      
+
       setIsLoading(true);
       const url = await getMaterialSignedUrl(material.file_path);
       setSignedUrl(url);
@@ -57,17 +67,17 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
 
   const handleDownload = async () => {
     if (!material?.file_path || !material.file_name) return;
-    
+
     try {
       const { data, error } = await supabase.storage
         .from('course-materials')
         .download(material.file_path);
-      
+
       if (error) {
         toast.error(t('toast.failedToDownloadMaterial'));
         return;
       }
-      
+
       const url = URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;

@@ -14,6 +14,11 @@ export interface CalendarEvent {
   updated_at: string;
 }
 
+/**
+ * Custom hook to fetch calendar events for the current user.
+ * 
+ * @returns {object} The calendar events, loading state, and error.
+ */
 export function useCalendarEvents() {
   const { user } = useAuth();
 
@@ -35,6 +40,11 @@ export function useCalendarEvents() {
   return { events, isLoading, error };
 }
 
+/**
+ * Mutation hook to create a new calendar event.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateCalendarEvent() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -69,6 +79,11 @@ export function useCreateCalendarEvent() {
   });
 }
 
+/**
+ * Mutation hook to update an existing calendar event.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateCalendarEvent() {
   const queryClient = useQueryClient();
 
@@ -99,6 +114,11 @@ export function useUpdateCalendarEvent() {
   });
 }
 
+/**
+ * Mutation hook to delete a calendar event.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteCalendarEvent() {
   const queryClient = useQueryClient();
 

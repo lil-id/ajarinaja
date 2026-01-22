@@ -17,6 +17,12 @@ export interface CourseMaterial {
   updated_at: string;
 }
 
+/**
+ * Custom hook to fetch materials for a specific course.
+ * 
+ * @param {string} [courseId] - The ID of the course.
+ * @returns {object} The course materials, loading state, and error.
+ */
 export function useCourseMaterials(courseId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -25,13 +31,13 @@ export function useCourseMaterials(courseId?: string) {
     queryKey: ['course-materials', courseId],
     queryFn: async () => {
       let query = supabase.from('course_materials').select('*');
-      
+
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
-      
+
       const { data, error } = await query.order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as CourseMaterial[];
     },
@@ -64,19 +70,24 @@ export function useCourseMaterials(courseId?: string) {
   return { materials, isLoading, error };
 }
 
+/**
+ * Mutation hook to upload a new course material.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUploadMaterial() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ 
-      courseId, 
-      title, 
+    mutationFn: async ({
+      courseId,
+      title,
       description,
-      file 
-    }: { 
-      courseId: string; 
-      title: string; 
+      file
+    }: {
+      courseId: string;
+      title: string;
       description?: string;
       file: File;
     }) => {
@@ -85,11 +96,11 @@ export function useUploadMaterial() {
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
       const filePath = `${courseId}/${Date.now()}-${file.name}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('course-materials')
         .upload(filePath, file);
-      
+
       if (uploadError) throw uploadError;
 
       // Create material record
@@ -106,7 +117,7 @@ export function useUploadMaterial() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -116,19 +127,24 @@ export function useUploadMaterial() {
   });
 }
 
+/**
+ * Mutation hook to add a video material (link) to a course.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useAddVideoMaterial() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ 
-      courseId, 
-      title, 
+    mutationFn: async ({
+      courseId,
+      title,
       description,
-      videoUrl 
-    }: { 
-      courseId: string; 
-      title: string; 
+      videoUrl
+    }: {
+      courseId: string;
+      title: string;
       description?: string;
       videoUrl: string;
     }) => {
@@ -144,7 +160,7 @@ export function useAddVideoMaterial() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -154,6 +170,11 @@ export function useAddVideoMaterial() {
   });
 }
 
+/**
+ * Mutation hook to delete a course material.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteMaterial() {
   const queryClient = useQueryClient();
 
@@ -164,7 +185,7 @@ export function useDeleteMaterial() {
         const { error: storageError } = await supabase.storage
           .from('course-materials')
           .remove([filePath]);
-        
+
         if (storageError) console.error('Storage delete error:', storageError);
       }
 
@@ -173,7 +194,7 @@ export function useDeleteMaterial() {
         .from('course_materials')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -183,22 +204,34 @@ export function useDeleteMaterial() {
 }
 
 // Get signed URL for secure material access (1 hour expiry)
+/**
+ * Gets a signed URL for secure material access (1 hour expiry).
+ * 
+ * @param {string | null} filePath - The path to the file in storage.
+ * @returns {Promise<string | null>} The signed URL or null if failed.
+ */
 export async function getMaterialSignedUrl(filePath: string | null): Promise<string | null> {
   if (!filePath) return null;
-  
+
   const { data, error } = await supabase.storage
     .from('course-materials')
     .createSignedUrl(filePath, 3600); // 1 hour expiry
-  
+
   if (error) {
     console.error('Failed to get signed URL:', error);
     return null;
   }
-  
+
   return data.signedUrl;
 }
 
 // Hook for getting signed URLs for materials
+/**
+ * Custom hook for getting signed URLs for materials.
+ * 
+ * @param {string | null} filePath - The path to the file in storage.
+ * @returns {object} The signed URL and loading state.
+ */
 export function useMaterialUrl(filePath: string | null) {
   const { data: signedUrl, isLoading } = useQuery({
     queryKey: ['material-url', filePath],
@@ -206,17 +239,23 @@ export function useMaterialUrl(filePath: string | null) {
     enabled: !!filePath,
     staleTime: 1000 * 60 * 30, // Cache for 30 minutes (half of the 1 hour expiry)
   });
-  
+
   return { signedUrl, isLoading };
 }
 
 // Helper to extract YouTube video ID
+/**
+ * Helper to extract YouTube video ID from a URL.
+ * 
+ * @param {string} url - The YouTube URL.
+ * @returns {string | null} The video ID or null if not found.
+ */
 export function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
     /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
   ];
-  
+
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) return match[1];
@@ -224,6 +263,12 @@ export function extractYouTubeId(url: string): string | null {
   return null;
 }
 
+/**
+ * Helper to get the YouTube thumbnail URL for a video ID.
+ * 
+ * @param {string} videoId - The YouTube video ID.
+ * @returns {string} The thumbnail URL.
+ */
 export function getYouTubeThumbnail(videoId: string): string {
   return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 }

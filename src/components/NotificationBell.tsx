@@ -13,10 +13,10 @@ import {
   useMarkNotificationRead,
   type Notification,
 } from '@/hooks/useNotifications';
-import { 
-  Bell, 
-  GraduationCap, 
-  Megaphone, 
+import {
+  Bell,
+  GraduationCap,
+  Megaphone,
   ClipboardCheck,
   Clock,
   Info
@@ -39,10 +39,20 @@ const getNotificationIcon = (type: Notification['type']) => {
   }
 };
 
+/**
+ * Props for the NotificationBell component.
+ */
 interface NotificationBellProps {
   basePath: '/student' | '/teacher';
 }
 
+/**
+ * Notification bell component with unread count badge and dropdown list.
+ * Displays recent notifications and allows navigation to full list.
+ * 
+ * @param {NotificationBellProps} props - Component props.
+ * @returns {JSX.Element} The notification bell with popover.
+ */
 export const NotificationBell = ({ basePath }: NotificationBellProps) => {
   const navigate = useNavigate();
   const { data: notifications, isLoading } = useNotifications();

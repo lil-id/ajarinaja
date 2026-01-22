@@ -10,6 +10,18 @@ import { BookOpen, Loader2, Search, Users, CheckCircle2, Eye } from 'lucide-reac
 import { toast } from 'sonner';
 import CoursePreviewModal from '@/components/CoursePreviewModal';
 
+/**
+ * Explore Courses page.
+ * 
+ * Catalog of available courses for enrollment.
+ * Features:
+ * - Searchable course list
+ * - Enrollment management (Enroll/Unenroll)
+ * - Course preview modal integration
+ * - Stats on available vs enrolled courses
+ * 
+ * @returns {JSX.Element} The rendered Explore Courses page.
+ */
 const ExploreCourses = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,9 +37,9 @@ const ExploreCourses = () => {
   // Filter only published courses
   const enrolledCourseIds = enrollments.map(e => e.course_id);
   const publishedCourses = courses.filter(c => c.status === 'published');
-  
+
   // Filter by search query
-  const filteredCourses = publishedCourses.filter(course => 
+  const filteredCourses = publishedCourses.filter(course =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (course.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -78,7 +90,7 @@ const ExploreCourses = () => {
             Discover and enroll in new courses
           </p>
         </div>
-        
+
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -147,7 +159,7 @@ const ExploreCourses = () => {
               <h2 className="text-xl font-semibold text-foreground mb-4">Your Enrolled Courses</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {enrolledCourses.map((course, index) => (
-                  <Card 
+                  <Card
                     key={course.id}
                     className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden group cursor-pointer"
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -155,8 +167,8 @@ const ExploreCourses = () => {
                   >
                     <div className="h-40 bg-gradient-hero flex items-center justify-center overflow-hidden relative">
                       {course.thumbnail_url ? (
-                        <img 
-                          src={course.thumbnail_url} 
+                        <img
+                          src={course.thumbnail_url}
                           alt={course.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -175,8 +187,8 @@ const ExploreCourses = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0 flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -185,8 +197,8 @@ const ExploreCourses = () => {
                       >
                         Go to Course
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -208,7 +220,7 @@ const ExploreCourses = () => {
               <h2 className="text-xl font-semibold text-foreground mb-4">Available to Enroll</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableCourses.map((course, index) => (
-                  <Card 
+                  <Card
                     key={course.id}
                     className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden group cursor-pointer"
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -216,8 +228,8 @@ const ExploreCourses = () => {
                   >
                     <div className="h-40 bg-gradient-hero flex items-center justify-center overflow-hidden relative">
                       {course.thumbnail_url ? (
-                        <img 
-                          src={course.thumbnail_url} 
+                        <img
+                          src={course.thumbnail_url}
                           alt={course.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -232,8 +244,8 @@ const ExploreCourses = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0 flex gap-2">
-                      <Button 
-                        variant="hero" 
+                      <Button
+                        variant="hero"
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -247,8 +259,8 @@ const ExploreCourses = () => {
                           'Enroll Now'
                         )}
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         onClick={(e) => {
                           e.stopPropagation();

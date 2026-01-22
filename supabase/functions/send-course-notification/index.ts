@@ -6,6 +6,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Interface for the notification email request payload.
+ */
 interface NotificationEmailRequest {
   recipients: Array<{
     email: string;
@@ -20,6 +23,11 @@ interface NotificationEmailRequest {
   description?: string;
 }
 
+/**
+ * Formats a date string into a readable format.
+ * @param dateStr - The date string to format.
+ * @returns {string|null} The formatted date string or null if input is invalid.
+ */
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return null;
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -32,15 +40,21 @@ const formatDate = (dateStr?: string) => {
   });
 };
 
+/**
+ * Generates the HTML content and subject for the notification email.
+ * @param data - The notification data.
+ * @param recipientName - The name of the recipient.
+ * @returns {object} An object containing the email subject and HTML body.
+ */
 const getEmailContent = (data: NotificationEmailRequest, recipientName: string) => {
   const appUrl = Deno.env.get("APP_URL") || "https://ajarinaja.lovable.app";
-  
+
   const contentTypeConfig = {
     assignment: { label: 'Assignment', link: '/student/assignments', color: '#10b981', bgColor: '#ecfdf5' },
     exam: { label: 'Exam', link: '/student/exams', color: '#f59e0b', bgColor: '#fffbeb' },
     enrollment: { label: 'Course', link: '/student/courses', color: '#6366f1', bgColor: '#eef2ff' },
   };
-  
+
   const config = contentTypeConfig[data.contentType];
 
   const subjectMap = {
@@ -55,8 +69,8 @@ const getEmailContent = (data: NotificationEmailRequest, recipientName: string) 
     return 'New Exam';
   };
 
-  const title = data.contentType === 'enrollment' 
-    ? `Welcome to ${data.courseName}` 
+  const title = data.contentType === 'enrollment'
+    ? `Welcome to ${data.courseName}`
     : data.contentTitle;
 
   const enrollmentMessage = `You've been enrolled in <strong style="color:#334155;">${data.courseName}</strong>. Access course materials, assignments, and exams from your dashboard.`;
@@ -189,6 +203,13 @@ const getEmailContent = (data: NotificationEmailRequest, recipientName: string) 
   };
 };
 
+/**
+ * Request handler for the send-course-notification edge function.
+ * Handles CORS, validates input, and sends emails via Gmail SMTP.
+ * 
+ * @param {Request} req - The incoming request.
+ * @returns {Promise<Response>} The response object.
+ */
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -210,10 +231,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     for (const recipient of data.recipients) {
       const { subject, html } = getEmailContent(data, recipient.name);
-      
+
       // Create MIME message
       const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substr(2)}`;
-      
+
       const message = [
         `From: ${gmailUser}`,
         `To: ${recipient.email}`,
@@ -260,31 +281,31 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         // Read greeting
         await read();
-        
+
         // EHLO
         await sendCommand(`EHLO localhost`);
-        
+
         // AUTH LOGIN
         await sendCommand(`AUTH LOGIN`);
         await sendCommand(btoa(gmailUser));
         await sendCommand(btoa(gmailPassword));
-        
+
         // MAIL FROM
         await sendCommand(`MAIL FROM:<${gmailUser}>`);
-        
+
         // RCPT TO
         await sendCommand(`RCPT TO:<${recipient.email}>`);
-        
+
         // DATA
         await sendCommand(`DATA`);
-        
+
         // Send message body
         await write(message);
         await sendCommand(`.`);
-        
+
         // QUIT
         await sendCommand(`QUIT`);
-        
+
         console.log(`Email sent to: ${recipient.email}`);
       } finally {
         conn.close();

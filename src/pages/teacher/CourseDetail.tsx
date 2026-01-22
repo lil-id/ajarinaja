@@ -12,18 +12,18 @@ import { useTeacherCourses, useUpdateCourse, useDeleteCourse, useUploadCourseThu
 import { useExams } from '@/hooks/useExams';
 import { useCourseMaterials } from '@/hooks/useCourseMaterials';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
-import { 
-  useCourseEnrollments, 
-  useAllStudents, 
-  useTeacherEnrollStudent, 
+import {
+  useCourseEnrollments,
+  useAllStudents,
+  useTeacherEnrollStudent,
   useTeacherUnenrollStudent,
-  useTeacherUnenrollAllStudents 
+  useTeacherUnenrollAllStudents
 } from '@/hooks/useEnrollments';
-import { 
-  ArrowLeft, 
-  BookOpen, 
-  FileText, 
-  Users, 
+import {
+  ArrowLeft,
+  BookOpen,
+  FileText,
+  Users,
   Calendar,
   Megaphone,
   Edit,
@@ -68,20 +68,34 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MaterialViewer } from '@/components/MaterialViewer';
 import { extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 
+/**
+ * Teacher Course Detail page.
+ * 
+ * Comprehensive management view for a single course.
+ * Features:
+ * - Course metadata editing (Title, Description, Thumbnail)
+ * - Publishing control
+ * - Student management (Enroll/Unenroll)
+ * - Exam management
+ * - Material management
+ * - Announcement management
+ * 
+ * @returns {JSX.Element} The rendered Course Detail page.
+ */
 const TeacherCourseDetail = () => {
   const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const updateCourse = useUpdateCourse();
   const deleteCourse = useDeleteCourse();
   const uploadThumbnail = useUploadCourseThumbnail();
-  
+
   const course = courses.find(c => c.id === courseId);
-  
+
   const { exams, isLoading: examsLoading } = useExams();
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
   const { announcements, isLoading: announcementsLoading } = useAnnouncements();
@@ -90,11 +104,11 @@ const TeacherCourseDetail = () => {
   const enrollStudent = useTeacherEnrollStudent();
   const unenrollStudent = useTeacherUnenrollStudent();
   const unenrollAllStudents = useTeacherUnenrollAllStudents();
-  
+
   const courseExams = exams.filter(e => e.course_id === courseId);
   const courseMaterials = materials.filter(m => m.course_id === courseId);
   const courseAnnouncements = announcements.filter(a => a.course_id === courseId);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ title: '', description: '' });
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
@@ -106,13 +120,13 @@ const TeacherCourseDetail = () => {
   // Get students not already enrolled and filter by search
   const enrolledStudentIds = new Set(enrollments.map(e => e.student_id));
   const availableStudents = allStudents.filter(s => !enrolledStudentIds.has(s.user_id));
-  
+
   // Filter by email search
-  const filteredStudents = studentEmailSearch.trim() 
-    ? availableStudents.filter(s => 
-        s.email.toLowerCase().includes(studentEmailSearch.toLowerCase()) ||
-        s.name.toLowerCase().includes(studentEmailSearch.toLowerCase())
-      )
+  const filteredStudents = studentEmailSearch.trim()
+    ? availableStudents.filter(s =>
+      s.email.toLowerCase().includes(studentEmailSearch.toLowerCase()) ||
+      s.name.toLowerCase().includes(studentEmailSearch.toLowerCase())
+    )
     : availableStudents;
 
   if (coursesLoading) {
@@ -166,9 +180,9 @@ const TeacherCourseDetail = () => {
 
   const handlePublish = async () => {
     try {
-      await updateCourse.mutateAsync({ 
-        id: course.id, 
-        status: course.status === 'published' ? 'draft' : 'published' 
+      await updateCourse.mutateAsync({
+        id: course.id,
+        status: course.status === 'published' ? 'draft' : 'published'
       });
       toast.success(course.status === 'published' ? t('toast.courseUnpublished') : t('toast.coursePublished'));
     } catch (error) {
@@ -213,7 +227,7 @@ const TeacherCourseDetail = () => {
       toast.error(t('toast.pleaseSelectStudent'));
       return;
     }
-    
+
     // Find the selected student's details
     const selectedStudent = allStudents.find(s => s.user_id === selectedStudentId);
     if (!selectedStudent) {
@@ -222,8 +236,8 @@ const TeacherCourseDetail = () => {
     }
 
     try {
-      await enrollStudent.mutateAsync({ 
-        studentId: selectedStudentId, 
+      await enrollStudent.mutateAsync({
+        studentId: selectedStudentId,
         courseId: course.id,
         studentEmail: selectedStudent.email,
         studentName: selectedStudent.name,
@@ -261,22 +275,22 @@ const TeacherCourseDetail = () => {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-4">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="w-fit"
           onClick={() => navigate('/teacher/courses')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Courses
         </Button>
-        
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Thumbnail Section */}
           <div className="relative group">
             <div className="w-48 h-32 rounded-lg overflow-hidden bg-gradient-hero flex items-center justify-center">
               {course.thumbnail_url ? (
-                <img 
-                  src={course.thumbnail_url} 
+                <img
+                  src={course.thumbnail_url}
                   alt={course.title}
                   className="w-full h-full object-cover"
                 />
@@ -356,14 +370,14 @@ const TeacherCourseDetail = () => {
                 </p>
               </div>
             )}
-            
+
             {!isEditing && (
               <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" onClick={handleStartEdit}>
                   <Edit className="w-4 h-4" />
                   Edit
                 </Button>
-                <Button 
+                <Button
                   variant={course.status === 'published' ? 'outline' : 'hero'}
                   onClick={handlePublish}
                   disabled={updateCourse.isPending}
@@ -398,7 +412,7 @@ const TeacherCourseDetail = () => {
 
       {/* Stats Cards - Clickable to navigate to tabs */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('students')}
         >
@@ -412,7 +426,7 @@ const TeacherCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('exams')}
         >
@@ -426,7 +440,7 @@ const TeacherCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('materials')}
         >
@@ -440,7 +454,7 @@ const TeacherCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('announcements')}
         >
@@ -484,7 +498,7 @@ const TeacherCourseDetail = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogAction
                       onClick={handleUnenrollAllStudents}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
@@ -528,7 +542,7 @@ const TeacherCourseDetail = () => {
                           }}
                         />
                       </div>
-                      
+
                       {availableStudents.length === 0 ? (
                         <p className="text-muted-foreground text-center py-4">
                           No students available to enroll. All registered students are already enrolled.
@@ -557,8 +571,8 @@ const TeacherCourseDetail = () => {
                               </SelectContent>
                             </Select>
                           </div>
-                          <Button 
-                            onClick={handleEnrollStudent} 
+                          <Button
+                            onClick={handleEnrollStudent}
                             className="w-full"
                             disabled={enrollStudent.isPending || !selectedStudentId}
                           >
@@ -645,8 +659,8 @@ const TeacherCourseDetail = () => {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-10 h-10 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No exams created for this course</p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => navigate('/teacher/exams')}
                 >
@@ -675,8 +689,8 @@ const TeacherCourseDetail = () => {
                       <span>{exam.total_points} points</span>
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => navigate(`/teacher/exams/${exam.id}/edit`)}
                       >
@@ -701,8 +715,8 @@ const TeacherCourseDetail = () => {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <BookOpen className="w-10 h-10 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No materials uploaded for this course</p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => navigate('/teacher/materials')}
                 >
@@ -715,10 +729,10 @@ const TeacherCourseDetail = () => {
               {courseMaterials.map((material) => {
                 const isVideo = !!material.video_url;
                 const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
-                
+
                 return (
-                  <Card 
-                    key={material.id} 
+                  <Card
+                    key={material.id}
                     className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
                     onClick={() => setViewingMaterial(material)}
                   >
@@ -726,8 +740,8 @@ const TeacherCourseDetail = () => {
                       <div className="flex items-center gap-4">
                         {isVideo && videoId ? (
                           <div className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                            <img 
-                              src={getYouTubeThumbnail(videoId)} 
+                            <img
+                              src={getYouTubeThumbnail(videoId)}
                               alt={material.title}
                               className="w-full h-full object-cover"
                             />
@@ -755,7 +769,7 @@ const TeacherCourseDetail = () => {
               })}
             </div>
           )}
-          
+
           <MaterialViewer
             isOpen={!!viewingMaterial}
             onClose={() => setViewingMaterial(null)}
@@ -773,8 +787,8 @@ const TeacherCourseDetail = () => {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Megaphone className="w-10 h-10 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No announcements for this course</p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => navigate('/teacher/announcements')}
                 >

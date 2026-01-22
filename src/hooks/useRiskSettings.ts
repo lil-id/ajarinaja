@@ -25,6 +25,11 @@ export const DEFAULT_RISK_SETTINGS: Omit<RiskSettings, 'id' | 'teacher_id' | 'cr
   low_risk_material_view_percent: 50,
 };
 
+/**
+ * Custom hook to manage risk settings for at-risk student analysis.
+ * 
+ * @returns {object} The risk settings, loading state, and save function.
+ */
 export function useRiskSettings() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -38,7 +43,7 @@ export function useRiskSettings() {
         .select('*')
         .eq('teacher_id', user.id)
         .maybeSingle();
-      
+
       if (error) throw error;
       return data as RiskSettings | null;
     },
@@ -48,7 +53,7 @@ export function useRiskSettings() {
   const saveSettings = useMutation({
     mutationFn: async (newSettings: Partial<Omit<RiskSettings, 'id' | 'teacher_id' | 'created_at' | 'updated_at'>>) => {
       if (!user) throw new Error('Not authenticated');
-      
+
       // Check if settings exist
       const { data: existing } = await supabase
         .from('risk_settings')

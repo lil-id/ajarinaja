@@ -31,14 +31,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  FileText, 
-  Plus, 
-  Calendar, 
-  Users, 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
+import {
+  FileText,
+  Plus,
+  Calendar,
+  Users,
+  MoreVertical,
+  Edit,
+  Trash2,
   CheckCircle,
   Clock,
   GraduationCap,
@@ -50,6 +50,18 @@ import { useTeacherStudents } from '@/hooks/useEnrollments';
 import { format } from 'date-fns';
 import { id as idLocale, enUS } from 'date-fns/locale';
 
+/**
+ * Teacher Report Cards Management page.
+ * 
+ * Dashboard for managing academic periods and report cards.
+ * Features:
+ * - Manage Academic Periods (Create, Activate, Delete)
+ * - Create Report Cards for enrolled students
+ * - List report cards by period
+ * - Filter and search
+ * 
+ * @returns {JSX.Element} The rendered Report Cards page.
+ */
 const ReportCards = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -57,7 +69,7 @@ const ReportCards = () => {
   const [createPeriodOpen, setCreatePeriodOpen] = useState(false);
   const [createReportOpen, setCreateReportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Form state for new period
   const [newPeriod, setNewPeriod] = useState<CreateAcademicPeriodData>({
     name: '',
@@ -83,7 +95,7 @@ const ReportCards = () => {
 
   const handleCreatePeriod = async () => {
     if (!newPeriod.name || !newPeriod.academic_year || !newPeriod.start_date || !newPeriod.end_date) return;
-    
+
     await createPeriod.mutateAsync(newPeriod);
     setCreatePeriodOpen(false);
     setNewPeriod({
@@ -97,7 +109,7 @@ const ReportCards = () => {
 
   const handleCreateReportCard = async (studentId: string) => {
     if (!selectedPeriod) return;
-    
+
     await createReportCard.mutateAsync({
       student_id: studentId,
       period_id: selectedPeriod,
@@ -105,7 +117,7 @@ const ReportCards = () => {
     setCreateReportOpen(false);
   };
 
-  const filteredReportCards = reportCards.filter(rc => 
+  const filteredReportCards = reportCards.filter(rc =>
     rc.student?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     rc.student?.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -223,8 +235,8 @@ const ReportCards = () => {
             <div className="text-center py-8">
               <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">{t('reportCards.noPeriods')}</p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="mt-3"
                 onClick={() => setCreatePeriodOpen(true)}
               >
@@ -264,7 +276,7 @@ const ReportCards = () => {
                         <CheckCircle className="w-4 h-4 mr-2" />
                         {t('reportCards.setActive')}
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         className="text-destructive"
                         onClick={() => deletePeriod.mutate(period.id)}
                       >

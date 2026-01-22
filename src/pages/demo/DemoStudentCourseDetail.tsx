@@ -11,6 +11,17 @@ import { demoCourses, demoMaterials, demoExams, demoAssignments, demoAnnouncemen
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * Demo Student Course Detail page.
+ * 
+ * Displays comprehensive information about a specific course, including:
+ * - Course stats (materials, exams, assignments count)
+ * - Tabs for Materials, Exams, Assignments, and Announcements
+ * - Previews for materials (video/PDF)
+ * - simulated interactions for exams (locked/demo mode)
+ * 
+ * @returns {JSX.Element} The rendered Course Detail page.
+ */
 export default function DemoStudentCourseDetail() {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -35,11 +46,19 @@ export default function DemoStudentCourseDetail() {
     );
   }
 
+  /**
+   * Opens the material viewer dialog for a selected material.
+   * @param {any} material - The material object to view.
+   */
   const handleViewMaterial = (material: any) => {
     setSelectedMaterial(material);
     setViewerOpen(true);
   };
 
+  /**
+   * Simulated handler for taking an exam.
+   * Shows a toast notification explaining that this feature is disabled in demo mode.
+   */
   const handleTakeExam = () => {
     toast.info('Exam taking is disabled in demo mode. Contact us for full access!', {
       action: {
@@ -291,7 +310,7 @@ export default function DemoStudentCourseDetail() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground">{selectedMaterial?.description}</p>
-            
+
             {selectedMaterial?.video_url ? (
               <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                 <div className="text-center">

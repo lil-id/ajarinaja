@@ -12,6 +12,12 @@ export interface Announcement {
   updated_at: string;
 }
 
+/**
+ * Custom hook to fetch and subscribe to announcements for a course.
+ * 
+ * @param {string} [courseId] - The ID of the course to fetch announcements for. If undefined, fetches all accessible announcements.
+ * @returns {object} The announcements data, loading state, and error.
+ */
 export function useAnnouncements(courseId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -20,13 +26,13 @@ export function useAnnouncements(courseId?: string) {
     queryKey: ['announcements', courseId],
     queryFn: async () => {
       let query = supabase.from('announcements').select('*');
-      
+
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
-      
+
       const { data, error } = await query.order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Announcement[];
     },
@@ -60,17 +66,22 @@ export function useAnnouncements(courseId?: string) {
   return { announcements, isLoading, error };
 }
 
+/**
+ * Mutation hook to create a new announcement.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateAnnouncement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      courseId, 
-      title, 
-      content 
-    }: { 
-      courseId: string; 
-      title: string; 
+    mutationFn: async ({
+      courseId,
+      title,
+      content
+    }: {
+      courseId: string;
+      title: string;
       content: string;
     }) => {
       const { data, error } = await supabase
@@ -82,7 +93,7 @@ export function useCreateAnnouncement() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -92,17 +103,22 @@ export function useCreateAnnouncement() {
   });
 }
 
+/**
+ * Mutation hook to update an existing announcement.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateAnnouncement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
-      title, 
-      content 
-    }: { 
-      id: string; 
-      title: string; 
+    mutationFn: async ({
+      id,
+      title,
+      content
+    }: {
+      id: string;
+      title: string;
       content: string;
     }) => {
       const { data, error } = await supabase
@@ -111,7 +127,7 @@ export function useUpdateAnnouncement() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -121,6 +137,11 @@ export function useUpdateAnnouncement() {
   });
 }
 
+/**
+ * Mutation hook to delete an announcement.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteAnnouncement() {
   const queryClient = useQueryClient();
 
@@ -130,7 +151,7 @@ export function useDeleteAnnouncement() {
         .from('announcements')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

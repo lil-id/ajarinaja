@@ -4,6 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
+/**
+ * Teacher Settings page.
+ * 
+ * Configuration options for the teacher account.
+ * Features:
+ * - Notification preferences
+ * - Privacy settings
+ * - Account management (Delete account placeholder)
+ * 
+ * @returns {JSX.Element} The rendered Settings page.
+ */
 const TeacherSettings = () => {
   const { t } = useTranslation();
 

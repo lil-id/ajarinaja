@@ -45,6 +45,10 @@ import indonesianThumbnail from "@/assets/course-thumbnails/indonesian.jpg";
 import computerScienceThumbnail from "@/assets/course-thumbnails/computer-science.jpg";
 
 // Subject thumbnail mapping
+/**
+ * Mapping of subject names to their respective thumbnail image paths.
+ * @type {Record<string, string>}
+ */
 const subjectThumbnails: Record<string, string> = {
   'mathematics': mathematicsThumbnail,
   'physics': physicsThumbnail,
@@ -59,6 +63,21 @@ const subjectThumbnails: Record<string, string> = {
 type SortOption = "newest" | "oldest" | "most-students" | "alphabetical";
 type SubjectFilter = "all" | "mathematics" | "physics" | "chemistry" | "biology" | "history" | "english" | "indonesian" | "computer-science";
 
+/**
+ * Public Courses page component.
+ * 
+ * Displays a catalog of available published courses visible to everyone (including non-logged-in users).
+ * Features:
+ * - Search functionality (by title/description)
+ * - Filtering by subject
+ * - Sorting (newest, oldest, popularity, alphabetical)
+ * - Course detail view (when a course is selected)
+ * - Navigation to demo or sign up
+ * 
+ * Uses dummy data from `demoData.ts` for display purposes.
+ * 
+ * @returns {JSX.Element} The rendered Public Courses page.
+ */
 const PublicCourses = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,6 +89,12 @@ const PublicCourses = () => {
   const publishedCourses = demoCourses.filter(course => course.status === "published");
 
   // Get subject from course data (use subject field or derive from title)
+  /**
+   * Determines the subject category of a course based on its explicit subject field or title keywords.
+   * 
+   * @param {typeof demoCourses[0]} course - The course object.
+   * @returns {string} The determined subject slug.
+   */
   const getSubject = (course: typeof demoCourses[0]): string => {
     if (course.subject) return course.subject.toLowerCase().replace(/\s+/g, '-');
     const lowerTitle = course.title.toLowerCase();
@@ -85,6 +110,12 @@ const PublicCourses = () => {
   };
 
   // Get display name for subject
+  /**
+   * Converts a subject slug into a human-readable display name.
+   * 
+   * @param {string} subject - The subject slug.
+   * @returns {string} The display name.
+   */
   const getSubjectDisplayName = (subject: string): string => {
     const displayNames: Record<string, string> = {
       'mathematics': 'Mathematics',
@@ -138,20 +169,40 @@ const PublicCourses = () => {
   }, [publishedCourses, searchQuery, sortBy, subjectFilter]);
 
   // Get materials for a course
+  /**
+   * Retrieves materials associated with a specific course.
+   * @param {string} courseId - The ID of the course.
+   * @returns {Array} List of materials.
+   */
   const getCourseMaterials = (courseId: string) => {
     return demoMaterials.filter(m => m.course_id === courseId);
   };
 
   // Get exams for a course
+  /**
+   * Retrieves published exams associated with a specific course.
+   * @param {string} courseId - The ID of the course.
+   * @returns {Array} List of published exams.
+   */
   const getCourseExams = (courseId: string) => {
     return demoExams.filter(e => e.course_id === courseId && e.status === "published");
   };
 
   // Get assignments for a course
+  /**
+   * Retrieves published assignments associated with a specific course.
+   * @param {string} courseId - The ID of the course.
+   * @returns {Array} List of published assignments.
+   */
   const getCourseAssignments = (courseId: string) => {
     return demoAssignments.filter(a => a.course_id === courseId && a.status === "published");
   };
 
+  /**
+   * Returns an appropriate icon component based on the material type.
+   * @param {typeof demoMaterials[0]} material - The material object.
+   * @returns {JSX.Element} The corresponding icon.
+   */
   const getMaterialIcon = (material: typeof demoMaterials[0]) => {
     if (material.video_url) return <Video className="w-4 h-4 text-red-500" />;
     if (material.file_type?.includes("pdf")) return <File className="w-4 h-4 text-orange-500" />;
@@ -312,14 +363,13 @@ const PublicCourses = () => {
                     return (
                       <Card
                         key={course.id}
-                        className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-                          isSelected ? "ring-2 ring-primary shadow-lg" : ""
-                        }`}
+                        className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isSelected ? "ring-2 ring-primary shadow-lg" : ""
+                          }`}
                         onClick={() => setSelectedCourse(isSelected ? null : course.id)}
                       >
                         <div className="relative h-40 rounded-t-xl overflow-hidden">
-                          <img 
-                            src={subjectThumbnails[getSubject(course)] || mathematicsThumbnail} 
+                          <img
+                            src={subjectThumbnails[getSubject(course)] || mathematicsThumbnail}
                             alt={course.title}
                             className="absolute inset-0 w-full h-full object-cover"
                           />
@@ -386,8 +436,8 @@ const PublicCourses = () => {
               <div className="lg:col-span-2 space-y-6">
                 <Card className="overflow-hidden">
                   <div className="relative h-48">
-                    <img 
-                      src={subjectThumbnails[getSubject(selectedCourseData)] || mathematicsThumbnail} 
+                    <img
+                      src={subjectThumbnails[getSubject(selectedCourseData)] || mathematicsThumbnail}
                       alt={selectedCourseData.title}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -403,7 +453,7 @@ const PublicCourses = () => {
                   </div>
                   <CardContent className="p-6">
                     <p className="text-muted-foreground mb-6">{selectedCourseData.description}</p>
-                    
+
                     {/* Course Stats */}
                     <div className="grid grid-cols-4 gap-4 mb-6">
                       <div className="text-center p-4 bg-muted/50 rounded-xl">

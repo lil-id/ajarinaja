@@ -15,6 +15,20 @@ import { demoAssignments, demoCourses } from '@/data/demoData';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * Demo Teacher Assignments management page.
+ * 
+ * Enables creation and management of course assignments.
+ * Features:
+ * - List of assignments with status indicators
+ * - Creation wizard supporting two modes:
+ *   1. File Submission (traditional upload)
+ *   2. Questions (online quiz/test)
+ * - Configuration for late submissions and penalties
+ * - Simulated creation process
+ * 
+ * @returns {JSX.Element} The rendered Teacher Assignments page.
+ */
 export default function DemoTeacherAssignments() {
   const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -181,7 +195,7 @@ export default function DemoTeacherAssignments() {
                       rows={3}
                     />
                   </div>
-                  
+
                   {/* Question Builder Preview */}
                   <div className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between">
@@ -279,8 +293,8 @@ export default function DemoTeacherAssignments() {
                   <Badge variant="secondary">Late OK (-{assignment.late_penalty_percent}%)</Badge>
                 )}
               </div>
-              <Button 
-                className="w-full mt-4" 
+              <Button
+                className="w-full mt-4"
                 variant="outline"
                 onClick={() => navigate(`/demo/teacher/assignments/${assignment.id}/grade`)}
               >

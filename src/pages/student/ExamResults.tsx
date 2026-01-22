@@ -13,6 +13,18 @@ import { ArrowLeft, CheckCircle, XCircle, AlignLeft, Loader2, Clock, BookOpen, F
 import { cn } from '@/lib/utils';
 import MaterialViewer from '@/components/MaterialViewer';
 
+/**
+ * Exam Results page.
+ * 
+ * Detailed view of a graded exam submission.
+ * Features:
+ * - Score summary and grade calculation
+ * - Question-by-question review
+ * - Correct answer indicators
+ * - Remedial material recommendations for incorrect answers
+ * 
+ * @returns {JSX.Element} The rendered Exam Results page.
+ */
 const ExamResults = () => {
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
@@ -71,8 +83,8 @@ const ExamResults = () => {
     }
   });
 
-  const scorePercentage = submission.score !== null 
-    ? Math.round((submission.score / exam.total_points) * 100) 
+  const scorePercentage = submission.score !== null
+    ? Math.round((submission.score / exam.total_points) * 100)
     : 0;
 
   const getGradeLabel = (percentage: number) => {
@@ -145,7 +157,7 @@ const ExamResults = () => {
             </div>
           )}
         </div>
-        
+
         {/* Stats Row */}
         <CardContent className="p-6">
           <div className="grid grid-cols-4 gap-4 text-center">
@@ -214,8 +226,8 @@ const ExamResults = () => {
                 </button>
               ))}
               {materials.length > 5 && (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full mt-2"
                   onClick={() => navigate('/student/materials')}
                 >
@@ -238,8 +250,8 @@ const ExamResults = () => {
           const selectedOption = answer !== undefined ? Number(answer) : null;
 
           return (
-            <Card 
-              key={q.id} 
+            <Card
+              key={q.id}
               className={cn(
                 "border-0 shadow-card overflow-hidden",
                 isCorrect ? "ring-1 ring-green-200" : "ring-1 ring-red-200"
@@ -275,9 +287,9 @@ const ExamResults = () => {
                   {q.options?.map((option, optIdx) => {
                     const isSelected = selectedOption === optIdx;
                     const isCorrectOption = q.correct_answer === optIdx;
-                    
+
                     return (
-                      <div 
+                      <div
                         key={optIdx}
                         className={cn(
                           "p-3 rounded-lg border flex items-center gap-3",
@@ -314,7 +326,7 @@ const ExamResults = () => {
                     );
                   })}
                 </div>
-                
+
                 {/* Quick link to materials for incorrect answers */}
                 {!isCorrect && materials.length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -351,7 +363,7 @@ const ExamResults = () => {
               <CheckCircle className="w-5 h-5 text-purple-600" />
               Multi-Select Questions
             </h3>
-            
+
             {multiSelectQuestions.map((q: Question, idx: number) => {
               const answer = submission.answers[q.id];
               const studentAnswers = Array.isArray(answer) ? answer.map(Number) : [];
@@ -359,8 +371,8 @@ const ExamResults = () => {
               const isFullyCorrect = JSON.stringify([...studentAnswers].sort()) === JSON.stringify([...correctAnswers].sort());
 
               return (
-                <Card 
-                  key={q.id} 
+                <Card
+                  key={q.id}
                   className={cn(
                     "border-0 shadow-card overflow-hidden",
                     isFullyCorrect ? "ring-1 ring-green-200" : "ring-1 ring-red-200"
@@ -397,9 +409,9 @@ const ExamResults = () => {
                       {q.options?.map((option, optIdx) => {
                         const isSelected = studentAnswers.includes(optIdx);
                         const isCorrectOption = correctAnswers.includes(optIdx);
-                        
+
                         return (
-                          <div 
+                          <div
                             key={optIdx}
                             className={cn(
                               "p-3 rounded-lg border flex items-center gap-3",
@@ -443,7 +455,7 @@ const ExamResults = () => {
                         );
                       })}
                     </div>
-                    
+
                     {/* Quick link to materials for incorrect answers */}
                     {!isFullyCorrect && materials.length > 0 && (
                       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -482,10 +494,10 @@ const ExamResults = () => {
               <AlignLeft className="w-5 h-5" />
               Essay Questions
             </h3>
-            
+
             {essayQuestions.map((q: Question, idx: number) => {
               const answer = submission.answers[q.id];
-              
+
               return (
                 <Card key={q.id} className="border-0 shadow-card">
                   <CardHeader className="pb-2">
@@ -506,7 +518,7 @@ const ExamResults = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {!submission.graded && (
                       <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg text-amber-700 text-sm">
                         <Clock className="w-4 h-4" />

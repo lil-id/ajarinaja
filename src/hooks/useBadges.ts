@@ -24,6 +24,11 @@ export interface StudentBadge {
   badge?: Badge;
 }
 
+/**
+ * Custom hook to fetch all available badges (both preset and custom).
+ * 
+ * @returns {UseQueryResult} The query result containing all badges.
+ */
 export function useBadges() {
   const { user } = useAuth();
 
@@ -35,7 +40,7 @@ export function useBadges() {
         .select('*')
         .order('is_preset', { ascending: false })
         .order('name');
-      
+
       if (error) throw error;
       return data as Badge[];
     },
@@ -43,6 +48,12 @@ export function useBadges() {
   });
 }
 
+/**
+ * Custom hook to fetch badges awarded to a specific student.
+ * 
+ * @param {string} [studentId] - The ID of the student.
+ * @returns {UseQueryResult} The query result containing student badges.
+ */
 export function useStudentBadges(studentId?: string) {
   const { user } = useAuth();
 
@@ -52,13 +63,13 @@ export function useStudentBadges(studentId?: string) {
       let query = supabase
         .from('student_badges')
         .select('*, badge:badges(*)');
-      
+
       if (studentId) {
         query = query.eq('student_id', studentId);
       }
-      
+
       const { data, error } = await query.order('awarded_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as (StudentBadge & { badge: Badge })[];
     },
@@ -66,6 +77,11 @@ export function useStudentBadges(studentId?: string) {
   });
 }
 
+/**
+ * Custom hook to fetch badges awarded to the current user (student).
+ * 
+ * @returns {UseQueryResult} The query result containing the user's badges.
+ */
 export function useMyBadges() {
   const { user } = useAuth();
 
@@ -73,27 +89,27 @@ export function useMyBadges() {
     queryKey: ['my-badges'],
     queryFn: async () => {
       if (!user) return [];
-      
+
       // First get student badges with badge details
       const { data: badgesData, error } = await supabase
         .from('student_badges')
         .select('*, badge:badges(*)')
         .eq('student_id', user.id)
         .order('awarded_at', { ascending: false });
-      
+
       if (error) throw error;
       if (!badgesData || badgesData.length === 0) return [];
-      
+
       // Get unique teacher IDs and exam IDs
       const teacherIds = [...new Set(badgesData.map(b => b.awarded_by))];
       const examIds = [...new Set(badgesData.filter(b => b.exam_id).map(b => b.exam_id))];
-      
+
       // Fetch teacher profiles using public_profiles view (accessible to students)
       const { data: teachers } = await supabase
         .from('public_profiles')
         .select('user_id, name')
         .in('user_id', teacherIds);
-      
+
       // Fetch exams with course info
       let examsWithCourses: any[] = [];
       if (examIds.length > 0) {
@@ -101,24 +117,24 @@ export function useMyBadges() {
           .from('exams')
           .select('id, title, course_id')
           .in('id', examIds as string[]);
-        
+
         if (exams && exams.length > 0) {
           const courseIds = [...new Set(exams.map(e => e.course_id))];
           const { data: courses } = await supabase
             .from('courses')
             .select('id, title')
             .in('id', courseIds);
-          
+
           examsWithCourses = exams.map(e => ({
             ...e,
             course: courses?.find(c => c.id === e.course_id)
           }));
         }
       }
-      
+
       const teacherMap = new Map(teachers?.map(t => [t.user_id, t.name]) || []);
       const examMap = new Map(examsWithCourses.map(e => [e.id, e]));
-      
+
       return badgesData.map(b => ({
         ...b,
         teacher_name: teacherMap.get(b.awarded_by) || 'Unknown Teacher',
@@ -129,20 +145,25 @@ export function useMyBadges() {
   });
 }
 
+/**
+ * Mutation hook to create a new custom badge.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateBadge() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ 
-      name, 
-      description, 
-      icon, 
-      color 
-    }: { 
-      name: string; 
-      description?: string; 
-      icon: string; 
+    mutationFn: async ({
+      name,
+      description,
+      icon,
+      color
+    }: {
+      name: string;
+      description?: string;
+      icon: string;
       color: string;
     }) => {
       if (!user) throw new Error('Not authenticated');
@@ -159,7 +180,7 @@ export function useCreateBadge() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -169,19 +190,24 @@ export function useCreateBadge() {
   });
 }
 
+/**
+ * Mutation hook to award a badge to a student.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useAwardBadge() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ 
-      studentId, 
-      badgeId, 
+    mutationFn: async ({
+      studentId,
+      badgeId,
       examId,
       submissionId,
-    }: { 
-      studentId: string; 
-      badgeId: string; 
+    }: {
+      studentId: string;
+      badgeId: string;
       examId?: string;
       submissionId?: string;
     }) => {
@@ -198,7 +224,7 @@ export function useAwardBadge() {
         })
         .select('*, badge:badges(*)')
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -208,6 +234,11 @@ export function useAwardBadge() {
   });
 }
 
+/**
+ * Mutation hook to revoke an awarded badge.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useRevokeBadge() {
   const queryClient = useQueryClient();
 
@@ -217,7 +248,7 @@ export function useRevokeBadge() {
         .from('student_badges')
         .delete()
         .eq('id', badgeAwardId);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -226,6 +257,11 @@ export function useRevokeBadge() {
   });
 }
 
+/**
+ * Mutation hook to delete a custom badge.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteBadge() {
   const queryClient = useQueryClient();
 
@@ -235,7 +271,7 @@ export function useDeleteBadge() {
         .from('badges')
         .delete()
         .eq('id', badgeId);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

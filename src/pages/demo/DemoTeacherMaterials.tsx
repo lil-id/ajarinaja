@@ -7,20 +7,31 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Plus, Upload, Video, FileText, Download, Trash2, 
+import {
+  Plus, Upload, Video, FileText, Download, Trash2,
   Lock, AlertCircle, Youtube, File, Image
 } from 'lucide-react';
 import { demoCourses, demoMaterials } from '@/data/demoData';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * Demo Teacher Materials management page.
+ * 
+ * Allows teachers to upload and manage course materials.
+ * Features:
+ * - Material list filtered by course
+ * - Material upload wizard (File vs Video Link)
+ * - Validation and demo mode restrictions
+ * 
+ * @returns {JSX.Element} The rendered Teacher Materials page.
+ */
 export default function DemoTeacherMaterials() {
   const [selectedCourse, setSelectedCourse] = useState<string>(demoCourses[0]?.id || '');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [uploadType, setUploadType] = useState<'file' | 'video'>('file');
-  
+
   // Form states
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -118,8 +129,8 @@ export default function DemoTeacherMaterials() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Title</label>
-                    <Input 
-                      placeholder="Enter material title" 
+                    <Input
+                      placeholder="Enter material title"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                     />
@@ -127,8 +138,8 @@ export default function DemoTeacherMaterials() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Description (Optional)</label>
-                    <Textarea 
-                      placeholder="Describe this material..." 
+                    <Textarea
+                      placeholder="Describe this material..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={2}
@@ -153,9 +164,9 @@ export default function DemoTeacherMaterials() {
                             <Button variant="outline" size="sm" asChild>
                               <span>Browse Files</span>
                             </Button>
-                            <input 
-                              type="file" 
-                              className="hidden" 
+                            <input
+                              type="file"
+                              className="hidden"
                               onChange={handleFileSelect}
                               accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png"
                             />
@@ -167,8 +178,8 @@ export default function DemoTeacherMaterials() {
 
                   <TabsContent value="video" className="mt-0 space-y-2">
                     <label className="text-sm font-medium">YouTube URL</label>
-                    <Input 
-                      placeholder="https://www.youtube.com/watch?v=..." 
+                    <Input
+                      placeholder="https://www.youtube.com/watch?v=..."
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
                     />
@@ -234,8 +245,8 @@ export default function DemoTeacherMaterials() {
           ) : (
             <div className="space-y-3">
               {courseMaterials.map(material => (
-                <div 
-                  key={material.id} 
+                <div
+                  key={material.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">

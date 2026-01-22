@@ -13,6 +13,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MaterialViewer } from '@/components/MaterialViewer';
 
+/**
+ * Helper to get the icon for a file type.
+ * @param {string | null} fileType - MIME type of the file
+ * @returns {LucideIcon} The icon component
+ */
 const getFileIcon = (fileType: string | null) => {
   if (!fileType) return File;
   if (fileType.startsWith('video/')) return Video;
@@ -29,6 +34,18 @@ const formatFileSize = (bytes: number | null) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+/**
+ * Student Materials page.
+ * 
+ * Central repository for all course materials.
+ * Features:
+ * - Aggregated list of materials across courses
+ * - Filtering by course
+ * - Material viewers (Video, PDF, etc.)
+ * - Tracking of viewed status
+ * 
+ * @returns {JSX.Element} The rendered Materials page.
+ */
 const StudentMaterials = () => {
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const { courses, isLoading: coursesLoading } = useCourses();
@@ -42,12 +59,12 @@ const StudentMaterials = () => {
 
   const enrolledCourseIds = enrollments.map(e => e.course_id);
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
-  
+
   const myMaterials = materials.filter(m => enrolledCourseIds.includes(m.course_id));
 
   // Apply course filter
-  const filteredMaterials = selectedCourseFilter === 'all' 
-    ? myMaterials 
+  const filteredMaterials = selectedCourseFilter === 'all'
+    ? myMaterials
     : myMaterials.filter(m => m.course_id === selectedCourseFilter);
 
   const materialsByCourse = filteredMaterials.reduce((acc, material) => {
@@ -92,13 +109,13 @@ const StudentMaterials = () => {
       const { data, error } = await supabase.storage
         .from('course-materials')
         .download(filePath);
-      
+
       if (error) {
         console.error('Download error:', error);
         toast.error('Failed to download material');
         return;
       }
-      
+
       const url = URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
@@ -175,7 +192,7 @@ const StudentMaterials = () => {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">No materials available</h3>
             <p className="text-muted-foreground text-center">
-              {enrolledCourseIds.length === 0 
+              {enrolledCourseIds.length === 0
                 ? 'Enroll in courses to access their materials'
                 : 'Your teachers haven\'t uploaded any materials yet'}
             </p>
@@ -200,7 +217,7 @@ const StudentMaterials = () => {
         <div className="space-y-4">
           {Object.entries(materialsByCourse).map(([courseId, courseMaterials]) => {
             const isExpanded = expandedCourses.has(courseId);
-            
+
             return (
               <Collapsible
                 key={courseId}
@@ -221,10 +238,9 @@ const StudentMaterials = () => {
                           </p>
                         </div>
                       </div>
-                      <ChevronDown 
-                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`} 
+                      <ChevronDown
+                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </div>
                   </CollapsibleTrigger>
@@ -234,9 +250,9 @@ const StudentMaterials = () => {
                         const isVideo = !!material.video_url;
                         const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
                         const FileIcon = isVideo ? Youtube : getFileIcon(material.file_type);
-                        
+
                         return (
-                          <div 
+                          <div
                             key={material.id}
                             className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors animate-slide-up"
                             style={{ animationDelay: `${index * 50}ms` }}
@@ -245,8 +261,8 @@ const StudentMaterials = () => {
                               <div className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-black relative group cursor-pointer"
                                 onClick={() => handleViewMaterial(material)}
                               >
-                                <img 
-                                  src={getYouTubeThumbnail(videoId)} 
+                                <img
+                                  src={getYouTubeThumbnail(videoId)}
                                   alt={material.title}
                                   className="w-full h-full object-cover"
                                 />
@@ -255,7 +271,7 @@ const StudentMaterials = () => {
                                 </div>
                               </div>
                             ) : (
-                              <div 
+                              <div
                                 className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-secondary/20 transition-colors"
                                 onClick={() => handleViewMaterial(material)}
                               >

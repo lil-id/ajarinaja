@@ -19,13 +19,29 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import FormulaText from '@/components/FormulaText';
 
+/**
+ * Submit Assignment page.
+ * 
+ * Standard interface for assignment submission.
+ * Supports two modes:
+ * 1. File Upload / Text Entry
+ * 2. Question-based (Quiz style)
+ * 
+ * Features:
+ * - File validation (type, size)
+ * - Auto-saving question answers (state based)
+ * - Late submission handling
+ * - Feedback viewing
+ * 
+ * @returns {JSX.Element} The rendered Submit Assignment page.
+ */
 export default function SubmitAssignment() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   const { data: assignment, isLoading: assignmentLoading } = useAssignment(assignmentId!);
   const isQuestionBased = (assignment as any)?.assignment_type === 'questions';
   const { data: submission, isLoading: submissionLoading } = useMyAssignmentSubmission(assignmentId!, isQuestionBased ? 'questions' : 'submission');
@@ -106,7 +122,7 @@ export default function SubmitAssignment() {
 
       questions.forEach(q => {
         const studentAnswer = answers[q.id];
-        
+
         if (q.type === 'multiple-choice' && q.correct_answer !== null) {
           totalAutoGradablePoints += q.points;
           if (studentAnswer === q.correct_answer) {
@@ -117,7 +133,7 @@ export default function SubmitAssignment() {
           const studentAnswers = (studentAnswer as number[]) || [];
           const correctAnswers = q.correct_answers;
           // Full credit if arrays match exactly
-          const isCorrect = 
+          const isCorrect =
             studentAnswers.length === correctAnswers.length &&
             studentAnswers.every(a => correctAnswers.includes(a));
           if (isCorrect) {
@@ -144,7 +160,7 @@ export default function SubmitAssignment() {
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ['my-assignment-submission', assignmentId] });
-      
+
       if (isFullyAutoGraded) {
         toast.success(`Assignment submitted! Your score: ${autoScore} / ${assignment.max_points}`);
       } else {
@@ -248,13 +264,13 @@ export default function SubmitAssignment() {
               <Label className="text-sm text-muted-foreground">Your Answers</Label>
               {questions.map((q, index) => {
                 const answer = submission.answers[q.id];
-                const isCorrect = q.type === 'multiple-choice' 
+                const isCorrect = q.type === 'multiple-choice'
                   ? answer === q.correct_answer
                   : q.type === 'multi-select' && q.correct_answers
                     ? (answer as number[])?.length === q.correct_answers.length &&
-                      (answer as number[])?.every(a => q.correct_answers!.includes(a))
+                    (answer as number[])?.every(a => q.correct_answers!.includes(a))
                     : null;
-                
+
                 return (
                   <div key={q.id} className={cn(
                     "p-3 border rounded-lg space-y-2",
@@ -431,7 +447,7 @@ export default function SubmitAssignment() {
                       </p>
                       <Badge variant="outline">{q.points} pts</Badge>
                     </div>
-                    
+
                     {q.type === 'multiple-choice' && q.options && (
                       <RadioGroup
                         value={answers[q.id]?.toString()}
@@ -454,7 +470,7 @@ export default function SubmitAssignment() {
                             <Checkbox
                               id={`${q.id}-${optIndex}`}
                               checked={((answers[q.id] as number[]) || []).includes(optIndex)}
-                              onCheckedChange={(checked) => 
+                              onCheckedChange={(checked) =>
                                 handleMultiSelectChange(q.id, optIndex, checked as boolean)
                               }
                             />
@@ -475,8 +491,8 @@ export default function SubmitAssignment() {
                   </div>
                 ))}
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={handleQuestionSubmit}
                   disabled={isSubmittingQuestions}
                 >
@@ -557,7 +573,7 @@ export default function SubmitAssignment() {
                     </Button>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Max size: {assignment.max_file_size_mb}MB. 
+                    Max size: {assignment.max_file_size_mb}MB.
                     Allowed: {assignment.allowed_file_types?.join(', ')}
                   </p>
                 </div>
@@ -579,8 +595,8 @@ export default function SubmitAssignment() {
                   />
                 </div>
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={handleSubmit}
                   disabled={submitAssignment.isPending || (!file && !textContent.trim())}
                 >

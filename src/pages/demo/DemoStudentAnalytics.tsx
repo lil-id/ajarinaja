@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend
 } from 'recharts';
@@ -30,6 +30,19 @@ const recentGrades = [
   { title: 'Lab Report - Motion', course: 'Physics', score: 68, maxScore: 75, date: '2024-02-05' },
 ];
 
+/**
+ * Demo Student Analytics page.
+ * 
+ * Displays visual analytics for the student demo user, including:
+ * - Key performance stats (Average Score, Enrolled Courses, etc.)
+ * - Performance trend chart
+ * - Course progress bars
+ * - Recent grades list
+ * 
+ * Uses `recharts` for data visualization and static demo data.
+ * 
+ * @returns {JSX.Element} The rendered Student Analytics page.
+ */
 export default function DemoStudentAnalytics() {
   const stats = demoStats.student;
 
@@ -116,13 +129,13 @@ export default function DemoStudentAnalytics() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value: number) => [`${value}%`, 'Score']}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="score" 
-                    stroke="hsl(var(--secondary))" 
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="hsl(var(--secondary))"
                     strokeWidth={3}
                     dot={{ fill: 'hsl(var(--secondary))', strokeWidth: 2 }}
                   />
@@ -167,9 +180,9 @@ export default function DemoStudentAnalytics() {
             {recentGrades.map((grade, index) => {
               const percentage = Math.round((grade.score / grade.maxScore) * 100);
               const isPassed = percentage >= 70;
-              
+
               return (
-                <div 
+                <div
                   key={index}
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >

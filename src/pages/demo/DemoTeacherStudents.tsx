@@ -12,6 +12,18 @@ import { Users, AlertTriangle, TrendingUp, Search, Mail, BookOpen, Lock } from '
 import { demoStudents, demoCourses, demoStudentPerformance } from '@/data/demoData';
 import { toast } from 'sonner';
 
+/**
+ * Demo Teacher Students management page.
+ * 
+ * detailed view of student performance and status.
+ * Features:
+ * - Student list with "At-Risk" indicators
+ * - Performance overview charts/stats
+ * - Filtering by course and status
+ * - Detailed student profile view (simulated)
+ * 
+ * @returns {JSX.Element} The rendered Teacher Students page.
+ */
 export default function DemoTeacherStudents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -213,12 +225,12 @@ export default function DemoTeacherStudents() {
                   <div className="space-y-2">
                     {student.risk_factors?.map((factor, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className={
                             factor.severity === 'high' ? 'border-destructive text-destructive' :
-                            factor.severity === 'medium' ? 'border-orange-500 text-orange-500' :
-                            'border-yellow-500 text-yellow-500'
+                              factor.severity === 'medium' ? 'border-orange-500 text-orange-500' :
+                                'border-yellow-500 text-yellow-500'
                           }
                         >
                           {factor.severity}
@@ -267,8 +279,8 @@ export default function DemoTeacherStudents() {
                       {student.average_score}%
                     </span>
                   </div>
-                  <Progress 
-                    value={student.average_score} 
+                  <Progress
+                    value={student.average_score}
                     className={`h-2 ${student.average_score < 70 ? '[&>div]:bg-destructive' : ''}`}
                   />
                   <div className="flex gap-4 text-xs text-muted-foreground">

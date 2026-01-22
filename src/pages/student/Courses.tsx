@@ -10,6 +10,17 @@ import { useCourseMaterials } from '@/hooks/useCourseMaterials';
 import { useExamSubmissions, useMaterialViews } from '@/hooks/useProgress';
 import { BookOpen, Loader2, ArrowRight } from 'lucide-react';
 
+/**
+ * Student Courses page.
+ * 
+ * Displays list of enrolled courses with progress tracking.
+ * Features:
+ * - Card view of enrolled courses
+ * - Progress bar visualization (exams + materials)
+ * - Navigation to course details
+ * 
+ * @returns {JSX.Element} The rendered Courses page.
+ */
 const StudentCourses = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,16 +37,21 @@ const StudentCourses = () => {
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
 
   // Calculate progress for each course
+  /**
+   * Calculates overall course progress based on exams and materials.
+   * @param {string} courseId - The ID of the course
+   * @returns {number} Progress percentage (0-100)
+   */
   const getCourseProgress = (courseId: string) => {
     const courseExams = exams.filter(e => e.course_id === courseId && e.status === 'published');
     const courseMaterials = materials.filter(m => m.course_id === courseId);
-    
+
     const completedExams = submissions.filter(s => courseExams.some(e => e.id === s.exam_id)).length;
     const viewedMaterials = materialViews.filter(v => courseMaterials.some(m => m.id === v.material_id)).length;
-    
+
     const examProgress = courseExams.length > 0 ? (completedExams / courseExams.length) * 100 : 100;
     const materialProgress = courseMaterials.length > 0 ? (viewedMaterials / courseMaterials.length) * 100 : 100;
-    
+
     return Math.round((examProgress + materialProgress) / 2);
   };
 
@@ -73,7 +89,7 @@ const StudentCourses = () => {
           {enrolledCourses.map((course, index) => {
             const progress = getCourseProgress(course.id);
             return (
-              <Card 
+              <Card
                 key={course.id}
                 className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up overflow-hidden cursor-pointer group"
                 style={{ animationDelay: `${index * 100}ms` }}
@@ -81,8 +97,8 @@ const StudentCourses = () => {
               >
                 <div className="h-32 bg-gradient-hero flex items-center justify-center overflow-hidden relative">
                   {course.thumbnail_url ? (
-                    <img 
-                      src={course.thumbnail_url} 
+                    <img
+                      src={course.thumbnail_url}
                       alt={course.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

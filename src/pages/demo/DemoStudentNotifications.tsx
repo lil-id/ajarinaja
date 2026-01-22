@@ -43,6 +43,17 @@ const demoNotifications = [
   },
 ];
 
+/**
+ * Demo Student Notifications page.
+ * 
+ * Displays notifications and announcements for the student.
+ * Features:
+ * - Tabbed view (All vs Announcements)
+ * - Unread count badge
+ * - Visual indicators for different notification types (Grade, Deadline, Badge)
+ * 
+ * @returns {JSX.Element} The rendered Notifications page.
+ */
 export default function DemoStudentNotifications() {
   const [activeTab, setActiveTab] = useState('all');
 

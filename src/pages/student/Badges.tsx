@@ -20,6 +20,17 @@ const BADGE_COLORS: Record<string, string> = {
   orange: 'bg-orange-100 text-orange-700 border-orange-300',
 };
 
+/**
+ * Student Badges page.
+ * 
+ * Showcase of student achievements.
+ * Features:
+ * - Grid view of earned badges
+ * - Badge details (Reason, Icon, Color)
+ * - Source context (Teacher, Course, Exam)
+ * 
+ * @returns {JSX.Element} The rendered Badges page.
+ */
 const StudentBadges = () => {
   const { data: badges = [], isLoading } = useMyBadges();
 
@@ -57,9 +68,9 @@ const StudentBadges = () => {
           {badges.map((studentBadge: any, index: number) => {
             const badge = studentBadge.badge;
             const BadgeIcon = BADGE_ICONS[badge?.icon || 'award'] || Award;
-            
+
             return (
-              <Card 
+              <Card
                 key={studentBadge.id}
                 className="border-0 shadow-card animate-slide-up"
                 style={{ animationDelay: `${index * 50}ms` }}
@@ -75,7 +86,7 @@ const StudentBadges = () => {
                   {badge?.description && (
                     <p className="text-sm text-muted-foreground mt-1">{badge.description}</p>
                   )}
-                  
+
                   {/* Teacher and Course info */}
                   <div className="mt-3 space-y-1">
                     {studentBadge.teacher_name && (
@@ -89,7 +100,7 @@ const StudentBadges = () => {
                       </p>
                     )}
                   </div>
-                  
+
                   <p className="text-xs text-muted-foreground mt-3">
                     Awarded {format(new Date(studentBadge.awarded_at), 'MMM d, yyyy')}
                   </p>

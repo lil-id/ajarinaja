@@ -26,6 +26,12 @@ export interface CreateAcademicPeriodData {
   is_active?: boolean;
 }
 
+/**
+ * Custom hook to manage academic periods.
+ * Provides functions to fetch, create, update, delete, and set active academic periods.
+ * 
+ * @returns {object} The state and mutation functions for academic periods.
+ */
 export function useAcademicPeriods() {
   const { user } = useAuth();
   const queryClient = useQueryClient();

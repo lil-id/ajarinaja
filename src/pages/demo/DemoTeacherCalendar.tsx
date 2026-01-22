@@ -22,6 +22,19 @@ interface CalendarEvent {
   description?: string;
 }
 
+/**
+ * Demo Teacher Calendar page.
+ * 
+ * Aggregates all course events, exams, and deadlines into a monthly calendar view.
+ * Features:
+ * - Interactive calendar grid
+ * - Event filtering and indicators by type (Exam, Assignment, Custom)
+ * - Month navigation
+ * - Detailed daily view on selection
+ * - "Add Event" dialog (simulated)
+ * 
+ * @returns {JSX.Element} The rendered Teacher Calendar page.
+ */
 export default function DemoTeacherCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());

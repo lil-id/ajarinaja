@@ -14,6 +14,9 @@ interface Question {
   points: number;
 }
 
+/**
+ * Props for the StudentPreviewMode component.
+ */
 interface StudentPreviewModeProps {
   title: string;
   description?: string;
@@ -23,6 +26,13 @@ interface StudentPreviewModeProps {
   sidebarCollapsed?: boolean;
 }
 
+/**
+ * Component that simulates the student view for an exam or assignment.
+ * Overlay that hides teacher controls and displays content as a student would see it.
+ * 
+ * @param {StudentPreviewModeProps} props - Component props.
+ * @returns {JSX.Element | null} The preview button or overlay.
+ */
 export default function StudentPreviewMode({
   title,
   description,

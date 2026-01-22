@@ -13,10 +13,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  ArrowLeft, 
-  Download, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  Download,
+  CheckCircle,
   XCircle,
   Calendar,
   Award,
@@ -33,6 +33,17 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))'];
 
+/**
+ * Report Card Detail page.
+ * 
+ * Displays the full details of a specific report card.
+ * Features:
+ * - Detailed grade breakdown per subject
+ * - Statistical summary (Passed/Failed chart, averages)
+ * - PDF download generation
+ * 
+ * @returns {JSX.Element} The rendered Report Card Detail page.
+ */
 const StudentReportCardDetail = () => {
   const { t } = useTranslation();
   const { reportCardId } = useParams<{ reportCardId: string }>();
@@ -76,15 +87,15 @@ const StudentReportCardDetail = () => {
     { name: t('reportCards.notPassed'), value: failedCount },
   ].filter(d => d.value > 0);
 
-  const bestSubject = entries.reduce((best, entry) => 
+  const bestSubject = entries.reduce((best, entry) =>
     entry.final_grade > (best?.final_grade || 0) ? entry : best
-  , entries[0]);
+    , entries[0]);
 
   const handleDownloadPDF = () => {
     if (!reportCard) return;
 
     const doc = new jsPDF();
-    
+
     // Header
     doc.setFontSize(18);
     doc.text(t('reportCards.title').toUpperCase(), 105, 20, { align: 'center' });
@@ -338,9 +349,9 @@ const StudentReportCardDetail = () => {
                         labelLine={false}
                       >
                         {pieData.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={index === 0 ? '#22c55e' : '#ef4444'} 
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={index === 0 ? '#22c55e' : '#ef4444'}
                           />
                         ))}
                       </Pie>
@@ -372,9 +383,9 @@ const StudentReportCardDetail = () => {
               </CardHeader>
               <CardContent className="flex justify-center">
                 <div className="text-center">
-                  <img 
-                    src={reportCard.teacher_signature} 
-                    alt={t('reportCards.teacherSignature')} 
+                  <img
+                    src={reportCard.teacher_signature}
+                    alt={t('reportCards.teacherSignature')}
                     className="max-w-full h-20 object-contain"
                   />
                   <p className="text-sm text-muted-foreground mt-2">{t('reportCards.teacher')}</p>

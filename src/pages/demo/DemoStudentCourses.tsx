@@ -7,6 +7,19 @@ import { BookOpen, Users, FileText, Play, Lock } from 'lucide-react';
 import { demoCourses, demoMaterials } from '@/data/demoData';
 import { toast } from 'sonner';
 
+/**
+ * Demo Student Courses list page.
+ * 
+ * Displays a grid of courses the student is enrolled in.
+ * Features:
+ * - Course progress indication
+ * - Quick stats (exams count, materials count)
+ * - Recent materials preview
+ * - Navigation to course details
+ * - Simulated unenroll action
+ * 
+ * @returns {JSX.Element} The rendered Student Courses page.
+ */
 export default function DemoStudentCourses() {
   const navigate = useNavigate();
   const enrolledCourses = demoCourses.filter(c => c.status === 'published');
@@ -31,7 +44,7 @@ export default function DemoStudentCourses() {
         {enrolledCourses.map((course, index) => {
           const courseMaterials = demoMaterials.filter(m => m.course_id === course.id);
           const progress = 30 + (index * 25); // Simulated progress
-          
+
           return (
             <Card key={course.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -42,7 +55,7 @@ export default function DemoStudentCourses() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
-                
+
                 {/* Progress */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">

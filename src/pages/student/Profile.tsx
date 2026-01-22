@@ -9,11 +9,22 @@ import { Loader2 } from 'lucide-react';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Student Profile page.
+ * 
+ * Allows students to manage their personal information.
+ * Features:
+ * - Profile picture upload
+ * - Name update
+ * - Email display (read-only)
+ * 
+ * @returns {JSX.Element} The rendered Profile page.
+ */
 const StudentProfile = () => {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const updateProfile = useUpdateProfile();
-  
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -71,8 +82,8 @@ const StudentProfile = () => {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">{t('profile.firstName')}</Label>
-                <Input 
-                  id="firstName" 
+                <Input
+                  id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder={t('profile.enterFirstName')}
@@ -81,8 +92,8 @@ const StudentProfile = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">{t('profile.lastName')}</Label>
-                <Input 
-                  id="lastName" 
+                <Input
+                  id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder={t('profile.enterLastName')}
@@ -92,10 +103,10 @@ const StudentProfile = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t('profile.email')}</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                defaultValue={profile?.email} 
+              <Input
+                id="email"
+                type="email"
+                defaultValue={profile?.email}
                 disabled
                 className="bg-muted"
               />
@@ -103,8 +114,8 @@ const StudentProfile = () => {
             </div>
           </div>
 
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={updateProfile.isPending || !hasChanges || !firstName.trim()}
           >
             {updateProfile.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

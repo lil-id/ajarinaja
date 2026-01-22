@@ -19,6 +19,12 @@ export interface QuestionBankItem {
   updated_at: string;
 }
 
+/**
+ * Custom hook to fetch questions from the question bank.
+ * 
+ * @param {string} [courseId] - Filter by course ID.
+ * @returns {UseQueryResult} The query result containing question bank items.
+ */
 export function useQuestionBank(courseId?: string) {
   const { user } = useAuth();
 
@@ -42,6 +48,11 @@ export function useQuestionBank(courseId?: string) {
   });
 }
 
+/**
+ * Custom hook to fetch unique categories from the question bank.
+ * 
+ * @returns {UseQueryResult} The query result containing categories.
+ */
 export function useQuestionBankCategories() {
   const { user } = useAuth();
 
@@ -60,6 +71,11 @@ export function useQuestionBankCategories() {
   });
 }
 
+/**
+ * Mutation hook to create a new question bank item.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useCreateQuestionBankItem() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -87,6 +103,11 @@ export function useCreateQuestionBankItem() {
   });
 }
 
+/**
+ * Mutation hook to update an existing question bank item.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useUpdateQuestionBankItem() {
   const queryClient = useQueryClient();
 
@@ -112,6 +133,11 @@ export function useUpdateQuestionBankItem() {
   });
 }
 
+/**
+ * Mutation hook to delete a question bank item.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useDeleteQuestionBankItem() {
   const queryClient = useQueryClient();
 
@@ -131,6 +157,11 @@ export function useDeleteQuestionBankItem() {
   });
 }
 
+/**
+ * Mutation hook to increment the usage count of a question bank item.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useIncrementQuestionUsage() {
   const queryClient = useQueryClient();
 
@@ -157,6 +188,11 @@ export function useIncrementQuestionUsage() {
   });
 }
 
+/**
+ * Mutation hook to save exam questions to the question bank.
+ * 
+ * @returns {UseMutationResult} The mutation result.
+ */
 export function useSaveExamQuestionsToBank() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

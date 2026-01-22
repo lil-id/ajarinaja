@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  FileText, 
-  Calendar, 
-  TrendingUp, 
+import {
+  FileText,
+  Calendar,
+  TrendingUp,
   Award,
   ChevronRight,
   GraduationCap
@@ -13,6 +13,17 @@ import {
 import { useReportCards } from '@/hooks/useReportCards';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+/**
+ * Student Report Cards page.
+ * 
+ * Overview of student's academic performance history.
+ * Features:
+ * - List of issued report cards
+ * - Performance trend chart across semesters
+ * - Key statistics (Latest average, best grade)
+ * 
+ * @returns {JSX.Element} The rendered Report Cards page.
+ */
 const StudentReportCards = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -107,29 +118,29 @@ const StudentReportCards = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     tick={{ fontSize: 12 }}
                     className="text-muted-foreground"
                   />
-                  <YAxis 
-                    domain={[0, 100]} 
+                  <YAxis
+                    domain={[0, 100]}
                     tick={{ fontSize: 12 }}
                     className="text-muted-foreground"
                     allowDecimals={false}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                     }}
                     formatter={(value: number) => [value.toFixed(1), t('reportCards.average')]}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="average" 
-                    stroke="hsl(var(--primary))" 
+                  <Line
+                    type="monotone"
+                    dataKey="average"
+                    stroke="hsl(var(--primary))"
                     strokeWidth={3}
                     dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 5 }}
                     activeDot={{ r: 7 }}

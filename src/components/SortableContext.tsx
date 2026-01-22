@@ -15,12 +15,22 @@ import {
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
+/**
+ * Props for the SortableList component.
+ */
 interface SortableListProps {
   items: string[];
   onReorder: (oldIndex: number, newIndex: number) => void;
   children: React.ReactNode;
 }
 
+/**
+ * Wrapper component for creating sortable lists using dnd-kit.
+ * Handles drag and drop context and sensors.
+ * 
+ * @param {SortableListProps} props - Component props.
+ * @returns {JSX.Element} The sortable list context.
+ */
 export const SortableList: React.FC<SortableListProps> = ({
   items,
   onReorder,

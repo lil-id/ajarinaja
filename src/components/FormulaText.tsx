@@ -2,6 +2,9 @@ import React, { useMemo } from 'react';
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
 
+/**
+ * Props for the FormulaText component.
+ */
 interface FormulaTextProps {
   text: string;
   className?: string;

@@ -13,6 +13,9 @@ import { useQuery } from '@tanstack/react-query';
 import { BookOpen, User, FileText, Video, File, Loader2, Users, Clock, LogOut, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 
+/**
+ * Props for the CoursePreviewModal component.
+ */
 interface CoursePreviewModalProps {
   course: Course | null;
   isOpen: boolean;
@@ -31,19 +34,23 @@ interface TeacherProfile {
   bio: string | null;
 }
 
+/**
+ * Methods to fetch teacher profile details.
+ * @param {string} teacherId - The ID of the teacher.
+ */
 function useTeacherProfile(teacherId: string | undefined) {
   return useQuery({
     queryKey: ['teacher-profile', teacherId],
     queryFn: async () => {
       if (!teacherId) return null;
-      
+
       // Use public_profiles view which is accessible to all authenticated users
       const { data, error } = await supabase
         .from('public_profiles')
         .select('user_id, name, avatar_url, bio')
         .eq('user_id', teacherId)
         .single();
-      
+
       if (error) throw error;
       return data as TeacherProfile;
     },
@@ -51,17 +58,21 @@ function useTeacherProfile(teacherId: string | undefined) {
   });
 }
 
+/**
+ * Methods to fetch course enrollment count.
+ * @param {string} courseId - The ID of the course.
+ */
 function useCourseEnrollmentCount(courseId: string | undefined) {
   return useQuery({
     queryKey: ['course-enrollment-count', courseId],
     queryFn: async () => {
       if (!courseId) return 0;
-      
+
       const { count, error } = await supabase
         .from('enrollments')
         .select('*', { count: 'exact', head: true })
         .eq('course_id', courseId);
-      
+
       if (error) throw error;
       return count || 0;
     },
@@ -69,6 +80,13 @@ function useCourseEnrollmentCount(courseId: string | undefined) {
   });
 }
 
+/**
+ * Modal component for previewing course details before potentially enrolling.
+ * Displays course overview, instructor info, and list of materials.
+ * 
+ * @param {CoursePreviewModalProps} props - Component props.
+ * @returns {JSX.Element | null} The modal component or null if no course provided.
+ */
 const CoursePreviewModal = ({
   course,
   isOpen,
@@ -106,8 +124,8 @@ const CoursePreviewModal = ({
           {/* Course Thumbnail */}
           <div className="relative h-40 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg bg-gradient-hero">
             {course.thumbnail_url ? (
-              <img 
-                src={course.thumbnail_url} 
+              <img
+                src={course.thumbnail_url}
                 alt={course.title}
                 className="w-full h-full object-cover"
               />
@@ -123,7 +141,7 @@ const CoursePreviewModal = ({
               </Badge>
             )}
           </div>
-          
+
           <DialogTitle className="text-xl">{course.title}</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             {course.description || 'No description available'}
@@ -221,13 +239,13 @@ const CoursePreviewModal = ({
                   {materials.slice(0, 5).map((material) => {
                     const thumbnail = getYouTubeThumbnailUrl(material.video_url);
                     return (
-                      <div 
+                      <div
                         key={material.id}
                         className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                       >
                         {thumbnail ? (
-                          <img 
-                            src={thumbnail} 
+                          <img
+                            src={thumbnail}
                             alt={material.title}
                             className="w-16 h-10 object-cover rounded"
                           />
@@ -300,8 +318,8 @@ const CoursePreviewModal = ({
               <Button variant="outline" className="flex-1" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
-                variant="hero" 
+              <Button
+                variant="hero"
                 className="flex-1"
                 onClick={() => onEnroll(course.id)}
                 disabled={isEnrolling}

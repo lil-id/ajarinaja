@@ -8,13 +8,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { 
-  ArrowLeft, 
-  Clock, 
-  Award, 
-  Upload, 
-  Lock, 
-  FileText, 
+import {
+  ArrowLeft,
+  Clock,
+  Award,
+  Upload,
+  Lock,
+  FileText,
   AlertCircle,
   Check,
   X,
@@ -25,13 +25,25 @@ import { demoAssignments, demoAssignmentQuestions } from '@/data/demoData';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * Demo Student Submit Assignment page.
+ * 
+ * Interface for students to submit their work for an assignment.
+ * Supports:
+ * - File upload simulation (drag and drop)
+ * - Question-based assignments (multiple choice, essay)
+ * - Progress tracking for multi-question assignments
+ * - Drag and drop interaction demo
+ * 
+ * @returns {JSX.Element} The rendered Assignment Submission page.
+ */
 export default function DemoStudentSubmitAssignment() {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
-  
+
   const assignment = demoAssignments.find(a => a.id === assignmentId);
   const questions = demoAssignmentQuestions.filter(q => q.assignment_id === assignmentId);
-  
+
   const [answers, setAnswers] = useState<Record<string, string | number | number[]>>({});
   const [textContent, setTextContent] = useState('');
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number; type: string } | null>(null);
@@ -74,7 +86,7 @@ export default function DemoStudentSubmitAssignment() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       setUploadedFile({
@@ -286,9 +298,8 @@ export default function DemoStudentSubmitAssignment() {
           <CardContent className="space-y-4">
             {/* File Upload Area */}
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'
-              }`}
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'
+                }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}

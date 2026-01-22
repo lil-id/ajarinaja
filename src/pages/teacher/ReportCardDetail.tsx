@@ -33,12 +33,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  ArrowLeft, 
-  Save, 
-  CheckCircle, 
-  Clock, 
-  Plus, 
+import {
+  ArrowLeft,
+  Save,
+  CheckCircle,
+  Clock,
+  Plus,
   Trash2,
   PenTool,
   Download,
@@ -54,6 +54,21 @@ import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+/**
+ * Report Card Detail page.
+ * 
+ * Interface for managing a specific student's report card.
+ * Features:
+ * - View student info and overall stats
+ * - Input grades for each subject (Exam, Assignment, Final)
+ * - Auto-calculate pass/fail status based on KKM
+ * - Add teacher notes
+ * - Digital signature canvas
+ * - Generate and Download PDF
+ * - Finalize report card (locks editing)
+ * 
+ * @returns {JSX.Element} The rendered Report Card Detail page.
+ */
 const ReportCardDetail = () => {
   const { t } = useTranslation();
   const { reportCardId } = useParams<{ reportCardId: string }>();
@@ -142,7 +157,7 @@ const ReportCardDetail = () => {
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = signatureCanvasRef.current;
     if (!canvas) return;
-    
+
     setIsDrawing(true);
     const ctx = canvas.getContext('2d');
     if (ctx) {
@@ -258,7 +273,7 @@ const ReportCardDetail = () => {
     if (!reportCard) return;
 
     const doc = new jsPDF();
-    
+
     // Header
     doc.setFontSize(18);
     doc.text(t('reportCards.digitalReportCard').toUpperCase(), 105, 20, { align: 'center' });
@@ -285,12 +300,12 @@ const ReportCardDetail = () => {
     autoTable(doc, {
       startY: 70,
       head: [[
-        'No', 
-        t('reportCards.subject'), 
-        t('reportCards.examAverage'), 
-        t('reportCards.assignmentAverage'), 
-        t('reportCards.finalGrade'), 
-        t('reportCards.kkm'), 
+        'No',
+        t('reportCards.subject'),
+        t('reportCards.examAverage'),
+        t('reportCards.assignmentAverage'),
+        t('reportCards.finalGrade'),
+        t('reportCards.kkm'),
         t('reportCards.status')
       ]],
       body: tableData,
@@ -361,7 +376,7 @@ const ReportCardDetail = () => {
             <Download className="w-4 h-4 mr-2" />
             {t('reportCards.downloadPdf')}
           </Button>
-          <Button 
+          <Button
             onClick={handleSaveEntries}
             disabled={bulkUpsertEntries.isPending || reportCard.status === 'finalized'}
           >
@@ -369,7 +384,7 @@ const ReportCardDetail = () => {
             {bulkUpsertEntries.isPending ? t('common.saving') : t('common.save')}
           </Button>
           {reportCard.status !== 'finalized' && (
-            <Button 
+            <Button
               variant="default"
               onClick={() => setSignatureDialogOpen(true)}
             >
@@ -401,7 +416,7 @@ const ReportCardDetail = () => {
                   {reportCard.overall_average?.toFixed(1) || '-'}
                 </p>
               </div>
-              <Badge 
+              <Badge
                 variant={reportCard.status === 'finalized' ? 'default' : 'secondary'}
                 className="h-8"
               >

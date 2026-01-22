@@ -11,10 +11,10 @@ import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourseProgress, useMarkMaterialViewed } from '@/hooks/useProgress';
 import { MaterialViewer } from '@/components/MaterialViewer';
-import { 
-  ArrowLeft, 
-  BookOpen, 
-  FileText, 
+import {
+  ArrowLeft,
+  BookOpen,
+  FileText,
   Megaphone,
   Loader2,
   Download,
@@ -34,13 +34,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+/**
+ * Student Course Detail page.
+ * 
+ * Comprehensive view of a single course.
+ * Features:
+ * - Course metadata and Teacher info
+ * - Individual progress tracking
+ * - Tabs for Materials, Exams, and Announcements
+ * - Material viewer integration
+ * - Unenroll functionality
+ * 
+ * @returns {JSX.Element} The rendered Course Detail page.
+ */
 const StudentCourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('materials');
-  
+
   const { courses, isLoading: coursesLoading } = useCourses();
   const { exams, isLoading: examsLoading } = useExams();
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
@@ -48,9 +61,9 @@ const StudentCourseDetail = () => {
   const { enrollments } = useEnrollments();
   const markMaterialViewed = useMarkMaterialViewed();
   const unenroll = useUnenroll();
-  
+
   const course = courses.find(c => c.id === courseId);
-  
+
   // Fetch teacher profile
   const { data: teacherProfile } = useQuery({
     queryKey: ['teacher-profile', course?.teacher_id],
@@ -66,7 +79,7 @@ const StudentCourseDetail = () => {
     },
     enabled: !!course?.teacher_id,
   });
-  
+
   const courseExams = exams.filter(e => e.course_id === courseId && e.status === 'published');
   const courseMaterials = materials.filter(m => m.course_id === courseId);
   const courseAnnouncements = announcements.filter(a => a.course_id === courseId);
@@ -90,13 +103,13 @@ const StudentCourseDetail = () => {
     const { data, error } = await supabase.storage
       .from('course-materials')
       .download(filePath);
-    
+
     if (error) {
       console.error('Download error:', error);
       toast.error('Failed to download material');
       return;
     }
-    
+
     const url = URL.createObjectURL(data);
     const a = document.createElement('a');
     a.href = url;
@@ -132,21 +145,21 @@ const StudentCourseDetail = () => {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-4">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="w-fit"
           onClick={() => navigate('/student/courses')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Courses
         </Button>
-        
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Thumbnail */}
           <div className="w-full lg:w-64 h-40 rounded-lg overflow-hidden bg-gradient-hero flex items-center justify-center flex-shrink-0">
             {course.thumbnail_url ? (
-              <img 
-                src={course.thumbnail_url} 
+              <img
+                src={course.thumbnail_url}
                 alt={course.title}
                 className="w-full h-full object-cover"
               />
@@ -198,7 +211,7 @@ const StudentCourseDetail = () => {
             <p className="text-muted-foreground max-w-2xl mb-4">
               {course.description || 'No description available'}
             </p>
-            
+
             {/* Teacher Info */}
             {teacherProfile && (
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg w-fit">
@@ -256,7 +269,7 @@ const StudentCourseDetail = () => {
 
       {/* Stats Cards - Clickable to navigate to tabs */}
       <div className="grid sm:grid-cols-3 gap-4">
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('exams')}
         >
@@ -270,7 +283,7 @@ const StudentCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('materials')}
         >
@@ -284,7 +297,7 @@ const StudentCourseDetail = () => {
             </div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('announcements')}
         >
@@ -360,8 +373,8 @@ const StudentCourseDetail = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="hero" 
+                        <Button
+                          variant="hero"
                           size="sm"
                           onClick={async () => {
                             // Mark as viewed when opening
@@ -381,8 +394,8 @@ const StudentCourseDetail = () => {
                           )}
                         </Button>
                         {material.file_path && (
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleDownloadMaterial(material.id, material.file_path!, material.file_name!)}
                           >
@@ -415,8 +428,8 @@ const StudentCourseDetail = () => {
               {courseExams.map((exam) => {
                 const isCompleted = progress.isExamCompleted(exam.id);
                 return (
-                  <Card 
-                    key={exam.id} 
+                  <Card
+                    key={exam.id}
                     className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
                     onClick={() => navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`)}
                   >
@@ -450,7 +463,7 @@ const StudentCourseDetail = () => {
                           </div>
                         </div>
                       </div>
-                      <Button 
+                      <Button
                         variant={isCompleted ? "outline" : "hero"}
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`); }}

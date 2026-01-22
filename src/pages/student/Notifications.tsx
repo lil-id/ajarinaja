@@ -14,11 +14,11 @@ import {
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
-import { 
-  Bell, 
-  CheckCheck, 
-  GraduationCap, 
-  Megaphone, 
+import {
+  Bell,
+  CheckCheck,
+  GraduationCap,
+  Megaphone,
   ClipboardCheck,
   Clock,
   Info,
@@ -28,6 +28,11 @@ import {
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
+/**
+ * Helper to get the icon for a notification type.
+ * @param {Notification['type']} type - The notification type
+ * @returns {JSX.Element} The icon component
+ */
 const getNotificationIcon = (type: Notification['type']) => {
   switch (type) {
     case 'grade':
@@ -58,11 +63,11 @@ const getNotificationBadgeVariant = (type: Notification['type']) => {
   }
 };
 
-const NotificationItem = ({ 
-  notification, 
+const NotificationItem = ({
+  notification,
   onMarkRead,
-  onClick 
-}: { 
+  onClick
+}: {
   notification: Notification;
   onMarkRead: (id: string) => void;
   onClick: (link: string | null) => void;
@@ -79,8 +84,8 @@ const NotificationItem = ({
       onClick={handleClick}
       className={cn(
         "flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-colors border",
-        notification.read 
-          ? "bg-background hover:bg-muted/50 border-border" 
+        notification.read
+          ? "bg-background hover:bg-muted/50 border-border"
           : "bg-primary/5 hover:bg-primary/10 border-primary/20"
       )}
     >
@@ -129,6 +134,17 @@ const NotificationSkeleton = () => (
   </div>
 );
 
+/**
+ * Student Notifications page.
+ * 
+ * Central hub for notifications and announcements.
+ * Features:
+ * - Notification feed (grades, assignments, deadlines)
+ * - Announcement feed from enrolled courses
+ * - Mark as read functionality
+ * 
+ * @returns {JSX.Element} The rendered Notifications page.
+ */
 const StudentNotifications = () => {
   const navigate = useNavigate();
   const { data: notifications, isLoading: notificationsLoading } = useNotifications();
@@ -260,7 +276,7 @@ const StudentNotifications = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">No announcements yet</h3>
                 <p className="text-muted-foreground text-center">
-                  {enrolledCourseIds.length === 0 
+                  {enrolledCourseIds.length === 0
                     ? 'Enroll in courses to see their announcements'
                     : 'Your teachers haven\'t posted any announcements yet'}
                 </p>
@@ -269,7 +285,7 @@ const StudentNotifications = () => {
           ) : (
             <div className="space-y-4">
               {myAnnouncements.map((announcement, index) => (
-                <Card 
+                <Card
                   key={announcement.id}
                   className="border-0 shadow-card animate-slide-up"
                   style={{ animationDelay: `${index * 50}ms` }}

@@ -15,6 +15,18 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import FormulaText from '@/components/FormulaText';
 
+/**
+ * Take Exam page.
+ * 
+ * Interactive exam taking interface.
+ * Features:
+ * - Live countdown timer
+ * - Question navigation
+ * - Support for Multiple Choice, Multi-select, and Essay questions
+ * - Auto-submission on timeout
+ * 
+ * @returns {JSX.Element} The rendered Take Exam page.
+ */
 const TakeExam = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -22,9 +34,9 @@ const TakeExam = () => {
   const { courses } = useCourses();
   const { data: existingSubmission } = useMySubmission(examId || '');
   const submitExam = useSubmitExam();
-  
+
   const course = exam ? courses.find(c => c.id === exam.course_id) : null;
-  
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | number | number[]>>({});
   const [timeLeft, setTimeLeft] = useState(0);
@@ -101,7 +113,7 @@ const TakeExam = () => {
         score += q.points;
       }
     });
-    
+
     try {
       await submitExam.mutateAsync({
         examId: exam.id,
@@ -127,7 +139,7 @@ const TakeExam = () => {
               {existingSubmission ? 'Already Submitted!' : 'Exam Submitted!'}
             </h2>
             <p className="text-muted-foreground mb-6">
-              {existingSubmission 
+              {existingSubmission
                 ? `Your score: ${existingSubmission.score ?? 'Pending grading'}/${exam.total_points}`
                 : 'Your answers have been recorded. Essay questions will be graded by your teacher.'
               }
@@ -153,7 +165,7 @@ const TakeExam = () => {
               <p className="text-sm text-muted-foreground mb-2">Course</p>
               <p className="font-medium">{course?.title}</p>
             </div>
-            
+
             {/* Exam Description/Instructions */}
             {exam.description && (
               <div className="p-4 border rounded-lg bg-card">
@@ -161,7 +173,7 @@ const TakeExam = () => {
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{exam.description}</p>
               </div>
             )}
-            
+
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-muted rounded-lg text-center">
                 <Clock className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
@@ -225,11 +237,11 @@ const TakeExam = () => {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <span className={cn(
               "px-2 py-1 rounded text-xs font-medium",
-              question.type === 'multiple-choice' 
-                ? "bg-primary/10 text-primary" 
+              question.type === 'multiple-choice'
+                ? "bg-primary/10 text-primary"
                 : question.type === 'multi-select'
-                ? "bg-secondary/10 text-secondary"
-                : "bg-muted text-muted-foreground"
+                  ? "bg-secondary/10 text-secondary"
+                  : "bg-muted text-muted-foreground"
             )}>
               {question.type === 'multiple-choice' ? 'Multiple Choice' : question.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
             </span>
@@ -319,8 +331,8 @@ const TakeExam = () => {
         </Button>
 
         {currentQuestion === exam.questions.length - 1 ? (
-          <Button 
-            variant="hero" 
+          <Button
+            variant="hero"
             onClick={handleSubmit}
             disabled={submitExam.isPending}
           >
@@ -351,8 +363,8 @@ const TakeExam = () => {
                   currentQuestion === i
                     ? "bg-primary text-primary-foreground"
                     : answers[q.id] !== undefined
-                    ? "bg-secondary/20 text-secondary"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      ? "bg-secondary/20 text-secondary"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
                 {i + 1}

@@ -7,14 +7,14 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { 
-  Clock, 
-  Award, 
-  Play, 
-  Lock, 
-  CheckCircle, 
-  AlignLeft, 
-  Timer, 
+import {
+  Clock,
+  Award,
+  Play,
+  Lock,
+  CheckCircle,
+  AlignLeft,
+  Timer,
   AlertCircle,
   ArrowLeft,
   ChevronLeft,
@@ -50,6 +50,20 @@ const extendedQuestions = [
   },
 ];
 
+/**
+ * Demo Student Take Exam page.
+ * 
+ * A full-screen, immersive exam taking interface.
+ * Features:
+ * - Countdown timer
+ * - Question navigation (Next/Prev, Jump list)
+ * - Progress bar
+ * - Support for various question types (Multiple Choice, Multi-select, Essay)
+ * - Interactive answer selection
+ * - Demo mode restrictions (submission disabled)
+ * 
+ * @returns {JSX.Element} The rendered Exam Taking page.
+ */
 export default function DemoStudentTakeExam() {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -257,12 +271,12 @@ export default function DemoStudentTakeExam() {
       <div className="flex flex-wrap gap-2">
         {questions.map((q, index) => {
           const answer = answers[q.id];
-          const isAnswered = q.type === 'essay' 
+          const isAnswered = q.type === 'essay'
             ? typeof answer === 'string' && answer.trim().length > 0
             : q.type === 'multi-select'
               ? Array.isArray(answer) && answer.length > 0
               : answer !== undefined;
-          
+
           return (
             <Button
               key={q.id}
@@ -287,8 +301,8 @@ export default function DemoStudentTakeExam() {
               {question.type === 'essay' && <AlignLeft className="h-5 w-5 text-primary" />}
               <Badge variant="outline">{question.points} points</Badge>
               <Badge variant="secondary">
-                {question.type === 'multiple-choice' ? 'Single Choice' : 
-                 question.type === 'multi-select' ? 'Multiple Choice' : 'Essay'}
+                {question.type === 'multiple-choice' ? 'Single Choice' :
+                  question.type === 'multi-select' ? 'Multiple Choice' : 'Essay'}
               </Badge>
             </div>
           </CardHeader>
@@ -313,8 +327,8 @@ export default function DemoStudentTakeExam() {
                   >
                     <div className={cn(
                       'w-8 h-8 rounded-full border-2 flex items-center justify-center font-medium',
-                      answers[question.id] === index 
-                        ? 'border-primary bg-primary text-primary-foreground' 
+                      answers[question.id] === index
+                        ? 'border-primary bg-primary text-primary-foreground'
                         : 'border-muted-foreground'
                     )}>
                       {String.fromCharCode(65 + index)}
@@ -379,8 +393,8 @@ export default function DemoStudentTakeExam() {
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         ) : (
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             className="bg-green-600 hover:bg-green-700"
             disabled={isSubmitting}
           >

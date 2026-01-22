@@ -17,6 +17,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
+/**
+ * Student Assignments page.
+ * 
+ * Core interface for managing assignments.
+ * Features:
+ * - Assignment list with filtering (Status, Course, Search)
+ * - Grouping by deadline (Upcoming, Overdue, Submitted)
+ * - Status indicators (Graded, Submitted, Overdue)
+ * - Navigation to submission details
+ * 
+ * @returns {JSX.Element} The rendered Assignments page.
+ */
 export default function StudentAssignments() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -86,8 +98,8 @@ export default function StudentAssignments() {
   const submitted = filteredAssignments.filter(a => a.submission);
   const graded = submitted.filter(a => a.submission?.graded);
 
-  const completionRate = filteredAssignments.length > 0 
-    ? Math.round((submitted.length / filteredAssignments.length) * 100) 
+  const completionRate = filteredAssignments.length > 0
+    ? Math.round((submitted.length / filteredAssignments.length) * 100)
     : 0;
 
   const getDaysUntilDue = (dueDate: string) => {
@@ -98,6 +110,11 @@ export default function StudentAssignments() {
     return `${days} ${t('assignments.daysLeft')}`;
   };
 
+  /**
+   * Renders a single assignment card with status logic.
+   * @param {any} assignment - The assignment object
+   * @returns {JSX.Element} The rendered card
+   */
   const renderAssignmentCard = (assignment: any) => {
     const isOverdue = isPast(new Date(assignment.due_date)) && !assignment.submission;
     const isSubmitted = !!assignment.submission;
@@ -162,7 +179,7 @@ export default function StudentAssignments() {
               </span>
               <span>{assignment.max_points} {t('common.points')}</span>
             </div>
-            <Button 
+            <Button
               variant={isSubmitted ? 'outline' : 'default'}
               size="sm"
               onClick={(e) => {

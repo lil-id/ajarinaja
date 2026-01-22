@@ -32,6 +32,18 @@ import {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
 
+/**
+ * Student Analytics page.
+ * 
+ * Visualizes student performance data.
+ * Features:
+ * - Aggregate stats (Average score, completion rates)
+ * - Interactive charts (Score distribution, Pass/Fail ratios)
+ * - Comparison between Exams and Assignments
+ * - Badge showcase (Recent achievements)
+ * 
+ * @returns {JSX.Element} The rendered Analytics page.
+ */
 const StudentAnalytics = () => {
   const { user } = useAuth();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
@@ -112,7 +124,7 @@ const StudentAnalytics = () => {
   // Calculate statistics
   const totalCourses = enrollments?.length || 0;
   const totalExams = examSubmissions?.length || 0;
-  
+
   // Combine file-based and question-based assignment submissions
   const allAssignmentSubs = [
     ...(assignmentSubmissions || []),
@@ -124,8 +136,8 @@ const StudentAnalytics = () => {
   // Calculate exam stats - KKM is integer threshold (score >= kkm)
   const examAverage = examSubmissions?.length
     ? Math.round(
-        examSubmissions.reduce((acc, s) => acc + (s.score || 0), 0) / examSubmissions.length
-      )
+      examSubmissions.reduce((acc, s) => acc + (s.score || 0), 0) / examSubmissions.length
+    )
     : 0;
 
   const examPassCount = examSubmissions?.filter(s => {
@@ -140,8 +152,8 @@ const StudentAnalytics = () => {
   // Calculate assignment stats - KKM is integer threshold (score >= kkm)
   const assignmentAverage = gradedAssignments.length
     ? Math.round(
-        gradedAssignments.reduce((acc, s) => acc + (s.score || 0), 0) / gradedAssignments.length
-      )
+      gradedAssignments.reduce((acc, s) => acc + (s.score || 0), 0) / gradedAssignments.length
+    )
     : 0;
 
   const assignmentPassCount = gradedAssignments.filter(s => {
@@ -437,12 +449,12 @@ const StudentAnalytics = () => {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={currentScoreRanges}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="range" 
+                    <XAxis
+                      dataKey="range"
                       stroke="hsl(var(--muted-foreground))"
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
                       allowDecimals={false}
@@ -495,9 +507,9 @@ const StudentAnalytics = () => {
                           dataKey="value"
                         >
                           {currentSubmissionStatus.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={entry.name === 'Passed' ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'} 
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.name === 'Passed' ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'}
                             />
                           ))}
                         </Pie>
@@ -516,10 +528,10 @@ const StudentAnalytics = () => {
                       <div key={item.name} className="flex items-center gap-2">
                         <span
                           className="h-3 w-3 rounded-full"
-                          style={{ 
-                            backgroundColor: item.name === 'Passed' 
-                              ? 'hsl(142, 71%, 45%)' 
-                              : 'hsl(0, 84%, 60%)' 
+                          style={{
+                            backgroundColor: item.name === 'Passed'
+                              ? 'hsl(142, 71%, 45%)'
+                              : 'hsl(0, 84%, 60%)'
                           }}
                         />
                         <span className="text-sm text-muted-foreground">

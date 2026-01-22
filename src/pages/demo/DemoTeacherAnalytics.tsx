@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
@@ -46,6 +46,19 @@ const submissionStatus = [
   { name: 'Pending', value: 15, color: CHART_COLORS[3] },
 ];
 
+/**
+ * Demo Teacher Analytics page.
+ * 
+ * Provides insights into student performance using varied visualizations.
+ * Features:
+ * - Score distribution histograms (Recharts BarChart)
+ * - Submission status pie charts (Recharts PieChart)
+ * - Pass/Fail rates comparison
+ * - Quick stats overview (Total Students, Submissions, Avg Score)
+ * - Filtering by course and analytics type (Exams vs Assignments)
+ * 
+ * @returns {JSX.Element} The rendered Teacher Analytics page.
+ */
 export default function DemoTeacherAnalytics() {
   const [selectedCourse, setSelectedCourse] = useState<string>(demoCourses[0]?.id || '');
   const [analyticsType, setAnalyticsType] = useState<string>('exams');
@@ -63,7 +76,7 @@ export default function DemoTeacherAnalytics() {
           <h1 className="text-3xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">Track student performance across exams and assignments</p>
         </div>
-        
+
         <Select value={selectedCourse} onValueChange={setSelectedCourse}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select course" />
@@ -177,7 +190,7 @@ export default function DemoTeacherAnalytics() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="range" tick={{ fontSize: 12 }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number) => [`${value} students`, 'Count']}
                       labelFormatter={(label) => `Score Range: ${label}`}
                     />

@@ -30,6 +30,18 @@ import { useTeacherCourses } from '@/hooks/useCourses';
 import { useAssignments, useDeleteAssignment, useUpdateAssignment } from '@/hooks/useAssignments';
 import { toast } from 'sonner';
 
+/**
+ * Teacher Assignments Management page.
+ * 
+ * Dashboard for managing all assignments.
+ * Features:
+ * - List of assignments with status (Active, Closed, Draft, Archived)
+ * - Filtering and search
+ * - Quick actions (Edit, View Submissions, Delete, Archive)
+ * - Create new assignment entry point
+ * 
+ * @returns {JSX.Element} The rendered Assignments page.
+ */
 export default function TeacherAssignments() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,7 +49,7 @@ export default function TeacherAssignments() {
   const { data: assignments = [], isLoading } = useAssignments();
   const deleteAssignment = useDeleteAssignment();
   const updateAssignment = useUpdateAssignment();
-  
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
@@ -54,15 +66,15 @@ export default function TeacherAssignments() {
       const matchesCourse = courseMap.get(a.course_id)?.toLowerCase().includes(query);
       if (!matchesTitle && !matchesCourse) return false;
     }
-    
+
     // Course filter
     if (selectedCourse !== 'all' && a.course_id !== selectedCourse) return false;
-    
+
     // Tab filter (archived vs active)
     const isArchived = (a as any).archived === true;
     if (activeTab === 'archived' && !isArchived) return false;
     if (activeTab !== 'archived' && isArchived) return false;
-    
+
     // Status filter for active tab
     if (activeTab === 'active') {
       const isPastDue = new Date(a.due_date) < new Date();
@@ -75,7 +87,7 @@ export default function TeacherAssignments() {
     if (activeTab === 'draft') {
       return a.status === 'draft';
     }
-    
+
     return true;
   });
 
@@ -193,9 +205,9 @@ export default function TeacherAssignments() {
                   {activeTab === 'archived' ? t('assignments.noArchivedAssignments') : t('assignments.noAssignmentsFound')}
                 </h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  {activeTab === 'archived' 
+                  {activeTab === 'archived'
                     ? t('assignments.archivedAssignmentsAppear')
-                    : searchQuery 
+                    : searchQuery
                       ? t('assignments.tryAdjustingSearch')
                       : t('assignments.createFirstAssignment')
                   }
@@ -261,7 +273,7 @@ export default function TeacherAssignments() {
                                 {t('common.archive')}
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={(e) => { e.stopPropagation(); setDeleteId(assignment.id); }}
                               className="text-destructive"
                             >

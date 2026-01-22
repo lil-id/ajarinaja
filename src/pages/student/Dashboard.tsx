@@ -12,6 +12,17 @@ import { BookOpen, FileText, CheckCircle, ArrowRight, Loader2 } from 'lucide-rea
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+/**
+ * Student Dashboard page.
+ * 
+ * Main landing page for students.
+ * Features:
+ * - Overview stats (Enrolled courses, deadlines, grades)
+ * - Quick access links
+ * - Recommended/Upcoming items feed
+ * 
+ * @returns {JSX.Element} The rendered Dashboard page.
+ */
 const StudentDashboard = () => {
   const { t } = useTranslation();
   const { profile, user } = useAuth();
@@ -27,21 +38,21 @@ const StudentDashboard = () => {
     queryKey: ['completed-assignments-count', user?.id],
     queryFn: async () => {
       if (!user) return 0;
-      
+
       // Count file-based submissions
       const { count: fileCount } = await supabase
         .from('assignment_submissions')
         .select('*', { count: 'exact', head: true })
         .eq('student_id', user.id)
         .eq('graded', true);
-      
+
       // Count question-based submissions
       const { count: questionCount } = await supabase
         .from('assignment_question_submissions')
         .select('*', { count: 'exact', head: true })
         .eq('student_id', user.id)
         .eq('graded', true);
-      
+
       return (fileCount || 0) + (questionCount || 0);
     },
     enabled: !!user,
@@ -54,7 +65,7 @@ const StudentDashboard = () => {
   const availableCourses = courses.filter(
     c => c.status === 'published' && !enrolledCourseIds.includes(c.id)
   );
-  
+
   const upcomingExams = exams.filter(
     e => e.status === 'published' && enrolledCourseIds.includes(e.course_id)
   );
@@ -90,7 +101,7 @@ const StudentDashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/student/courses')}
         >
@@ -100,7 +111,7 @@ const StudentDashboard = () => {
             <p className="text-sm text-muted-foreground">{t('dashboard.totalCourses')}</p>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/student/exams')}
         >
@@ -110,7 +121,7 @@ const StudentDashboard = () => {
             <p className="text-sm text-muted-foreground">{t('exams.title')}</p>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/student/assignments')}
         >
@@ -134,7 +145,7 @@ const StudentDashboard = () => {
               {upcomingExams.slice(0, 3).map((exam) => {
                 const course = courses.find(c => c.id === exam.course_id);
                 return (
-                  <div 
+                  <div
                     key={exam.id}
                     className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                   >
@@ -144,8 +155,8 @@ const StudentDashboard = () => {
                         {course?.title} • {exam.duration} min • {exam.total_points} pts
                       </p>
                     </div>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={() => navigate(`/student/exam/${exam.id}`)}
                     >
                       {t('exams.takeExam')}
@@ -169,7 +180,7 @@ const StudentDashboard = () => {
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
               {availableCourses.slice(0, 3).map((course) => (
-                <div 
+                <div
                   key={course.id}
                   className="p-4 rounded-xl border border-border hover:border-secondary/50 transition-colors"
                 >
@@ -182,8 +193,8 @@ const StudentDashboard = () => {
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                         {course.description || t('common.noData')}
                       </p>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="secondary"
                         onClick={() => handleEnroll(course.id)}
                         disabled={enroll.isPending}

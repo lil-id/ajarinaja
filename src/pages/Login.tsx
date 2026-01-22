@@ -12,6 +12,20 @@ import { GraduationCap, Loader2, BookOpen, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
+/**
+ * Login/Signup page component.
+ * 
+ * Handles user authentication (sign in and sign up) using email and password.
+ * Allows users to choose between 'student' and 'teacher' roles during sign up.
+ * 
+ * Features:
+ * - Toggle between login and signup forms
+ * - Form validation
+ * - Role selection for new accounts
+ * - Redirects authenticated users based on their role
+ * 
+ * @returns {JSX.Element} The rendered Login/Signup page.
+ */
 const Login = () => {
   const { t } = useTranslation();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -67,7 +81,7 @@ const Login = () => {
       <div className="absolute top-4 right-4 z-10">
         <LanguageSwitcher />
       </div>
-      
+
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-hero p-12 flex-col justify-between">
         <div className="flex items-center gap-3">
@@ -76,7 +90,7 @@ const Login = () => {
           </div>
           <span className="text-2xl font-bold text-primary-foreground">AjarinAja</span>
         </div>
-        
+
         <div className="space-y-6">
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight">
             {t('dashboard.welcome')} AjarinAja
@@ -84,7 +98,7 @@ const Login = () => {
           <p className="text-lg text-primary-foreground/80 max-w-md">
             {t('landing.platformDescription')}
           </p>
-          
+
           <div className="grid gap-4 pt-6">
             <div className="flex items-center gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
               <div className="w-12 h-12 bg-secondary/30 rounded-lg flex items-center justify-center">
@@ -148,8 +162,8 @@ const Login = () => {
                     </div>
                     <div className="space-y-3">
                       <Label>{t('auth.role')}</Label>
-                      <RadioGroup 
-                        value={selectedRole} 
+                      <RadioGroup
+                        value={selectedRole}
                         onValueChange={(v) => setSelectedRole(v as 'teacher' | 'student')}
                         className="grid grid-cols-2 gap-4"
                       >
@@ -209,7 +223,7 @@ const Login = () => {
 
               <p className="text-center text-sm text-muted-foreground mt-6">
                 {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
-                <button 
+                <button
                   onClick={() => setIsSignUp(!isSignUp)}
                   className="text-secondary font-semibold hover:underline"
                 >

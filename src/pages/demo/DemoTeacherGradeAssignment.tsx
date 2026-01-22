@@ -131,6 +131,20 @@ const demoAssignmentSubmissions = [
 
 type FilterType = 'all' | 'passed' | 'failed' | 'pending';
 
+/**
+ * Demo Teacher Grade Assignment page.
+ * 
+ * Interface for grading student assignment submissions.
+ * Features:
+ * - List of submissions with filtering (All, Pending, Passed, Failed)
+ * - Grading interface supporting:
+ *   - Question-based grading (including auto-graded MCQ)
+ *   - File-based grading with rubric support
+ *   - Feedback text area
+ * - Simulation of grading actions
+ * 
+ * @returns {JSX.Element} The rendered Grade Assignment page.
+ */
 export default function DemoTeacherGradeAssignment() {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
@@ -154,6 +168,10 @@ export default function DemoTeacherGradeAssignment() {
     return getPassStatus(sub) === statusFilter;
   });
 
+  /**
+   * Calculates the total score for auto-gradable questions (MCQ/Multi-select).
+   * @returns {number} The calculated score.
+   */
   const calculateMCScore = () => {
     if (!selectedSubmission || selectedSubmission.assignment_type !== 'questions') return 0;
     let score = 0;
@@ -363,8 +381,8 @@ export default function DemoTeacherGradeAssignment() {
                     </div>
                   </div>
                   {selectedSubmission.graded && (
-                    <Badge 
-                      variant={getPassStatus(selectedSubmission) === 'passed' ? 'default' : 'destructive'} 
+                    <Badge
+                      variant={getPassStatus(selectedSubmission) === 'passed' ? 'default' : 'destructive'}
                       className="text-lg px-4 py-1"
                     >
                       {selectedSubmission.score}/{totalPoints}

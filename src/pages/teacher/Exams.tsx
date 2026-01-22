@@ -28,6 +28,19 @@ import { sendCourseNotification, getEnrolledStudents } from '@/lib/notificationS
 import { supabase } from '@/integrations/supabase/client';
 import FormulaText from '@/components/FormulaText';
 
+/**
+ * Teacher Exams Management page.
+ * 
+ * Dashboard for managing exams across courses.
+ * Features:
+ * - List of exams (Published/Draft/Archived)
+ * - Create new exam with quick setup
+ * - Import questions from bank
+ * - Publish/Archive/Delete actions
+ * - Filtering and search
+ * 
+ * @returns {JSX.Element} The rendered Exams page.
+ */
 const TeacherExams = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -50,12 +63,12 @@ const TeacherExams = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCourse, setFilterCourse] = useState('all');
   const [activeTab, setActiveTab] = useState('published');
-  
+
   // Import from bank state
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [importSearch, setImportSearch] = useState('');
   const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([]);
-  
+
   const [examForm, setExamForm] = useState({
     title: '',
     description: '',
@@ -92,7 +105,7 @@ const TeacherExams = () => {
     }
 
     const isChoice = currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'multi-select';
-    
+
     const newQuestion: Omit<Question, 'id' | 'exam_id'> = {
       type: currentQuestion.type,
       question: currentQuestion.question,
@@ -102,7 +115,7 @@ const TeacherExams = () => {
       correct_answer: currentQuestion.type === 'multiple-choice' ? currentQuestion.correctAnswer : null,
       correct_answers: currentQuestion.type === 'multi-select' ? currentQuestion.correctAnswers : null,
     };
-    
+
     setQuestions([...questions, newQuestion]);
     setCurrentQuestion({
       type: 'multiple-choice',
@@ -143,13 +156,13 @@ const TeacherExams = () => {
 
     let currentIndex = questions.length;
     const importedQuestions: Omit<Question, 'id' | 'exam_id'>[] = [];
-    
+
     for (const bankId of selectedBankQuestions) {
       const bankQ = questionBank.find((q) => q.id === bankId);
       if (!bankQ) continue;
 
       importedQuestions.push({
-          type: mapBankTypeToExamType(bankQ.type),
+        type: mapBankTypeToExamType(bankQ.type),
         question: bankQ.question,
         options: bankQ.options,
         correct_answer: bankQ.correct_answer,
@@ -157,7 +170,7 @@ const TeacherExams = () => {
         points: bankQ.points,
         order_index: currentIndex,
       });
-      
+
       // Increment usage count
       await incrementUsage.mutateAsync(bankId);
       currentIndex++;
@@ -184,7 +197,7 @@ const TeacherExams = () => {
         kkm: examForm.kkm,
         questions,
       });
-      
+
       setExamForm({ title: '', description: '', duration: 60, kkm: 60 });
       setQuestions([]);
       setSelectedCourse('');
@@ -208,7 +221,7 @@ const TeacherExams = () => {
     try {
       const exam = teacherExams.find(e => e.id === examId);
       await updateExam.mutateAsync({ id: examId, status: 'published' });
-      
+
       // Send notification to enrolled students
       if (exam) {
         const recipients = await getEnrolledStudents(supabase, exam.course_id);
@@ -219,7 +232,7 @@ const TeacherExams = () => {
             .select('name')
             .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
             .single();
-          
+
           await sendCourseNotification({
             recipients,
             courseName: course?.title || 'Course',
@@ -231,7 +244,7 @@ const TeacherExams = () => {
           });
         }
       }
-      
+
       toast.success(t('exams.examPublished'));
     } catch (error) {
       toast.error(t('exams.failedToPublish'));
@@ -268,18 +281,18 @@ const TeacherExams = () => {
       const matchesCourse = getCourseTitle(exam.course_id).toLowerCase().includes(query);
       if (!matchesTitle && !matchesCourse) return false;
     }
-    
+
     // Course filter
     if (filterCourse !== 'all' && exam.course_id !== filterCourse) return false;
-    
+
     // Tab filter
     const isArchived = (exam as any).archived === true;
     if (activeTab === 'archived') return isArchived;
     if (isArchived) return false;
-    
+
     if (activeTab === 'published') return exam.status === 'published';
     if (activeTab === 'draft') return exam.status === 'draft';
-    
+
     return true;
   });
 
@@ -382,7 +395,7 @@ const TeacherExams = () => {
                     {t('common.importFromBank')}
                   </Button>
                 </div>
-                
+
                 {/* Question List */}
                 {questions.length > 0 && (
                   <div className="space-y-2 mb-4">
@@ -412,8 +425,8 @@ const TeacherExams = () => {
                 )}
 
                 {/* Add Question Form */}
-                <Tabs 
-                  value={currentQuestion.type} 
+                <Tabs
+                  value={currentQuestion.type}
                   onValueChange={(v) => setCurrentQuestion({ ...currentQuestion, type: v as 'multiple-choice' | 'multi-select' | 'essay', correctAnswers: [] })}
                 >
                   <TabsList className="mb-4">
@@ -491,9 +504,9 @@ const TeacherExams = () => {
                 </Tabs>
               </div>
 
-              <Button 
-                onClick={handleCreateExam} 
-                className="w-full" 
+              <Button
+                onClick={handleCreateExam}
+                className="w-full"
                 size="lg"
                 disabled={createExam.isPending}
               >
@@ -638,9 +651,9 @@ const TeacherExams = () => {
                   {activeTab === 'archived' ? t('exams.noArchivedExams') : t('exams.noExamsFound')}
                 </h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  {searchQuery ? t('assignments.tryAdjustingSearch') : 
+                  {searchQuery ? t('assignments.tryAdjustingSearch') :
                     activeTab === 'archived' ? t('exams.archivedExamsAppear') :
-                    t('exams.createFirstExam')}
+                      t('exams.createFirstExam')}
                 </p>
                 {!searchQuery && activeTab !== 'archived' && (
                   <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
@@ -653,100 +666,99 @@ const TeacherExams = () => {
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {filteredExams.map((exam, index) => (
-            <Card
-              key={exam.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => openExam(exam.id, exam.status)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  openExam(exam.id, exam.status);
-                }
-              }}
-              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-2 ${
-                      exam.status === 'published' 
-                        ? 'bg-secondary/10 text-secondary' 
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {exam.status === 'published' ? t('common.published') : t('common.draft')}
-                    </span>
-                    <CardTitle className="text-lg">{exam.title}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {getCourseTitle(exam.course_id)}
-                    </CardDescription>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {exam.status === 'published' && (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/grade`); }}>
-                          <ClipboardCheck className="w-4 h-4 mr-2" />
-                          {t('exams.gradeExam')}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/edit`); }}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        {t('common.edit')}
-                      </DropdownMenuItem>
-                      {exam.status === 'draft' && (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePublishExam(exam.id); }}>
-                          <FileText className="w-4 h-4 mr-2" />
-                          {t('courses.publish')}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      {(exam as any).archived ? (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, false); }}>
-                          <ArchiveRestore className="w-4 h-4 mr-2" />
-                          {t('common.restore')}
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, true); }}>
-                          <Archive className="w-4 h-4 mr-2" />
-                          {t('common.archive')}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem 
-                        className="text-destructive"
-                        onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        {t('common.delete')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {exam.duration} {t('common.min')}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4" />
-                    {exam.total_points} {t('common.pts')}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <Card
+                  key={exam.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openExam(exam.id, exam.status)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openExam(exam.id, exam.status);
+                    }
+                  }}
+                  className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-2 ${exam.status === 'published'
+                            ? 'bg-secondary/10 text-secondary'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>
+                          {exam.status === 'published' ? t('common.published') : t('common.draft')}
+                        </span>
+                        <CardTitle className="text-lg">{exam.title}</CardTitle>
+                        <CardDescription className="mt-1">
+                          {getCourseTitle(exam.course_id)}
+                        </CardDescription>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {exam.status === 'published' && (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/grade`); }}>
+                              <ClipboardCheck className="w-4 h-4 mr-2" />
+                              {t('exams.gradeExam')}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/teacher/exams/${exam.id}/edit`); }}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            {t('common.edit')}
+                          </DropdownMenuItem>
+                          {exam.status === 'draft' && (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePublishExam(exam.id); }}>
+                              <FileText className="w-4 h-4 mr-2" />
+                              {t('courses.publish')}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          {(exam as any).archived ? (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, false); }}>
+                              <ArchiveRestore className="w-4 h-4 mr-2" />
+                              {t('common.restore')}
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchiveExam(exam.id, true); }}>
+                              <Archive className="w-4 h-4 mr-2" />
+                              {t('common.archive')}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteExam(exam.id); }}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            {t('common.delete')}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        {exam.duration} {t('common.min')}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4" />
+                        {exam.total_points} {t('common.pts')}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>

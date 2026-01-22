@@ -4,6 +4,19 @@ import { BookOpen, FileText, ClipboardCheck, Award, Calendar, TrendingUp } from 
 import { demoStats, demoCourses, demoExams, demoAssignments } from '@/data/demoData';
 import { format } from 'date-fns';
 
+/**
+ * Demo Student Dashboard page.
+ * 
+ * The main landing page for the student demo.
+ * Displays:
+ * - Summary statistics (Enrolled Courses, Upcoming Exams, etc.)
+ * - List of enrolled courses
+ * - Upcoming assignment deadlines
+ * - Available exams
+ * - Gamification achievements
+ * 
+ * @returns {JSX.Element} The rendered Student Dashboard page.
+ */
 export default function DemoStudentDashboard() {
   const stats = demoStats.student;
   const enrolledCourses = demoCourses.filter(c => c.status === 'published').slice(0, 2);

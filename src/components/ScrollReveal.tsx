@@ -4,6 +4,9 @@ import { cn } from '@/lib/utils';
 
 type AnimationType = 'fade-up' | 'fade-down' | 'fade-left' | 'fade-right' | 'scale' | 'fade';
 
+/**
+ * Props for the ScrollReveal component.
+ */
 interface ScrollRevealProps {
   children: ReactNode;
   animation?: AnimationType;
@@ -40,6 +43,13 @@ const animationStyles: Record<AnimationType, { hidden: string; visible: string }
   },
 };
 
+/**
+ * Component that animates its children when they scroll into view.
+ * Supports various animation types like fade-up, scale, etc.
+ * 
+ * @param {ScrollRevealProps} props - Component props.
+ * @returns {JSX.Element} The animated wrapper.
+ */
 export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   children,
   animation = 'fade-up',
@@ -71,6 +81,9 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
 };
 
 // Staggered children animation wrapper
+/**
+ * Props for the StaggeredReveal component.
+ */
 interface StaggeredRevealProps {
   children: ReactNode[];
   animation?: AnimationType;
@@ -80,6 +93,13 @@ interface StaggeredRevealProps {
   childClassName?: string;
 }
 
+/**
+ * Component that animates a list of children with a staggered delay.
+ * Useful for lists or grids of items.
+ * 
+ * @param {StaggeredRevealProps} props - Component props.
+ * @returns {JSX.Element} The staggered animation wrapper.
+ */
 export const StaggeredReveal: React.FC<StaggeredRevealProps> = ({
   children,
   animation = 'fade-up',
