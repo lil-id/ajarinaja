@@ -66,10 +66,16 @@ export default {
 
     // Shared actions (exam/question bank)
     selected: 'dipilih',
+    import: 'Impor',
     importFromBank: 'Impor dari Bank Soal',
     importSelected: 'Impor yang Dipilih',
     searchQuestions: 'Cari soal...',
     noMatchingQuestions: 'Tidak ada soal yang cocok',
+    noQuestionsFound: 'Soal tidak ditemukan',
+    totalPoints: 'Total Poin',
+    saveChanges: 'Simpan Perubahan',
+    status: 'Status',
+    description: 'Deskripsi',
   },
 
   // Navigation
@@ -319,6 +325,7 @@ export default {
     // Exam question builder
     selectCorrectAnswer: 'Pilih jawaban yang benar',
     selectAllCorrectAnswers: 'Pilih semua jawaban yang benar',
+    selectAllCorrect: 'Pilih semua jawaban yang benar',
     importFromBank: 'Impor dari Bank Soal',
     noQuestionsInBank: 'Belum ada soal di bank Anda',
     addMCQ: 'Tambah PG',
@@ -326,6 +333,15 @@ export default {
     addEssay: 'Tambah Esai',
     noQuestionsYet: 'Belum ada soal. Tambahkan soal pertama Anda!',
     questionNumber: 'Soal {{number}}',
+    modifyExamDetails: 'Ubah detail dan soal ujian',
+    createNewExam: 'Buat ujian baru untuk siswa Anda',
+    examDetails: 'Detail Ujian',
+    descriptionPlaceholder: 'Masukkan deskripsi ujian...',
+    addAtLeastOneQuestion: 'Silakan tambahkan minimal satu soal',
+    question: 'Soal',
+    option: 'Opsi',
+    options: 'Opsi',
+    essayDescription: 'Soal esai akan dinilai secara manual oleh guru.',
   },
 
   // Materials

@@ -20,6 +20,7 @@ import TeacherOverview from "./pages/teacher/Overview";
 import TeacherCourses from "./pages/teacher/Courses";
 import TeacherCourseDetail from "./pages/teacher/CourseDetail";
 import TeacherExams from "./pages/teacher/Exams";
+import TeacherCreateExam from "./pages/teacher/CreateExam";
 import TeacherEditExam from "./pages/teacher/EditExam";
 import TeacherGradeExam from "./pages/teacher/GradeExam";
 import TeacherAnnouncements from "./pages/teacher/Announcements";
@@ -132,6 +133,7 @@ const App = () => (
               <Route path="courses" element={<TeacherCourses />} />
               <Route path="courses/:courseId" element={<TeacherCourseDetail />} />
               <Route path="exams" element={<TeacherExams />} />
+              <Route path="exams/new" element={<TeacherCreateExam />} />
               <Route path="exams/:examId/edit" element={<TeacherEditExam />} />
               <Route path="exams/:examId/grade" element={<TeacherGradeExam />} />
               <Route path="announcements" element={<TeacherAnnouncements />} />

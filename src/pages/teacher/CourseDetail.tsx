@@ -833,7 +833,7 @@ const TeacherCourseDetail = () => {
         {/* Exams Tab */}
         <TabsContent value="exams" className="space-y-4">
           <div className="flex justify-end">
-            <Button variant="hero" onClick={() => navigate(`/teacher/exams?courseId=${courseId}`)}>
+            <Button variant="hero" onClick={() => navigate(`/teacher/exams/new?courseId=${courseId}`)}>
               <Plus className="w-4 h-4" />
               Create Exam
             </Button>

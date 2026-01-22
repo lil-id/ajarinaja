@@ -66,10 +66,16 @@ export default {
 
     // Shared actions (exam/question bank)
     selected: 'selected',
+    import: 'Import',
     importFromBank: 'Import from Bank',
     importSelected: 'Import Selected',
     searchQuestions: 'Search questions...',
     noMatchingQuestions: 'No questions match your search',
+    noQuestionsFound: 'No questions found',
+    totalPoints: 'Total Points',
+    saveChanges: 'Save Changes',
+    status: 'Status',
+    description: 'Description',
   },
 
   // Navigation
@@ -319,6 +325,7 @@ export default {
     // Exam question builder
     selectCorrectAnswer: 'Select the correct answer',
     selectAllCorrectAnswers: 'Select all correct answers',
+    selectAllCorrect: 'Select all correct answers',
     importFromBank: 'Import from Question Bank',
     noQuestionsInBank: 'No questions in your bank yet',
     addMCQ: 'Add MCQ',
@@ -326,6 +333,15 @@ export default {
     addEssay: 'Add Essay',
     noQuestionsYet: 'No questions yet. Add your first question!',
     questionNumber: 'Question {{number}}',
+    modifyExamDetails: 'Modify exam details and questions',
+    createNewExam: 'Create a new exam for your students',
+    examDetails: 'Exam Details',
+    descriptionPlaceholder: 'Enter exam description...',
+    addAtLeastOneQuestion: 'Please add at least one question',
+    question: 'Question',
+    option: 'Option',
+    options: 'Options',
+    essayDescription: 'Essay questions will be graded manually by the teacher.',
   },
 
   // Materials
