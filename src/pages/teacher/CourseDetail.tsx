@@ -470,6 +470,56 @@ const TeacherCourseDetail = () => {
         </Card>
       </div>
 
+      {/* Quick Actions Bar */}
+      <Card className="border-0 shadow-card bg-gradient-to-r from-primary/5 to-secondary/5">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground mr-2">{t('courseDetail.quickActions')}:</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEnrollDialogOpen(true)}
+              className="bg-background"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              {t('courseDetail.enrollStudent')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setActiveTab('materials');
+                // Could open upload dialog if implemented
+              }}
+              className="bg-background"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {t('courseDetail.uploadFile')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/teacher/exams?courseId=${courseId}`)}
+              className="bg-background"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              {t('courseDetail.createExam')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setActiveTab('announcements');
+              }}
+              className="bg-background"
+            >
+              <Megaphone className="w-4 h-4 mr-2" />
+              {t('courseDetail.postAnnouncement')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
