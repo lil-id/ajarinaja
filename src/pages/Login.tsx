@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
  */
 const Login = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -70,12 +71,15 @@ const Login = () => {
     }
   };
 
-  // Redirect if already logged in with a role
+  // Redirect if already logged in with a role (only when on /login page)
   useEffect(() => {
-    if (role) {
-      navigate(role === 'teacher' ? '/teacher' : '/student');
+    if (role && location.pathname === '/login') {
+      // Check for a redirect path from state, otherwise use default dashboard
+      const from = (location.state as { from?: string })?.from;
+      const defaultPath = role === 'teacher' ? '/teacher' : '/student';
+      navigate(from || defaultPath, { replace: true });
     }
-  }, [role, navigate]);
+  }, [role, navigate, location]);
 
   return (
     <div className="min-h-screen bg-background flex">

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ interface ProtectedRouteProps {
 /**
  * Higher-order component to protect routes based on authentication and role.
  * Redirects to login if unauthenticated or appropriate dashboard if unauthorized.
+ * Preserves the current route when redirecting to login for post-auth navigation.
  * 
  * @param {ProtectedRouteProps} props - Component props.
  * @returns {JSX.Element | null} The protected content or null while redirecting/loading.
@@ -21,17 +22,19 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, role, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        navigate('/login');
+        // Pass current location so Login can redirect back after auth
+        navigate('/login', { state: { from: location.pathname }, replace: true });
       } else if (requiredRole && role !== requiredRole) {
-        // Redirect to correct dashboard based on actual role
-        navigate(role === 'teacher' ? '/teacher' : '/student');
+        // Redirect to correct dashboard based on actual role (role mismatch)
+        navigate(role === 'teacher' ? '/teacher' : '/student', { replace: true });
       }
     }
-  }, [user, role, isLoading, requiredRole, navigate]);
+  }, [user, role, isLoading, requiredRole, navigate, location.pathname]);
 
   if (isLoading) {
     return (
