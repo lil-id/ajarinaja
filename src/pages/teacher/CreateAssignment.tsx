@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -108,6 +108,8 @@ export default function CreateAssignment() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { assignmentId } = useParams<{ assignmentId: string }>();
+  const [searchParams] = useSearchParams();
+  const courseIdFromUrl = searchParams.get('courseId');
   const isEditMode = !!assignmentId;
 
   const { courses = [] } = useTeacherCourses();
@@ -228,6 +230,16 @@ export default function CreateAssignment() {
       setRiskCriteria(initialRiskCriteria);
     }
   }, [isEditMode, existingAssignment, form]);
+
+  // Set course_id from URL query parameter (when coming from course detail)
+  useEffect(() => {
+    if (!isEditMode && courseIdFromUrl && courses.length > 0) {
+      const courseExists = courses.some(c => c.id === courseIdFromUrl);
+      if (courseExists) {
+        form.setValue('course_id', courseIdFromUrl);
+      }
+    }
+  }, [isEditMode, courseIdFromUrl, courses, form]);
 
   // Load existing questions
   useEffect(() => {

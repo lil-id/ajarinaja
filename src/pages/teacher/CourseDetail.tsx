@@ -10,8 +10,16 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses, useUpdateCourse, useDeleteCourse, useUploadCourseThumbnail } from '@/hooks/useCourses';
 import { useExams } from '@/hooks/useExams';
-import { useCourseMaterials } from '@/hooks/useCourseMaterials';
-import { useAnnouncements } from '@/hooks/useAnnouncements';
+import {
+  useCourseMaterials,
+  useUploadMaterial,
+  useAddVideoMaterial,
+  useDeleteMaterial,
+  extractYouTubeId,
+  getYouTubeThumbnail
+} from '@/hooks/useCourseMaterials';
+import { useAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '@/hooks/useAnnouncements';
+import { useAssignments, useDeleteAssignment } from '@/hooks/useAssignments';
 import {
   useCourseEnrollments,
   useAllStudents,
@@ -24,7 +32,6 @@ import {
   BookOpen,
   FileText,
   Users,
-  Calendar,
   Megaphone,
   Edit,
   Trash2,
@@ -35,7 +42,14 @@ import {
   UserPlus,
   UserMinus,
   Image,
-  UsersRound
+  UsersRound,
+  Plus,
+  ClipboardList,
+  Youtube,
+  Link,
+  File,
+  Clock,
+  Award
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -66,7 +80,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MaterialViewer } from '@/components/MaterialViewer';
-import { extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
+import { format } from 'date-fns';
+
+/**
+ * Helper to format file size.
+ */
+const formatFileSize = (bytes: number | null) => {
+  if (!bytes || bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
 
 /**
  * Teacher Course Detail page.
@@ -76,9 +101,10 @@ import { extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterial
  * - Course metadata editing (Title, Description, Thumbnail)
  * - Publishing control
  * - Student management (Enroll/Unenroll)
- * - Exam management
- * - Material management
- * - Announcement management
+ * - Exam management with inline create
+ * - Assignment management with inline create
+ * - Material management with inline upload
+ * - Announcement management with inline create
  * 
  * @returns {JSX.Element} The rendered Course Detail page.
  */
@@ -88,6 +114,7 @@ const TeacherCourseDetail = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const materialFileInputRef = useRef<HTMLInputElement>(null);
 
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const updateCourse = useUpdateCourse();
@@ -99,15 +126,29 @@ const TeacherCourseDetail = () => {
   const { exams, isLoading: examsLoading } = useExams();
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
   const { announcements, isLoading: announcementsLoading } = useAnnouncements();
+  const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments(courseId);
   const { enrollments, isLoading: enrollmentsLoading } = useCourseEnrollments(courseId || '');
   const { data: allStudents = [], isLoading: studentsLoading } = useAllStudents();
   const enrollStudent = useTeacherEnrollStudent();
   const unenrollStudent = useTeacherUnenrollStudent();
   const unenrollAllStudents = useTeacherUnenrollAllStudents();
+  
+  // Material hooks
+  const uploadMaterial = useUploadMaterial();
+  const addVideoMaterial = useAddVideoMaterial();
+  const deleteMaterial = useDeleteMaterial();
+  
+  // Announcement hooks
+  const createAnnouncement = useCreateAnnouncement();
+  const deleteAnnouncement = useDeleteAnnouncement();
+  
+  // Assignment hooks
+  const deleteAssignment = useDeleteAssignment();
 
   const courseExams = exams.filter(e => e.course_id === courseId);
   const courseMaterials = materials.filter(m => m.course_id === courseId);
   const courseAnnouncements = announcements.filter(a => a.course_id === courseId);
+  const courseAssignments = assignments.filter(a => a.course_id === courseId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ title: '', description: '' });
@@ -116,6 +157,16 @@ const TeacherCourseDetail = () => {
   const [studentEmailSearch, setStudentEmailSearch] = useState('');
   const [viewingMaterial, setViewingMaterial] = useState<typeof courseMaterials[0] | null>(null);
   const [activeTab, setActiveTab] = useState('students');
+  
+  // Material upload state
+  const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false);
+  const [materialUploadType, setMaterialUploadType] = useState<'file' | 'video'>('file');
+  const [materialForm, setMaterialForm] = useState({ title: '', description: '', videoUrl: '' });
+  const [selectedMaterialFile, setSelectedMaterialFile] = useState<File | null>(null);
+  
+  // Announcement state
+  const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
+  const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '' });
 
   // Get students not already enrolled and filter by search
   const enrolledStudentIds = new Set(enrollments.map(e => e.student_id));
@@ -271,6 +322,120 @@ const TeacherCourseDetail = () => {
     }
   };
 
+  // Material upload handlers
+  const handleMaterialFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error('File size must be less than 50MB');
+        return;
+      }
+      setSelectedMaterialFile(file);
+      if (!materialForm.title) {
+        setMaterialForm({ ...materialForm, title: file.name.split('.')[0] });
+      }
+    }
+  };
+
+  const handleMaterialUpload = async () => {
+    if (!materialForm.title.trim()) {
+      toast.error('Please enter a title');
+      return;
+    }
+
+    if (materialUploadType === 'file' && !selectedMaterialFile) {
+      toast.error('Please select a file');
+      return;
+    }
+
+    if (materialUploadType === 'video') {
+      if (!materialForm.videoUrl.trim()) {
+        toast.error('Please enter a YouTube URL');
+        return;
+      }
+      const videoId = extractYouTubeId(materialForm.videoUrl);
+      if (!videoId) {
+        toast.error('Invalid YouTube URL');
+        return;
+      }
+    }
+
+    try {
+      if (materialUploadType === 'file' && selectedMaterialFile) {
+        await uploadMaterial.mutateAsync({
+          courseId: course.id,
+          title: materialForm.title,
+          description: materialForm.description || undefined,
+          file: selectedMaterialFile,
+        });
+      } else {
+        await addVideoMaterial.mutateAsync({
+          courseId: course.id,
+          title: materialForm.title,
+          description: materialForm.description || undefined,
+          videoUrl: materialForm.videoUrl,
+        });
+      }
+      setMaterialForm({ title: '', description: '', videoUrl: '' });
+      setSelectedMaterialFile(null);
+      setMaterialUploadType('file');
+      setIsMaterialDialogOpen(false);
+      toast.success(materialUploadType === 'file' ? t('toast.materialUploaded') : t('toast.videoAdded'));
+    } catch (error) {
+      toast.error(t('toast.failedToAddMaterial'));
+    }
+  };
+
+  const handleDeleteMaterial = async (id: string, filePath: string | null, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await deleteMaterial.mutateAsync({ id, filePath });
+      toast.success(t('toast.materialDeleted'));
+    } catch (error) {
+      toast.error(t('toast.failedToDeleteMaterial'));
+    }
+  };
+
+  // Announcement handlers
+  const handleCreateAnnouncement = async () => {
+    if (!announcementForm.title.trim() || !announcementForm.content.trim()) {
+      toast.error(t('toast.fillRequiredFields'));
+      return;
+    }
+
+    try {
+      await createAnnouncement.mutateAsync({
+        courseId: course.id,
+        title: announcementForm.title,
+        content: announcementForm.content,
+      });
+      setAnnouncementForm({ title: '', content: '' });
+      setIsAnnouncementDialogOpen(false);
+      toast.success(t('toast.announcementPosted'));
+    } catch (error) {
+      toast.error(t('toast.failedToPostAnnouncement'));
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      await deleteAnnouncement.mutateAsync(id);
+      toast.success(t('toast.announcementDeleted'));
+    } catch (error) {
+      toast.error(t('toast.failedToDeleteAnnouncement'));
+    }
+  };
+
+  // Assignment handlers
+  const handleDeleteAssignment = async (id: string) => {
+    try {
+      await deleteAssignment.mutateAsync(id);
+      toast.success(t('toast.assignmentDeleted'));
+    } catch (error) {
+      toast.error(t('toast.failedToDeleteAssignment'));
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -411,7 +576,7 @@ const TeacherCourseDetail = () => {
       </div>
 
       {/* Stats Cards - Clickable to navigate to tabs */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('students')}
@@ -442,6 +607,20 @@ const TeacherCourseDetail = () => {
         </Card>
         <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setActiveTab('assignments')}
+        >
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <ClipboardList className="w-5 h-5 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{courseAssignments.length}</p>
+              <p className="text-sm text-muted-foreground">Assignments</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('materials')}
         >
           <CardContent className="p-4 flex items-center gap-4">
@@ -450,7 +629,7 @@ const TeacherCourseDetail = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{courseMaterials.length}</p>
-              <p className="text-sm text-muted-foreground">Materials</p>
+              <p className="text-sm text-muted-foreground">{t('nav.files')}</p>
             </div>
           </CardContent>
         </Card>
@@ -470,65 +649,17 @@ const TeacherCourseDetail = () => {
         </Card>
       </div>
 
-      {/* Quick Actions Bar */}
-      <Card className="border-0 shadow-card bg-gradient-to-r from-primary/5 to-secondary/5">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-muted-foreground mr-2">{t('courseDetail.quickActions')}:</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEnrollDialogOpen(true)}
-              className="bg-background"
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              {t('courseDetail.enrollStudent')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setActiveTab('materials');
-                // Could open upload dialog if implemented
-              }}
-              className="bg-background"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {t('courseDetail.uploadFile')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/teacher/exams?courseId=${courseId}`)}
-              className="bg-background"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {t('courseDetail.createExam')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setActiveTab('announcements');
-              }}
-              className="bg-background"
-            >
-              <Megaphone className="w-4 h-4 mr-2" />
-              {t('courseDetail.postAnnouncement')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="students">Students ({enrollments.length})</TabsTrigger>
           <TabsTrigger value="exams">Exams ({courseExams.length})</TabsTrigger>
-          <TabsTrigger value="materials">Materials ({courseMaterials.length})</TabsTrigger>
+          <TabsTrigger value="assignments">Assignments ({courseAssignments.length})</TabsTrigger>
+          <TabsTrigger value="materials">{t('nav.files')} ({courseMaterials.length})</TabsTrigger>
           <TabsTrigger value="announcements">Announcements ({courseAnnouncements.length})</TabsTrigger>
         </TabsList>
 
+        {/* Students Tab */}
         <TabsContent value="students" className="space-y-4">
           <div className="flex justify-end gap-2">
             {enrollments.length > 0 && (
@@ -699,7 +830,15 @@ const TeacherCourseDetail = () => {
           )}
         </TabsContent>
 
+        {/* Exams Tab */}
         <TabsContent value="exams" className="space-y-4">
+          <div className="flex justify-end">
+            <Button variant="hero" onClick={() => navigate(`/teacher/exams?courseId=${courseId}`)}>
+              <Plus className="w-4 h-4" />
+              Create Exam
+            </Button>
+          </div>
+          
           {examsLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-6 h-6 animate-spin text-secondary" />
@@ -708,13 +847,10 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No exams created for this course</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => navigate('/teacher/exams')}
-                >
-                  Go to Exams
+                <p className="text-muted-foreground mb-4">No exams created for this course</p>
+                <Button variant="hero" onClick={() => navigate(`/teacher/exams?courseId=${courseId}`)}>
+                  <Plus className="w-4 h-4" />
+                  Create Exam
                 </Button>
               </CardContent>
             </Card>
@@ -755,7 +891,227 @@ const TeacherCourseDetail = () => {
           )}
         </TabsContent>
 
+        {/* Assignments Tab */}
+        <TabsContent value="assignments" className="space-y-4">
+          <div className="flex justify-end">
+            <Button variant="hero" onClick={() => navigate(`/teacher/assignments/new?courseId=${courseId}`)}>
+              <Plus className="w-4 h-4" />
+              Create Assignment
+            </Button>
+          </div>
+          
+          {assignmentsLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
+            </div>
+          ) : courseAssignments.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <ClipboardList className="w-10 h-10 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">No assignments created for this course</p>
+                <Button variant="hero" onClick={() => navigate(`/teacher/assignments/new?courseId=${courseId}`)}>
+                  <Plus className="w-4 h-4" />
+                  Create Assignment
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {courseAssignments.map((assignment) => (
+                <Card key={assignment.id} className="border-0 shadow-card">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{assignment.title}</CardTitle>
+                        <CardDescription>{assignment.description || 'No description'}</CardDescription>
+                      </div>
+                      <Badge variant={assignment.status === 'published' ? 'default' : 'secondary'}>
+                        {assignment.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        Due {format(new Date(assignment.due_date), 'MMM d, yyyy')}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Award className="w-4 h-4" />
+                        {assignment.max_points} points
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/teacher/assignments/${assignment.id}/edit`)}
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/teacher/assignments/${assignment.id}/submissions`)}
+                      >
+                        View Submissions
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Assignment</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{assignment.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteAssignment(assignment.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Materials Tab */}
         <TabsContent value="materials" className="space-y-4">
+          <div className="flex justify-end">
+            <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="hero">
+                  <Upload className="w-4 h-4" />
+                  Upload File
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Add Course Material</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <Tabs value={materialUploadType} onValueChange={(v) => setMaterialUploadType(v as 'file' | 'video')}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="file" className="gap-2">
+                        <Upload className="w-4 h-4" />
+                        Upload File
+                      </TabsTrigger>
+                      <TabsTrigger value="video" className="gap-2">
+                        <Youtube className="w-4 h-4" />
+                        YouTube Video
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  {materialUploadType === 'file' ? (
+                    <div className="space-y-2">
+                      <Label>File</Label>
+                      <input
+                        ref={materialFileInputRef}
+                        type="file"
+                        onChange={handleMaterialFileSelect}
+                        accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.avi,.jpg,.jpeg,.png,.gif"
+                        className="hidden"
+                      />
+                      <div
+                        onClick={() => materialFileInputRef.current?.click()}
+                        className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-secondary transition-colors"
+                      >
+                        {selectedMaterialFile ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <File className="w-5 h-5 text-secondary" />
+                            <span className="text-sm font-medium">{selectedMaterialFile.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              ({formatFileSize(selectedMaterialFile.size)})
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">
+                              Click to upload or drag and drop
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              PDF, DOC, PPT, Video, Images (max 50MB)
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>YouTube URL</Label>
+                      <div className="relative">
+                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          value={materialForm.videoUrl}
+                          onChange={(e) => setMaterialForm({ ...materialForm, videoUrl: e.target.value })}
+                          className="pl-10"
+                        />
+                      </div>
+                      {materialForm.videoUrl && extractYouTubeId(materialForm.videoUrl) && (
+                        <div className="mt-2 rounded-lg overflow-hidden border">
+                          <img
+                            src={getYouTubeThumbnail(extractYouTubeId(materialForm.videoUrl)!)}
+                            alt="Video thumbnail"
+                            className="w-full h-32 object-cover"
+                          />
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Supports youtube.com and youtu.be links
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>Title</Label>
+                    <Input
+                      placeholder="Material title"
+                      value={materialForm.title}
+                      onChange={(e) => setMaterialForm({ ...materialForm, title: e.target.value })}
+                      maxLength={200}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Description (optional)</Label>
+                    <Textarea
+                      placeholder="Brief description..."
+                      value={materialForm.description}
+                      onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
+                      rows={2}
+                      maxLength={500}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleMaterialUpload}
+                    className="w-full"
+                    disabled={uploadMaterial.isPending || addVideoMaterial.isPending}
+                  >
+                    {(uploadMaterial.isPending || addVideoMaterial.isPending) && (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    )}
+                    {materialUploadType === 'file' ? 'Upload Material' : 'Add Video'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           {materialsLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-6 h-6 animate-spin text-secondary" />
@@ -764,13 +1120,10 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <BookOpen className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No materials uploaded for this course</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => navigate('/teacher/materials')}
-                >
-                  Go to Materials
+                <p className="text-muted-foreground mb-4">No materials uploaded for this course</p>
+                <Button variant="hero" onClick={() => setIsMaterialDialogOpen(true)}>
+                  <Upload className="w-4 h-4" />
+                  Upload File
                 </Button>
               </CardContent>
             </Card>
@@ -808,10 +1161,18 @@ const TeacherCourseDetail = () => {
                           </p>
                           {material.file_size && (
                             <span className="text-xs text-muted-foreground">
-                              {(material.file_size / 1024).toFixed(1)} KB
+                              {formatFileSize(material.file_size)}
                             </span>
                           )}
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          onClick={(e) => handleDeleteMaterial(material.id, material.file_path, e)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -827,7 +1188,53 @@ const TeacherCourseDetail = () => {
           />
         </TabsContent>
 
+        {/* Announcements Tab */}
         <TabsContent value="announcements" className="space-y-4">
+          <div className="flex justify-end">
+            <Dialog open={isAnnouncementDialogOpen} onOpenChange={setIsAnnouncementDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="hero">
+                  <Plus className="w-4 h-4" />
+                  Post Announcement
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Post Announcement</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label>Title</Label>
+                    <Input
+                      placeholder="Announcement title"
+                      value={announcementForm.title}
+                      onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+                      maxLength={200}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Content</Label>
+                    <Textarea
+                      placeholder="Write your announcement..."
+                      value={announcementForm.content}
+                      onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
+                      rows={4}
+                      maxLength={2000}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleCreateAnnouncement}
+                    className="w-full"
+                    disabled={createAnnouncement.isPending}
+                  >
+                    {createAnnouncement.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                    Post Announcement
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           {announcementsLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-6 h-6 animate-spin text-secondary" />
@@ -836,13 +1243,10 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Megaphone className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No announcements for this course</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => navigate('/teacher/announcements')}
-                >
-                  Go to Announcements
+                <p className="text-muted-foreground mb-4">No announcements for this course</p>
+                <Button variant="hero" onClick={() => setIsAnnouncementDialogOpen(true)}>
+                  <Plus className="w-4 h-4" />
+                  Post Announcement
                 </Button>
               </CardContent>
             </Card>
@@ -851,13 +1255,38 @@ const TeacherCourseDetail = () => {
               {courseAnnouncements.map((announcement) => (
                 <Card key={announcement.id} className="border-0 shadow-card">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">{announcement.title}</CardTitle>
-                    <CardDescription>
-                      {new Date(announcement.created_at).toLocaleDateString()}
-                    </CardDescription>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{announcement.title}</CardTitle>
+                        <CardDescription>
+                          {format(new Date(announcement.created_at), 'PPp')}
+                        </CardDescription>
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this announcement? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteAnnouncement(announcement.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-foreground">{announcement.content}</p>
+                    <p className="text-foreground whitespace-pre-wrap">{announcement.content}</p>
                   </CardContent>
                 </Card>
               ))}
