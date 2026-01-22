@@ -62,6 +62,7 @@ export default {
     dangerZone: 'Danger Zone',
     irreversibleActions: 'Irreversible actions',
     deleteAccount: 'Delete Account',
+    deleting: 'Deleting...',
 
     // Shared actions (exam/question bank)
     selected: 'selected',
@@ -602,6 +603,7 @@ export default {
     writeGeneralNotes: 'Write general notes for the student...',
     notesPlaceholder: 'Notes...',
     selectSubject: 'Select subject',
+    deleteAccountWarning: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
   },
 
   // Students
@@ -793,6 +795,9 @@ export default {
     failedToPostAnnouncement: 'Failed to post announcement',
     announcementDeleted: 'Announcement deleted',
     failedToDeleteAnnouncement: 'Failed to delete announcement',
+
+    // Account
+    accountDeleted: 'Account deleted successfully',
   },
 
   // Announcements

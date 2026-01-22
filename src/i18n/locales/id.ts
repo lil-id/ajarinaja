@@ -62,6 +62,7 @@ export default {
     dangerZone: 'Zona Berbahaya',
     irreversibleActions: 'Tindakan tidak dapat dibatalkan',
     deleteAccount: 'Hapus Akun',
+    deleting: 'Menghapus...',
 
     // Shared actions (exam/question bank)
     selected: 'dipilih',
@@ -602,6 +603,7 @@ export default {
     writeGeneralNotes: 'Tulis catatan umum untuk siswa...',
     notesPlaceholder: 'Catatan...',
     selectSubject: 'Pilih mata pelajaran',
+    deleteAccountWarning: 'Tindakan ini tidak dapat dibatalkan. Ini akan menghapus akun Anda secara permanen dan menghapus semua data Anda dari server kami.',
   },
 
   // Students
@@ -793,6 +795,9 @@ export default {
     failedToPostAnnouncement: 'Gagal memposting pengumuman',
     announcementDeleted: 'Pengumuman dihapus',
     failedToDeleteAnnouncement: 'Gagal menghapus pengumuman',
+
+    // Account
+    accountDeleted: 'Akun berhasil dihapus',
   },
 
   // Announcements
