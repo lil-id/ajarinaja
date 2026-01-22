@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface DemoContextType {
   isDemo: boolean;
@@ -38,14 +39,35 @@ interface DemoProviderProps {
 }
 
 /**
+ * Determine the initial demo role from the current URL path.
+ * This ensures the role is preserved on browser refresh.
+ */
+const getRoleFromPath = (pathname: string): 'teacher' | 'student' => {
+  if (pathname.includes('/demo/student')) {
+    return 'student';
+  }
+  return 'teacher';
+};
+
+/**
  * Context provider for demo mode state and methods.
+ * Persists demo role based on URL path to maintain state on refresh.
  * 
  * @param {DemoProviderProps} props - Component props.
  * @returns {JSX.Element} The provider component.
  */
 export const DemoProvider: React.FC<DemoProviderProps> = ({ children }) => {
+  const location = useLocation();
   const [isDemo] = useState(true);
-  const [demoRole, setDemoRole] = useState<'teacher' | 'student'>('teacher');
+  const [demoRole, setDemoRole] = useState<'teacher' | 'student'>(() => getRoleFromPath(location.pathname));
+
+  // Sync role with URL path changes (e.g., when navigating via browser back/forward)
+  useEffect(() => {
+    const roleFromPath = getRoleFromPath(location.pathname);
+    if (roleFromPath !== demoRole) {
+      setDemoRole(roleFromPath);
+    }
+  }, [location.pathname]);
 
   const exitDemo = () => {
     window.location.href = '/';

@@ -58,7 +58,8 @@ export default function DemoLayout() {
   const navItems = demoRole === 'teacher' ? teacherNavItems : studentNavItems;
 
   const handleRoleSwitch = (role: 'teacher' | 'student') => {
-    setDemoRole(role);
+    // Navigate to the base demo path for the new role
+    // The DemoContext will sync the role from the URL path
     navigate(role === 'teacher' ? '/demo/teacher' : '/demo/student');
   };
 
