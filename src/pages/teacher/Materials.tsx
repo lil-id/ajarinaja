@@ -116,7 +116,7 @@ const TeacherMaterials = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 50 * 1024 * 1024) {
-        toast.error('File size must be less than 50MB');
+        toast.error(t('materials.fileSizeMustBeLess'));
         return;
       }
       setSelectedFile(file);
@@ -128,23 +128,23 @@ const TeacherMaterials = () => {
 
   const handleUpload = async () => {
     if (!selectedCourse || !form.title.trim()) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('materials.fillRequiredFields'));
       return;
     }
 
     if (uploadType === 'file' && !selectedFile) {
-      toast.error('Please select a file');
+      toast.error(t('materials.pleaseSelectFile'));
       return;
     }
 
     if (uploadType === 'video') {
       if (!form.videoUrl.trim()) {
-        toast.error('Please enter a YouTube URL');
+        toast.error(t('materials.pleaseEnterYoutubeUrl'));
         return;
       }
       const videoId = extractYouTubeId(form.videoUrl);
       if (!videoId) {
-        toast.error('Invalid YouTube URL');
+        toast.error(t('materials.invalidYoutubeUrl'));
         return;
       }
     }
@@ -187,7 +187,7 @@ const TeacherMaterials = () => {
   };
 
   const getCourseTitle = (courseId: string) => {
-    return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+    return courses.find(c => c.id === courseId)?.title || t('materials.unknownCourse');
   };
 
   if (isLoading) {
@@ -203,41 +203,41 @@ const TeacherMaterials = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Course Materials</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('materials.courseMaterials')}</h1>
           <p className="text-muted-foreground mt-1">
-            Upload files or add YouTube videos for your courses
+            {t('materials.uploadFilesOrVideos')}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="hero" disabled={courses.length === 0}>
               <Plus className="w-4 h-4" />
-              Add Material
+              {t('materials.addMaterial')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Add Course Material</DialogTitle>
+              <DialogTitle>{t('materials.addCourseMaterial')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <Tabs value={uploadType} onValueChange={(v) => setUploadType(v as 'file' | 'video')}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="file" className="gap-2">
                     <Upload className="w-4 h-4" />
-                    Upload File
+                    {t('materials.uploadFile')}
                   </TabsTrigger>
                   <TabsTrigger value="video" className="gap-2">
                     <Youtube className="w-4 h-4" />
-                    YouTube Video
+                    {t('materials.youtubeVideo')}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
 
               <div className="space-y-2">
-                <Label>Select Course</Label>
+                <Label>{t('materials.selectCourse')}</Label>
                 <Select value={selectedCourse} onValueChange={setSelectedCourse}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a course" />
+                    <SelectValue placeholder={t('materials.chooseCourse')} />
                   </SelectTrigger>
                   <SelectContent>
                     {courses.map(course => (
@@ -251,7 +251,7 @@ const TeacherMaterials = () => {
 
               {uploadType === 'file' ? (
                 <div className="space-y-2">
-                  <Label>File</Label>
+                  <Label>{t('materials.file')}</Label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -275,10 +275,10 @@ const TeacherMaterials = () => {
                       <>
                         <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">
-                          Click to upload or drag and drop
+                          {t('materials.clickToUpload')}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          PDF, DOC, PPT, Video, Images (max 50MB)
+                          {t('materials.supportedFormats')}
                         </p>
                       </>
                     )}
@@ -286,7 +286,7 @@ const TeacherMaterials = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label>YouTube URL</Label>
+                  <Label>{t('materials.youtubeUrl')}</Label>
                   <div className="relative">
                     <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -306,15 +306,15 @@ const TeacherMaterials = () => {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Supports youtube.com and youtu.be links
+                    {t('materials.supportsYoutube')}
                   </p>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>{t('materials.titleLabel')}</Label>
                 <Input
-                  placeholder="Material title"
+                  placeholder={t('materials.materialTitlePlaceholder')}
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   maxLength={200}
@@ -322,9 +322,9 @@ const TeacherMaterials = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Description (optional)</Label>
+                <Label>{t('materials.descriptionOptional')}</Label>
                 <Textarea
-                  placeholder="Brief description..."
+                  placeholder={t('materials.briefDescription')}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   rows={2}
@@ -340,7 +340,7 @@ const TeacherMaterials = () => {
                 {(uploadMaterial.isPending || addVideoMaterial.isPending) && (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 )}
-                {uploadType === 'file' ? 'Upload Material' : 'Add Video'}
+                {uploadType === 'file' ? t('materials.uploadMaterialBtn') : t('materials.addVideo')}
               </Button>
             </div>
           </DialogContent>
@@ -351,7 +351,7 @@ const TeacherMaterials = () => {
         <Card className="border-0 shadow-card">
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">
-              Create a course first before adding materials.
+              {t('materials.createCourseFirst')}
             </p>
           </CardContent>
         </Card>
@@ -364,10 +364,10 @@ const TeacherMaterials = () => {
             <Filter className="w-4 h-4 text-muted-foreground" />
             <Select value={selectedCourseFilter} onValueChange={setSelectedCourseFilter}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by course" />
+                <SelectValue placeholder={t('materials.filterByCourse')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Courses</SelectItem>
+                <SelectItem value="all">{t('materials.allCourses')}</SelectItem>
                 {courses.map(course => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.title}
@@ -376,15 +376,15 @@ const TeacherMaterials = () => {
               </SelectContent>
             </Select>
             <Badge variant="secondary" className="hidden sm:inline-flex">
-              {filteredMaterials.length} material{filteredMaterials.length !== 1 ? 's' : ''}
+              {filteredMaterials.length} {filteredMaterials.length !== 1 ? t('materials.materials_plural') : t('materials.material')}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={expandAll}>
-              Expand All
+              {t('materials.expandAll')}
             </Button>
             <Button variant="outline" size="sm" onClick={collapseAll}>
-              Collapse All
+              {t('materials.collapseAll')}
             </Button>
           </div>
         </div>
@@ -397,13 +397,13 @@ const TeacherMaterials = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No materials yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('materials.noMaterialsYet')}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Upload files or add YouTube videos for your students
+              {t('materials.uploadFilesForStudents')}
             </p>
             <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
-              Add Material
+              {t('materials.addMaterial')}
             </Button>
           </CardContent>
         </Card>
@@ -413,12 +413,12 @@ const TeacherMaterials = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <Filter className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No materials found</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('materials.noMaterialsFound')}</h3>
             <p className="text-muted-foreground text-center">
-              No materials match your current filter
+              {t('materials.noMaterialsMatchFilter')}
             </p>
             <Button variant="outline" className="mt-4" onClick={() => setSelectedCourseFilter('all')}>
-              Clear Filter
+              {t('materials.clearFilter')}
             </Button>
           </CardContent>
         </Card>
@@ -443,7 +443,7 @@ const TeacherMaterials = () => {
                         <div>
                           <h3 className="font-semibold text-foreground">{getCourseTitle(courseId)}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {courseMaterials.length} material{courseMaterials.length !== 1 ? 's' : ''}
+                            {courseMaterials.length} {courseMaterials.length !== 1 ? t('materials.materials_plural') : t('materials.material')}
                           </p>
                         </div>
                       </div>
