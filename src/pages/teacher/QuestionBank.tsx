@@ -243,9 +243,9 @@ export default function QuestionBank() {
   };
 
   const getCourseTitle = (courseId: string | null) => {
-    if (!courseId) return "No course";
+    if (!courseId) return t('questionBank.noCourse');
     const course = courses.find((c) => c.id === courseId);
-    return course?.title || "Unknown course";
+    return course?.title || t('questionBank.unknownCourse');
   };
 
   if (isLoading) {
@@ -260,28 +260,28 @@ export default function QuestionBank() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Question Bank</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('questionBank.title')}</h1>
           <p className="text-muted-foreground">
-            Save and reuse questions across exams
+            {t('questionBank.subtitle')}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Question
+              {t('questionBank.addQuestion')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingQuestion ? "Edit Question" : "Add Question to Bank"}
+                {editingQuestion ? t('questionBank.editQuestion') : t('questionBank.addQuestionToBank')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Category</Label>
+                  <Label>{t('questionBank.category')}</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(v) => setFormData({ ...formData, category: v })}
@@ -299,13 +299,13 @@ export default function QuestionBank() {
                     </SelectContent>
                   </Select>
                   <Input
-                    placeholder="Or create new category..."
+                    placeholder={t('questionBank.orCreateNewCategory')}
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Course (Optional)</Label>
+                  <Label>{t('questionBank.courseOptional')}</Label>
                   <Select
                     value={formData.course_id || "none"}
                     onValueChange={(v) =>
@@ -313,10 +313,10 @@ export default function QuestionBank() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select course" />
+                      <SelectValue placeholder={t('exams.selectCourse')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No specific course</SelectItem>
+                      <SelectItem value="none">{t('questionBank.noSpecificCourse')}</SelectItem>
                       {courses.map((course) => (
                         <SelectItem key={course.id} value={course.id}>
                           {course.title}
@@ -329,7 +329,7 @@ export default function QuestionBank() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Question Type</Label>
+                  <Label>{t('questionBank.questionType')}</Label>
                   <Select
                     value={formData.type}
                     onValueChange={(v) => setFormData({ ...formData, type: v })}
@@ -338,14 +338,14 @@ export default function QuestionBank() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                      <SelectItem value="multi_select">Multi-Select</SelectItem>
-                      <SelectItem value="essay">Essay</SelectItem>
+                      <SelectItem value="multiple_choice">{t('questionBank.multipleChoice')}</SelectItem>
+                      <SelectItem value="multi_select">{t('questionBank.multiSelect')}</SelectItem>
+                      <SelectItem value="essay">{t('questionBank.essay')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Points</Label>
+                  <Label>{t('questionBank.points')}</Label>
                   <Input
                     type="number"
                     min={1}
@@ -358,18 +358,18 @@ export default function QuestionBank() {
               </div>
 
               <div className="space-y-2">
-                <Label>Question</Label>
+                <Label>{t('questionBank.question')}</Label>
                 <FormulaInput
                   value={formData.question}
                   onChange={(v) => setFormData({ ...formData, question: v })}
-                  placeholder="Enter your question (use $...$ for formulas)..."
+                  placeholder={t('questionBank.questionPlaceholder')}
                   rows={3}
                 />
               </div>
 
               {formData.type === "multiple_choice" && (
                 <div className="space-y-3">
-                  <Label>Options (select the correct answer)</Label>
+                  <Label>{t('questionBank.optionsSelectCorrect')}</Label>
                   <RadioGroup
                     value={formData.correct_answer?.toString() || ""}
                     onValueChange={(v) =>
@@ -381,7 +381,7 @@ export default function QuestionBank() {
                         <RadioGroupItem value={index.toString()} id={`option-${index}`} />
                         <FormulaInput
                           singleLine
-                          placeholder={`Option ${index + 1}`}
+                          placeholder={t('questionBank.optionPlaceholder', { number: index + 1 })}
                           value={option}
                           onChange={(v) => {
                             const newOptions = [...formData.options];
@@ -397,7 +397,7 @@ export default function QuestionBank() {
 
               {formData.type === "multi_select" && (
                 <div className="space-y-3">
-                  <Label>Options (select all correct answers)</Label>
+                  <Label>{t('questionBank.optionsSelectAllCorrect')}</Label>
                   {formData.options.map((option, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <Checkbox
@@ -411,7 +411,7 @@ export default function QuestionBank() {
                       />
                       <FormulaInput
                         singleLine
-                        placeholder={`Option ${index + 1}`}
+                        placeholder={t('questionBank.optionPlaceholder', { number: index + 1 })}
                         value={option}
                         onChange={(v) => {
                           const newOptions = [...formData.options];
@@ -426,7 +426,7 @@ export default function QuestionBank() {
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={handleSave}
@@ -435,7 +435,7 @@ export default function QuestionBank() {
                   {(createQuestion.isPending || updateQuestion.isPending) && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  {editingQuestion ? "Update" : "Save"}
+                  {editingQuestion ? t('questionBank.update') : t('common.save')}
                 </Button>
               </div>
             </div>
@@ -450,7 +450,7 @@ export default function QuestionBank() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search questions..."
+                placeholder={t('questionBank.searchQuestions')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -459,10 +459,10 @@ export default function QuestionBank() {
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger className="w-[160px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t('questionBank.category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('questionBank.allCategories')}</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
@@ -472,10 +472,10 @@ export default function QuestionBank() {
             </Select>
             <Select value={filterCourse} onValueChange={setFilterCourse}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Course" />
+                <SelectValue placeholder={t('courses.title')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Courses</SelectItem>
+                <SelectItem value="all">{t('questionBank.allCourses')}</SelectItem>
                 {courses.map((course) => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.title}
@@ -485,13 +485,13 @@ export default function QuestionBank() {
             </Select>
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Type" />
+                <SelectValue placeholder={t('questionBank.questionType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                <SelectItem value="multi_select">Multi-Select</SelectItem>
-                <SelectItem value="essay">Essay</SelectItem>
+                <SelectItem value="all">{t('questionBank.allTypes')}</SelectItem>
+                <SelectItem value="multiple_choice">{t('questionBank.multipleChoice')}</SelectItem>
+                <SelectItem value="multi_select">{t('questionBank.multiSelect')}</SelectItem>
+                <SelectItem value="essay">{t('questionBank.essay')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -503,16 +503,18 @@ export default function QuestionBank() {
         <Card>
           <CardContent className="py-12 text-center">
             <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No questions found</h3>
+            <h3 className="text-lg font-medium mb-2">
+              {questions.length === 0 ? t('questionBank.noQuestionsYet') : t('questionBank.noQuestionsMatch')}
+            </h3>
             <p className="text-muted-foreground mb-4">
               {questions.length === 0
-                ? "Start building your question bank by adding questions."
-                : "Try adjusting your filters."}
+                ? t('questionBank.startBuildingBank')
+                : t('assignments.tryAdjustingSearch')}
             </p>
             {questions.length === 0 && (
               <Button onClick={() => handleOpenDialog()}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Your First Question
+                {t('questionBank.addQuestion')}
               </Button>
             )}
           </CardContent>

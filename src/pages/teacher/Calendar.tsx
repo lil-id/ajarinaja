@@ -224,32 +224,32 @@ export default function TeacherCalendar() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
-          <p className="text-muted-foreground">View all exams, assignments, and custom events</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('calendar.title')}</h1>
+          <p className="text-muted-foreground">{t('calendar.viewAllEvents')}</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
             <DialogTrigger asChild>
               <Button variant="default" onClick={handleOpenAddEvent}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Event
+                {t('calendar.addEvent')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Event</DialogTitle>
+                <DialogTitle>{t('calendar.addNewEvent')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label>Event Type</Label>
+                  <Label>{t('calendar.eventType')}</Label>
                   <Select value={newEventType} onValueChange={(v) => setNewEventType(v as 'exam' | 'assignment' | 'custom')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="custom">Custom Event</SelectItem>
-                      <SelectItem value="exam">Exam</SelectItem>
-                      <SelectItem value="assignment">Assignment</SelectItem>
+                      <SelectItem value="custom">{t('calendar.customEvent')}</SelectItem>
+                      <SelectItem value="exam">{t('calendar.exam')}</SelectItem>
+                      <SelectItem value="assignment">{t('calendar.assignment')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -257,25 +257,25 @@ export default function TeacherCalendar() {
                 {newEventType === 'custom' ? (
                   <>
                     <div className="space-y-2">
-                      <Label>Title *</Label>
+                      <Label>{t('calendar.titleRequired')}</Label>
                       <Input
                         value={customEventForm.title}
                         onChange={(e) => setCustomEventForm(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Event title"
+                        placeholder={t('calendar.eventTitlePlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Description</Label>
+                      <Label>{t('common.description')}</Label>
                       <Textarea
                         value={customEventForm.description}
                         onChange={(e) => setCustomEventForm(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Event description (optional)"
+                        placeholder={t('calendar.eventDescriptionPlaceholder')}
                         rows={3}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Date *</Label>
+                        <Label>{t('calendar.dateRequired')}</Label>
                         <Input
                           type="date"
                           value={customEventForm.date}
@@ -283,7 +283,7 @@ export default function TeacherCalendar() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Time</Label>
+                        <Label>{t('calendar.time')}</Label>
                         <Input
                           type="time"
                           value={customEventForm.time}
@@ -294,17 +294,17 @@ export default function TeacherCalendar() {
                   </>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    You'll be redirected to create a new {newEventType} with your desired schedule.
+                    {t('calendar.redirectToCreate', { type: newEventType === 'exam' ? t('calendar.exam').toLowerCase() : t('calendar.assignment').toLowerCase() })}
                   </p>
                 )}
 
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setIsAddEventOpen(false)}>
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                   <Button onClick={handleAddEvent} disabled={createCustomEvent.isPending}>
                     {createCustomEvent.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                    {newEventType === 'custom' ? 'Create Event' : 'Continue'}
+                    {newEventType === 'custom' ? t('calendar.createEvent') : t('calendar.continue')}
                   </Button>
                 </div>
               </div>
@@ -312,7 +312,7 @@ export default function TeacherCalendar() {
           </Dialog>
           <Button variant="outline" onClick={goToToday}>
             <CalendarIcon className="h-4 w-4 mr-2" />
-            Today
+            {t('calendar.today')}
           </Button>
         </div>
       </div>
@@ -334,7 +334,15 @@ export default function TeacherCalendar() {
           <CardContent>
             {/* Weekday headers */}
             <div className="grid grid-cols-7 mb-2">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+              {[
+                t('calendar.weekdays.sun'),
+                t('calendar.weekdays.mon'),
+                t('calendar.weekdays.tue'),
+                t('calendar.weekdays.wed'),
+                t('calendar.weekdays.thu'),
+                t('calendar.weekdays.fri'),
+                t('calendar.weekdays.sat'),
+              ].map((day) => (
                 <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
                   {day}
                 </div>
@@ -393,7 +401,7 @@ export default function TeacherCalendar() {
                       ))}
                       {dayEvents.length > 2 && (
                         <div className="text-xs text-muted-foreground px-1">
-                          +{dayEvents.length - 2} more
+                          +{dayEvents.length - 2} {t('calendar.more')}
                         </div>
                       )}
                     </div>
@@ -408,16 +416,16 @@ export default function TeacherCalendar() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
+              {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : t('calendar.selectDate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!selectedDate ? (
               <p className="text-muted-foreground text-sm">
-                Click on a date to view its events
+                {t('calendar.clickToView')}
               </p>
             ) : selectedDateEvents.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No events on this date</p>
+              <p className="text-muted-foreground text-sm">{t('calendar.noDeadlines')}</p>
             ) : (
               <div className="space-y-3">
                 {selectedDateEvents.map((event) => (
