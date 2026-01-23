@@ -96,10 +96,10 @@ const GradeExam = () => {
   if (!exam) {
     return (
       <div className="text-center py-16">
-        <p className="text-muted-foreground">Exam not found</p>
+        <p className="text-muted-foreground">{t('gradeExam.examNotFound')}</p>
         <Button variant="ghost" onClick={() => navigate('/teacher/exams')} className="mt-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Exams
+          {t('gradeExam.backToExams')}
         </Button>
       </div>
     );
@@ -233,27 +233,27 @@ const GradeExam = () => {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-foreground">{exam.title}</h1>
-          <p className="text-muted-foreground">Grade student submissions</p>
+          <p className="text-muted-foreground">{t('gradeExam.gradeSubmissions')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {kkm > 0 && (
             <Badge variant="outline" className="text-sm bg-blue-50 text-blue-700 border-blue-300">
-              KKM: {kkm} pts
+              {t('reportCards.kkm')}: {kkm} {t('common.pts')}
             </Badge>
           )}
           <Badge variant="outline" className="text-sm">
-            {ungradedCount} ungraded
+            {ungradedCount} {t('gradeExam.ungraded')}
           </Badge>
           <Badge variant="secondary" className="text-sm">
-            {gradedCount} graded
+            {gradedCount} {t('gradeExam.graded')}
           </Badge>
           {kkm > 0 && gradedCount > 0 && (
             <>
               <Badge className="text-sm bg-green-100 text-green-700 border-green-300">
-                {passedCount} passed
+                {passedCount} {t('gradeExam.passed')}
               </Badge>
               <Badge className="text-sm bg-red-100 text-red-700 border-red-300">
-                {failedCount} failed
+                {failedCount} {t('gradeExam.failed')}
               </Badge>
             </>
           )}
@@ -264,17 +264,17 @@ const GradeExam = () => {
         {/* Submissions List */}
         <div className="lg:col-span-1 space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="font-semibold text-foreground">Submissions ({submissions.length})</h2>
+            <h2 className="font-semibold text-foreground">{t('assignments.submissions')} ({submissions.length})</h2>
             <Select value={statusFilter} onValueChange={(value: FilterType) => setStatusFilter(value)}>
               <SelectTrigger className="w-[130px] h-8">
                 <Filter className="w-3.5 h-3.5 mr-1" />
-                <SelectValue placeholder="Filter" />
+                <SelectValue placeholder={t('common.filter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="passed">Passed</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="all">{t('gradeExam.filterAll')}</SelectItem>
+                <SelectItem value="passed">{t('gradeExam.filterPassed')}</SelectItem>
+                <SelectItem value="failed">{t('gradeExam.filterFailed')}</SelectItem>
+                <SelectItem value="pending">{t('gradeExam.filterPending')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -283,7 +283,7 @@ const GradeExam = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground">
-                  {submissions.length === 0 ? 'No submissions yet' : `No ${statusFilter} submissions`}
+                  {submissions.length === 0 ? t('gradeExam.noSubmissionsYet') : t('gradeExam.noSubmissionsFiltered', { filter: statusFilter })}
                 </p>
               </CardContent>
             </Card>
@@ -336,7 +336,7 @@ const GradeExam = () => {
                                     passStatus === 'failed' && "bg-red-50 text-red-700 border-red-300"
                                   )}
                                 >
-                                  {passStatus === 'passed' ? 'Passed' : 'Failed'}
+                                  {passStatus === 'passed' ? t('gradeExam.passed') : t('gradeExam.failed')}
                                 </Badge>
                               )}
                             </div>
@@ -375,7 +375,7 @@ const GradeExam = () => {
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
-                              Pending
+                              {t('gradeExam.pending')}
                             </Badge>
                           )}
                         </div>
@@ -395,9 +395,9 @@ const GradeExam = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>{selectedSubmission.student?.name || 'Unknown Student'}</CardTitle>
+                    <CardTitle>{selectedSubmission.student?.name || t('gradeExam.unknownStudent')}</CardTitle>
                     <CardDescription>
-                      Submitted {new Date(selectedSubmission.submitted_at).toLocaleString()}
+                      {t('assignments.submitted')} {new Date(selectedSubmission.submitted_at).toLocaleString()}
                     </CardDescription>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => setSelectedSubmission(null)}>
@@ -411,11 +411,11 @@ const GradeExam = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-secondary" />
-                      Multiple Choice ({mcQuestions.reduce((sum: number, q: Question) => {
+                      {t('gradeExam.multipleChoice')} ({mcQuestions.reduce((sum: number, q: Question) => {
                         const answer = selectedSubmission.answers[q.id];
                         const isCorrect = answer !== undefined && Number(answer) === q.correct_answer;
                         return sum + (isCorrect ? q.points : 0);
-                      }, 0)}/{mcQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} pts)
+                      }, 0)}/{mcQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} {t('common.pts')})
                     </h3>
                     <div className="space-y-3">
                       {mcQuestions.map((q: Question, idx: number) => {
@@ -433,12 +433,12 @@ const GradeExam = () => {
                               <div className="flex-1">
                                 <p className="font-medium text-sm">Q{idx + 1}: {q.question}</p>
                                 <p className="text-sm mt-1">
-                                  <span className="text-muted-foreground">Answer: </span>
-                                  {q.options && answer !== undefined ? q.options[Number(answer)] : 'No answer'}
+                                  <span className="text-muted-foreground">{t('gradeExam.answer')}: </span>
+                                  {q.options && answer !== undefined ? q.options[Number(answer)] : t('gradeExam.noAnswer')}
                                 </p>
                                 {!isCorrect && q.options && q.correct_answer !== null && (
                                   <p className="text-sm text-green-700 mt-1">
-                                    Correct: {q.options[q.correct_answer]}
+                                    {t('submissionsPage.correct')}: {q.options[q.correct_answer]}
                                   </p>
                                 )}
                               </div>
@@ -465,7 +465,7 @@ const GradeExam = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                       <ListChecks className="w-5 h-5 text-primary" />
-                      Multi-Select ({multiSelectQuestions.reduce((sum: number, q: Question) => {
+                      {t('gradeExam.multiSelectType')} ({multiSelectQuestions.reduce((sum: number, q: Question) => {
                         const answer = selectedSubmission.answers[q.id];
                         const correctAnswers = q.correct_answers || [];
                         if (Array.isArray(answer) && correctAnswers.length > 0) {
@@ -477,7 +477,7 @@ const GradeExam = () => {
                           }
                         }
                         return sum;
-                      }, 0)}/{multiSelectQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} pts)
+                      }, 0)}/{multiSelectQuestions.reduce((sum: number, q: Question) => sum + q.points, 0)} {t('common.pts')})
                     </h3>
                     <div className="space-y-3">
                       {multiSelectQuestions.map((q: Question, idx: number) => {
@@ -520,7 +520,7 @@ const GradeExam = () => {
                                         {!wasSelected && isCorrectAnswer && <span className="w-4 h-4 text-xs font-bold text-yellow-600">!</span>}
                                         {!wasSelected && !isCorrectAnswer && <span className="w-4 h-4" />}
                                         <span>{option}</span>
-                                        {isCorrectAnswer && <span className="text-xs text-green-600 ml-auto">(correct)</span>}
+                                        {isCorrectAnswer && <span className="text-xs text-green-600 ml-auto">({t('submissionsPage.correct')})</span>}
                                       </div>
                                     );
                                   })}
@@ -551,7 +551,7 @@ const GradeExam = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                       <AlignLeft className="w-5 h-5 text-primary" />
-                      Essay Questions (Grade manually)
+                      {t('gradeExam.essayQuestionsManual')}
                     </h3>
                     <div className="space-y-6">
                       {essayQuestions.map((q: Question, idx: number) => {
@@ -560,16 +560,16 @@ const GradeExam = () => {
                           <div key={q.id} className="p-4 rounded-lg border bg-muted/30">
                             <div className="flex items-start justify-between mb-3">
                               <p className="font-medium text-sm">Q{mcQuestions.length + idx + 1}: {q.question}</p>
-                              <span className="text-xs text-muted-foreground">{q.points} pts</span>
+                              <span className="text-xs text-muted-foreground">{q.points} {t('common.pts')}</span>
                             </div>
                             <div className="bg-background p-4 rounded-lg mb-4 min-h-[100px]">
                               <p className="text-sm whitespace-pre-wrap">
-                                {answer ? String(answer) : <em className="text-muted-foreground">No answer provided</em>}
+                                {answer ? String(answer) : <em className="text-muted-foreground">{t('gradeExam.noAnswerProvided')}</em>}
                               </p>
                             </div>
                             <div className="flex items-center gap-3">
                               <Label htmlFor={`score-${q.id}`} className="text-sm whitespace-nowrap">
-                                Score:
+                                {t('gradeExam.score')}:
                               </Label>
                               <Input
                                 id={`score-${q.id}`}
@@ -599,22 +599,22 @@ const GradeExam = () => {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-foreground flex items-center gap-2">
                       <Award className="w-5 h-5 text-yellow-500" />
-                      Award Badges (Optional)
+                      {t('gradeExam.awardBadges')}
                     </h3>
                     <Dialog open={showCreateBadge} onOpenChange={setShowCreateBadge}>
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="sm">
                           <Plus className="w-4 h-4 mr-1" />
-                          Create Badge
+                          {t('gradeExam.createBadge')}
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Create Custom Badge</DialogTitle>
+                          <DialogTitle>{t('gradeExam.createCustomBadge')}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
                           <div className="space-y-2">
-                            <Label>Badge Name</Label>
+                            <Label>{t('gradeExam.badgeName')}</Label>
                             <Input
                               placeholder="e.g., Creative Thinker"
                               value={newBadge.name}
@@ -622,7 +622,7 @@ const GradeExam = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>Description (optional)</Label>
+                            <Label>{t('gradeExam.badgeDescription')}</Label>
                             <Input
                               placeholder="Brief description..."
                               value={newBadge.description}
@@ -630,7 +630,7 @@ const GradeExam = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>Icon</Label>
+                            <Label>{t('gradeExam.badgeIcon')}</Label>
                             <div className="flex gap-2">
                               {Object.entries(BADGE_ICONS).map(([key, Icon]) => (
                                 <Button
@@ -646,7 +646,7 @@ const GradeExam = () => {
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label>Color</Label>
+                            <Label>{t('gradeExam.badgeColor')}</Label>
                             <div className="flex gap-2">
                               {Object.keys(BADGE_COLORS).map((color) => (
                                 <Button
@@ -664,7 +664,7 @@ const GradeExam = () => {
                           </div>
                           <Button onClick={handleCreateBadge} className="w-full" disabled={createBadge.isPending}>
                             {createBadge.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                            Create Badge
+                            {t('gradeExam.createBadge')}
                           </Button>
                         </div>
                       </DialogContent>
@@ -707,7 +707,7 @@ const GradeExam = () => {
                   </div>
                   {selectedBadges.length > 0 && (
                     <p className="text-sm text-muted-foreground mt-2">
-                      {selectedBadges.length} badge(s) will be awarded
+                      {t('gradeExam.badgesWillBeAwarded', { count: selectedBadges.length })}
                     </p>
                   )}
                 </div>
@@ -717,7 +717,7 @@ const GradeExam = () => {
                 {/* Total & Submit */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Score</p>
+                    <p className="text-sm text-muted-foreground">{t('gradeExam.totalScore')}</p>
                     <p className="text-2xl font-bold text-foreground">
                       {calculateMCScore(selectedSubmission) + Object.values(essayScores).reduce((sum, s) => sum + s, 0)}
                       <span className="text-muted-foreground font-normal text-lg">/{exam.total_points}</span>
@@ -730,7 +730,7 @@ const GradeExam = () => {
                     disabled={gradeSubmission.isPending || awardBadge.isPending}
                   >
                     {(gradeSubmission.isPending || awardBadge.isPending) && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Submit Grade
+                    {t('gradeExam.submitGrade')}
                   </Button>
                 </div>
               </CardContent>
@@ -741,9 +741,9 @@ const GradeExam = () => {
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Select a submission</h3>
+                <h3 className="font-semibold text-foreground mb-2">{t('gradeExam.selectSubmissionTitle')}</h3>
                 <p className="text-muted-foreground">
-                  Click on a submission to review and grade it
+                  {t('gradeExam.selectSubmissionDesc')}
                 </p>
               </CardContent>
             </Card>

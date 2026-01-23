@@ -45,7 +45,7 @@ const TeacherOverview = () => {
       href: '/teacher/courses'
     },
     {
-      label: t('common.published'),
+      label: t('dashboard.totalPublishedCourses'),
       value: publishedCourses,
       icon: TrendingUp,
       color: 'bg-secondary/10 text-secondary',
@@ -59,7 +59,7 @@ const TeacherOverview = () => {
       href: '/teacher/exams'
     },
     {
-      label: t('assignments.title'),
+      label: t('dashboard.totalAssignments'),
       value: teacherAssignments.length,
       icon: ClipboardList,
       color: 'bg-muted text-muted-foreground',
@@ -191,8 +191,8 @@ const TeacherOverview = () => {
                       </div>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${course.status === 'published'
-                        ? 'bg-secondary/10 text-secondary'
-                        : 'bg-muted text-muted-foreground'
+                      ? 'bg-secondary/10 text-secondary'
+                      : 'bg-muted text-muted-foreground'
                       }`}>
                       {course.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>

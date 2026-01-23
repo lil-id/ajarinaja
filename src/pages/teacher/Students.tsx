@@ -132,17 +132,6 @@ const TeacherStudents = () => {
   const getSortIcon = (field: SortField) => sortField !== field ? <ChevronsUpDown className="w-4 h-4 ml-1" /> : sortOrder === 'asc' ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />;
   const isLoading = coursesLoading || enrollmentsLoading || atRiskLoading;
 
-  const getRiskLabel = (type: RiskFactor['type']) => {
-    switch (type) {
-      case 'no_material_views': return t('students.lowEngagement');
-      case 'missed_deadline': return t('students.missedDeadline');
-      case 'low_score': case 'below_kkm': return t('students.belowKKM');
-      case 'no_exam_submissions': return t('students.missingExams');
-      case 'late_submission': return t('students.lateSubmission');
-      default: return '';
-    }
-  };
-
   if (isLoading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-secondary" /></div>;
   }
@@ -154,9 +143,8 @@ const TeacherStudents = () => {
         <p className="text-muted-foreground mt-1">{t('students.subtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-0 shadow-card"><CardContent className="p-6"><div className="flex items-center gap-4"><div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center"><Users className="w-6 h-6 text-secondary" /></div><div><p className="text-2xl font-bold text-foreground">{students.length}</p><p className="text-sm text-muted-foreground">{t('students.totalStudents')}</p></div></div></CardContent></Card>
-        <Card className="border-0 shadow-card"><CardContent className="p-6"><div className="flex items-center gap-4"><div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center"><BookOpen className="w-6 h-6 text-primary" /></div><div><p className="text-2xl font-bold text-foreground">{enrollments.length}</p><p className="text-sm text-muted-foreground">{t('students.enrollments')}</p></div></div></CardContent></Card>
         <Card className="border-orange-500/50 bg-orange-50 dark:bg-orange-950/20"><CardContent className="p-4 flex items-center gap-4"><div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center"><AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" /></div><div><p className="text-2xl font-bold text-foreground">{highRiskCount}</p><p className="text-sm text-muted-foreground">{t('students.highRisk')}</p></div></CardContent></Card>
         <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20"><CardContent className="p-4 flex items-center gap-4"><div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center"><AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" /></div><div><p className="text-2xl font-bold text-foreground">{mediumRiskCount}</p><p className="text-sm text-muted-foreground">{t('students.mediumRisk')}</p></div></CardContent></Card>
         <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20"><CardContent className="p-4 flex items-center gap-4"><div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center"><Info className="w-5 h-5 text-yellow-600 dark:text-yellow-400" /></div><div><p className="text-2xl font-bold text-foreground">{lowRiskCount}</p><p className="text-sm text-muted-foreground">{t('students.lowRisk')}</p></div></CardContent></Card>
@@ -241,7 +229,7 @@ const TeacherStudents = () => {
                       <div className="flex items-start gap-4">
                         <Avatar className="w-12 h-12"><AvatarFallback className={cn(student.riskLevel === 'high' && 'bg-destructive/20 text-destructive', student.riskLevel === 'medium' && 'bg-orange-500/20 text-orange-600 dark:text-orange-400', student.riskLevel === 'low' && 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400')}>{student.studentName.charAt(0)}</AvatarFallback></Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2"><h3 className="font-semibold text-foreground">{student.studentName}</h3><Badge variant={student.riskLevel === 'high' ? 'destructive' : 'outline'} className={cn('w-fit', student.riskLevel === 'medium' && 'border-orange-500 text-orange-600 dark:text-orange-400', student.riskLevel === 'low' && 'border-yellow-500 text-yellow-600 dark:text-yellow-400')}>{student.riskLevel.charAt(0).toUpperCase() + student.riskLevel.slice(1)} Risk</Badge></div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2"><h3 className="font-semibold text-foreground">{student.studentName}</h3><Badge variant={student.riskLevel === 'high' ? 'destructive' : 'outline'} className={cn('w-fit', student.riskLevel === 'medium' && 'border-orange-500 text-orange-600 dark:text-orange-400', student.riskLevel === 'low' && 'border-yellow-500 text-yellow-600 dark:text-yellow-400')}>{t(`students.${student.riskLevel}Risk`)}</Badge></div>
                           <p className="text-sm text-muted-foreground">{student.studentEmail}</p>
                           <p className="text-sm text-muted-foreground mb-3">{t('students.course')}: {student.courseName}</p>
                           <div className="flex flex-wrap gap-2">{student.riskFactors.map((factor, index) => { const Icon = getRiskIcon(factor.type); return <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm"><Icon className={cn('w-4 h-4', factor.severity === 'high' && 'text-destructive', factor.severity === 'medium' && 'text-orange-600 dark:text-orange-400', factor.severity === 'low' && 'text-yellow-600 dark:text-yellow-400')} /><span className="text-muted-foreground">{factor.description}</span></div>; })}</div>

@@ -19,41 +19,45 @@ import {
   Menu,
   FolderOpen,
   Database,
+  Home,
+  Award,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDemoContext } from '@/contexts/DemoContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DemoTour } from '@/components/DemoTour';
-
-const teacherNavItems = [
-  { icon: LayoutDashboard, label: 'Overview', path: '/demo/teacher' },
-  { icon: BookOpen, label: 'Courses', path: '/demo/teacher/courses' },
-  { icon: FileText, label: 'Exams', path: '/demo/teacher/exams' },
-  { icon: ClipboardCheck, label: 'Assignments', path: '/demo/teacher/assignments' },
-  { icon: FolderOpen, label: 'Materials', path: '/demo/teacher/materials' },
-  { icon: Database, label: 'Question Bank', path: '/demo/teacher/question-bank' },
-  { icon: Users, label: 'Students', path: '/demo/teacher/students' },
-  { icon: BarChart2, label: 'Analytics', path: '/demo/teacher/analytics' },
-  { icon: Calendar, label: 'Calendar', path: '/demo/teacher/calendar' },
-  { icon: Bell, label: 'Announcements', path: '/demo/teacher/announcements' },
-];
-
-const studentNavItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/demo/student' },
-  { icon: BookOpen, label: 'My Courses', path: '/demo/student/courses' },
-  { icon: FileText, label: 'Exams', path: '/demo/student/exams' },
-  { icon: ClipboardCheck, label: 'Assignments', path: '/demo/student/assignments' },
-  { icon: FolderOpen, label: 'Materials', path: '/demo/student/materials' },
-  { icon: BarChart2, label: 'Analytics', path: '/demo/student/analytics' },
-  { icon: Calendar, label: 'Calendar', path: '/demo/student/calendar' },
-  { icon: Bell, label: 'Notifications', path: '/demo/student/notifications' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function DemoLayout() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { demoRole, setDemoRole, exitDemo } = useDemoContext();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const teacherNavItems = [
+    { icon: LayoutDashboard, label: t('nav.overview'), path: '/demo/teacher' },
+    { icon: BookOpen, label: t('nav.courses'), path: '/demo/teacher/courses' },
+    { icon: FileText, label: t('nav.exams'), path: '/demo/teacher/exams' },
+    { icon: ClipboardCheck, label: t('nav.assignments'), path: '/demo/teacher/assignments' },
+    { icon: FolderOpen, label: t('nav.materials'), path: '/demo/teacher/materials' },
+    { icon: Database, label: t('nav.questionBank'), path: '/demo/teacher/question-bank' },
+    { icon: Users, label: t('nav.students'), path: '/demo/teacher/students' },
+    { icon: BarChart2, label: t('nav.analytics'), path: '/demo/teacher/analytics' },
+    { icon: Calendar, label: t('nav.calendar'), path: '/demo/teacher/calendar' },
+    { icon: Bell, label: t('nav.announcements'), path: '/demo/teacher/announcements' },
+  ];
+
+  const studentNavItems = [
+    { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/demo/student' },
+    { icon: BookOpen, label: t('courses.myCourses'), path: '/demo/student/courses' },
+    { icon: FileText, label: t('nav.exams'), path: '/demo/student/exams' },
+    { icon: ClipboardCheck, label: t('nav.assignments'), path: '/demo/student/assignments' },
+    { icon: FolderOpen, label: t('nav.materials'), path: '/demo/student/materials' },
+    { icon: BarChart2, label: t('nav.analytics'), path: '/demo/student/analytics' },
+    { icon: Calendar, label: t('nav.calendar'), path: '/demo/student/calendar' },
+    { icon: Bell, label: t('nav.notifications'), path: '/demo/student/notifications' },
+  ];
 
   const navItems = demoRole === 'teacher' ? teacherNavItems : studentNavItems;
 

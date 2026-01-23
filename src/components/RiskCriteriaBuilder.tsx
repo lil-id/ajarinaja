@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { arrayMove } from '@dnd-kit/sortable';
 import SortableList from '@/components/SortableContext';
 import SortableItem from '@/components/SortableItem';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Interface representing a risk criterion configuration.
@@ -29,31 +30,6 @@ export interface RiskCriterion {
   enabled: boolean;
   severity: 'high' | 'medium' | 'low';
 }
-
-// Preset risk criteria that map to system behaviors
-const PRESET_CRITERIA: Omit<RiskCriterion, 'id'>[] = [
-  {
-    type: 'missed',
-    name: 'Missed Submission',
-    description: 'Student did not submit by the deadline',
-    enabled: false,
-    severity: 'high',
-  },
-  {
-    type: 'below_kkm',
-    name: 'Below Passing Grade (KKM)',
-    description: 'Score is below the minimum passing threshold',
-    enabled: false,
-    severity: 'medium',
-  },
-  {
-    type: 'late',
-    name: 'Late Submission',
-    description: 'Submitted after the deadline',
-    enabled: false,
-    severity: 'low',
-  },
-];
 
 /**
  * Props for the RiskCriteriaBuilder component.
@@ -99,15 +75,39 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
   allowLate = true,
   className,
 }) => {
+  const { t } = useTranslation();
+
   // Initialize with presets if empty
   React.useEffect(() => {
     if (criteria.length === 0) {
-      const initialCriteria = PRESET_CRITERIA
+      const initialCriteria = [
+        {
+          type: 'missed',
+          name: t('risk.missedSubmission'),
+          description: t('risk.missedSubmissionDesc'),
+          enabled: false,
+          severity: 'high',
+        },
+        {
+          type: 'below_kkm',
+          name: t('risk.belowKKM'),
+          description: t('risk.belowKKMDesc'),
+          enabled: false,
+          severity: 'medium',
+        },
+        {
+          type: 'late',
+          name: t('risk.lateSubmission'),
+          description: t('risk.lateSubmissionDesc'),
+          enabled: false,
+          severity: 'low',
+        },
+      ]
         .filter(c => allowLate || c.type !== 'late')
-        .map(c => ({ ...c, id: crypto.randomUUID() }));
+        .map(c => ({ ...c, id: crypto.randomUUID() })) as RiskCriterion[];
       onChange(initialCriteria);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateCriterion = (id: string, updates: Partial<RiskCriterion>) => {
     onChange(criteria.map(c => c.id === id ? { ...c, ...updates } : c));
@@ -178,19 +178,29 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                 <div className="space-y-1">
                   {isPreset ? (
                     <>
-                      <h4 className="font-medium">{criterion.name}</h4>
-                      <p className="text-sm text-muted-foreground">{criterion.description}</p>
+                      <h4 className="font-medium">
+                        {criterion.type === 'missed' ? t('risk.missedSubmission') :
+                          criterion.type === 'below_kkm' ? t('risk.belowKKM') :
+                            criterion.type === 'late' ? t('risk.lateSubmission') :
+                              criterion.name}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {criterion.type === 'missed' ? t('risk.missedSubmissionDesc') :
+                          criterion.type === 'below_kkm' ? t('risk.belowKKMDesc') :
+                            criterion.type === 'late' ? t('risk.lateSubmissionDesc') :
+                              criterion.description}
+                      </p>
                     </>
                   ) : (
                     <>
                       <Input
-                        placeholder="Criterion name (e.g., Low Participation)"
+                        placeholder={t('risk.customNamePlaceholder')}
                         value={criterion.name}
                         onChange={(e) => updateCriterion(criterion.id, { name: e.target.value })}
                         className="font-medium h-8"
                       />
                       <Textarea
-                        placeholder="Description of when this applies..."
+                        placeholder={t('risk.customDescPlaceholder')}
                         value={criterion.description}
                         onChange={(e) => updateCriterion(criterion.id, { description: e.target.value })}
                         rows={2}
@@ -222,7 +232,7 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
               {/* Severity selector - only show when enabled */}
               {criterion.enabled && (
                 <div className="flex items-center gap-3">
-                  <Label className="text-sm text-muted-foreground">Risk Level:</Label>
+                  <Label className="text-sm text-muted-foreground">{t('risk.riskLevel')}:</Label>
                   <Select
                     value={criterion.severity}
                     onValueChange={(v: 'high' | 'medium' | 'low') =>
@@ -236,19 +246,19 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                       <SelectItem value="high">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-destructive" />
-                          High Risk
+                          {t('risk.highRisk')}
                         </div>
                       </SelectItem>
                       <SelectItem value="medium">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-orange-500" />
-                          Medium Risk
+                          {t('risk.mediumRisk')}
                         </div>
                       </SelectItem>
                       <SelectItem value="low">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                          Low Risk
+                          {t('risk.lowRisk')}
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -259,7 +269,9 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                     'text-xs px-2 py-0.5 rounded-full font-medium',
                     severityBadgeColors[criterion.severity]
                   )}>
-                    {criterion.severity.charAt(0).toUpperCase() + criterion.severity.slice(1)}
+                    {criterion.severity === 'high' ? t('risk.highRisk') :
+                      criterion.severity === 'medium' ? t('risk.mediumRisk') :
+                        t('risk.lowRisk')}
                   </span>
                 </div>
               )}
@@ -277,11 +289,11 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-orange-500" />
           <div>
-            <h3 className="font-medium">Risk Monitoring Criteria</h3>
+            <h3 className="font-medium">{t('risk.monitoringCriteria')}</h3>
             <p className="text-sm text-muted-foreground">
               {enabledCount > 0
-                ? `${enabledCount} criteria active - students matching these will be flagged as at-risk`
-                : 'Enable criteria to monitor student performance'}
+                ? t('risk.activeCriteriaCount', { count: enabledCount })
+                : t('risk.enableCriteriaTip')}
             </p>
           </div>
         </div>
@@ -315,14 +327,14 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
           onClick={addCustomCriterion}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Custom Risk Criterion
+          {t('risk.addCustom')}
         </Button>
       )}
 
       {/* Summary */}
       {enabledCount > 0 && (
         <div className="p-3 rounded-lg bg-muted/50 border">
-          <p className="text-sm font-medium mb-2">Active Risk Labels:</p>
+          <p className="text-sm font-medium mb-2">{t('risk.activeLabels')}:</p>
           <div className="flex flex-wrap gap-2">
             {criteria.filter(c => c.enabled).map(c => (
               <span
@@ -332,7 +344,7 @@ const RiskCriteriaBuilder: React.FC<RiskCriteriaBuilderProps> = ({
                   severityBadgeColors[c.severity]
                 )}
               >
-                {c.name || 'Unnamed'}
+                {c.name || t('risk.unnamed')}
               </span>
             ))}
           </div>

@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
 const CHART_COLORS = ['hsl(var(--secondary))', 'hsl(var(--primary))', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -44,6 +45,7 @@ const CHART_COLORS = ['hsl(var(--secondary))', 'hsl(var(--primary))', '#f59e0b',
  * @returns {JSX.Element} The rendered Analytics page.
  */
 const TeacherAnalytics = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
@@ -178,13 +180,13 @@ const TeacherAnalytics = () => {
 
   // Submission status breakdown
   const examSubmissionStatus = [
-    { name: 'Graded', value: gradedExamSubmissions.length, color: CHART_COLORS[0] },
-    { name: 'Pending', value: filteredExamSubmissions.length - gradedExamSubmissions.length, color: CHART_COLORS[3] },
+    { name: t('assignments.graded'), value: gradedExamSubmissions.length, color: CHART_COLORS[0] },
+    { name: t('common.pending'), value: filteredExamSubmissions.length - gradedExamSubmissions.length, color: CHART_COLORS[3] },
   ].filter(s => s.value > 0);
 
   const assignmentSubmissionStatus = [
-    { name: 'Graded', value: gradedAssignmentSubs.length, color: CHART_COLORS[0] },
-    { name: 'Pending', value: filteredAssignmentSubs.length - gradedAssignmentSubs.length, color: CHART_COLORS[3] },
+    { name: t('assignments.graded'), value: gradedAssignmentSubs.length, color: CHART_COLORS[0] },
+    { name: t('common.pending'), value: filteredAssignmentSubs.length - gradedAssignmentSubs.length, color: CHART_COLORS[3] },
   ].filter(s => s.value > 0);
 
   // Exam performance data - KKM is integer threshold (score >= kkm)
@@ -242,7 +244,7 @@ const TeacherAnalytics = () => {
   const handleExportCSV = () => {
     const courseName = selectedCourse
       ? courses.find(c => c.id === selectedCourse)?.title
-      : 'All Courses';
+      : t('common.allCourses');
 
     // Map performance data to have consistent totalPoints field
     const performanceData = currentPerformance.map(p => ({
@@ -302,16 +304,16 @@ const TeacherAnalytics = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('analytics.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Track student performance across exams and assignments
+            {t('analytics.overview')}
           </p>
         </div>
 
         <div className="flex gap-3">
           <Select value={selectedCourse} onValueChange={setSelectedCourse}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select course" />
+              <SelectValue placeholder={t('materials.chooseCourse')} />
             </SelectTrigger>
             <SelectContent>
               {courses.map(course => (
@@ -347,8 +349,8 @@ const TeacherAnalytics = () => {
         <Card className="border-0 shadow-card">
           <CardContent className="py-16 text-center">
             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">Select a Course</h3>
-            <p className="text-muted-foreground">Choose a course to view its analytics</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('materials.selectCourse')}</h3>
+            <p className="text-muted-foreground">{t('materials.chooseCourse')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -356,11 +358,11 @@ const TeacherAnalytics = () => {
           <TabsList>
             <TabsTrigger value="exams" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Exams
+              {t('nav.exams')}
             </TabsTrigger>
             <TabsTrigger value="assignments" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
-              Assignments
+              {t('nav.assignments')}
             </TabsTrigger>
           </TabsList>
 
@@ -397,7 +399,7 @@ const TeacherAnalytics = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stats.students}</p>
-                  <p className="text-sm text-muted-foreground">Total Students</p>
+                  <p className="text-sm text-muted-foreground">{t('students.totalStudents')}</p>
                 </div>
               </div>
             </CardContent>
@@ -411,7 +413,7 @@ const TeacherAnalytics = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stats.submissions}</p>
-                  <p className="text-sm text-muted-foreground">Submissions</p>
+                  <p className="text-sm text-muted-foreground">{t('assignments.submissions')}</p>
                 </div>
               </div>
             </CardContent>
@@ -425,7 +427,7 @@ const TeacherAnalytics = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stats.avgScore}</p>
-                  <p className="text-sm text-muted-foreground">Avg Score (pts)</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.averageScore')} (pts)</p>
                 </div>
               </div>
             </CardContent>
@@ -439,7 +441,7 @@ const TeacherAnalytics = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stats.passRate}%</p>
-                  <p className="text-sm text-muted-foreground">Pass Rate (KKM: {stats.kkm} pts)</p>
+                  <p className="text-sm text-muted-foreground">Pass Rate ({t('reportCards.kkm')}: {stats.kkm} pts)</p>
                 </div>
               </div>
             </CardContent>
@@ -454,10 +456,10 @@ const TeacherAnalytics = () => {
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-secondary" />
                 <CardTitle className="text-lg">
-                  {type === 'exams' ? 'Exam' : 'Assignment'} Performance Comparison
+                  {type === 'exams' ? t('nav.exams') : t('nav.assignments')} {t('analytics.performance')}
                 </CardTitle>
               </div>
-              <CardDescription>Average scores across {type}</CardDescription>
+              <CardDescription>Average scores across {type === 'exams' ? t('nav.exams') : t('nav.assignments')}</CardDescription>
             </CardHeader>
             <CardContent>
               {performance.length > 0 ? (
@@ -472,7 +474,7 @@ const TeacherAnalytics = () => {
                     <YAxis
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
-                      label={{ value: 'Avg Score', angle: -90, position: 'insideLeft' }}
+                      label={{ value: t('dashboard.averageScore'), angle: -90, position: 'insideLeft' }}
                       allowDecimals={false}
                       tickFormatter={(value) => Math.floor(value).toString()}
                     />
@@ -484,7 +486,7 @@ const TeacherAnalytics = () => {
                       }}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       formatter={(value: number, name: string) => {
-                        if (name === 'avgScore') return [`${value} pts`, 'Avg Score'];
+                        if (name === 'avgScore') return [`${value} pts`, t('dashboard.averageScore')];
                         return [value, name];
                       }}
                       labelFormatter={(label) => {
@@ -502,7 +504,7 @@ const TeacherAnalytics = () => {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  No {type} data yet
+                  No {type === 'exams' ? t('nav.exams') : t('nav.assignments')} data yet
                 </div>
               )}
             </CardContent>
@@ -513,9 +515,9 @@ const TeacherAnalytics = () => {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <PieChartIcon className="w-5 h-5 text-primary" />
-                <CardTitle className="text-lg">Submission Status</CardTitle>
+                <CardTitle className="text-lg">{t('analytics.submissionRate')}</CardTitle>
               </div>
-              <CardDescription>Graded vs pending submissions</CardDescription>
+              <CardDescription>{t('assignments.graded')} vs {t('common.pending')}</CardDescription>
             </CardHeader>
             <CardContent>
               {submissions.length > 0 ? (
@@ -547,7 +549,7 @@ const TeacherAnalytics = () => {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  No submissions yet
+                  {t('assignments.noSubmittedAssignments')}
                 </div>
               )}
             </CardContent>
@@ -557,7 +559,7 @@ const TeacherAnalytics = () => {
         {/* Detailed Stats Table */}
         <Card className="border-0 shadow-card">
           <CardHeader>
-            <CardTitle className="text-lg">{type === 'exams' ? 'Exam' : 'Assignment'} Details</CardTitle>
+            <CardTitle className="text-lg">{type === 'exams' ? t('nav.exams') : t('nav.assignments')} Details</CardTitle>
             <CardDescription>Average scores and student distribution per {type === 'exams' ? 'exam' : 'assignment'}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -567,14 +569,14 @@ const TeacherAnalytics = () => {
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left py-3 px-4 font-medium text-muted-foreground">
-                        {type === 'exams' ? 'Exam' : 'Assignment'}
+                        {type === 'exams' ? t('nav.exams') : t('nav.assignments')}
                       </th>
-                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">Submissions</th>
-                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">Avg Score</th>
-                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">Max Points</th>
-                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">KKM</th>
-                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">Passed</th>
-                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">Failed</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t('assignments.submissions')}</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t('dashboard.averageScore')}</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t('assignments.maxPoints')}</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t('reportCards.kkm')}</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t('reportCards.passed')}</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t('reportCards.failed')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -643,7 +645,7 @@ const TeacherAnalytics = () => {
               </div>
             ) : (
               <div className="py-8 text-center text-muted-foreground">
-                No {type} data available. Create {type} and collect submissions to see analytics.
+                {t('common.noData')}
               </div>
             )}
           </CardContent>
@@ -652,5 +654,6 @@ const TeacherAnalytics = () => {
     );
   }
 };
+
 
 export default TeacherAnalytics;

@@ -42,7 +42,7 @@ const TeacherAnnouncements = () => {
 
   const handleCreate = async () => {
     if (!selectedCourse || !form.title.trim() || !form.content.trim()) {
-      toast.error(t('toast.fillRequiredFields'));
+      toast.error(t('validation.fillRequiredFields'));
       return;
     }
 
@@ -55,23 +55,23 @@ const TeacherAnnouncements = () => {
       setForm({ title: '', content: '' });
       setSelectedCourse('');
       setIsDialogOpen(false);
-      toast.success(t('toast.announcementPosted'));
+      toast.success(t('courseDetail.postAnnouncementSuccess'));
     } catch (error) {
-      toast.error(t('toast.failedToPostAnnouncement'));
+      toast.error(t('courseDetail.postAnnouncementFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteAnnouncement.mutateAsync(id);
-      toast.success(t('toast.announcementDeleted'));
+      toast.success(t('courseDetail.deleteAnnouncementSuccess'));
     } catch (error) {
-      toast.error(t('toast.failedToDeleteAnnouncement'));
+      toast.error(t('courseDetail.deleteAnnouncementFailed'));
     }
   };
 
   const getCourseTitle = (courseId: string) => {
-    return courses.find(c => c.id === courseId)?.title || t('announcements.unknownCourse');
+    return courses.find(c => c.id === courseId)?.title || t('materials.unknownCourse');
   };
 
   if (isLoading) {
@@ -87,28 +87,28 @@ const TeacherAnnouncements = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Announcements</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('nav.announcements')}</h1>
           <p className="text-muted-foreground mt-1">
-            Post updates and news for your courses
+            {t('courseDetail.postAnnouncement')}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="hero" disabled={courses.length === 0}>
               <Plus className="w-4 h-4" />
-              New Announcement
+              {t('courseDetail.postAnnouncement')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Post Announcement</DialogTitle>
+              <DialogTitle>{t('courseDetail.postAnnouncement')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label>Select Course</Label>
+                <Label>{t('materials.selectCourse')}</Label>
                 <Select value={selectedCourse} onValueChange={setSelectedCourse}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a course" />
+                    <SelectValue placeholder={t('materials.chooseCourse')} />
                   </SelectTrigger>
                   <SelectContent>
                     {courses.map(course => (
@@ -120,18 +120,18 @@ const TeacherAnnouncements = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>{t('materials.titleLabel')}</Label>
                 <Input
-                  placeholder="Announcement title"
+                  placeholder={t('materials.materialTitlePlaceholder')}
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   maxLength={200}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Content</Label>
+                <Label>{t('common.description')}</Label>
                 <Textarea
-                  placeholder="Write your announcement..."
+                  placeholder={t('calendar.eventDescriptionPlaceholder')}
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
                   rows={4}
@@ -144,7 +144,7 @@ const TeacherAnnouncements = () => {
                 disabled={createAnnouncement.isPending}
               >
                 {createAnnouncement.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Post Announcement
+                {t('courseDetail.postAnnouncement')}
               </Button>
             </div>
           </DialogContent>
@@ -155,7 +155,7 @@ const TeacherAnnouncements = () => {
         <Card className="border-0 shadow-card">
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">
-              Create a course first before posting announcements.
+              {t('materials.createCourseFirst')}
             </p>
           </CardContent>
         </Card>
@@ -168,13 +168,13 @@ const TeacherAnnouncements = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <Megaphone className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No announcements yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('common.noData')}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Keep your students informed with course updates
+              {t('courseDetail.postAnnouncement')}
             </p>
             <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
-              Post Announcement
+              {t('courseDetail.postAnnouncement')}
             </Button>
           </CardContent>
         </Card>

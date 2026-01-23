@@ -132,16 +132,16 @@ const TeacherCourseDetail = () => {
   const enrollStudent = useTeacherEnrollStudent();
   const unenrollStudent = useTeacherUnenrollStudent();
   const unenrollAllStudents = useTeacherUnenrollAllStudents();
-  
+
   // Material hooks
   const uploadMaterial = useUploadMaterial();
   const addVideoMaterial = useAddVideoMaterial();
   const deleteMaterial = useDeleteMaterial();
-  
+
   // Announcement hooks
   const createAnnouncement = useCreateAnnouncement();
   const deleteAnnouncement = useDeleteAnnouncement();
-  
+
   // Assignment hooks
   const deleteAssignment = useDeleteAssignment();
 
@@ -157,13 +157,13 @@ const TeacherCourseDetail = () => {
   const [studentEmailSearch, setStudentEmailSearch] = useState('');
   const [viewingMaterial, setViewingMaterial] = useState<typeof courseMaterials[0] | null>(null);
   const [activeTab, setActiveTab] = useState('students');
-  
+
   // Material upload state
   const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false);
   const [materialUploadType, setMaterialUploadType] = useState<'file' | 'video'>('file');
   const [materialForm, setMaterialForm] = useState({ title: '', description: '', videoUrl: '' });
   const [selectedMaterialFile, setSelectedMaterialFile] = useState<File | null>(null);
-  
+
   // Announcement state
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '' });
@@ -192,10 +192,10 @@ const TeacherCourseDetail = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Course not found</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-2">{t('courses.courseNotFound')}</h2>
         <Button variant="outline" onClick={() => navigate('/teacher/courses')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Courses
+          {t('courses.backToCourses')}
         </Button>
       </div>
     );
@@ -446,7 +446,7 @@ const TeacherCourseDetail = () => {
           onClick={() => navigate('/teacher/courses')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Courses
+          {t('courses.backToCourses')}
         </Button>
 
         <div className="flex flex-col lg:flex-row gap-6">
@@ -490,7 +490,7 @@ const TeacherCourseDetail = () => {
             {isEditing ? (
               <div className="flex-1 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-title">Course Title</Label>
+                  <Label htmlFor="edit-title">{t('courses.courseTitle')}</Label>
                   <Input
                     id="edit-title"
                     value={editForm.title}
@@ -499,7 +499,7 @@ const TeacherCourseDetail = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-description">Description</Label>
+                  <Label htmlFor="edit-description">{t('courses.description')}</Label>
                   <Textarea
                     id="edit-description"
                     value={editForm.description}
@@ -511,11 +511,11 @@ const TeacherCourseDetail = () => {
                 <div className="flex gap-2">
                   <Button onClick={handleSaveEdit} disabled={updateCourse.isPending}>
                     {updateCourse.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save Changes
+                    {t('courses.saveChanges')}
                   </Button>
                   <Button variant="outline" onClick={handleCancelEdit}>
                     <X className="w-4 h-4" />
-                    Cancel
+                    {t('courses.cancel')}
                   </Button>
                 </div>
               </div>
@@ -528,10 +528,10 @@ const TeacherCourseDetail = () => {
                   </Badge>
                 </div>
                 <p className="text-muted-foreground max-w-2xl">
-                  {course.description || 'No description'}
+                  {course.description || t('courses.noDescription')}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Created {new Date(course.created_at).toLocaleDateString()}
+                  {t('courses.created')} {new Date(course.created_at).toLocaleDateString()}
                 </p>
               </div>
             )}
@@ -540,32 +540,32 @@ const TeacherCourseDetail = () => {
               <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" onClick={handleStartEdit}>
                   <Edit className="w-4 h-4" />
-                  Edit
+                  {t('courses.edit')}
                 </Button>
                 <Button
                   variant={course.status === 'published' ? 'outline' : 'hero'}
                   onClick={handlePublish}
                   disabled={updateCourse.isPending}
                 >
-                  {course.status === 'published' ? 'Unpublish' : 'Publish'}
+                  {course.status === 'published' ? t('courses.unpublish') : t('courses.publish')}
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive">
                       <Trash2 className="w-4 h-4" />
-                      Delete
+                      {t('common.delete')}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Course</AlertDialogTitle>
+                      <AlertDialogTitle>{t('courses.deleteCourse')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this course? This action cannot be undone.
+                        {t('courses.deleteCourseConfirm')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -576,7 +576,7 @@ const TeacherCourseDetail = () => {
       </div>
 
       {/* Stats Cards - Clickable to navigate to tabs */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => setActiveTab('students')}
@@ -587,7 +587,7 @@ const TeacherCourseDetail = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{enrollments.length}</p>
-              <p className="text-sm text-muted-foreground">Students</p>
+              <p className="text-sm text-muted-foreground">{t('courses.students')}</p>
             </div>
           </CardContent>
         </Card>
@@ -601,7 +601,7 @@ const TeacherCourseDetail = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{courseExams.length}</p>
-              <p className="text-sm text-muted-foreground">Exams</p>
+              <p className="text-sm text-muted-foreground">{t('courses.exams')}</p>
             </div>
           </CardContent>
         </Card>
@@ -615,7 +615,7 @@ const TeacherCourseDetail = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{courseAssignments.length}</p>
-              <p className="text-sm text-muted-foreground">Assignments</p>
+              <p className="text-sm text-muted-foreground">{t('courses.assignments')}</p>
             </div>
           </CardContent>
         </Card>
@@ -643,20 +643,20 @@ const TeacherCourseDetail = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{courseAnnouncements.length}</p>
-              <p className="text-sm text-muted-foreground">Announcements</p>
+              <p className="text-sm text-muted-foreground">{t('courses.announcements')}</p>
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="students">Students ({enrollments.length})</TabsTrigger>
-          <TabsTrigger value="exams">Exams ({courseExams.length})</TabsTrigger>
-          <TabsTrigger value="assignments">Assignments ({courseAssignments.length})</TabsTrigger>
+          <TabsTrigger value="students">{t('courses.students')} ({enrollments.length})</TabsTrigger>
+          <TabsTrigger value="exams">{t('courses.exams')} ({courseExams.length})</TabsTrigger>
+          <TabsTrigger value="assignments">{t('courses.assignments')} ({courseAssignments.length})</TabsTrigger>
           <TabsTrigger value="materials">{t('nav.materials')} ({courseMaterials.length})</TabsTrigger>
-          <TabsTrigger value="announcements">Announcements ({courseAnnouncements.length})</TabsTrigger>
+          <TabsTrigger value="announcements">{t('courses.announcements')} ({courseAnnouncements.length})</TabsTrigger>
         </TabsList>
 
         {/* Students Tab */}
@@ -665,20 +665,20 @@ const TeacherCourseDetail = () => {
             {enrollments.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive">
                     <UsersRound className="w-4 h-4" />
-                    Remove All ({enrollments.length})
+                    {t('courses.removeAll')} ({enrollments.length})
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Remove All Students</AlertDialogTitle>
+                    <AlertDialogTitle>{t('courses.removeAllStudents')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to remove all {enrollments.length} students from this course? This action cannot be undone.
+                      {t('courses.removeAllStudentsConfirm', { count: enrollments.length })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleUnenrollAllStudents}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -686,7 +686,7 @@ const TeacherCourseDetail = () => {
                       {unenrollAllStudents.isPending ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        'Remove All'
+                        t('courses.removeAll')
                       )}
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -697,12 +697,12 @@ const TeacherCourseDetail = () => {
               <DialogTrigger asChild>
                 <Button variant="hero">
                   <UserPlus className="w-4 h-4" />
-                  Enroll Student
+                  {t('courses.enrollStudent')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Enroll Student</DialogTitle>
+                  <DialogTitle>{t('courses.enrollStudent')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   {studentsLoading ? (
@@ -712,10 +712,10 @@ const TeacherCourseDetail = () => {
                   ) : (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="student-email-search">Search by Email or Name</Label>
+                        <Label htmlFor="student-email-search">{t('courses.searchByEmailName')}</Label>
                         <Input
                           id="student-email-search"
-                          placeholder="Enter student email or name..."
+                          placeholder={t('courses.enterEmailName')}
                           value={studentEmailSearch}
                           onChange={(e) => {
                             setStudentEmailSearch(e.target.value);
@@ -726,19 +726,19 @@ const TeacherCourseDetail = () => {
 
                       {availableStudents.length === 0 ? (
                         <p className="text-muted-foreground text-center py-4">
-                          No students available to enroll. All registered students are already enrolled.
+                          {t('courses.noStudentsAvailable')}
                         </p>
                       ) : filteredStudents.length === 0 && studentEmailSearch.trim() ? (
                         <p className="text-muted-foreground text-center py-4">
-                          No student found with that email or name. Make sure the student has registered an account first.
+                          {t('courses.noStudentFound')}
                         </p>
                       ) : (
                         <>
                           <div className="space-y-2">
-                            <Label>Select Student</Label>
+                            <Label>{t('courses.selectStudent')}</Label>
                             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Choose a student" />
+                                <SelectValue placeholder={t('courses.chooseStudent')} />
                               </SelectTrigger>
                               <SelectContent>
                                 {filteredStudents.map(student => (
@@ -758,7 +758,7 @@ const TeacherCourseDetail = () => {
                             disabled={enrollStudent.isPending || !selectedStudentId}
                           >
                             {enrollStudent.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Enroll Student
+                            {t('courses.enrollStudent')}
                           </Button>
                         </>
                       )}
@@ -777,7 +777,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Users className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No students enrolled yet</p>
+                <p className="text-muted-foreground">{t('courses.noStudentsEnrolled')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -809,15 +809,15 @@ const TeacherCourseDetail = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Unenroll Student</AlertDialogTitle>
+                            <AlertDialogTitle>{t('courses.removeStudent')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to unenroll {enrollment.student.name} from this course?
+                              {t('courses.removeStudentConfirm')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                             <AlertDialogAction onClick={() => handleUnenrollStudent(enrollment.id)}>
-                              Unenroll
+                              {t('courses.remove')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -835,10 +835,10 @@ const TeacherCourseDetail = () => {
           <div className="flex justify-end">
             <Button variant="hero" onClick={() => navigate(`/teacher/exams/new?courseId=${courseId}`)}>
               <Plus className="w-4 h-4" />
-              Create Exam
+              {t('courses.createExam')}
             </Button>
           </div>
-          
+
           {examsLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-6 h-6 animate-spin text-secondary" />
@@ -847,7 +847,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No exams created for this course</p>
+                <p className="text-muted-foreground">{t('courses.noExams')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -861,14 +861,14 @@ const TeacherCourseDetail = () => {
                         <CardDescription>{exam.description || 'No description'}</CardDescription>
                       </div>
                       <Badge variant={exam.status === 'published' ? 'default' : 'secondary'}>
-                        {exam.status}
+                        {t('common.active')}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span>{exam.duration} minutes</span>
-                      <span>{exam.total_points} points</span>
+                      <span>{exam.duration} {t('courses.minutes')}</span>
+                      <span>{exam.total_points} {t('courses.pts')}</span>
                     </div>
                     <div className="flex gap-2 mt-4">
                       <Button
@@ -877,7 +877,7 @@ const TeacherCourseDetail = () => {
                         onClick={() => navigate(`/teacher/exams/${exam.id}/edit`)}
                       >
                         <Edit className="w-4 h-4" />
-                        Edit
+                        {t('courses.edit')}
                       </Button>
                     </div>
                   </CardContent>
@@ -892,10 +892,10 @@ const TeacherCourseDetail = () => {
           <div className="flex justify-end">
             <Button variant="hero" onClick={() => navigate(`/teacher/assignments/new?courseId=${courseId}`)}>
               <Plus className="w-4 h-4" />
-              Create Assignment
+              {t('courses.createAssignment')}
             </Button>
           </div>
-          
+
           {assignmentsLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="w-6 h-6 animate-spin text-secondary" />
@@ -904,7 +904,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <ClipboardList className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No assignments created for this course</p>
+                <p className="text-muted-foreground">{t('courses.noAssignments')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -926,11 +926,11 @@ const TeacherCourseDetail = () => {
                     <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        Due {format(new Date(assignment.due_date), 'MMM d, yyyy')}
+                        {t('courses.dueDate')} {format(new Date(assignment.due_date), 'MMM d, yyyy')}
                       </span>
                       <span className="flex items-center gap-1">
                         <Award className="w-4 h-4" />
-                        {assignment.max_points} points
+                        {assignment.max_points} {t('courses.pts')}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -940,14 +940,14 @@ const TeacherCourseDetail = () => {
                         onClick={() => navigate(`/teacher/assignments/${assignment.id}/edit`)}
                       >
                         <Edit className="w-4 h-4" />
-                        Edit
+                        {t('courses.edit')}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/teacher/assignments/${assignment.id}/submissions`)}
                       >
-                        View Submissions
+                        {t('courses.viewSubmissions')}
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -957,15 +957,15 @@ const TeacherCourseDetail = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Assignment</AlertDialogTitle>
+                            <AlertDialogTitle>{t('courses.deleteAssignment')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to delete "{assignment.title}"? This action cannot be undone.
+                              {t('courses.deleteAssignmentConfirm')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                             <AlertDialogAction onClick={() => handleDeleteAssignment(assignment.id)}>
-                              Delete
+                              {t('common.delete')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -985,30 +985,30 @@ const TeacherCourseDetail = () => {
               <DialogTrigger asChild>
                 <Button variant="hero">
                   <Upload className="w-4 h-4" />
-                  Upload File
+                  {t('courses.uploadMaterial')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle>Add Course Material</DialogTitle>
+                  <DialogTitle>{t('courses.addMaterial')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <Tabs value={materialUploadType} onValueChange={(v) => setMaterialUploadType(v as 'file' | 'video')}>
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="file" className="gap-2">
                         <Upload className="w-4 h-4" />
-                        Upload File
+                        {t('courses.uploadMaterial')}
                       </TabsTrigger>
                       <TabsTrigger value="video" className="gap-2">
                         <Youtube className="w-4 h-4" />
-                        YouTube Video
+                        {t('courses.addVideo')}
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
 
                   {materialUploadType === 'file' ? (
                     <div className="space-y-2">
-                      <Label>File</Label>
+                      <Label>{t('courses.selectFile')}</Label>
                       <input
                         ref={materialFileInputRef}
                         type="file"
@@ -1043,7 +1043,7 @@ const TeacherCourseDetail = () => {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Label>YouTube URL</Label>
+                      <Label>{t('courses.videoUrl')}</Label>
                       <div className="relative">
                         <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
@@ -1069,9 +1069,9 @@ const TeacherCourseDetail = () => {
                   )}
 
                   <div className="space-y-2">
-                    <Label>Title</Label>
+                    <Label>{t('courses.materialTitle')}</Label>
                     <Input
-                      placeholder="Material title"
+                      placeholder={t('courses.enterTitle')}
                       value={materialForm.title}
                       onChange={(e) => setMaterialForm({ ...materialForm, title: e.target.value })}
                       maxLength={200}
@@ -1079,9 +1079,9 @@ const TeacherCourseDetail = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Description (optional)</Label>
+                    <Label>{t('courses.materialDescription')}</Label>
                     <Textarea
-                      placeholder="Brief description..."
+                      placeholder={t('courses.enterDescription')}
                       value={materialForm.description}
                       onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
                       rows={2}
@@ -1097,7 +1097,7 @@ const TeacherCourseDetail = () => {
                     {(uploadMaterial.isPending || addVideoMaterial.isPending) && (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     )}
-                    {materialUploadType === 'file' ? 'Upload Material' : 'Add Video'}
+                    {materialUploadType === 'file' ? t('courses.uploadMaterial') : t('courses.addVideo')}
                   </Button>
                 </div>
               </DialogContent>
@@ -1112,7 +1112,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <BookOpen className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No materials uploaded for this course</p>
+                <p className="text-muted-foreground">{t('materials.noMaterials')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -1183,27 +1183,27 @@ const TeacherCourseDetail = () => {
               <DialogTrigger asChild>
                 <Button variant="hero">
                   <Plus className="w-4 h-4" />
-                  Post Announcement
+                  {t('courses.postAnnouncement')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Post Announcement</DialogTitle>
+                  <DialogTitle>{t('courses.postAnnouncement')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <div className="space-y-2">
-                    <Label>Title</Label>
+                    <Label>{t('courses.announcementTitle')}</Label>
                     <Input
-                      placeholder="Announcement title"
+                      placeholder={t('courses.announcementTitle')}
                       value={announcementForm.title}
                       onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
                       maxLength={200}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Content</Label>
+                    <Label>{t('courses.announcementContent')}</Label>
                     <Textarea
-                      placeholder="Write your announcement..."
+                      placeholder={t('courses.writeAnnouncement')}
                       value={announcementForm.content}
                       onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
                       rows={4}
@@ -1216,7 +1216,7 @@ const TeacherCourseDetail = () => {
                     disabled={createAnnouncement.isPending}
                   >
                     {createAnnouncement.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Post Announcement
+                    {t('courses.postAnnouncement')}
                   </Button>
                 </div>
               </DialogContent>
@@ -1231,7 +1231,7 @@ const TeacherCourseDetail = () => {
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Megaphone className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No announcements for this course</p>
+                <p className="text-muted-foreground">{t('courses.noAnnouncements')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -1254,15 +1254,15 @@ const TeacherCourseDetail = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
+                            <AlertDialogTitle>{t('courses.deleteAnnouncement')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to delete this announcement? This action cannot be undone.
+                              {t('courses.deleteAnnouncementConfirm')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                             <AlertDialogAction onClick={() => handleDeleteAnnouncement(announcement.id)}>
-                              Delete
+                              {t('common.delete')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

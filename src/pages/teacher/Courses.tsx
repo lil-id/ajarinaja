@@ -180,8 +180,8 @@ const TeacherCourses = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-2 ${course.status === 'published'
-                        ? 'bg-secondary/10 text-secondary'
-                        : 'bg-muted text-muted-foreground'
+                      ? 'bg-secondary/10 text-secondary'
+                      : 'bg-muted text-muted-foreground'
                       }`}>
                       {course.status === 'published' ? t('common.published') : t('common.draft')}
                     </span>

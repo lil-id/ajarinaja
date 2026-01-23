@@ -205,31 +205,31 @@ export default function CreateAssignment() {
         {
           id: crypto.randomUUID(),
           type: 'missed',
-          name: 'Missed Submission',
-          description: 'Student did not submit by the deadline',
+          name: t('risk.missedSubmission'),
+          description: t('risk.missedSubmissionDesc'),
           enabled: (existingAssignment as any).risk_on_missed || false,
           severity: (existingAssignment as any).risk_missed_severity || 'high',
         },
         {
           id: crypto.randomUUID(),
           type: 'below_kkm',
-          name: 'Below Passing Grade (KKM)',
-          description: 'Score is below the minimum passing threshold',
+          name: t('risk.belowKKM'),
+          description: t('risk.belowKKMDesc'),
           enabled: (existingAssignment as any).risk_on_below_kkm || false,
           severity: (existingAssignment as any).risk_below_kkm_severity || 'medium',
         },
         {
           id: crypto.randomUUID(),
           type: 'late',
-          name: 'Late Submission',
-          description: 'Submitted after the deadline',
+          name: t('risk.lateSubmission'),
+          description: t('risk.lateSubmissionDesc'),
           enabled: (existingAssignment as any).risk_on_late || false,
           severity: (existingAssignment as any).risk_late_severity || 'low',
         },
       ];
       setRiskCriteria(initialRiskCriteria);
     }
-  }, [isEditMode, existingAssignment, form]);
+  }, [isEditMode, existingAssignment, form, t]);
 
   // Set course_id from URL query parameter (when coming from course detail)
   useEffect(() => {
@@ -522,9 +522,9 @@ export default function CreateAssignment() {
   if (isEditMode && !existingAssignment && !assignmentLoading) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Assignment not found</p>
+        <p className="text-muted-foreground">{t('assignments.notFound')}</p>
         <Button variant="outline" onClick={() => navigate('/teacher/assignments')} className="mt-4">
-          Back to Assignments
+          {t('common.backToAssignments')}
         </Button>
       </div>
     );
@@ -537,9 +537,9 @@ export default function CreateAssignment() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">{isEditMode ? 'Edit Assignment' : 'Create Assignment'}</h1>
+          <h1 className="text-3xl font-bold">{isEditMode ? t('assignments.editTitle') : t('assignments.createTitle')}</h1>
           <p className="text-muted-foreground">
-            {isEditMode ? 'Update the assignment details' : 'Set up a new assignment for your students'}
+            {isEditMode ? t('assignments.updateDetails') : t('assignments.setupNew')}
           </p>
         </div>
       </div>
@@ -548,7 +548,7 @@ export default function CreateAssignment() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle>{t('assignments.basicInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -556,11 +556,11 @@ export default function CreateAssignment() {
                 name="course_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Course</FormLabel>
+                    <FormLabel>{t('assignments.course')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a course" />
+                          <SelectValue placeholder={t('materials.selectCourse')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -581,7 +581,7 @@ export default function CreateAssignment() {
                 name="assignment_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Assignment Type</FormLabel>
+                    <FormLabel>{t('assignments.assignmentType')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -589,14 +589,14 @@ export default function CreateAssignment() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="submission">File Submission</SelectItem>
-                        <SelectItem value="questions">Question-Based</SelectItem>
+                        <SelectItem value="submission">{t('assignments.typeSubmission')}</SelectItem>
+                        <SelectItem value="questions">{t('assignments.typeQuiz')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>
                       {field.value === 'submission'
-                        ? 'Students submit files or text content'
-                        : 'Students answer questions (essay, multiple choice, multi-select)'}
+                        ? t('assignments.submissionDesc')
+                        : t('assignments.questionsDesc')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -608,9 +608,9 @@ export default function CreateAssignment() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>{t('assignments.title')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Assignment title" {...field} />
+                      <Input placeholder={t('materials.materialTitlePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -622,10 +622,10 @@ export default function CreateAssignment() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{t('common.description')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Brief description of the assignment"
+                        placeholder={t('calendar.eventDescriptionPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -639,10 +639,10 @@ export default function CreateAssignment() {
                 name="instructions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Instructions</FormLabel>
+                    <FormLabel>{t('assignments.instructions')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Detailed instructions for students"
+                        placeholder={t('assignments.instructionsPlaceholder')}
                         rows={5}
                         {...field}
                       />
@@ -656,7 +656,7 @@ export default function CreateAssignment() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Settings</CardTitle>
+              <CardTitle>{t('common.settings')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -665,7 +665,7 @@ export default function CreateAssignment() {
                   name="due_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Due Date</FormLabel>
+                      <FormLabel>{t('assignments.dueDate')}</FormLabel>
                       <FormControl>
                         <Input type="datetime-local" {...field} />
                       </FormControl>
@@ -680,7 +680,7 @@ export default function CreateAssignment() {
                     name="max_points"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Maximum Points</FormLabel>
+                        <FormLabel>{t('assignments.maxPoints')}</FormLabel>
                         <FormControl>
                           <Input type="number" min={1} max={1000} {...field} />
                         </FormControl>
@@ -692,14 +692,14 @@ export default function CreateAssignment() {
 
                 {assignmentType === 'questions' && (
                   <div className="space-y-2">
-                    <Label>Total Points</Label>
+                    <Label>{t('assignments.totalPoints')}</Label>
                     <Input
                       type="number"
                       value={questions.reduce((sum, q) => sum + q.points, 0)}
                       disabled
                     />
                     <p className="text-xs text-muted-foreground">
-                      Auto-calculated from question points
+                      {t('assignments.autoCalculated')}
                     </p>
                   </div>
                 )}
@@ -711,12 +711,12 @@ export default function CreateAssignment() {
                   name="kkm"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Passing Grade (KKM)</FormLabel>
+                      <FormLabel>{t('reportCards.kkm')}</FormLabel>
                       <FormControl>
                         <Input type="number" min={0} max={100} {...field} />
                       </FormControl>
                       <FormDescription>
-                        Percentage required to pass
+                        {t('assignments.kkmDesc')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -728,7 +728,7 @@ export default function CreateAssignment() {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>{t('assignments.status')}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -736,8 +736,8 @@ export default function CreateAssignment() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
+                          <SelectItem value="draft">{t('common.draft')}</SelectItem>
+                          <SelectItem value="published">{t('common.published')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -752,7 +752,7 @@ export default function CreateAssignment() {
                   name="max_file_size_mb"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Max File Size (MB)</FormLabel>
+                      <FormLabel>{t('assignments.maxFileSize')}</FormLabel>
                       <FormControl>
                         <Input type="number" min={1} max={50} {...field} />
                       </FormControl>
@@ -769,9 +769,9 @@ export default function CreateAssignment() {
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between">
                       <div>
-                        <FormLabel>Allow Late Submissions</FormLabel>
+                        <FormLabel>{t('assignments.allowLateSubmissions')}</FormLabel>
                         <FormDescription>
-                          Students can submit after the due date with a penalty
+                          {t('assignments.allowLateDesc')}
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -787,12 +787,12 @@ export default function CreateAssignment() {
                     name="late_penalty_percent"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Late Penalty (%)</FormLabel>
+                        <FormLabel>{t('assignments.latePenalty')}</FormLabel>
                         <FormControl>
                           <Input type="number" min={0} max={100} {...field} />
                         </FormControl>
                         <FormDescription>
-                          Percentage deducted from score for late submissions
+                          {t('assignments.latePenaltyDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -836,24 +836,24 @@ export default function CreateAssignment() {
           {assignmentType === 'questions' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Questions ({questions.length})</CardTitle>
+                <CardTitle>{t('assignments.questions')} ({questions.length})</CardTitle>
                 <div className="flex gap-2">
                   <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Library className="w-4 h-4 mr-2" />
-                        Import from Bank
+                        {t('assignments.importFromBank')}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>Import from Question Bank</DialogTitle>
+                        <DialogTitle>{t('assignments.importFromBank')}</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
-                            placeholder="Search questions..."
+                            placeholder={t('common.search')}
                             value={importSearch}
                             onChange={(e) => setImportSearch(e.target.value)}
                             className="pl-10"
@@ -863,8 +863,8 @@ export default function CreateAssignment() {
                           {filteredBankQuestions.length === 0 ? (
                             <p className="text-center text-muted-foreground py-8">
                               {questionBank.length === 0
-                                ? 'No questions in your bank yet'
-                                : 'No questions match your search'}
+                                ? t('assignments.noQuestionsInBank')
+                                : t('assignments.noMatchingQuestions')}
                             </p>
                           ) : (
                             <div className="space-y-2">
@@ -899,17 +899,17 @@ export default function CreateAssignment() {
                         </ScrollArea>
                         <div className="flex justify-between items-center pt-2">
                           <span className="text-sm text-muted-foreground">
-                            {selectedBankQuestions.length} selected
+                            {t('assignments.selected', { count: selectedBankQuestions.length })}
                           </span>
                           <div className="flex gap-2">
                             <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
-                              Cancel
+                              {t('common.cancel')}
                             </Button>
                             <Button
                               onClick={handleImportQuestions}
                               disabled={selectedBankQuestions.length === 0}
                             >
-                              Import Selected
+                              {t('assignments.importSelected')}
                             </Button>
                           </div>
                         </div>
@@ -920,12 +920,12 @@ export default function CreateAssignment() {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Question
+                        {t('assignments.addQuestion')}
                       </Button>
                     </DialogTrigger>
                     <DialogContent size="lg">
                       <DialogHeader>
-                        <DialogTitle>Add New Question</DialogTitle>
+                        <DialogTitle>{t('assignments.addQuestion')}</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 pt-2">
                         <Tabs
@@ -933,20 +933,20 @@ export default function CreateAssignment() {
                           onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'multi-select' | 'essay' })}
                         >
                           <TabsList className="mb-2">
-                            <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
-                            <TabsTrigger value="multi-select">Multi-Select</TabsTrigger>
-                            <TabsTrigger value="essay">Essay</TabsTrigger>
+                            <TabsTrigger value="multiple-choice">{t('assignments.mcq')}</TabsTrigger>
+                            <TabsTrigger value="multi-select">{t('assignments.multiSelect')}</TabsTrigger>
+                            <TabsTrigger value="essay">{t('assignments.essay')}</TabsTrigger>
                           </TabsList>
 
                           <VisualEquationBuilder
-                            placeholder="Enter your question..."
+                            placeholder={t('assignments.enterQuestion')}
                             value={newQuestion.question}
                             onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
                             rows={2}
                           />
 
                           <TabsContent value="multiple-choice" className="mt-3 space-y-2">
-                            <p className="text-xs text-muted-foreground mb-1">Select the correct answer:</p>
+                            <p className="text-xs text-muted-foreground mb-1">{t('assignments.selectCorrectAnswer')}:</p>
                             <div className="grid gap-2">
                               {newQuestion.options.map((opt, i) => (
                                 <div key={i} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
@@ -958,7 +958,7 @@ export default function CreateAssignment() {
                                     className="w-4 h-4 flex-shrink-0"
                                   />
                                   <Input
-                                    placeholder={`Option ${i + 1}`}
+                                    placeholder={`${t('assignments.option')} ${i + 1}`}
                                     value={opt}
                                     onChange={(e) => {
                                       const newOptions = [...newQuestion.options];
@@ -970,11 +970,11 @@ export default function CreateAssignment() {
                                 </div>
                               ))}
                             </div>
-                            <p className="text-xs text-muted-foreground">Tip: Use $formula$ syntax for math in options</p>
+                            <p className="text-xs text-muted-foreground">{t('assignments.mathTip')}</p>
                           </TabsContent>
 
                           <TabsContent value="multi-select" className="mt-3 space-y-2">
-                            <p className="text-xs text-muted-foreground mb-1">Select all correct answers:</p>
+                            <p className="text-xs text-muted-foreground mb-1">{t('assignments.selectCorrectAnswers')}:</p>
                             <div className="grid gap-2">
                               {newQuestion.options.map((opt, i) => (
                                 <div key={i} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
@@ -988,7 +988,7 @@ export default function CreateAssignment() {
                                     }}
                                   />
                                   <Input
-                                    placeholder={`Option ${i + 1}`}
+                                    placeholder={`${t('assignments.option')} ${i + 1}`}
                                     value={opt}
                                     onChange={(e) => {
                                       const newOptions = [...newQuestion.options];
@@ -1000,13 +1000,13 @@ export default function CreateAssignment() {
                                 </div>
                               ))}
                             </div>
-                            <p className="text-xs text-muted-foreground">Tip: Use $formula$ syntax for math in options</p>
+                            <p className="text-xs text-muted-foreground">{t('assignments.mathTip')}</p>
                           </TabsContent>
                         </Tabs>
 
                         <div className="flex items-center gap-4 pt-2 border-t">
                           <div className="flex-1">
-                            <Label className="text-xs">Points</Label>
+                            <Label className="text-xs">{t('assignments.points')}</Label>
                             <Input
                               type="number"
                               value={newQuestion.points}
@@ -1014,7 +1014,7 @@ export default function CreateAssignment() {
                             />
                           </div>
                           <Button onClick={handleAddNewQuestion} className="mt-5">
-                            Add Question
+                            {t('assignments.addQuestion')}
                           </Button>
                         </div>
                       </div>
@@ -1025,7 +1025,7 @@ export default function CreateAssignment() {
               <CardContent className="space-y-4">
                 {questions.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No questions yet. Add your first question!
+                    {t('assignments.noQuestions')}
                   </p>
                 ) : (
                   <SortableList
@@ -1141,21 +1141,21 @@ export default function CreateAssignment() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Rubric (Optional)</CardTitle>
+                    <CardTitle>{t('assignments.rubric')}</CardTitle>
                     <CardDescription>
-                      Define grading criteria for this assignment
+                      {t('assignments.rubricDesc')}
                     </CardDescription>
                   </div>
                   <Button type="button" variant="outline" size="sm" onClick={addRubricItem}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Criterion
+                    {t('assignments.addCriterion')}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 {rubric.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-6">
-                    No rubric items yet. Add criteria to help with grading.
+                    {t('assignments.noRubric')}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -1165,20 +1165,20 @@ export default function CreateAssignment() {
                         <div className="flex-1 grid gap-3">
                           <div className="grid grid-cols-1 md:grid-cols-[1fr_100px] gap-3">
                             <Input
-                              placeholder="Criterion name"
+                              placeholder={t('assignments.criterionName')}
                               value={item.criterion}
                               onChange={(e) => updateRubricItem(item.id, 'criterion', e.target.value)}
                             />
                             <Input
                               type="number"
-                              placeholder="Points"
+                              placeholder={t('assignments.points')}
                               min={1}
                               value={item.maxPoints}
                               onChange={(e) => updateRubricItem(item.id, 'maxPoints', parseInt(e.target.value) || 0)}
                             />
                           </div>
                           <Textarea
-                            placeholder="Description of what this criterion evaluates"
+                            placeholder={t('assignments.criterionDesc')}
                             value={item.description}
                             onChange={(e) => updateRubricItem(item.id, 'description', e.target.value)}
                             rows={2}
@@ -1202,7 +1202,7 @@ export default function CreateAssignment() {
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             {assignmentType === 'questions' && questions.length > 0 && (
               <StudentPreviewMode
@@ -1222,10 +1222,10 @@ export default function CreateAssignment() {
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {isEditMode ? 'Updating...' : 'Creating...'}
+                  {isEditMode ? t('common.updating') : t('common.creating')}
                 </>
               ) : (
-                isEditMode ? 'Update Assignment' : 'Create Assignment'
+                isEditMode ? t('assignments.updateAssignment') : t('assignments.createAssignment')
               )}
             </Button>
           </div>

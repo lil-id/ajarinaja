@@ -120,7 +120,7 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
             <p className="text-sm text-muted-foreground">
               {submission?.submitted_at && format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
               {submission?.is_late && (
-                <Badge variant="destructive" className="ml-2">Late</Badge>
+                <Badge variant="destructive" className="ml-2">{t('assignments.late')}</Badge>
               )}
             </p>
           </div>

@@ -100,7 +100,7 @@ const StudentDashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/student/courses')}
@@ -113,12 +113,24 @@ const StudentDashboard = () => {
         </Card>
         <Card
           className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/student/assignments')}
+        >
+          <CardContent className="p-6 text-center">
+            <FileText className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-foreground">
+              {assignments.filter(a => a.status === 'published' && enrolledCourseIds.includes(a.course_id)).length}
+            </p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.totalAssignments')}</p>
+          </CardContent>
+        </Card>
+        <Card
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/student/exams')}
         >
           <CardContent className="p-6 text-center">
             <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{upcomingExams.length}</p>
-            <p className="text-sm text-muted-foreground">{t('exams.title')}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.totalExams')}</p>
           </CardContent>
         </Card>
         <Card
@@ -166,57 +178,6 @@ const StudentDashboard = () => {
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Available Courses to Enroll */}
-      {availableCourses.length > 0 && (
-        <Card className="border-0 shadow-card">
-          <CardHeader>
-            <CardTitle>{t('nav.exploreCourses')}</CardTitle>
-            <CardDescription>{t('courses.enrollNow')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              {availableCourses.slice(0, 3).map((course) => (
-                <div
-                  key={course.id}
-                  className="p-4 rounded-xl border border-border hover:border-secondary/50 transition-colors"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gradient-hero rounded-xl flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {course.description || t('common.noData')}
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleEnroll(course.id)}
-                        disabled={enroll.isPending}
-                      >
-                        {enroll.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {t('courses.enrollNow')}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {availableCourses.length === 0 && enrolledCourses.length === 0 && (
-        <Card className="border-0 shadow-card">
-          <CardContent className="py-12 text-center">
-            <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">{t('courses.noCourses')}</h3>
-            <p className="text-muted-foreground">{t('courses.noEnrollments')}</p>
           </CardContent>
         </Card>
       )}
