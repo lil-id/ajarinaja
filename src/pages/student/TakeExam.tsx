@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,6 +29,7 @@ import FormulaText from '@/components/FormulaText';
  * @returns {JSX.Element} The rendered Take Exam page.
  */
 const TakeExam = () => {
+  const { t } = useTranslation();
   const { examId } = useParams();
   const navigate = useNavigate();
   const { data: exam, isLoading: examLoading } = useExamWithQuestions(examId || '');
@@ -85,8 +87,8 @@ const TakeExam = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="border-0 shadow-card p-8 text-center">
           <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-foreground mb-2">Exam not found</h2>
-          <Button onClick={() => navigate('/student/exams')}>Back to Exams</Button>
+          <h2 className="text-xl font-bold text-foreground mb-2">{t('takeExam.examNotFound')}</h2>
+          <Button onClick={() => navigate('/student/exams')}>{t('takeExam.backToExams')}</Button>
         </Card>
       </div>
     );
@@ -121,9 +123,9 @@ const TakeExam = () => {
         score,
       });
       setIsSubmitted(true);
-      toast.success('Exam submitted successfully!');
+      toast.success(t('takeExam.examSubmittedSuccess'));
     } catch (error) {
-      toast.error('Failed to submit exam');
+      toast.error(t('takeExam.failedToSubmit'));
     }
   };
 
@@ -136,16 +138,16 @@ const TakeExam = () => {
               <CheckCircle className="w-10 h-10 text-secondary" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              {existingSubmission ? 'Already Submitted!' : 'Exam Submitted!'}
+              {existingSubmission ? t('takeExam.alreadySubmitted') : t('takeExam.examSubmitted')}
             </h2>
             <p className="text-muted-foreground mb-6">
               {existingSubmission
-                ? `Your score: ${existingSubmission.score ?? 'Pending grading'}/${exam.total_points}`
-                : 'Your answers have been recorded. Essay questions will be graded by your teacher.'
+                ? `${t('takeExam.yourScore')}: ${existingSubmission.score ?? t('takeExam.pendingGrading')}/${exam.total_points}`
+                : t('takeExam.answersRecorded')
               }
             </p>
             <Button onClick={() => navigate('/student/exams')}>
-              Back to Exams
+              {t('takeExam.backToExams')}
             </Button>
           </CardContent>
         </Card>
@@ -162,14 +164,14 @@ const TakeExam = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Course</p>
+              <p className="text-sm text-muted-foreground mb-2">{t('takeExam.course')}</p>
               <p className="font-medium">{course?.title}</p>
             </div>
 
             {/* Exam Description/Instructions */}
             {exam.description && (
               <div className="p-4 border rounded-lg bg-card">
-                <p className="text-sm font-medium text-foreground mb-2">Instructions</p>
+                <p className="text-sm font-medium text-foreground mb-2">{t('takeExam.instructions')}</p>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{exam.description}</p>
               </div>
             )}
@@ -177,27 +179,27 @@ const TakeExam = () => {
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-muted rounded-lg text-center">
                 <Clock className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Duration</p>
-                <p className="font-bold">{exam.duration} min</p>
+                <p className="text-sm text-muted-foreground">{t('takeExam.duration')}</p>
+                <p className="font-bold">{exam.duration} {t('common.min')}</p>
               </div>
               <div className="p-4 bg-muted rounded-lg text-center">
                 <p className="text-2xl mb-1">📝</p>
-                <p className="text-sm text-muted-foreground">Questions</p>
+                <p className="text-sm text-muted-foreground">{t('takeExam.questions')}</p>
                 <p className="font-bold">{exam.questions.length}</p>
               </div>
               <div className="p-4 bg-muted rounded-lg text-center">
                 <p className="text-2xl mb-1">🏆</p>
-                <p className="text-sm text-muted-foreground">Total Points</p>
+                <p className="text-sm text-muted-foreground">{t('takeExam.totalPoints')}</p>
                 <p className="font-bold">{exam.total_points}</p>
               </div>
             </div>
             <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
               <p className="text-sm text-destructive">
-                ⚠️ Once you start, the timer will begin. Make sure you have enough time to complete the exam.
+                ⚠️ {t('takeExam.timerWarning')}
               </p>
             </div>
             <Button className="w-full" size="lg" onClick={() => setStarted(true)}>
-              Start Exam
+              {t('takeExam.startExam')}
             </Button>
           </CardContent>
         </Card>
@@ -225,8 +227,8 @@ const TakeExam = () => {
       {/* Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
-          <span>Question {currentQuestion + 1} of {exam.questions.length}</span>
-          <span>{question.points} points</span>
+          <span>{t('takeExam.questionOf', { current: currentQuestion + 1, total: exam.questions.length })}</span>
+          <span>{question.points} {t('common.points')}</span>
         </div>
         <Progress value={progress} className="h-2" />
       </div>
@@ -243,10 +245,10 @@ const TakeExam = () => {
                   ? "bg-secondary/10 text-secondary"
                   : "bg-muted text-muted-foreground"
             )}>
-              {question.type === 'multiple-choice' ? 'Multiple Choice' : question.type === 'multi-select' ? 'Multi-Select' : 'Essay'}
+              {question.type === 'multiple-choice' ? t('takeExam.multipleChoice') : question.type === 'multi-select' ? t('takeExam.multiSelect') : t('takeExam.essay')}
             </span>
             {question.type === 'multi-select' && (
-              <span className="text-xs text-muted-foreground">(Select all that apply)</span>
+              <span className="text-xs text-muted-foreground">{t('takeExam.selectAllThatApply')}</span>
             )}
           </div>
           <CardTitle className="text-xl leading-relaxed">
@@ -309,7 +311,7 @@ const TakeExam = () => {
             </div>
           ) : (
             <Textarea
-              placeholder="Write your answer here..."
+              placeholder={t('takeExam.writeAnswerHere')}
               rows={8}
               value={String(answers[question.id] || '')}
               onChange={(e) => handleAnswer(e.target.value)}
@@ -327,7 +329,7 @@ const TakeExam = () => {
           disabled={currentQuestion === 0}
         >
           <ArrowLeft className="w-4 h-4" />
-          Previous
+          {t('takeExam.previous')}
         </Button>
 
         {currentQuestion === exam.questions.length - 1 ? (
@@ -337,13 +339,13 @@ const TakeExam = () => {
             disabled={submitExam.isPending}
           >
             {submitExam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Submit Exam
+            {t('takeExam.submitExam')}
           </Button>
         ) : (
           <Button
             onClick={() => setCurrentQuestion(Math.min(exam.questions.length - 1, currentQuestion + 1))}
           >
-            Next
+            {t('takeExam.next')}
             <ArrowRight className="w-4 h-4" />
           </Button>
         )}
@@ -352,7 +354,7 @@ const TakeExam = () => {
       {/* Question Navigator */}
       <Card className="border-0 shadow-card">
         <CardContent className="p-4">
-          <p className="text-sm text-muted-foreground mb-3">Question Navigator</p>
+          <p className="text-sm text-muted-foreground mb-3">{t('takeExam.questionNavigator')}</p>
           <div className="flex flex-wrap gap-2">
             {exam.questions.map((q, i) => (
               <button

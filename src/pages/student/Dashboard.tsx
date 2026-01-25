@@ -73,9 +73,9 @@ const StudentDashboard = () => {
   const handleEnroll = async (courseId: string) => {
     try {
       await enroll.mutateAsync(courseId);
-      toast.success('Successfully enrolled in course!');
+      toast.success(t('dashboardToast.enrollSuccess'));
     } catch (error) {
-      toast.error('Failed to enroll in course');
+      toast.error(t('dashboardToast.enrollFailed'));
     }
   };
 

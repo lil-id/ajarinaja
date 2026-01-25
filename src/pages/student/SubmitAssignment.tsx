@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
 import { ArrowLeft, Upload, FileText, Calendar, CheckCircle, AlertTriangle, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ import FormulaText from '@/components/FormulaText';
  * @returns {JSX.Element} The rendered Submit Assignment page.
  */
 export default function SubmitAssignment() {
+  const { t } = useTranslation();
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,14 +66,14 @@ export default function SubmitAssignment() {
 
     const maxSize = (assignment.max_file_size_mb || 10) * 1024 * 1024;
     if (selectedFile.size > maxSize) {
-      toast.error(`File size must be less than ${assignment.max_file_size_mb}MB`);
+      toast.error(t('submitAssignment.fileSizeTooLarge', { size: assignment.max_file_size_mb }));
       return;
     }
 
     const ext = selectedFile.name.split('.').pop()?.toLowerCase();
     const allowedTypes = assignment.allowed_file_types || ['pdf', 'doc', 'docx', 'txt', 'zip'];
     if (ext && !allowedTypes.includes(ext)) {
-      toast.error(`File type .${ext} is not allowed. Allowed types: ${allowedTypes.join(', ')}`);
+      toast.error(t('submitAssignment.fileTypeNotAllowed', { ext, types: allowedTypes.join(', ') }));
       return;
     }
 
@@ -80,7 +82,7 @@ export default function SubmitAssignment() {
 
   const handleSubmit = async () => {
     if (!assignment || (!file && !textContent.trim())) {
-      toast.error('Please upload a file or enter text content');
+      toast.error(t('submitAssignment.pleaseUploadOrEnter'));
       return;
     }
 
@@ -91,9 +93,9 @@ export default function SubmitAssignment() {
         textContent: textContent.trim() || undefined,
         dueDate: assignment.due_date,
       });
-      toast.success('Assignment submitted successfully!');
+      toast.success(t('submitAssignment.assignmentSubmittedSuccess'));
     } catch {
-      toast.error('Failed to submit assignment');
+      toast.error(t('submitAssignment.failedToSubmitAssignment'));
     }
   };
 
@@ -109,7 +111,7 @@ export default function SubmitAssignment() {
     });
 
     if (unanswered.length > 0) {
-      toast.error(`Please answer all questions. ${unanswered.length} unanswered.`);
+      toast.error(t('submitAssignment.unansweredQuestions', { count: unanswered.length }));
       return;
     }
 
@@ -162,13 +164,13 @@ export default function SubmitAssignment() {
       queryClient.invalidateQueries({ queryKey: ['my-assignment-submission', assignmentId] });
 
       if (isFullyAutoGraded) {
-        toast.success(`Assignment submitted! Your score: ${autoScore} / ${assignment.max_points}`);
+        toast.success(t('submitAssignment.scoreAutoGraded', { score: autoScore, max: assignment.max_points }));
       } else {
-        toast.success('Assignment submitted successfully! Awaiting teacher review for essay questions.');
+        toast.success(t('submitAssignment.awaitingTeacherReview'));
       }
       navigate('/student/assignments');
     } catch {
-      toast.error('Failed to submit assignment');
+      toast.error(t('submitAssignment.failedToSubmitAssignment'));
     } finally {
       setIsSubmittingQuestions(false);
     }
@@ -192,7 +194,7 @@ export default function SubmitAssignment() {
   }
 
   if (!assignment) {
-    return <div>Assignment not found</div>;
+    return <div>{t('submitAssignment.assignmentNotFound')}</div>;
   }
 
   return (
@@ -206,14 +208,14 @@ export default function SubmitAssignment() {
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             <span className="text-muted-foreground flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Due: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
+              {t('assignments.due')}: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
             </span>
-            <span className="text-muted-foreground">{assignment.max_points} points</span>
+            <span className="text-muted-foreground">{assignment.max_points} {t('common.points')}</span>
             <Badge variant="outline">
-              {isQuestionBased ? 'Question-Based' : 'File Submission'}
+              {isQuestionBased ? t('submitAssignment.questionBased') : t('submitAssignment.fileSubmission')}
             </Badge>
             {isOverdue && !submission && (
-              <Badge variant="destructive">Overdue</Badge>
+              <Badge variant="destructive">{t('submitAssignment.overdue')}</Badge>
             )}
           </div>
         </div>
@@ -225,7 +227,7 @@ export default function SubmitAssignment() {
           {assignment.description && (
             <Card>
               <CardHeader>
-                <CardTitle>Description</CardTitle>
+                <CardTitle>{t('submitAssignment.description')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap">{assignment.description}</p>
@@ -236,7 +238,7 @@ export default function SubmitAssignment() {
           {assignment.instructions && (
             <Card>
               <CardHeader>
-                <CardTitle>Instructions</CardTitle>
+                <CardTitle>{t('submitAssignment.instructions')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap">{assignment.instructions}</p>
@@ -252,7 +254,7 @@ export default function SubmitAssignment() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              Submitted
+              {t('submitAssignment.submitted')}
             </CardTitle>
             <CardDescription>
               {format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
@@ -261,7 +263,7 @@ export default function SubmitAssignment() {
           <CardContent className="space-y-4">
             {/* Show submitted answers */}
             <div className="space-y-4">
-              <Label className="text-sm text-muted-foreground">Your Answers</Label>
+              <Label className="text-sm text-muted-foreground">{t('submitAssignment.yourAnswers')}</Label>
               {questions.map((q, index) => {
                 const answer = submission.answers[q.id];
                 const isCorrect = q.type === 'multiple-choice'
@@ -282,30 +284,30 @@ export default function SubmitAssignment() {
                       <p className="font-medium">{index + 1}. <FormulaText text={q.question} /></p>
                       {submission.graded && q.type !== 'essay' && (
                         <Badge variant={isCorrect ? "default" : "destructive"} className="flex-shrink-0">
-                          {isCorrect ? 'Correct' : 'Incorrect'}
+                          {isCorrect ? t('submitAssignment.correct') : t('submitAssignment.incorrect')}
                         </Badge>
                       )}
                     </div>
                     <div className="text-sm">
                       {q.type === 'essay' && (
-                        <div className="text-muted-foreground whitespace-pre-wrap">{answer as string || 'No answer'}</div>
+                        <div className="text-muted-foreground whitespace-pre-wrap">{answer as string || t('submitAssignment.noAnswer')}</div>
                       )}
                       {q.type === 'multiple-choice' && q.options && (
                         <div className="space-y-1">
-                          <p><span className="font-medium">Your answer:</span> {(q.options as string[])[answer as number] || 'No answer'}</p>
+                          <p><span className="font-medium">{t('submitAssignment.yourAnswer')}</span> {(q.options as string[])[answer as number] || t('submitAssignment.noAnswer')}</p>
                           {submission.graded && !isCorrect && q.correct_answer !== null && (
                             <p className="text-green-600 dark:text-green-400">
-                              <span className="font-medium">Correct answer:</span> {(q.options as string[])[q.correct_answer]}
+                              <span className="font-medium">{t('submitAssignment.correctAnswer')}</span> {(q.options as string[])[q.correct_answer]}
                             </p>
                           )}
                         </div>
                       )}
                       {q.type === 'multi-select' && q.options && (
                         <div className="space-y-1">
-                          <p><span className="font-medium">Your answer:</span> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || 'No answer'}</p>
+                          <p><span className="font-medium">{t('submitAssignment.yourAnswer')}</span> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || t('submitAssignment.noAnswer')}</p>
                           {submission.graded && !isCorrect && q.correct_answers && (
                             <p className="text-green-600 dark:text-green-400">
-                              <span className="font-medium">Correct answers:</span> {q.correct_answers.map(i => (q.options as string[])[i]).join(', ')}
+                              <span className="font-medium">{t('submitAssignment.correctAnswers')}</span> {q.correct_answers.map(i => (q.options as string[])[i]).join(', ')}
                             </p>
                           )}
                         </div>
@@ -320,14 +322,14 @@ export default function SubmitAssignment() {
               <>
                 <Separator />
                 <div>
-                  <Label className="text-sm text-muted-foreground">Score</Label>
+                  <Label className="text-sm text-muted-foreground">{t('submitAssignment.score')}</Label>
                   <p className="text-2xl font-bold">
                     {submission.score} / {assignment.max_points}
                   </p>
                 </div>
                 {'feedback' in submission && submission.feedback && (
                   <div>
-                    <Label className="text-sm text-muted-foreground">Teacher Feedback</Label>
+                    <Label className="text-sm text-muted-foreground">{t('submitAssignment.teacherFeedback')}</Label>
                     <p className="text-sm mt-1 whitespace-pre-wrap p-3 bg-muted rounded-lg">
                       {submission.feedback}
                     </p>
@@ -338,7 +340,7 @@ export default function SubmitAssignment() {
 
             {!submission.graded && (
               <p className="text-sm text-muted-foreground">
-                Your submission is pending review
+                {t('submitAssignment.pendingReview')}
               </p>
             )}
           </CardContent>
@@ -351,19 +353,19 @@ export default function SubmitAssignment() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              Submitted
+              {t('submitAssignment.submitted')}
             </CardTitle>
             <CardDescription>
               {format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
               {submission.is_late && (
-                <Badge variant="destructive" className="ml-2">Late</Badge>
+                <Badge variant="destructive" className="ml-2">{t('submitAssignment.late')}</Badge>
               )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {submission.file_name && (
               <div>
-                <Label className="text-sm text-muted-foreground">Submitted File</Label>
+                <Label className="text-sm text-muted-foreground">{t('submitAssignment.submittedFile')}</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <FileText className="h-4 w-4" />
                   <span className="text-sm">{submission.file_name}</span>
@@ -371,7 +373,7 @@ export default function SubmitAssignment() {
                 {fileUrl && (
                   <Button variant="link" size="sm" className="px-0" asChild>
                     <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-                      Download
+                      {t('common.download')}
                     </a>
                   </Button>
                 )}
@@ -382,14 +384,14 @@ export default function SubmitAssignment() {
               <>
                 <Separator />
                 <div>
-                  <Label className="text-sm text-muted-foreground">Score</Label>
+                  <Label className="text-sm text-muted-foreground">{t('submitAssignment.score')}</Label>
                   <p className="text-2xl font-bold">
                     {submission.score} / {assignment.max_points}
                   </p>
                 </div>
                 {submission.feedback && (
                   <div>
-                    <Label className="text-sm text-muted-foreground">Feedback</Label>
+                    <Label className="text-sm text-muted-foreground">{t('submitAssignment.feedback')}</Label>
                     <p className="text-sm mt-1 whitespace-pre-wrap">{submission.feedback}</p>
                   </div>
                 )}
@@ -398,7 +400,7 @@ export default function SubmitAssignment() {
 
             {!submission.graded && (
               <p className="text-sm text-muted-foreground">
-                Your submission is pending review
+                {t('submitAssignment.pendingReview')}
               </p>
             )}
           </CardContent>
@@ -409,9 +411,9 @@ export default function SubmitAssignment() {
       {!submission && isQuestionBased && questions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Questions</CardTitle>
+            <CardTitle>{t('submitAssignment.questions')}</CardTitle>
             <CardDescription>
-              Answer all {questions.length} question(s) below
+              {t('submitAssignment.answerAllQuestions', { count: questions.length })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -419,9 +421,9 @@ export default function SubmitAssignment() {
               <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-yellow-600">Late Submission</p>
+                  <p className="font-medium text-yellow-600">{t('submitAssignment.lateSubmission')}</p>
                   <p className="text-muted-foreground">
-                    A {assignment.late_penalty_percent}% penalty will be applied
+                    {t('submitAssignment.latePenaltyApplied', { percent: assignment.late_penalty_percent })}
                   </p>
                 </div>
               </div>
@@ -431,9 +433,9 @@ export default function SubmitAssignment() {
               <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-destructive">Submission Closed</p>
+                  <p className="font-medium text-destructive">{t('submitAssignment.submissionClosed')}</p>
                   <p className="text-muted-foreground">
-                    This assignment no longer accepts submissions
+                    {t('submitAssignment.noLongerAccepts')}
                   </p>
                 </div>
               </div>
@@ -445,7 +447,7 @@ export default function SubmitAssignment() {
                       <p className="font-medium">
                         {index + 1}. <FormulaText text={q.question} />
                       </p>
-                      <Badge variant="outline">{q.points} pts</Badge>
+                      <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
                     </div>
 
                     {q.type === 'multiple-choice' && q.options && (
@@ -464,7 +466,7 @@ export default function SubmitAssignment() {
 
                     {q.type === 'multi-select' && q.options && (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">Select all that apply</p>
+                        <p className="text-xs text-muted-foreground">{t('submitAssignment.selectAllThatApply')}</p>
                         {(q.options as string[]).map((option, optIndex) => (
                           <div key={optIndex} className="flex items-center space-x-2">
                             <Checkbox
@@ -484,7 +486,7 @@ export default function SubmitAssignment() {
                       <Textarea
                         value={(answers[q.id] as string) || ''}
                         onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-                        placeholder="Enter your answer..."
+                        placeholder={t('submitAssignment.enterYourAnswer')}
                         rows={4}
                       />
                     )}
@@ -497,7 +499,7 @@ export default function SubmitAssignment() {
                   disabled={isSubmittingQuestions}
                 >
                   {isSubmittingQuestions && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  Submit Assignment
+                  {t('submitAssignment.submitAssignment')}
                 </Button>
               </>
             )}
@@ -509,9 +511,9 @@ export default function SubmitAssignment() {
       {!submission && !isQuestionBased && (
         <Card>
           <CardHeader>
-            <CardTitle>Submit Assignment</CardTitle>
+            <CardTitle>{t('submitAssignment.submitAssignment')}</CardTitle>
             <CardDescription>
-              Upload a file or enter text content
+              {t('submitAssignment.uploadOrEnterText')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -519,9 +521,9 @@ export default function SubmitAssignment() {
               <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-yellow-600">Late Submission</p>
+                  <p className="font-medium text-yellow-600">{t('submitAssignment.lateSubmission')}</p>
                   <p className="text-muted-foreground">
-                    A {assignment.late_penalty_percent}% penalty will be applied
+                    {t('submitAssignment.latePenaltyApplied', { percent: assignment.late_penalty_percent })}
                   </p>
                 </div>
               </div>
@@ -531,16 +533,16 @@ export default function SubmitAssignment() {
               <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-destructive">Submission Closed</p>
+                  <p className="font-medium text-destructive">{t('submitAssignment.submissionClosed')}</p>
                   <p className="text-muted-foreground">
-                    This assignment no longer accepts submissions
+                    {t('submitAssignment.noLongerAccepts')}
                   </p>
                 </div>
               </div>
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label>Upload File</Label>
+                  <Label>{t('submitAssignment.uploadFile')}</Label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -569,28 +571,28 @@ export default function SubmitAssignment() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      Choose File
+                      {t('submitAssignment.chooseFile')}
                     </Button>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Max size: {assignment.max_file_size_mb}MB.
-                    Allowed: {assignment.allowed_file_types?.join(', ')}
+                    {t('submitAssignment.maxSize')}: {assignment.max_file_size_mb}MB.
+                    {t('submitAssignment.allowed')}: {assignment.allowed_file_types?.join(', ')}
                   </p>
                 </div>
 
                 <div className="relative">
                   <Separator />
                   <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-                    OR
+                    {t('submitAssignment.or')}
                   </span>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Text Content</Label>
+                  <Label>{t('submitAssignment.textContent')}</Label>
                   <Textarea
                     value={textContent}
                     onChange={(e) => setTextContent(e.target.value)}
-                    placeholder="Enter your answer here..."
+                    placeholder={t('submitAssignment.enterAnswerHere')}
                     rows={6}
                   />
                 </div>
@@ -600,7 +602,7 @@ export default function SubmitAssignment() {
                   onClick={handleSubmit}
                   disabled={submitAssignment.isPending || (!file && !textContent.trim())}
                 >
-                  {submitAssignment.isPending ? 'Submitting...' : 'Submit Assignment'}
+                  {submitAssignment.isPending ? t('submitAssignment.submitting') : t('submitAssignment.submitAssignment')}
                 </Button>
               </>
             )}
