@@ -81,6 +81,7 @@ export default {
     backToAssignments: 'Back to Assignments',
     updating: 'Updating...',
     creating: 'Creating...',
+    continue: 'Continue',
   },
 
   // Navigation

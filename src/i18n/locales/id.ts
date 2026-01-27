@@ -81,6 +81,7 @@ export default {
     backToAssignments: 'Kembali ke Tugas',
     updating: 'Memperbarui...',
     creating: 'Membuat...',
+    continue: 'Lanjutkan',
   },
 
   // Navigation
