@@ -60,46 +60,16 @@ const getSubject = (course: Course): string => {
   return "other";
 };
 
-const getSubjectDisplayName = (subject: string): string => {
-  const displayNames: Record<string, string> = {
-    'mathematics': 'Mathematics',
-    'physics': 'Physics',
-    'chemistry': 'Chemistry',
-    'biology': 'Biology',
-    'history': 'History',
-    'english': 'English',
-    'indonesian': 'Indonesian',
-    'computer-science': 'Computer Science',
-    'other': 'General',
-  };
-  return displayNames[subject] || subject.charAt(0).toUpperCase() + subject.slice(1);
+const getSubjectDisplayName = (subject: string, t: any): string => {
+  const key = `exploreCourses.subjects.${subject}`;
+  const translated = t(key);
+  // If translation returns the key (meaning missing), fallback to capitalized subject
+  return translated !== key ? translated : subject.charAt(0).toUpperCase() + subject.slice(1);
 };
 
 // --- Helper Hooks (Copied/Adapted from CoursePreviewModal) ---
 
-interface TeacherProfile {
-  user_id: string;
-  name: string;
-  avatar_url: string | null;
-  bio: string | null;
-}
-
-function useTeacherProfile(teacherId: string | undefined) {
-  return useQuery({
-    queryKey: ['teacher-profile', teacherId],
-    queryFn: async () => {
-      if (!teacherId) return null;
-      const { data, error } = await supabase
-        .from('public_profiles')
-        .select('user_id, name, avatar_url, bio')
-        .eq('user_id', teacherId)
-        .single();
-      if (error) throw error;
-      return data as TeacherProfile;
-    },
-    enabled: !!teacherId,
-  });
-}
+// Helper removed as teacher data is now included in course object
 
 function useCourseEnrollmentCount(courseId: string | undefined) {
   return useQuery({
@@ -137,7 +107,6 @@ const CourseDetailPanel = ({
   onClose: () => void;
 }) => {
   const { t } = useTranslation();
-  const { data: teacher, isLoading: teacherLoading } = useTeacherProfile(course.teacher_id);
   const { materials, isLoading: materialsLoading } = useCourseMaterials(course.id);
   const { data: enrollmentCount = 0 } = useCourseEnrollmentCount(course.id);
 
@@ -172,7 +141,7 @@ const CourseDetailPanel = ({
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6">
             <Badge variant="secondary" className="mb-2">
-              {getSubjectDisplayName(subject)}
+              {getSubjectDisplayName(subject, t)}
             </Badge>
             <h2 className="text-2xl font-bold text-foreground line-clamp-2">
               {course.title}
@@ -200,22 +169,18 @@ const CourseDetailPanel = ({
 
           {/* Instructor */}
           <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl mb-6">
-            {teacherLoading ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
-            ) : (
-              <>
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={teacher?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {teacher?.name?.charAt(0) || 'T'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-semibold text-foreground">{teacher?.name || 'Unknown Instructor'}</div>
-                  <div className="text-sm text-muted-foreground">{t('courses.teacher')}</div>
-                </div>
-              </>
-            )}
+            <Avatar className="w-12 h-12">
+              <AvatarImage src={course.teacher?.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {course.teacher?.name?.charAt(0) || '?'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="font-semibold text-foreground">{course.teacher?.name || t('courses.unknownInstructor')}</div>
+              <div className="text-sm text-muted-foreground">
+                {course.teacher?.email || t('common.noEmail')}
+              </div>
+            </div>
           </div>
 
           {/* Enrollment CTA */}
@@ -248,7 +213,7 @@ const CourseDetailPanel = ({
                       <AlertDialogHeader>
                         <AlertDialogTitle>{t('courses.unenrollConfirm')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will remove you from the course.
+                          {t('courses.unenrollDescription')}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -304,7 +269,9 @@ const CourseDetailPanel = ({
                 </div>
               ))}
               {materials.length > 5 && (
-                <p className="text-center text-xs text-muted-foreground">+{materials.length - 5} more</p>
+                <p className="text-center text-xs text-muted-foreground">
+                  {t('common.andMore', { count: materials.length - 5 })}
+                </p>
               )}
             </div>
           )}
@@ -426,16 +393,16 @@ const ExploreCourses = () => {
                 <SelectValue placeholder="Subject" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Subjects</SelectItem>
-                <SelectItem value="mathematics">Mathematics</SelectItem>
-                <SelectItem value="physics">Physics</SelectItem>
-                <SelectItem value="chemistry">Chemistry</SelectItem>
-                <SelectItem value="biology">Biology</SelectItem>
-                <SelectItem value="history">History</SelectItem>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="indonesian">Indonesian</SelectItem>
-                <SelectItem value="computer-science">Computer Sci</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="all">{t('exploreCourses.subjects.all')}</SelectItem>
+                <SelectItem value="mathematics">{t('exploreCourses.subjects.mathematics')}</SelectItem>
+                <SelectItem value="physics">{t('exploreCourses.subjects.physics')}</SelectItem>
+                <SelectItem value="chemistry">{t('exploreCourses.subjects.chemistry')}</SelectItem>
+                <SelectItem value="biology">{t('exploreCourses.subjects.biology')}</SelectItem>
+                <SelectItem value="history">{t('exploreCourses.subjects.history')}</SelectItem>
+                <SelectItem value="english">{t('exploreCourses.subjects.english')}</SelectItem>
+                <SelectItem value="indonesian">{t('exploreCourses.subjects.indonesian')}</SelectItem>
+                <SelectItem value="computer-science">{t('exploreCourses.subjects.computerScience')}</SelectItem>
+                <SelectItem value="other">{t('exploreCourses.subjects.other')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -444,16 +411,16 @@ const ExploreCourses = () => {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                <SelectItem value="newest">{t('exploreCourses.sortOptions.newest')}</SelectItem>
+                <SelectItem value="oldest">{t('exploreCourses.sortOptions.oldest')}</SelectItem>
+                <SelectItem value="alphabetical">{t('exploreCourses.sortOptions.alphabetical')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         {searchQuery && (
           <p className="text-sm text-muted-foreground mt-3">
-            Showing {filteredCourses.length} results for "{searchQuery}"
+            {t('exploreCourses.showingResults', { count: filteredCourses.length, query: searchQuery })}
           </p>
         )}
       </div>
@@ -506,7 +473,7 @@ const ExploreCourses = () => {
 
                       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                         <Badge variant="secondary" className="text-xs backdrop-blur-sm">
-                          {getSubjectDisplayName(getSubject(course))}
+                          {getSubjectDisplayName(getSubject(course), t)}
                         </Badge>
                       </div>
                     </div>
@@ -565,6 +532,7 @@ const ExploreCourses = () => {
           </div>
         )}
       </div>
+
     </div>
   );
 };

@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MaterialViewer } from '@/components/MaterialViewer';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Helper to get the icon for a file type.
@@ -47,6 +48,7 @@ const formatFileSize = (bytes: number | null) => {
  * @returns {JSX.Element} The rendered Materials page.
  */
 const StudentMaterials = () => {
+  const { t } = useTranslation();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
@@ -76,7 +78,7 @@ const StudentMaterials = () => {
   }, {} as Record<string, typeof filteredMaterials>);
 
   const getCourseTitle = (courseId: string) => {
-    return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+    return courses.find(c => c.id === courseId)?.title || t('studentMaterials.unknownCourse');
   };
 
   const toggleCourse = (courseId: string) => {
@@ -112,7 +114,7 @@ const StudentMaterials = () => {
 
       if (error) {
         console.error('Download error:', error);
-        toast.error('Failed to download material');
+        toast.error(t('toast.failedToDownloadMaterial'));
         return;
       }
 
@@ -126,7 +128,7 @@ const StudentMaterials = () => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      toast.error('Failed to download material');
+      toast.error(t('toast.failedToDownloadMaterial'));
     }
   };
 
@@ -144,9 +146,9 @@ const StudentMaterials = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Course Materials</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('studentMaterials.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Access lesson materials and videos from your courses
+            {t('studentMaterials.subtitle')}
           </p>
         </div>
       </div>
@@ -158,10 +160,10 @@ const StudentMaterials = () => {
             <Filter className="w-4 h-4 text-muted-foreground" />
             <Select value={selectedCourseFilter} onValueChange={setSelectedCourseFilter}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by course" />
+                <SelectValue placeholder={t('studentMaterials.filterBy')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Courses</SelectItem>
+                <SelectItem value="all">{t('studentMaterials.allCourses')}</SelectItem>
                 {enrolledCourses.map(course => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.title}
@@ -170,15 +172,15 @@ const StudentMaterials = () => {
               </SelectContent>
             </Select>
             <Badge variant="secondary" className="hidden sm:inline-flex">
-              {filteredMaterials.length} material{filteredMaterials.length !== 1 ? 's' : ''}
+              {filteredMaterials.length} {t('studentMaterials.material')}{filteredMaterials.length !== 1 ? 's' : ''}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={expandAll}>
-              Expand All
+              {t('studentMaterials.expandAll')}
             </Button>
             <Button variant="outline" size="sm" onClick={collapseAll}>
-              Collapse All
+              {t('studentMaterials.collapseAll')}
             </Button>
           </div>
         </div>
@@ -190,11 +192,11 @@ const StudentMaterials = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No materials available</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('studentMaterials.noMaterialsTitle')}</h3>
             <p className="text-muted-foreground text-center">
               {enrolledCourseIds.length === 0
-                ? 'Enroll in courses to access their materials'
-                : 'Your teachers haven\'t uploaded any materials yet'}
+                ? t('studentMaterials.enrollToAccess')
+                : t('studentMaterials.noTeacherUploads')}
             </p>
           </CardContent>
         </Card>
@@ -204,12 +206,12 @@ const StudentMaterials = () => {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <Filter className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No materials found</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('studentMaterials.noMaterialsFound')}</h3>
             <p className="text-muted-foreground text-center">
-              No materials match your current filter
+              {t('studentMaterials.noMaterialsMatchFilter')}
             </p>
             <Button variant="outline" className="mt-4" onClick={() => setSelectedCourseFilter('all')}>
-              Clear Filter
+              {t('studentMaterials.clearFilter')}
             </Button>
           </CardContent>
         </Card>
@@ -234,7 +236,7 @@ const StudentMaterials = () => {
                         <div>
                           <h3 className="font-semibold text-foreground">{getCourseTitle(courseId)}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {courseMaterials.length} material{courseMaterials.length !== 1 ? 's' : ''}
+                            {courseMaterials.length} {t('studentMaterials.material')}{courseMaterials.length !== 1 ? 's' : ''}
                           </p>
                         </div>
                       </div>
@@ -284,7 +286,7 @@ const StudentMaterials = () => {
                                 {isVideo && (
                                   <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50 text-xs">
                                     <Youtube className="w-3 h-3 mr-1" />
-                                    Video
+                                    {t('studentMaterials.video')}
                                   </Badge>
                                 )}
                               </div>
@@ -306,7 +308,7 @@ const StudentMaterials = () => {
                                   onClick={() => handleViewMaterial(material)}
                                 >
                                   <Play className="w-4 h-4 mr-1" />
-                                  Watch
+                                  {t('studentMaterials.watch')}
                                 </Button>
                               ) : (
                                 <>
@@ -316,7 +318,7 @@ const StudentMaterials = () => {
                                     onClick={() => handleViewMaterial(material)}
                                   >
                                     <Eye className="w-4 h-4 mr-1" />
-                                    View
+                                    {t('studentMaterials.view')}
                                   </Button>
                                   {material.file_path && (
                                     <Button
@@ -325,7 +327,7 @@ const StudentMaterials = () => {
                                       onClick={() => handleDownload(material.file_path!, material.file_name || 'download')}
                                     >
                                       <Download className="w-4 h-4 mr-1" />
-                                      Download
+                                      {t('studentMaterials.download')}
                                     </Button>
                                   )}
                                 </>

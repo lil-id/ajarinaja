@@ -139,7 +139,7 @@ export default function StudentAssignments() {
             <div className="space-y-1">
               <CardTitle className="text-lg">{assignment.title}</CardTitle>
               <CardDescription>
-                {courseMap.get(assignment.course_id) || 'Unknown Course'}
+                {courseMap.get(assignment.course_id) || t('materials.unknownCourse')}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">

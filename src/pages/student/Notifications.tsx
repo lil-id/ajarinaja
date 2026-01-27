@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Helper to get the icon for a notification type.
@@ -146,6 +147,7 @@ const NotificationSkeleton = () => (
  * @returns {JSX.Element} The rendered Notifications page.
  */
 const StudentNotifications = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: notifications, isLoading: notificationsLoading } = useNotifications();
   const markRead = useMarkNotificationRead();
@@ -169,7 +171,7 @@ const StudentNotifications = () => {
   const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
 
   const getCourseTitle = (courseId: string) => {
-    return courses.find(c => c.id === courseId)?.title || 'Unknown Course';
+    return courses.find(c => c.id === courseId)?.title || t('studentMaterials.unknownCourse');
   };
 
   const isAnnouncementsLoading = enrollmentsLoading || coursesLoading || announcementsLoading;
@@ -178,9 +180,9 @@ const StudentNotifications = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Notifications & Announcements</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('studentNotifications.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Stay updated with your courses, assignments, and announcements
+            {t('studentNotifications.subtitle')}
           </p>
         </div>
         {unreadCount > 0 && (
@@ -191,7 +193,7 @@ const StudentNotifications = () => {
             disabled={markAllRead.isPending}
           >
             <CheckCheck className="h-4 w-4 mr-2" />
-            Mark all as read
+            {t('studentNotifications.markAllRead')}
           </Button>
         )}
       </div>
@@ -200,7 +202,7 @@ const StudentNotifications = () => {
         <TabsList>
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            {t('studentNotifications.notificationsTab')}
             {unreadCount > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 px-1.5">
                 {unreadCount}
@@ -209,7 +211,7 @@ const StudentNotifications = () => {
           </TabsTrigger>
           <TabsTrigger value="announcements" className="gap-2">
             <Megaphone className="h-4 w-4" />
-            Announcements
+            {t('studentNotifications.announcementsTab')}
             {myAnnouncements.length > 0 && (
               <Badge variant="outline" className="ml-1 h-5 px-1.5">
                 {myAnnouncements.length}
@@ -224,7 +226,7 @@ const StudentNotifications = () => {
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5 text-primary" />
                 <CardTitle className="text-lg">
-                  All Notifications
+                  {t('studentNotifications.allNotifications')}
                 </CardTitle>
               </div>
             </CardHeader>
@@ -251,10 +253,10 @@ const StudentNotifications = () => {
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
                     <h3 className="text-lg font-medium text-foreground mb-1">
-                      No notifications yet
+                      {t('studentNotifications.noNotificationsTitle')}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      You'll receive notifications about grades, assignments, and deadlines here.
+                      {t('studentNotifications.noNotificationsDesc')}
                     </p>
                   </div>
                 )}
@@ -274,11 +276,11 @@ const StudentNotifications = () => {
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                   <Megaphone className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">No announcements yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t('studentNotifications.noAnnouncementsTitle')}</h3>
                 <p className="text-muted-foreground text-center">
                   {enrolledCourseIds.length === 0
-                    ? 'Enroll in courses to see their announcements'
-                    : 'Your teachers haven\'t posted any announcements yet'}
+                    ? t('studentNotifications.enrollToSee')
+                    : t('studentNotifications.noTeacherPosts')}
                 </p>
               </CardContent>
             </Card>

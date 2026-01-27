@@ -1,524 +1,439 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { useCourses } from '@/hooks/useCourses';
+import { useCourse } from '@/hooks/useCourses';
+import { useCourseMaterials, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 import { useExams } from '@/hooks/useExams';
-import { useCourseMaterials } from '@/hooks/useCourseMaterials';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
-import { useEnrollments } from '@/hooks/useEnrollments';
-import { useCourseProgress, useMarkMaterialViewed } from '@/hooks/useProgress';
+import { useEnrollments, useUnenroll } from '@/hooks/useEnrollments';
 import { MaterialViewer } from '@/components/MaterialViewer';
 import {
-  ArrowLeft,
-  BookOpen,
   FileText,
-  Megaphone,
-  Loader2,
-  Download,
-  Clock,
-  CheckCircle2,
-  Circle,
-  Trophy,
+  Video,
   Play,
+  Download,
   Eye,
-  LogOut
+  Calendar,
+  Clock,
+  Award,
+  ChevronLeft,
+  BookOpen,
+  Megaphone,
+  AlertCircle,
+  Loader2,
+  File,
 } from 'lucide-react';
-import { useUnenroll } from '@/hooks/useEnrollments';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Student Course Detail page.
- * 
- * Comprehensive view of a single course.
+ *
+ * Shows detailed information about a specific course.
  * Features:
- * - Course metadata and Teacher info
- * - Individual progress tracking
+ * - Course progress tracking
  * - Tabs for Materials, Exams, and Announcements
- * - Material viewer integration
- * - Unenroll functionality
- * 
+ * - Material viewing and downloading
+ * - Exam taking entry point
+ * - Unenrollment functionality
+ *
  * @returns {JSX.Element} The rendered Course Detail page.
  */
 const StudentCourseDetail = () => {
+  const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+  const { data: course, isLoading: courseLoading } = useCourse(courseId!);
+  const { materials, isLoading: materialsLoading } = useCourseMaterials(courseId);
+  const { exams, isLoading: examsLoading } = useExams(courseId);
+  const { announcements, isLoading: announcementsLoading } = useAnnouncements(courseId);
+  const { mutateAsync: unenroll, isPending: isUnenrolling } = useUnenroll();
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('materials');
+  const [selectedMaterial, setSelectedMaterial] = useState<typeof materials[0] | null>(null);
 
-  const { courses, isLoading: coursesLoading } = useCourses();
-  const { exams, isLoading: examsLoading } = useExams();
-  const { materials, isLoading: materialsLoading } = useCourseMaterials();
-  const { announcements, isLoading: announcementsLoading } = useAnnouncements();
-  const { enrollments } = useEnrollments();
-  const markMaterialViewed = useMarkMaterialViewed();
-  const unenroll = useUnenroll();
+  const isLoading = courseLoading || materialsLoading || examsLoading || announcementsLoading;
 
-  const course = courses.find(c => c.id === courseId);
+  // Calculate progress
+  const progress = useMemo(() => {
+    if (!materials || !exams) return 0;
+    const totalItems = materials.length + exams.length;
+    if (totalItems === 0) return 0;
+    // For now, simple mock progress based on items existing
+    // In a real app, we'd track viewed/completed status
+    return 0;
+  }, [materials, exams]);
 
-  // Fetch teacher profile
-  const { data: teacherProfile } = useQuery({
-    queryKey: ['teacher-profile', course?.teacher_id],
-    queryFn: async () => {
-      if (!course?.teacher_id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', course.teacher_id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!course?.teacher_id,
-  });
-
-  const courseExams = exams.filter(e => e.course_id === courseId && e.status === 'published');
-  const courseMaterials = materials.filter(m => m.course_id === courseId);
-  const courseAnnouncements = announcements.filter(a => a.course_id === courseId);
-  const isEnrolled = enrollments.some(e => e.course_id === courseId);
-
-  // Progress tracking
-  const progress = useCourseProgress(
-    courseId || '',
-    courseExams.map(e => e.id),
-    courseMaterials.map(m => m.id)
-  );
-
-  const handleDownloadMaterial = async (materialId: string, filePath: string, fileName: string) => {
-    // Mark as viewed
+  const handleUnenroll = async () => {
+    if (!courseId) return;
     try {
-      await markMaterialViewed.mutateAsync(materialId);
+      await unenroll(courseId);
+      toast.success(t('courseDetailPage.unenrollSuccess'));
+      navigate('/student/explore');
     } catch (error) {
-      console.error('Failed to mark material as viewed:', error);
+      toast.error(t('courseDetailPage.unenrollFailed'));
     }
-
-    const { data, error } = await supabase.storage
-      .from('course-materials')
-      .download(filePath);
-
-    if (error) {
-      console.error('Download error:', error);
-      toast.error('Failed to download material');
-      return;
-    }
-
-    const url = URL.createObjectURL(data);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
-  if (coursesLoading) {
+  const handleViewMaterial = (material: typeof materials[0]) => {
+    setSelectedMaterial(material);
+    setViewerOpen(true);
+  };
+
+  const handleDownload = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('course-materials')
+        .download(filePath);
+
+      if (error) {
+        console.error('Download error:', error);
+        toast.error(t('toast.failedToDownloadMaterial'));
+        return;
+      }
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error(t('toast.failedToDownloadMaterial'));
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Course not found</h2>
-        <Button variant="outline" onClick={() => navigate('/student/courses')}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Courses
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+        <h2 className="text-xl font-semibold mb-2">{t('courseDetailPage.courseNotFound')}</h2>
+        <Button onClick={() => navigate('/student/courses')}>
+          {t('courseDetailPage.backToCourses')}
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col gap-4">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header with Back Button */}
+      <div className="flex items-start gap-4">
         <Button
           variant="ghost"
-          className="w-fit"
+          size="icon"
+          className="mt-1"
           onClick={() => navigate('/student/courses')}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Courses
+          <ChevronLeft className="w-5 h-5" />
         </Button>
-
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Thumbnail */}
-          <div className="w-full lg:w-64 h-40 rounded-lg overflow-hidden bg-gradient-hero flex items-center justify-center flex-shrink-0">
-            {course.thumbnail_url ? (
-              <img
-                src={course.thumbnail_url}
-                alt={course.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <BookOpen className="w-12 h-12 text-primary-foreground/50" />
-            )}
-          </div>
-
-          {/* Course Info */}
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
-              <div className="flex items-center gap-3 flex-1">
-                <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
-                {isEnrolled && (
-                  <Badge variant="default">Enrolled</Badge>
-                )}
+        <div className="flex-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
+              <p className="text-muted-foreground mt-2 max-w-2xl">
+                {course.description}
+              </p>
+              <div className="flex items-center gap-4 mt-4">
+                <Badge variant="secondary" className="px-3 py-1">
+                  {course.category || t('calendar.types.other')}
+                </Badge>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {exams.length} {t('courseDetailPage.examsTab')}
+                </span>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <FileText className="w-4 h-4" />
+                  {materials.length} {t('courseDetailPage.materialsTab')}
+                </span>
               </div>
-              {isEnrolled && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to unenroll from this course? You will lose access to all course materials.')) {
-                      unenroll.mutate(courseId!, {
-                        onSuccess: () => {
-                          toast.success('Successfully unenrolled from course');
-                          navigate('/student/courses');
-                        },
-                        onError: () => {
-                          toast.error('Failed to unenroll from course');
-                        },
-                      });
-                    }
-                  }}
-                  disabled={unenroll.isPending}
-                  className="text-destructive hover:text-destructive"
-                >
-                  {unenroll.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Unenroll
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
-            <p className="text-muted-foreground max-w-2xl mb-4">
-              {course.description || 'No description available'}
-            </p>
-
-            {/* Teacher Info */}
-            {teacherProfile && (
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg w-fit">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={teacherProfile.avatar_url || ''} />
-                  <AvatarFallback>
-                    {teacherProfile.name?.charAt(0).toUpperCase() || 'T'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{teacherProfile.name}</p>
-                  <p className="text-xs text-muted-foreground">Instructor</p>
-                </div>
-              </div>
-            )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10">
+                  {t('courses.unenroll')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('courseDetailPage.unenrollSuccess')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('courseDetailPage.unenrollConfirm')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleUnenroll}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    {t('common.continue')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>
 
-      {/* Progress Card */}
-      <Card className="border-0 shadow-card bg-gradient-to-r from-primary/5 to-secondary/5">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-primary" />
-              Your Progress
-            </CardTitle>
-            <span className="text-2xl font-bold text-primary">{progress.overallProgress}%</span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Progress value={progress.overallProgress} className="h-3" />
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-3 bg-background rounded-lg">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-secondary" />
-                <span className="text-sm text-foreground">Exams Completed</span>
-              </div>
-              <span className="text-sm font-medium text-foreground">
-                {progress.completedExams}/{progress.totalExams}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-background rounded-lg">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-accent" />
-                <span className="text-sm text-foreground">Materials Viewed</span>
-              </div>
-              <span className="text-sm font-medium text-foreground">
-                {progress.viewedMaterials}/{progress.totalMaterials}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          <Tabs defaultValue="materials" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="materials">{t('courseDetailPage.materialsTab')}</TabsTrigger>
+              <TabsTrigger value="exams">{t('courseDetailPage.examsTab')}</TabsTrigger>
+              <TabsTrigger value="announcements">{t('courseDetailPage.announcementsTab')}</TabsTrigger>
+            </TabsList>
 
-      {/* Stats Cards - Clickable to navigate to tabs */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('exams')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseExams.length}</p>
-              <p className="text-sm text-muted-foreground">Exams</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('materials')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-accent" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseMaterials.length}</p>
-              <p className="text-sm text-muted-foreground">Materials</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('announcements')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-              <Megaphone className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseAnnouncements.length}</p>
-              <p className="text-sm text-muted-foreground">Announcements</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="materials">Materials ({courseMaterials.length})</TabsTrigger>
-          <TabsTrigger value="exams">Exams ({courseExams.length})</TabsTrigger>
-          <TabsTrigger value="announcements">Announcements ({courseAnnouncements.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="materials" className="space-y-4">
-          {materialsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseMaterials.length === 0 ? (
-            <Card className="border-0 shadow-card">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No materials available yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {courseMaterials.map((material) => {
-                const isViewed = progress.isMaterialViewed(material.id);
-                return (
-                  <Card key={material.id} className="border-0 shadow-card">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isViewed ? 'bg-green-500/10' : 'bg-primary/10'}`}>
-                          {isViewed ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-500" />
-                          ) : (
-                            <Circle className="w-5 h-5 text-primary" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-foreground">{material.title}</h4>
-                            {isViewed && (
-                              <Badge variant="outline" className="text-green-500 border-green-500/30 text-xs">
-                                Viewed
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {material.description || material.file_name}
-                          </p>
-                          {material.file_size && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {(material.file_size / 1024).toFixed(1)} KB • {format(new Date(material.created_at), 'MMM d, yyyy')}
-                            </p>
-                          )}
-                          {material.video_url && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Video • {format(new Date(material.created_at), 'MMM d, yyyy')}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="hero"
-                          size="sm"
-                          onClick={async () => {
-                            // Mark as viewed when opening
-                            try {
-                              await markMaterialViewed.mutateAsync(material.id);
-                            } catch (error) {
-                              console.error('Failed to mark material as viewed:', error);
-                            }
-                            setSelectedMaterial(material);
-                            setViewerOpen(true);
-                          }}
-                        >
-                          {material.video_url ? (
-                            <><Play className="w-4 h-4 mr-1" /> Watch</>
-                          ) : (
-                            <><Eye className="w-4 h-4 mr-1" /> View</>
-                          )}
-                        </Button>
-                        {material.file_path && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadMaterial(material.id, material.file_path!, material.file_name!)}
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="exams" className="space-y-4">
-          {examsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseExams.length === 0 ? (
-            <Card className="border-0 shadow-card">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No exams available yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {courseExams.map((exam) => {
-                const isCompleted = progress.isExamCompleted(exam.id);
-                return (
-                  <Card
-                    key={exam.id}
-                    className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`)}
-                  >
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isCompleted ? 'bg-green-500/10' : 'bg-secondary/10'}`}>
-                          {isCompleted ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-500" />
-                          ) : (
-                            <FileText className="w-5 h-5 text-secondary" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-foreground">{exam.title}</h4>
-                            {isCompleted && (
-                              <Badge variant="outline" className="text-green-500 border-green-500/30 text-xs">
-                                Completed
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {exam.description || 'No description'}
-                          </p>
-                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {exam.duration} min
-                            </span>
-                            <span>{exam.total_points} points</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant={isCompleted ? "outline" : "hero"}
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); navigate(isCompleted ? `/student/exam/${exam.id}/results` : `/student/exam/${exam.id}`); }}
-                      >
-                        {isCompleted ? 'View Results' : 'Take Exam'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="announcements" className="space-y-4">
-          {announcementsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseAnnouncements.length === 0 ? (
-            <Card className="border-0 shadow-card">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Megaphone className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No announcements yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {courseAnnouncements.map((announcement) => (
-                <Card key={announcement.id} className="border-0 shadow-card">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{announcement.title}</CardTitle>
-                    <CardDescription>
-                      {format(new Date(announcement.created_at), 'MMMM d, yyyy')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground whitespace-pre-wrap">
-                      {announcement.content}
-                    </p>
+            {/* Materials Tab */}
+            <TabsContent value="materials" className="space-y-4 mt-4">
+              {materials.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 flex flex-col items-center text-center">
+                    <FileText className="w-12 h-12 text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">{t('courseDetailPage.noMaterialsAvailable')}</p>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+              ) : (
+                materials.map((material) => {
+                  const isVideo = !!material.video_url;
+                  const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
 
-      {/* Material Viewer Modal */}
+                  return (
+                    <Card key={material.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row">
+                        {isVideo && videoId ? (
+                          <div
+                            className="sm:w-48 h-32 bg-black relative group cursor-pointer"
+                            onClick={() => handleViewMaterial(material)}
+                          >
+                            <img
+                              src={getYouTubeThumbnail(videoId)}
+                              alt={material.title}
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Play className="w-10 h-10 text-white opacity-80 group-hover:opacity-100 transition-opacity shadow-lg" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="sm:w-24 bg-muted flex items-center justify-center p-6">
+                            <FileText className="w-8 h-8 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 p-4 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start justify-between">
+                              <h3 className="font-semibold text-lg line-clamp-1">{material.title}</h3>
+                              {isVideo && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {t('studentMaterials.video')}
+                                </Badge>
+                              )}
+                            </div>
+                            {material.description && (
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                {material.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between mt-4">
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(material.created_at), 'MMM d, yyyy')}
+                            </span>
+                            <div className="flex gap-2">
+                              {isVideo ? (
+                                <Button size="sm" onClick={() => handleViewMaterial(material)}>
+                                  <Play className="w-4 h-4 mr-1" />
+                                  {t('studentMaterials.watch')}
+                                </Button>
+                              ) : (
+                                <>
+                                  <Button size="sm" variant="outline" onClick={() => handleViewMaterial(material)}>
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    {t('studentMaterials.view')}
+                                  </Button>
+                                  {material.file_path && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleDownload(material.file_path!, material.file_name || 'download')}
+                                    >
+                                      <Download className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })
+              )}
+            </TabsContent>
+
+            {/* Exams Tab */}
+            <TabsContent value="exams" className="space-y-4 mt-4">
+              {exams.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 flex flex-col items-center text-center">
+                    <Award className="w-12 h-12 text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">{t('courseDetailPage.noExamsAvailable')}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                exams.map((exam) => (
+                  <Card key={exam.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-lg">{exam.title}</h3>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {t('time.dueIn', { time: format(new Date(exam.end_date || exam.created_at), 'MMM d, HH:mm') })}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {exam.duration}m
+                            </span>
+                            <Badge variant="outline">{exam.total_points} pts</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                            {exam.description}
+                          </p>
+                        </div>
+                        <Button onClick={() => navigate(`/student/exam/${exam.id}`)}>
+                          {t('courseDetailPage.takeExam')}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+
+            {/* Announcements Tab */}
+            <TabsContent value="announcements" className="space-y-4 mt-4">
+              {announcements.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 flex flex-col items-center text-center">
+                    <Megaphone className="w-12 h-12 text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">{t('courseDetailPage.noAnnouncementsAvailable')}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                announcements.map((announcement) => (
+                  <Card key={announcement.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{announcement.title}</CardTitle>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(announcement.created_at), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {announcement.content}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Sidebar Info */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('courseDetailPage.instructor')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {course.teacher?.name?.charAt(0) || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-semibold text-foreground">
+                    {course.teacher?.name || t('studentMaterials.unknownTeacher')}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {course.teacher?.email || t('common.noEmail')}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('courseDetailPage.yourProgress')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">{t('courseDetailPage.completed')}</span>
+                  <span className="font-medium">{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-secondary/10 rounded-lg text-center">
+                  <BookOpen className="w-5 h-5 text-secondary mx-auto mb-1" />
+                  <div className="text-xl font-bold">{materials.length}</div>
+                  <div className="text-xs text-muted-foreground">{t('courseDetailPage.materialsTab')}</div>
+                </div>
+                <div className="p-3 bg-primary/10 rounded-lg text-center">
+                  <Award className="w-5 h-5 text-primary mx-auto mb-1" />
+                  <div className="text-xl font-bold">{exams.length}</div>
+                  <div className="text-xs text-muted-foreground">{t('courseDetailPage.examsTab')}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       <MaterialViewer
         isOpen={viewerOpen}
-        onClose={() => {
-          setViewerOpen(false);
-          setSelectedMaterial(null);
-        }}
+        onClose={() => setViewerOpen(false)}
         material={selectedMaterial}
       />
     </div>

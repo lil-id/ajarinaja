@@ -29,6 +29,7 @@ import {
   CheckCircle2,
   FileText,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
 
@@ -45,6 +46,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accen
  * @returns {JSX.Element} The rendered Analytics page.
  */
 const StudentAnalytics = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const [analyticsType, setAnalyticsType] = useState<string>('exams');
@@ -199,14 +201,14 @@ const StudentAnalytics = () => {
 
   // Submission status for exams
   const examSubmissionStatus = [
-    { name: 'Passed', value: examPassCount },
-    { name: 'Failed', value: totalExams - examPassCount },
+    { name: t('studentAnalytics.passed'), value: examPassCount },
+    { name: t('studentAnalytics.failed'), value: totalExams - examPassCount },
   ].filter(s => s.value > 0);
 
   // Submission status for assignments
   const assignmentSubmissionStatus = [
-    { name: 'Passed', value: assignmentPassCount },
-    { name: 'Failed', value: gradedAssignments.length - assignmentPassCount },
+    { name: t('studentAnalytics.passed'), value: assignmentPassCount },
+    { name: t('studentAnalytics.failed'), value: gradedAssignments.length - assignmentPassCount },
   ].filter(s => s.value > 0);
 
   // Current data based on type
@@ -239,9 +241,9 @@ const StudentAnalytics = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('studentAnalytics.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Track your academic progress and performance trends
+          {t('studentAnalytics.subtitle')}
         </p>
       </div>
 
@@ -251,9 +253,9 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Overall Average</p>
+                <p className="text-sm text-muted-foreground">{t('studentAnalytics.overallAverage')}</p>
                 <p className="text-3xl font-bold text-foreground">{overallAverage} pts</p>
-                <p className="text-xs text-muted-foreground mt-2">Across all work</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('studentAnalytics.acrossAllWork')}</p>
               </div>
               <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-primary" />
@@ -266,9 +268,9 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Enrolled Courses</p>
+                <p className="text-sm text-muted-foreground">{t('studentAnalytics.enrolledCourses')}</p>
                 <p className="text-3xl font-bold text-foreground">{totalCourses}</p>
-                <p className="text-xs text-muted-foreground mt-2">Active enrollments</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('studentAnalytics.activeEnrollments')}</p>
               </div>
               <div className="h-12 w-12 bg-secondary/10 rounded-xl flex items-center justify-center">
                 <BookOpen className="h-6 w-6 text-secondary" />
@@ -281,10 +283,10 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Completed Work</p>
+                <p className="text-sm text-muted-foreground">{t('studentAnalytics.completedWork')}</p>
                 <p className="text-3xl font-bold text-foreground">{totalExams + gradedAssignments.length}</p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {totalExams} exams, {gradedAssignments.length} assignments
+                  {t('studentAnalytics.workCount', { exams: totalExams, assignments: gradedAssignments.length })}
                 </p>
               </div>
               <div className="h-12 w-12 bg-accent/10 rounded-xl flex items-center justify-center">
@@ -298,9 +300,9 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Badges Earned</p>
+                <p className="text-sm text-muted-foreground">{t('studentAnalytics.badgesEarned')}</p>
                 <p className="text-3xl font-bold text-foreground">{totalBadges}</p>
-                <p className="text-xs text-muted-foreground mt-2">Achievements unlocked</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('studentAnalytics.achievementsUnlocked')}</p>
               </div>
               <div className="h-12 w-12 bg-yellow-500/10 rounded-xl flex items-center justify-center">
                 <Award className="h-6 w-6 text-yellow-500" />
@@ -315,11 +317,11 @@ const StudentAnalytics = () => {
         <TabsList>
           <TabsTrigger value="exams" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
-            Exams
+            {t('courseDetailPage.examsTab')}
           </TabsTrigger>
           <TabsTrigger value="assignments" className="flex items-center gap-2">
             <ClipboardList className="w-4 h-4" />
-            Assignments
+            {t('calendar.types.assignment')}
           </TabsTrigger>
         </TabsList>
 
@@ -337,7 +339,7 @@ const StudentAnalytics = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-primary" />
-            Recent Badges
+            {t('studentAnalytics.recentBadges')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -366,9 +368,9 @@ const StudentAnalytics = () => {
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Award className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-1">No badges yet</h3>
+              <h3 className="text-lg font-medium text-foreground mb-1">{t('studentAnalytics.noBadgesTitle')}</h3>
               <p className="text-sm text-muted-foreground">
-                Complete coursework to earn badges from your teachers.
+                {t('studentAnalytics.completeCoursework')}
               </p>
             </div>
           )}
@@ -387,7 +389,7 @@ const StudentAnalytics = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    {analyticsType === 'exams' ? 'Exams Completed' : 'Assignments Graded'}
+                    {analyticsType === 'exams' ? t('studentAnalytics.examsCompleted') : t('studentAnalytics.assignmentsGraded')}
                   </p>
                   <p className="text-3xl font-bold text-foreground">{currentStats.count}</p>
                 </div>
@@ -406,7 +408,7 @@ const StudentAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Average Score</p>
+                  <p className="text-sm text-muted-foreground">{t('studentAnalytics.averageScore')}</p>
                   <p className="text-3xl font-bold text-foreground">{currentStats.average} pts</p>
                 </div>
                 <div className="h-12 w-12 bg-secondary/10 rounded-xl flex items-center justify-center">
@@ -420,10 +422,10 @@ const StudentAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pass Rate</p>
+                  <p className="text-sm text-muted-foreground">{t('studentAnalytics.passRate')}</p>
                   <p className="text-3xl font-bold text-foreground">{currentStats.passRate}%</p>
                   <Badge variant={currentStats.passRate >= 70 ? 'default' : 'secondary'} className="mt-2">
-                    {currentStats.passCount} passed
+                    {t('studentAnalytics.passedCount', { count: currentStats.passCount })}
                   </Badge>
                 </div>
                 <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -441,7 +443,7 @@ const StudentAnalytics = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                Score Distribution
+                {t('studentAnalytics.scoreDistribution')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -456,7 +458,7 @@ const StudentAnalytics = () => {
                     />
                     <YAxis
                       stroke="hsl(var(--muted-foreground))"
-                      label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
+                      label={{ value: t('studentAnalytics.count'), angle: -90, position: 'insideLeft' }}
                       allowDecimals={false}
                       tickFormatter={(value) => Math.floor(value).toString()}
                     />
@@ -466,7 +468,7 @@ const StudentAnalytics = () => {
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
                       }}
-                      formatter={(value: number) => [Math.floor(value), 'Count']}
+                      formatter={(value: number) => [Math.floor(value), t('studentAnalytics.count')]}
                     />
                     <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -474,9 +476,9 @@ const StudentAnalytics = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Clock className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-1">No data yet</h3>
+                  <h3 className="text-lg font-medium text-foreground mb-1">{t('studentAnalytics.noDataTitle')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Complete {analyticsType} to see your score distribution.
+                    {t('studentAnalytics.completeToSeeScore', { type: analyticsType })}
                   </p>
                 </div>
               )}
@@ -488,7 +490,7 @@ const StudentAnalytics = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList className="h-5 w-5 text-primary" />
-                Pass/Fail Status
+                {t('studentAnalytics.passFailStatus')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -509,7 +511,7 @@ const StudentAnalytics = () => {
                           {currentSubmissionStatus.map((entry, index) => (
                             <Cell
                               key={`cell-${index}`}
-                              fill={entry.name === 'Passed' ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'}
+                              fill={entry.name === t('studentAnalytics.passed') ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'}
                             />
                           ))}
                         </Pie>
@@ -529,7 +531,7 @@ const StudentAnalytics = () => {
                         <span
                           className="h-3 w-3 rounded-full"
                           style={{
-                            backgroundColor: item.name === 'Passed'
+                            backgroundColor: item.name === t('studentAnalytics.passed')
                               ? 'hsl(142, 71%, 45%)'
                               : 'hsl(0, 84%, 60%)'
                           }}
@@ -544,9 +546,9 @@ const StudentAnalytics = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Clock className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-1">No data yet</h3>
+                  <h3 className="text-lg font-medium text-foreground mb-1">{t('studentAnalytics.noDataTitle')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Complete {analyticsType} to see your pass/fail status.
+                    {t('studentAnalytics.completeToSeeStatus', { type: analyticsType })}
                   </p>
                 </div>
               )}

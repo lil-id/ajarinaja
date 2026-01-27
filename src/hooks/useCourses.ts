@@ -13,6 +13,12 @@ export interface Course {
   status: string;
   created_at: string;
   updated_at: string;
+  category?: string;
+  teacher?: {
+    name: string | null;
+    email: string | null;
+    avatar_url: string | null;
+  };
 }
 
 export interface CourseWithTeacher extends Course {
@@ -33,13 +39,38 @@ export function useCourses() {
   const { data: courses = [], isLoading, error } = useQuery({
     queryKey: ['courses'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // 1. Fetch courses
+      const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Course[];
+      if (coursesError) throw coursesError;
+
+      // 2. Fetch teachers
+      const teacherIds = [...new Set(coursesData.map(c => c.teacher_id).filter(Boolean))];
+
+      let teachersMap: Record<string, any> = {};
+
+      if (teacherIds.length > 0) {
+        const { data: teachersData, error: teachersError } = await supabase
+          .from('profiles')
+          .select('user_id, name, email, avatar_url')
+          .in('user_id', teacherIds);
+
+        if (!teachersError && teachersData) {
+          teachersMap = teachersData.reduce((acc, teacher) => {
+            acc[teacher.user_id] = teacher;
+            return acc;
+          }, {} as Record<string, any>);
+        }
+      }
+
+      // 3. Combine
+      return coursesData.map(course => ({
+        ...course,
+        teacher: teachersMap[course.teacher_id] || null
+      })) as Course[];
     },
     enabled: !!user,
   });
@@ -70,6 +101,57 @@ export function useCourses() {
   }, [user, queryClient]);
 
   return { courses, isLoading, error };
+}
+
+/**
+ * Custom hook to fetch a single course by ID.
+ * 
+ * @param {string} courseId - The ID of the course.
+ * @returns {object} The course data, loading state, and error.
+ */
+export function useCourse(courseId: string) {
+  const { user } = useAuth();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['course', courseId],
+    queryFn: async () => {
+      // 1. Fetch course details
+      const { data: courseData, error: courseError } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', courseId)
+        .maybeSingle();
+
+      if (courseError) throw courseError;
+      if (!courseData) return null;
+
+      // 2. Fetch teacher profile manually
+      let teacherProfile = null;
+      if (courseData.teacher_id) {
+        // console.log('Fetching teacher for:', courseData.teacher_id);
+        const { data: teacherData, error: teacherError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', courseData.teacher_id)
+          .maybeSingle();
+
+        // console.log('Teacher fetch result:', { teacherData, teacherError });
+
+        if (teacherData && !teacherError) {
+          teacherProfile = teacherData;
+        }
+      }
+
+      // 3. Combine data
+      return {
+        ...courseData,
+        teacher: teacherProfile,
+      } as Course;
+    },
+    enabled: !!user && !!courseId,
+  });
+
+  return { data, isLoading, error };
 }
 
 /**
