@@ -385,17 +385,23 @@ const StudentCourseDetail = () => {
             <CardContent>
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {course.teacher?.name?.charAt(0) || '?'}
-                  </AvatarFallback>
+                  {course.teacher?.avatar_url ? (
+                    <img src={course.teacher.avatar_url} alt={course.teacher?.name || ''} className="h-full w-full object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {course.teacher?.name?.charAt(0) || '?'}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 <div>
                   <div className="font-semibold text-foreground">
                     {course.teacher?.name || t('studentMaterials.unknownTeacher')}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {course.teacher?.email || t('common.noEmail')}
-                  </p>
+                  {course.teacher?.bio && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {course.teacher.bio}
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
