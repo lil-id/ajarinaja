@@ -18,6 +18,7 @@ export interface Course {
     name: string | null;
     email: string | null;
     avatar_url: string | null;
+    bio: string | null;
   };
 }
 
@@ -53,14 +54,15 @@ export function useCourses() {
       let teachersMap: Record<string, any> = {};
 
       if (teacherIds.length > 0) {
+        // Use public_profiles view to bypass RLS (students can't access profiles table)
         const { data: teachersData, error: teachersError } = await supabase
-          .from('profiles')
-          .select('user_id, name, email, avatar_url')
+          .from('public_profiles')
+          .select('user_id, name, avatar_url, bio')
           .in('user_id', teacherIds);
 
         if (!teachersError && teachersData) {
           teachersMap = teachersData.reduce((acc, teacher) => {
-            acc[teacher.user_id] = teacher;
+            acc[teacher.user_id!] = teacher;
             return acc;
           }, {} as Record<string, any>);
         }
@@ -125,20 +127,20 @@ export function useCourse(courseId: string) {
       if (courseError) throw courseError;
       if (!courseData) return null;
 
-      // 2. Fetch teacher profile manually
+      // 2. Fetch teacher profile using public_profiles view (bypasses RLS for students)
       let teacherProfile = null;
       if (courseData.teacher_id) {
-        // console.log('Fetching teacher for:', courseData.teacher_id);
         const { data: teacherData, error: teacherError } = await supabase
-          .from('profiles')
-          .select('*')
+          .from('public_profiles')
+          .select('user_id, name, avatar_url, bio')
           .eq('user_id', courseData.teacher_id)
           .maybeSingle();
 
-        // console.log('Teacher fetch result:', { teacherData, teacherError });
-
         if (teacherData && !teacherError) {
-          teacherProfile = teacherData;
+          teacherProfile = {
+            ...teacherData,
+            email: null, // email not exposed in public_profiles for privacy
+          };
         }
       }
 
