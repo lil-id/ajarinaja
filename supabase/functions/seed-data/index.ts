@@ -15,7 +15,12 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
     const results: Record<string, { inserted: number; skipped: number; errors: string[] }> = {};
 
@@ -63,6 +68,70 @@ serve(async (req) => {
       }
     }
 
+    // ============== SEED TEST ACCOUNTS ==============
+    const testAccounts = [
+      {
+        email: "teacher@ajarinaja.com",
+        password: "password123",
+        role: "teacher",
+        name: "Demo Teacher",
+      },
+      {
+        email: "student@ajarinaja.com",
+        password: "password123",
+        role: "student",
+        name: "Demo Student",
+      },
+    ];
+
+    results["users"] = { inserted: 0, skipped: 0, errors: [] };
+
+    let teacherId: string | null = null;
+    let studentId: string | null = null;
+
+    for (const account of testAccounts) {
+      try {
+        // Check if user already exists by email
+        const { data: existingUsers } = await supabase.auth.admin.listUsers();
+        const existingUser = existingUsers?.users?.find(u => u.email === account.email);
+
+        if (existingUser) {
+          results["users"].skipped++;
+          if (account.role === "teacher") {
+            teacherId = existingUser.id;
+          } else {
+            studentId = existingUser.id;
+          }
+          continue;
+        }
+
+        // Create new user
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email: account.email,
+          password: account.password,
+          email_confirm: true,
+          user_metadata: {
+            name: account.name,
+            role: account.role,
+          },
+        });
+
+        if (createError) {
+          results["users"].errors.push(`Create user ${account.email}: ${createError.message}`);
+        } else if (newUser?.user) {
+          results["users"].inserted++;
+          if (account.role === "teacher") {
+            teacherId = newUser.user.id;
+          } else {
+            studentId = newUser.user.id;
+          }
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        results["users"].errors.push(`Exception creating ${account.email}: ${errorMessage}`);
+      }
+    }
+
     // ============== SEED BADGES ==============
     const badgesData = [
       { name: "Perfect Score", description: "Achieved 100% on an exam", icon: "trophy", color: "gold", is_preset: true },
@@ -78,15 +147,20 @@ serve(async (req) => {
     await seedTable("badges", badgesData, ["name", "is_preset"]);
 
     // ============== SEED SAMPLE COURSES (for demo/testing) ==============
-    // Note: These require a valid teacher_id, so we'll check if any teachers exist first
-    const { data: teachers } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "teacher")
-      .limit(1);
+    // Use seeded teacher or find existing one
+    if (!teacherId) {
+      const { data: teachers } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "teacher")
+        .limit(1);
+      
+      if (teachers && teachers.length > 0) {
+        teacherId = teachers[0].user_id;
+      }
+    }
 
-    if (teachers && teachers.length > 0) {
-      const teacherId = teachers[0].user_id;
+    if (teacherId) {
 
       const coursesData = [
         {
@@ -354,15 +428,53 @@ serve(async (req) => {
       ];
 
       await seedTable("question_bank", questionBankData, ["id"]);
+
+      // ============== SEED SAMPLE ENROLLMENTS ==============
+      // Find student ID if not already set
+      if (!studentId) {
+        const { data: students } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "student")
+          .limit(1);
+        
+        if (students && students.length > 0) {
+          studentId = students[0].user_id;
+        }
+      }
+
+      if (studentId) {
+        const enrollmentsData = [
+          {
+            id: "00000000-0000-0000-0000-000000000701",
+            student_id: studentId,
+            course_id: "00000000-0000-0000-0000-000000000001",
+          },
+          {
+            id: "00000000-0000-0000-0000-000000000702",
+            student_id: studentId,
+            course_id: "00000000-0000-0000-0000-000000000003",
+          },
+        ];
+
+        await seedTable("enrollments", enrollmentsData, ["id"]);
+      }
     } else {
-      results["info"] = { inserted: 0, skipped: 0, errors: ["No teachers found. Please create a teacher account first to seed course-related data."] };
+      results["info"] = { inserted: 0, skipped: 0, errors: ["No teachers found and could not create one."] };
     }
+
+    // Return account info for reference
+    const accountInfo = {
+      teacher: { email: "teacher@ajarinaja.com", password: "password123" },
+      student: { email: "student@ajarinaja.com", password: "password123" },
+    };
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Seeding completed",
         results,
+        accounts: accountInfo,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
