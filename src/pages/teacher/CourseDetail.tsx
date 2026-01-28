@@ -49,7 +49,8 @@ import {
   Link,
   File,
   Clock,
-  Award
+  Award,
+  Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -866,11 +867,23 @@ const TeacherCourseDetail = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span>{exam.duration} {t('courses.minutes')}</span>
-                      <span>{exam.total_points} {t('courses.pts')}</span>
+                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {exam.duration} {t('courses.minutes')}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Award className="w-4 h-4" />
+                        {exam.total_points} {t('courses.pts')}
+                      </span>
+                      {exam.end_date && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {t('exams.due')}: {format(new Date(exam.end_date), 'MMM d, yyyy h:mm a')}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"

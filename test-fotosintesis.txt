@@ -1,0 +1,57 @@
+Fotosintesis: Proses Pembentukan Makanan pada Tumbuhan
+
+Pendahuluan
+
+Fotosintesis adalah proses biokimia yang dilakukan oleh tumbuhan hijau, alga, dan beberapa bakteri untuk mengubah energi cahaya menjadi energi kimia dalam bentuk glukosa. Proses ini sangat penting bagi kehidupan di bumi karena menghasilkan oksigen yang dibutuhkan oleh makhluk hidup lainnya.
+
+Pengertian Fotosintesis
+
+Fotosintesis berasal dari kata "foto" yang berarti cahaya dan "sintesis" yang berarti penyusunan. Jadi, fotosintesis adalah proses penyusunan senyawa kimia kompleks yang memerlukan energi cahaya. Pada tumbuhan hijau, fotosintesis terjadi di dalam organel sel yang disebut kloroplas.
+
+Tempat Terjadinya Fotosintesis
+
+Fotosintesis terjadi pada bagian tumbuhan yang mengandung klorofil, terutama pada daun. Di dalam daun terdapat jaringan mesofil yang kaya akan kloroplas. Kloroplas memiliki dua bagian utama:
+
+1. Membran Tilakoid
+Membran tilakoid adalah tempat terjadinya reaksi terang fotosintesis. Di sinilah energi cahaya ditangkap oleh pigmen klorofil dan diubah menjadi energi kimia.
+
+2. Stroma
+Stroma adalah cairan yang mengisi ruang di dalam kloroplas. Stroma merupakan tempat terjadinya reaksi gelap atau siklus Calvin-Benson.
+
+Tahapan Fotosintesis
+
+Fotosintesis berlangsung melalui dua tahap utama:
+
+A. Reaksi Terang (Reaksi Fotolisis)
+
+Reaksi terang terjadi di membran tilakoid dan memerlukan cahaya matahari. Tahapan reaksi terang:
+
+1. Penyerapan Cahaya
+Klorofil dalam fotosistem II menyerap energi cahaya matahari. Energi ini menyebabkan elektron pada klorofil tereksitasi ke tingkat energi yang lebih tinggi.
+
+2. Fotolisis Air
+Air (H₂O) dipecah menjadi hidrogen (H⁺) dan oksigen (O₂) dengan bantuan energi cahaya. Oksigen yang dihasilkan dilepaskan ke atmosfer sebagai produk sampingan.
+
+3. Pembentukan ATP dan NADPH
+Elektron yang tereksitasi mengalir melalui rantai transpor elektron, menghasilkan energi yang digunakan untuk membentuk ATP (adenosin trifosfat) dan NADPH (nikotinamida adenin dinukleotida fosfat). Kedua molekul ini akan digunakan dalam reaksi gelap.
+
+Persamaan Reaksi Fotosintesis
+
+Secara keseluruhan, reaksi fotosintesis dapat ditulis sebagai:
+
+6 CO₂ + 6 H₂O + Cahaya → C₆H₁₂O₆ + 6 O₂
+
+Faktor-faktor yang Mempengaruhi Laju Fotosintesis
+
+1. Intensitas Cahaya - Semakin tinggi intensitas cahaya, semakin cepat laju fotosintesis
+2. Konsentrasi CO₂ - Peningkatan CO₂ meningkatkan laju fotosintesis
+3. Suhu - Optimal pada 25-35°C
+4. Ketersediaan Air - Air adalah bahan baku fotosintesis
+5. Kandungan Klorofil - Semakin banyak klorofil, semakin efisien fotosintesis
+
+Manfaat Fotosintesis
+
+1. Menghasilkan makanan (glukosa)
+2. Menghasilkan oksigen untuk respirasi
+3. Mengurangi CO₂ di atmosfer
+4. Menjaga keseimbangan ekosistem

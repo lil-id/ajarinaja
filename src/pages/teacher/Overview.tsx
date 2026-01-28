@@ -6,6 +6,7 @@ import { useAssignments } from '@/hooks/useAssignments';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Users, FileText, TrendingUp, Loader2, ClipboardList, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 /**
  * Teacher Dashboard Overview page.
@@ -173,6 +174,10 @@ const TeacherOverview = () => {
             ) : (
               courses.slice(0, 5).map((course) => {
                 const courseExams = teacherExams.filter(e => e.course_id === course.id);
+                const upcomingExam = courseExams
+                  .filter(e => e.end_date && new Date(e.end_date) > new Date())
+                  .sort((a, b) => new Date(a.end_date!).getTime() - new Date(b.end_date!).getTime())[0];
+
                 return (
                   <div
                     key={course.id}
@@ -188,6 +193,11 @@ const TeacherOverview = () => {
                         <p className="text-sm text-muted-foreground">
                           {courseExams.length} {t('exams.title').toLowerCase()}
                         </p>
+                        {upcomingExam && (
+                          <p className="text-xs text-destructive mt-1">
+                            {t('exams.deadline')}: {format(new Date(upcomingExam.end_date!), 'MMM d, yyyy h:mm a')}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${course.status === 'published'

@@ -29,8 +29,8 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
       if (!user) {
         // Pass current location so Login can redirect back after auth
         navigate('/login', { state: { from: location.pathname }, replace: true });
-      } else if (requiredRole && role !== requiredRole) {
-        // Redirect to correct dashboard based on actual role (role mismatch)
+      } else if (requiredRole && role && role !== requiredRole) {
+        // Only redirect if role is loaded AND doesn't match (prevents redirect during loading)
         navigate(role === 'teacher' ? '/teacher' : '/student', { replace: true });
       }
     }

@@ -97,7 +97,7 @@ const TeacherCourses = () => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="hero">
+            <Button variant="default">
               <Plus className="w-4 h-4" />
               {t('courses.newCourse')}
             </Button>

@@ -10,7 +10,8 @@ import {
   Library,
   Tag,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  Sparkles
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useTeacherCourses } from "@/hooks/useCourses";
 import {
@@ -61,6 +63,7 @@ import {
 } from "@/hooks/useQuestionBank";
 import FormulaInput from "@/components/FormulaInput";
 import FormulaText from "@/components/FormulaText";
+import { AIQuestionGenerator } from "@/components/AIQuestionGenerator";
 
 /**
  * Form data structure for creating/editing questions.
@@ -265,337 +268,359 @@ export default function QuestionBank() {
             {t('questionBank.subtitle')}
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('questionBank.addQuestion')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingQuestion ? t('questionBank.editQuestion') : t('questionBank.addQuestionToBank')}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('questionBank.category')}</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(v) => setFormData({ ...formData, category: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="General">General</SelectItem>
-                      {categories.filter(c => c !== "General").map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    placeholder={t('questionBank.orCreateNewCategory')}
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('questionBank.courseOptional')}</Label>
-                  <Select
-                    value={formData.course_id || "none"}
-                    onValueChange={(v) =>
-                      setFormData({ ...formData, course_id: v === "none" ? null : v })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('exams.selectCourse')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t('questionBank.noSpecificCourse')}</SelectItem>
-                      {courses.map((course) => (
-                        <SelectItem key={course.id} value={course.id}>
-                          {course.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('questionBank.questionType')}</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(v) => setFormData({ ...formData, type: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="multiple_choice">{t('questionBank.multipleChoice')}</SelectItem>
-                      <SelectItem value="multi_select">{t('questionBank.multiSelect')}</SelectItem>
-                      <SelectItem value="essay">{t('questionBank.essay')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('questionBank.points')}</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={formData.points}
-                    onChange={(e) =>
-                      setFormData({ ...formData, points: parseInt(e.target.value) || 10 })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t('questionBank.question')}</Label>
-                <FormulaInput
-                  value={formData.question}
-                  onChange={(v) => setFormData({ ...formData, question: v })}
-                  placeholder={t('questionBank.questionPlaceholder')}
-                  rows={3}
-                />
-              </div>
-
-              {formData.type === "multiple_choice" && (
-                <div className="space-y-3">
-                  <Label>{t('questionBank.optionsSelectCorrect')}</Label>
-                  <RadioGroup
-                    value={formData.correct_answer?.toString() || ""}
-                    onValueChange={(v) =>
-                      setFormData({ ...formData, correct_answer: parseInt(v) })
-                    }
-                  >
-                    {formData.options.map((option, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                        <FormulaInput
-                          singleLine
-                          placeholder={t('questionBank.optionPlaceholder', { number: index + 1 })}
-                          value={option}
-                          onChange={(v) => {
-                            const newOptions = [...formData.options];
-                            newOptions[index] = v;
-                            setFormData({ ...formData, options: newOptions });
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-
-              {formData.type === "multi_select" && (
-                <div className="space-y-3">
-                  <Label>{t('questionBank.optionsSelectAllCorrect')}</Label>
-                  {formData.options.map((option, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Checkbox
-                        checked={formData.correct_answers.includes(index)}
-                        onCheckedChange={(checked) => {
-                          const newAnswers = checked
-                            ? [...formData.correct_answers, index]
-                            : formData.correct_answers.filter(a => a !== index);
-                          setFormData({ ...formData, correct_answers: newAnswers });
-                        }}
-                      />
-                      <FormulaInput
-                        singleLine
-                        placeholder={t('questionBank.optionPlaceholder', { number: index + 1 })}
-                        value={option}
-                        onChange={(v) => {
-                          const newOptions = [...formData.options];
-                          newOptions[index] = v;
-                          setFormData({ ...formData, options: newOptions });
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={createQuestion.isPending || updateQuestion.isPending}
-                >
-                  {(createQuestion.isPending || updateQuestion.isPending) && (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  )}
-                  {editingQuestion ? t('questionBank.update') : t('common.save')}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('questionBank.searchQuestions')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[160px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder={t('questionBank.category')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('questionBank.allCategories')}</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterCourse} onValueChange={setFilterCourse}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder={t('courses.title')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('questionBank.allCourses')}</SelectItem>
-                {courses.map((course) => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder={t('questionBank.questionType')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('questionBank.allTypes')}</SelectItem>
-                <SelectItem value="multiple_choice">{t('questionBank.multipleChoice')}</SelectItem>
-                <SelectItem value="multi_select">{t('questionBank.multiSelect')}</SelectItem>
-                <SelectItem value="essay">{t('questionBank.essay')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="manual" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="manual">
+            <Library className="h-4 w-4 mr-2" />
+            Manual Entry
+          </TabsTrigger>
+          <TabsTrigger value="ai">
+            <Sparkles className="h-4 w-4 mr-2" />
+            {t('ai.title')}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Questions List */}
-      {filteredQuestions.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              {questions.length === 0 ? t('questionBank.noQuestionsYet') : t('questionBank.noQuestionsMatch')}
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {questions.length === 0
-                ? t('questionBank.startBuildingBank')
-                : t('assignments.tryAdjustingSearch')}
-            </p>
-            {questions.length === 0 && (
-              <Button onClick={() => handleOpenDialog()}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('questionBank.addQuestion')}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {filteredQuestions.map((q) => (
-            <Card key={q.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="py-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <Badge variant="secondary">{q.category}</Badge>
-                      <Badge variant="outline">
-                        {q.type === "multiple_choice" ? "MCQ" : "Essay"}
-                      </Badge>
-                      <Badge variant="outline">{q.points} pts</Badge>
-                      {q.course_id && (
-                        <Badge variant="outline" className="text-xs">
-                          {getCourseTitle(q.course_id)}
-                        </Badge>
-                      )}
-                      {q.used_count > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          Used {q.used_count} time{q.used_count > 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-foreground line-clamp-2">{q.question}</p>
-                    {q.type === "multiple_choice" && q.options && (
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        Options: {(q.options as string[]).filter(o => o).join(", ")}
-                      </div>
-                    )}
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleOpenDialog(q)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDuplicate(q)}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Duplicate
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => setDeleteId(q.id)}
+        <TabsContent value="manual" className="space-y-6 mt-6">
+          <div className="flex justify-end">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => handleOpenDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('questionBank.addQuestion')}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingQuestion ? t('questionBank.editQuestion') : t('questionBank.addQuestionToBank')}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('questionBank.category')}</Label>
+                      <Select
+                        value={formData.category}
+                        onValueChange={(v) => setFormData({ ...formData, category: v })}
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="General">General</SelectItem>
+                          {categories.filter(c => c !== "General").map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder={t('questionBank.orCreateNewCategory')}
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('questionBank.courseOptional')}</Label>
+                      <Select
+                        value={formData.course_id || "none"}
+                        onValueChange={(v) =>
+                          setFormData({ ...formData, course_id: v === "none" ? null : v })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('exams.selectCourse')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t('questionBank.noSpecificCourse')}</SelectItem>
+                          {courses.map((course) => (
+                            <SelectItem key={course.id} value={course.id}>
+                              {course.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('questionBank.questionType')}</Label>
+                      <Select
+                        value={formData.type}
+                        onValueChange={(v) => setFormData({ ...formData, type: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="multiple_choice">{t('questionBank.multipleChoice')}</SelectItem>
+                          <SelectItem value="multi_select">{t('questionBank.multiSelect')}</SelectItem>
+                          <SelectItem value="essay">{t('questionBank.essay')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('questionBank.points')}</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={formData.points}
+                        onChange={(e) =>
+                          setFormData({ ...formData, points: parseInt(e.target.value) || 10 })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>{t('questionBank.question')}</Label>
+                    <FormulaInput
+                      value={formData.question}
+                      onChange={(v) => setFormData({ ...formData, question: v })}
+                      placeholder={t('questionBank.questionPlaceholder')}
+                      rows={3}
+                    />
+                  </div>
+
+                  {formData.type === "multiple_choice" && (
+                    <div className="space-y-3">
+                      <Label>{t('questionBank.optionsSelectCorrect')}</Label>
+                      <RadioGroup
+                        value={formData.correct_answer?.toString() || ""}
+                        onValueChange={(v) =>
+                          setFormData({ ...formData, correct_answer: parseInt(v) })
+                        }
+                      >
+                        {formData.options.map((option, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                            <FormulaInput
+                              singleLine
+                              placeholder={t('questionBank.optionPlaceholder', { number: index + 1 })}
+                              value={option}
+                              onChange={(v) => {
+                                const newOptions = [...formData.options];
+                                newOptions[index] = v;
+                                setFormData({ ...formData, options: newOptions });
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+                  )}
+
+                  {formData.type === "multi_select" && (
+                    <div className="space-y-3">
+                      <Label>{t('questionBank.optionsSelectAllCorrect')}</Label>
+                      {formData.options.map((option, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={formData.correct_answers.includes(index)}
+                            onCheckedChange={(checked) => {
+                              const newAnswers = checked
+                                ? [...formData.correct_answers, index]
+                                : formData.correct_answers.filter(a => a !== index);
+                              setFormData({ ...formData, correct_answers: newAnswers });
+                            }}
+                          />
+                          <FormulaInput
+                            singleLine
+                            placeholder={t('questionBank.optionPlaceholder', { number: index + 1 })}
+                            value={option}
+                            onChange={(v) => {
+                              const newOptions = [...formData.options];
+                              newOptions[index] = v;
+                              setFormData({ ...formData, options: newOptions });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      {t('common.cancel')}
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      disabled={createQuestion.isPending || updateQuestion.isPending}
+                    >
+                      {(createQuestion.isPending || updateQuestion.isPending) && (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      )}
+                      {editingQuestion ? t('questionBank.update') : t('common.save')}
+                    </Button>
+                  </div>
                 </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Filters */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={t('questionBank.searchQuestions')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="w-[160px]">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder={t('questionBank.category')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('questionBank.allCategories')}</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterCourse} onValueChange={setFilterCourse}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder={t('courses.title')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('questionBank.allCourses')}</SelectItem>
+                    {courses.map((course) => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder={t('questionBank.questionType')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('questionBank.allTypes')}</SelectItem>
+                    <SelectItem value="multiple_choice">{t('questionBank.multipleChoice')}</SelectItem>
+                    <SelectItem value="multi_select">{t('questionBank.multiSelect')}</SelectItem>
+                    <SelectItem value="essay">{t('questionBank.essay')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Questions List */}
+          {filteredQuestions.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">
+                  {questions.length === 0 ? t('questionBank.noQuestionsYet') : t('questionBank.noQuestionsMatch')}
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  {questions.length === 0
+                    ? t('questionBank.startBuildingBank')
+                    : t('assignments.tryAdjustingSearch')}
+                </p>
+                {questions.length === 0 && (
+                  <Button onClick={() => handleOpenDialog()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('questionBank.addQuestion')}
+                  </Button>
+                )}
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="space-y-3">
+              {filteredQuestions.map((q) => (
+                <Card key={q.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="py-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <Badge variant="secondary">{q.category}</Badge>
+                          <Badge variant="outline">
+                            {q.type === "multiple_choice" ? "MCQ" : "Essay"}
+                          </Badge>
+                          <Badge variant="outline">{q.points} pts</Badge>
+                          {q.course_id && (
+                            <Badge variant="outline" className="text-xs">
+                              {getCourseTitle(q.course_id)}
+                            </Badge>
+                          )}
+                          {q.used_count > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              Used {q.used_count} time{q.used_count > 1 ? "s" : ""}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-foreground line-clamp-2">{q.question}</p>
+                        {q.type === "multiple_choice" && q.options && (
+                          <div className="mt-2 text-sm text-muted-foreground">
+                            Options: {(q.options as string[]).filter(o => o).join(", ")}
+                          </div>
+                        )}
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenDialog(q)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDuplicate(q)}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setDeleteId(q.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Question</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this question from your bank? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* Delete Confirmation */}
+          <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Question</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this question from your bank? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-6">
+          <AIQuestionGenerator />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams, useUpdateExam, useDeleteExam } from '@/hooks/useExams';
-import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore } from 'lucide-react';
+import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore, Calendar } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { sendCourseNotification, getEnrolledStudents } from '@/lib/notificationService';
 import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 /**
  * Teacher Exams Management page.
@@ -168,7 +169,7 @@ const TeacherExams = () => {
             {t('exams.manageExams')}
           </p>
         </div>
-        <Button variant="hero" disabled={courses.length === 0} onClick={handleCreateExam}>
+        <Button variant="default" disabled={courses.length === 0} onClick={handleCreateExam}>
           <Plus className="w-4 h-4" />
           {t('exams.newExam')}
         </Button>
@@ -305,7 +306,7 @@ const TeacherExams = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         {exam.duration} {t('common.minutes')}
@@ -315,7 +316,13 @@ const TeacherExams = () => {
                         {exam.total_points} {t('common.pts')}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    {exam.end_date && (
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
+                        <Calendar className="w-4 h-4" />
+                        {t('exams.due')}: {format(new Date(exam.end_date), 'MMM d, yyyy h:mm a')}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between mt-3">
                       <Badge
                         variant={exam.status === 'published' ? 'default' : 'secondary'}
                       >

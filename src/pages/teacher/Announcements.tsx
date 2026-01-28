@@ -94,7 +94,7 @@ const TeacherAnnouncements = () => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="hero" disabled={courses.length === 0}>
+            <Button variant="default" disabled={courses.length === 0}>
               <Plus className="w-4 h-4" />
               {t('courseDetail.postAnnouncement')}
             </Button>

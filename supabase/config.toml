@@ -1,6 +1,12 @@
-project_id = "tzqakziepfzudcjtxoxy"
+project_id = "lyctesadklaianvtxquf"
 
 [functions.send-enrollment-email]
+verify_jwt = false
+
+[functions.process-material]
+verify_jwt = false
+
+[functions.generate-questions]
 verify_jwt = false
 
 [functions.send-course-notification]

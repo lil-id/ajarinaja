@@ -42,6 +42,7 @@ import {
   Trash2,
   PenTool,
   Download,
+  RotateCcw,
   BookOpen
 } from 'lucide-react';
 import { useReportCards, useReportCardEntries, type CreateReportCardEntryData } from '@/hooks/useReportCards';
@@ -80,6 +81,8 @@ const ReportCardDetail = () => {
   const [addCourseDialogOpen, setAddCourseDialogOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [teacherNotes, setTeacherNotes] = useState('');
+  const [isCalculating, setIsCalculating] = useState(false);
+
 
   // Fetch single report card
   const reportCardQuery = useQuery({
@@ -193,6 +196,101 @@ const ReportCardDetail = () => {
     }
   };
 
+  const handleAutoCalculate = async () => {
+    if (!reportCard) return;
+
+    setIsCalculating(true);
+    toast.info(t('reportCards.calculatingGrades'));
+
+    try {
+      const updatedEntries: Record<string, any> = {};
+
+      for (const entry of entries) {
+        const courseId = entry.course_id;
+        const studentId = reportCard.student_id;
+
+        // Fetch all exams for this course
+        const { data: exams } = await supabase
+          .from('exams')
+          .select('id')
+          .eq('course_id', courseId);
+
+        const examIds = exams?.map(e => e.id) || [];
+
+        // Fetch exam submissions
+        let examAverage: number | null = null;
+        if (examIds.length > 0) {
+          const { data: examSubmissions } = await supabase
+            .from('exam_submissions')
+            .select('score')
+            .eq('student_id', studentId)
+            .in('exam_id', examIds);
+
+          if (examSubmissions && examSubmissions.length > 0) {
+            const validScores = examSubmissions.filter(s => s.score !== null);
+            if (validScores.length > 0) {
+              const sum = validScores.reduce((acc, s) => acc + (s.score || 0), 0);
+              examAverage = sum / validScores.length;
+            }
+          }
+        }
+
+        // Fetch all assignments for this course
+        const { data: assignments } = await supabase
+          .from('assignments')
+          .select('id')
+          .eq('course_id', courseId);
+
+        const assignmentIds = assignments?.map(a => a.id) || [];
+
+        // Fetch assignment submissions (only graded)
+        let assignmentAverage: number | null = null;
+        if (assignmentIds.length > 0) {
+          const { data: assignmentSubmissions } = await supabase
+            .from('assignment_submissions')
+            .select('score')
+            .eq('student_id', studentId)
+            .eq('graded', true)
+            .in('assignment_id', assignmentIds);
+
+          if (assignmentSubmissions && assignmentSubmissions.length > 0) {
+            const validScores = assignmentSubmissions.filter(s => s.score !== null);
+            if (validScores.length > 0) {
+              const sum = validScores.reduce((acc, s) => acc + (s.score || 0), 0);
+              assignmentAverage = sum / validScores.length;
+            }
+          }
+        }
+
+        // Calculate overall average for final grade
+        let finalGrade = '';
+        if (examAverage !== null && assignmentAverage !== null) {
+          finalGrade = ((examAverage + assignmentAverage) / 2).toFixed(2);
+        } else if (examAverage !== null) {
+          finalGrade = examAverage.toFixed(2);
+        } else if (assignmentAverage !== null) {
+          finalGrade = assignmentAverage.toFixed(2);
+        }
+
+        // Update local entries
+        updatedEntries[entry.id] = {
+          ...localEntries[entry.id],
+          exam_average: examAverage !== null ? examAverage.toFixed(2) : '',
+          assignment_average: assignmentAverage !== null ? assignmentAverage.toFixed(2) : '',
+          final_grade: finalGrade,
+        };
+      }
+
+      setLocalEntries(prev => ({ ...prev, ...updatedEntries }));
+      toast.success(t('toast.gradesSaved'));
+    } catch (error) {
+      console.error('Error calculating grades:', error);
+      toast.error(t('toast.failedToSaveGrades'));
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
   const handleUpdateEntry = (entryId: string, field: string, value: string) => {
     setLocalEntries(prev => ({
       ...prev,
@@ -204,18 +302,21 @@ const ReportCardDetail = () => {
   };
 
   const handleSaveEntries = async () => {
-    const entriesToSave: CreateReportCardEntryData[] = Object.entries(localEntries).map(([entryId, data]) => {
-      const entry = entries.find(e => e.id === entryId);
-      return {
-        report_card_id: reportCardId!,
-        course_id: entry!.course_id,
-        exam_average: data.exam_average ? parseFloat(data.exam_average) : undefined,
-        assignment_average: data.assignment_average ? parseFloat(data.assignment_average) : undefined,
-        final_grade: parseFloat(data.final_grade),
-        kkm: parseInt(data.kkm),
-        teacher_notes: data.teacher_notes || undefined,
-      };
-    });
+    // Only save entries that actually exist in the current entries list
+    const entriesToSave: CreateReportCardEntryData[] = entries
+      .filter(entry => localEntries[entry.id]) // Only include entries that have local data
+      .map(entry => {
+        const data = localEntries[entry.id];
+        return {
+          report_card_id: reportCardId!,
+          course_id: entry.course_id,
+          exam_average: data.exam_average ? parseFloat(data.exam_average) : undefined,
+          assignment_average: data.assignment_average ? parseFloat(data.assignment_average) : undefined,
+          final_grade: parseFloat(data.final_grade),
+          kkm: parseInt(data.kkm),
+          teacher_notes: data.teacher_notes || undefined,
+        };
+      });
 
     await bulkUpsertEntries.mutateAsync(entriesToSave);
 
@@ -269,6 +370,29 @@ const ReportCardDetail = () => {
     setSignatureDialogOpen(false);
   };
 
+  const handleUnfinalize = async () => {
+    if (!reportCardId) return;
+
+    try {
+      const { error } = await supabase
+        .from('report_cards')
+        .update({
+          status: 'draft',
+          finalized_at: null,
+          finalized_by: null,
+        })
+        .eq('id', reportCardId);
+
+      if (error) throw error;
+
+      toast.success(t('reportCards.unfinalizeSuccess'));
+      window.location.reload();
+    } catch (error) {
+      console.error('Error unfinalizing report card:', error);
+      toast.error(t('toast.failedToUpdateReportCard'));
+    }
+  };
+
   const handleDownloadPDF = () => {
     if (!reportCard) return;
 
@@ -287,15 +411,32 @@ const ReportCardDetail = () => {
     doc.text(`${t('reportCards.status')}: ${reportCard.status === 'finalized' ? t('common.finalized') : t('common.draft')}`, 20, 59);
 
     // Grades table
-    const tableData = entries.map((entry, idx) => [
-      (idx + 1).toString(),
-      entry.course?.title || '-',
-      entry.exam_average?.toString() || '-',
-      entry.assignment_average?.toString() || '-',
-      entry.final_grade.toString(),
-      entry.kkm.toString(),
-      entry.passed ? t('reportCards.passed') : t('reportCards.notPassed'),
-    ]);
+    const tableData = entries.map((entry, idx) => {
+      const examAvg = entry.exam_average || 0;
+      const assignAvg = entry.assignment_average || 0;
+      const hasExam = entry.exam_average !== null;
+      const hasAssignment = entry.assignment_average !== null;
+
+      let overallAvg = '-';
+      if (hasExam && hasAssignment) {
+        overallAvg = ((examAvg + assignAvg) / 2).toFixed(2);
+      } else if (hasExam) {
+        overallAvg = examAvg.toFixed(2);
+      } else if (hasAssignment) {
+        overallAvg = assignAvg.toFixed(2);
+      }
+
+      return [
+        (idx + 1).toString(),
+        entry.course?.title || '-',
+        entry.exam_average?.toString() || '-',
+        entry.assignment_average?.toString() || '-',
+        overallAvg,
+        entry.final_grade.toString(),
+        entry.kkm.toString(),
+        entry.passed ? t('reportCards.passed') : t('reportCards.notPassed'),
+      ];
+    });
 
     autoTable(doc, {
       startY: 70,
@@ -304,6 +445,7 @@ const ReportCardDetail = () => {
         t('reportCards.subject'),
         t('reportCards.examAverage'),
         t('reportCards.assignmentAverage'),
+        t('reportCards.overallAverage'),
         t('reportCards.finalGrade'),
         t('reportCards.kkm'),
         t('reportCards.status')
@@ -383,13 +525,21 @@ const ReportCardDetail = () => {
             <Save className="w-4 h-4 mr-2" />
             {bulkUpsertEntries.isPending ? t('common.saving') : t('common.save')}
           </Button>
-          {reportCard.status !== 'finalized' && (
+          {reportCard.status !== 'finalized' ? (
             <Button
               variant="default"
               onClick={() => setSignatureDialogOpen(true)}
             >
               <PenTool className="w-4 h-4 mr-2" />
               {t('reportCards.finalize')}
+            </Button>
+          ) : (
+            <Button
+              variant="destructive"
+              onClick={handleUnfinalize}
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              {t('reportCards.unfinalize')}
             </Button>
           )}
         </div>
@@ -443,16 +593,26 @@ const ReportCardDetail = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{t('reportCards.gradePerSubject')}</CardTitle>
-              <CardDescription>{t('reportCards.inputGradesDescription')}</CardDescription>
+              <CardDescription>{t('reportCards.autoCalculated')}</CardDescription>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setAddCourseDialogOpen(true)}
-              disabled={reportCard.status === 'finalized'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('reportCards.addSubject')}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={handleAutoCalculate}
+                disabled={reportCard.status === 'finalized' || isCalculating || entries.length === 0}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                {isCalculating ? t('reportCards.calculatingGrades') : t('reportCards.autoCalculate')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setAddCourseDialogOpen(true)}
+                disabled={reportCard.status === 'finalized'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('reportCards.addSubject')}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -474,15 +634,17 @@ const ReportCardDetail = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t('reportCards.subject')}</TableHead>
-                  <TableHead className="w-28">{t('reportCards.examAverage')}</TableHead>
-                  <TableHead className="w-28">{t('reportCards.assignmentAverage')}</TableHead>
-                  <TableHead className="w-28">{t('reportCards.finalGrade')}</TableHead>
-                  <TableHead className="w-20">{t('reportCards.kkm')}</TableHead>
+                  <TableHead className="w-32">{t('reportCards.examAverage')}</TableHead>
+                  <TableHead className="w-32">{t('reportCards.assignmentAverage')}</TableHead>
+                  <TableHead className="w-32">{t('reportCards.overallAverage')}</TableHead>
+                  <TableHead className="w-32">{t('reportCards.finalGrade')}</TableHead>
+                  <TableHead className="w-24">{t('reportCards.kkm')}</TableHead>
                   <TableHead className="w-24">{t('reportCards.status')}</TableHead>
-                  <TableHead className="w-48">{t('reportCards.notes')}</TableHead>
+                  <TableHead className="w-64">{t('reportCards.notes')}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
                 {entries.map((entry) => {
                   const localEntry = localEntries[entry.id] || {
@@ -520,6 +682,23 @@ const ReportCardDetail = () => {
                           disabled={reportCard.status === 'finalized'}
                           className="w-full"
                         />
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-center font-medium">
+                          {(() => {
+                            const examAvg = parseFloat(localEntry.exam_average) || 0;
+                            const assignAvg = parseFloat(localEntry.assignment_average) || 0;
+                            const hasExam = localEntry.exam_average !== '';
+                            const hasAssignment = localEntry.assignment_average !== '';
+
+                            if (!hasExam && !hasAssignment) return '-';
+                            if (hasExam && !hasAssignment) return examAvg.toFixed(2);
+                            if (!hasExam && hasAssignment) return assignAvg.toFixed(2);
+
+                            const overall = (examAvg + assignAvg) / 2;
+                            return overall.toFixed(2);
+                          })()}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Input
