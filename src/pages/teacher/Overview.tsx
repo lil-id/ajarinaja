@@ -3,20 +3,30 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
+import { useCourseMetrics } from '@/hooks/useCourseMetrics';
+import { useQuickActionBadges } from '@/hooks/useQuickActionBadges';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Users, FileText, TrendingUp, Loader2, ClipboardList, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BookOpen, Users, FileText, TrendingUp, Loader2, ClipboardList, Calendar, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { ActivityChart } from '@/components/dashboard/ActivityChart';
+import { RecentSubmissionsWidget } from '@/components/dashboard/RecentSubmissionsWidget';
+import { PendingGradingWidget } from '@/components/dashboard/PendingGradingWidget';
 
 /**
  * Teacher Dashboard Overview page.
  * 
  * Main landing page for teachers.
  * Features:
- * - Key statistics (Total courses, Published, Exams, Assignments)
- * - Quick actions shortcuts
- * - Recent courses list
- * - Welcome message with teacher name
+ * - Key statistics with visual hierarchy
+ * - Activity performance chart
+ * - Recent submissions widget
+ * - Pending grading widget
+ * - Enhanced quick actions with badges and tooltips
+ * - Course grid with engagement metrics
  * 
  * @returns {JSX.Element} The rendered Overview page.
  */
@@ -27,6 +37,10 @@ const TeacherOverview = () => {
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const { exams, isLoading: examsLoading } = useExams();
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
+
+  const courseIds = courses.map(c => c.id);
+  const { data: courseMetrics = [], isLoading: metricsLoading } = useCourseMetrics(courseIds);
+  const { data: actionBadges, isLoading: badgesLoading } = useQuickActionBadges();
 
   const isLoading = coursesLoading || examsLoading || assignmentsLoading;
 
@@ -77,143 +91,244 @@ const TeacherOverview = () => {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          {t('dashboard.welcome')}, {profile?.name?.split(' ')[0] || t('auth.teacher')}!
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {t('dashboard.recentActivity')}
-        </p>
-      </div>
+    <TooltipProvider>
+      <div className="space-y-8 animate-fade-in">
+        {/* Welcome Section */}
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            {t('dashboard.welcome')}, {profile?.name?.split(' ')[0] || t('auth.teacher')}!
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {t('dashboard.recentActivity')}
+          </p>
+        </div>
 
-      {/* Stats Grid - Clickable */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <Card
-            key={stat.label}
-            className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-            style={{ animationDelay: `${index * 100}ms` }}
-            onClick={() => navigate(stat.href)}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
+        {/* Stats Grid - Clickable */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat, index) => (
+            <Card
+              key={stat.label}
+              className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+              style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => navigate(stat.href)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.color}`}>
+                    <stat.icon className="w-6 h-6" />
+                  </div>
                 </div>
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.color}`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card
-          className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-          onClick={() => navigate('/teacher/calendar')}
-        >
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-secondary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">{t('nav.calendar')}</h3>
-              <p className="text-sm text-muted-foreground">{t('dashboard.upcomingDeadlines')}</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Activity Chart */}
+        <ActivityChart />
 
-        <Card
-          className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-          onClick={() => navigate('/teacher/students')}
-        >
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">{t('nav.students')}</h3>
-              <p className="text-sm text-muted-foreground">{t('courses.enrolledStudents')}</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Widgets Grid - Recent Submissions & Pending Grading */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <RecentSubmissionsWidget />
+          <PendingGradingWidget />
+        </div>
 
-        <Card
-          className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-          onClick={() => navigate('/teacher/analytics')}
-        >
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-accent-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">{t('nav.analytics')}</h3>
-              <p className="text-sm text-muted-foreground">{t('analytics.performance')}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Quick Actions with Badges and Tooltips */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card
+                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                onClick={() => navigate('/teacher/calendar')}
+              >
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center relative">
+                    <Calendar className="w-6 h-6 text-secondary" />
+                    {!badgesLoading && actionBadges && actionBadges.calendar > 0 && (
+                      <Badge
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
+                      >
+                        {actionBadges.calendar}
+                      </Badge>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{t('nav.calendar')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.upcomingDeadlines')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('dashboard.calendarTooltip')}</p>
+            </TooltipContent>
+          </Tooltip>
 
-      {/* Recent Courses - Clickable */}
-      <Card className="border-0 shadow-card">
-        <CardHeader>
-          <CardTitle className="text-xl">{t('courses.myCourses')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card
+                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                onClick={() => navigate('/teacher/students')}
+              >
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center relative">
+                    <Users className="w-6 h-6 text-primary" />
+                    {!badgesLoading && actionBadges && actionBadges.students > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
+                      >
+                        {actionBadges.students}
+                      </Badge>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{t('nav.students')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('courses.enrolledStudents')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('dashboard.studentsTooltip')}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card
+                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+                onClick={() => navigate('/teacher/analytics')}
+              >
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center relative">
+                    <TrendingUp className="w-6 h-6 text-accent-foreground" />
+                    {!badgesLoading && actionBadges && actionBadges.analytics > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
+                      >
+                        {actionBadges.analytics}
+                      </Badge>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{t('nav.analytics')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('analytics.performance')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('dashboard.analyticsTooltip')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* My Courses - Grid Layout with Engagement Metrics */}
+        <Card className="border-0 shadow-card">
+          <CardHeader>
+            <CardTitle className="text-xl">{t('courses.myCourses')}</CardTitle>
+          </CardHeader>
+          <CardContent>
             {courses.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
                 {t('courses.noCourses')}
               </p>
             ) : (
-              courses.slice(0, 5).map((course) => {
-                const courseExams = teacherExams.filter(e => e.course_id === course.id);
-                const upcomingExam = courseExams
-                  .filter(e => e.end_date && new Date(e.end_date) > new Date())
-                  .sort((a, b) => new Date(a.end_date!).getTime() - new Date(b.end_date!).getTime())[0];
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {courses.slice(0, 6).map((course) => {
+                  const metrics = courseMetrics.find(m => m.course_id === course.id);
 
-                return (
-                  <div
-                    key={course.id}
-                    onClick={() => navigate(`/teacher/courses/${course.id}`)}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-secondary rounded-xl flex items-center justify-center">
-                        <BookOpen className="w-6 h-6 text-secondary-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{course.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {courseExams.length} {t('exams.title').toLowerCase()}
-                        </p>
-                        {upcomingExam && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t('exams.deadline')}: {format(new Date(upcomingExam.end_date!), 'MMM d, yyyy h:mm a')}
-                          </p>
+                  return (
+                    <Card
+                      key={course.id}
+                      onClick={() => navigate(`/teacher/courses/${course.id}`)}
+                      className="border border-border hover:border-primary/50 transition-all cursor-pointer hover:shadow-md"
+                    >
+                      <CardContent className="p-4 space-y-3">
+                        {/* Header */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                              <BookOpen className="w-5 h-5 text-secondary-foreground" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-foreground truncate">{course.title}</h3>
+                              <p className="text-xs text-muted-foreground">
+                                {metrics?.student_count || 0} {t('courses.students')}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge
+                            variant={course.status === 'published' ? 'secondary' : 'outline'}
+                            className="text-xs flex-shrink-0"
+                          >
+                            {course.status === 'published' ? t('common.published') : t('common.draft')}
+                          </Badge>
+                        </div>
+
+                        {/* Metrics */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center gap-1">
+                            <FileText className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">{metrics?.exam_count || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ClipboardList className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">{metrics?.assignment_count || 0}</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        {metrics && (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">{t('courses.avgProgress')}</span>
+                              <span className="font-medium">{metrics.avg_progress}%</span>
+                            </div>
+                            <Progress value={metrics.avg_progress} className="h-1.5" />
+                          </div>
                         )}
-                      </div>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${course.status === 'published'
-                      ? 'bg-secondary/10 text-secondary'
-                      : 'bg-muted text-muted-foreground'
-                      }`}>
-                      {course.status === 'published' ? t('common.published') : t('common.draft')}
-                    </span>
-                  </div>
-                );
-              })
+
+                        {/* Pending Grading Alert */}
+                        {metrics && metrics.pending_grading_count > 0 && (
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <span className="text-xs text-amber-700 dark:text-amber-300">
+                              {metrics.pending_grading_count} {t('courses.pendingGrading')}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Next Deadline */}
+                        {metrics?.upcoming_deadline && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-muted-foreground truncate">
+                              <span className="font-medium">{t('courses.nextDeadline')}:</span>{' '}
+                              {metrics.upcoming_deadline.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(metrics.upcoming_deadline.date), {
+                                addSuffix: true
+                              })}
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 };
 

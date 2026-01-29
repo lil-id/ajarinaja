@@ -7,10 +7,13 @@ export interface AtRiskStudent {
   studentId: string;
   studentName: string;
   studentEmail: string;
-  courseId: string;
-  courseName: string;
-  riskFactors: RiskFactor[];
+  courses: Array<{
+    courseId: string;
+    courseName: string;
+    riskFactors: RiskFactor[];
+  }>;
   riskLevel: 'high' | 'medium' | 'low';
+  totalRiskFactors: number;
 }
 
 export interface RiskFactor {
@@ -177,9 +180,13 @@ export function useAtRiskStudents() {
     const courseMap = new Map(teacherCourses.map(c => [c.id, c.title]));
     const profileMap = new Map(profiles.map(p => [p.user_id, p]));
 
-    const results: AtRiskStudent[] = [];
+    // Group by student ID first
+    const studentIssuesMap = new Map<string, {
+      profile: any;
+      courses: Map<string, RiskFactor[]>;
+    }>();
 
-    // Group enrollments by student and course
+    // Collect all issues per student across ALL courses
     enrollments.forEach(enrollment => {
       const profile = profileMap.get(enrollment.student_id);
       if (!profile) return;
@@ -299,34 +306,58 @@ export function useAtRiskStudents() {
         }
       });
 
-      // Only add if there are risk factors
+      // Only add course if there are risk factors
       if (riskFactors.length > 0) {
-        const highCount = riskFactors.filter(r => r.severity === 'high').length;
-        const mediumCount = riskFactors.filter(r => r.severity === 'medium').length;
-
-        let riskLevel: 'high' | 'medium' | 'low' = 'low';
-        if (highCount >= 2 || (highCount >= 1 && mediumCount >= 1)) {
-          riskLevel = 'high';
-        } else if (highCount >= 1 || mediumCount >= 2) {
-          riskLevel = 'medium';
+        if (!studentIssuesMap.has(enrollment.student_id)) {
+          studentIssuesMap.set(enrollment.student_id, {
+            profile,
+            courses: new Map(),
+          });
         }
 
-        results.push({
-          studentId: enrollment.student_id,
-          studentName: profile.name,
-          studentEmail: profile.email,
-          courseId,
-          courseName,
-          riskFactors,
-          riskLevel,
-        });
+        const studentData = studentIssuesMap.get(enrollment.student_id)!;
+        studentData.courses.set(courseId, riskFactors);
       }
     });
 
-    // Sort by risk level
+    // Convert to final format: 1 student with multiple courses
+    const results: AtRiskStudent[] = [];
+
+    studentIssuesMap.forEach((studentData, studentId) => {
+      const coursesArray = Array.from(studentData.courses.entries()).map(([courseId, riskFactors]) => ({
+        courseId,
+        courseName: courseMap.get(courseId) || 'Unknown Course',
+        riskFactors,
+      }));
+
+      // Calculate overall risk level based on ALL risk factors across ALL courses
+      const allRiskFactors = coursesArray.flatMap(c => c.riskFactors);
+      const highCount = allRiskFactors.filter(r => r.severity === 'high').length;
+      const mediumCount = allRiskFactors.filter(r => r.severity === 'medium').length;
+
+      let riskLevel: 'high' | 'medium' | 'low' = 'low';
+      if (highCount >= 2 || (highCount >= 1 && mediumCount >= 1)) {
+        riskLevel = 'high';
+      } else if (highCount >= 1 || mediumCount >= 2) {
+        riskLevel = 'medium';
+      }
+
+      results.push({
+        studentId,
+        studentName: studentData.profile.name,
+        studentEmail: studentData.profile.email,
+        courses: coursesArray,
+        riskLevel,
+        totalRiskFactors: allRiskFactors.length,
+      });
+    });
+
+    // Sort by risk level and then by total risk factors
     return results.sort((a, b) => {
       const riskOrder = { high: 0, medium: 1, low: 2 };
-      return riskOrder[a.riskLevel] - riskOrder[b.riskLevel];
+      const riskDiff = riskOrder[a.riskLevel] - riskOrder[b.riskLevel];
+      if (riskDiff !== 0) return riskDiff;
+      return b.totalRiskFactors - a.totalRiskFactors; // More issues first
     });
   }, [enrollments, profiles, materials, materialViews, exams, examSubmissions, assignments, assignmentSubmissions, teacherCourses]);
 

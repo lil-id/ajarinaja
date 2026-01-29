@@ -569,7 +569,7 @@ const GradeExam = () => {
                             </div>
                             <div className="flex items-center gap-3">
                               <Label htmlFor={`score-${q.id}`} className="text-sm whitespace-nowrap">
-                                {t('gradeExam.score')}:
+                                {t('exams.score')}:
                               </Label>
                               <Input
                                 id={`score-${q.id}`}

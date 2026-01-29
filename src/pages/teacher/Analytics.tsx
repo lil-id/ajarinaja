@@ -263,7 +263,7 @@ const TeacherAnalytics = () => {
       exportDate: new Date().toLocaleDateString(),
     }, `${analyticsType}-analytics-${new Date().toISOString().split('T')[0]}`);
 
-    toast.success('CSV report downloaded');
+    toast.success(t('analytics.exportSuccess', { type: 'CSV' }));
   };
 
   const handleExportPDF = () => {
@@ -288,7 +288,7 @@ const TeacherAnalytics = () => {
       exportDate: new Date().toLocaleDateString(),
     }, `${analyticsType}-analytics-${new Date().toISOString().split('T')[0]}`);
 
-    toast.success('PDF report downloaded');
+    toast.success(t('analytics.exportSuccess', { type: 'PDF' }));
   };
 
   if (isLoading) {
@@ -328,17 +328,17 @@ const TeacherAnalytics = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
                 <Download className="w-4 h-4 mr-2" />
-                Export
+                {t('analytics.export')}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleExportCSV}>
                 <FileSpreadsheet className="w-4 h-4 mr-2" />
-                Export as CSV
+                {t('analytics.exportCSV')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleExportPDF}>
                 <FileText className="w-4 h-4 mr-2" />
-                Export as PDF
+                {t('analytics.exportPDF')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -456,10 +456,10 @@ const TeacherAnalytics = () => {
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-secondary" />
                 <CardTitle className="text-lg">
-                  {type === 'exams' ? t('nav.exams') : t('nav.assignments')} {t('analytics.performance')}
+                  {type === 'exams' ? t('analytics.examPerformance') : t('analytics.assignmentPerformance')}
                 </CardTitle>
               </div>
-              <CardDescription>Average scores across {type === 'exams' ? t('nav.exams') : t('nav.assignments')}</CardDescription>
+              <CardDescription>{t('analytics.averageScoresAcross', { type: type === 'exams' ? t('nav.exams') : t('nav.assignments') })}</CardDescription>
             </CardHeader>
             <CardContent>
               {performance.length > 0 ? (
@@ -504,7 +504,7 @@ const TeacherAnalytics = () => {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  No {type === 'exams' ? t('nav.exams') : t('nav.assignments')} data yet
+                  {t('analytics.noDataYet', { type: type === 'exams' ? t('nav.exams') : t('nav.assignments') })}
                 </div>
               )}
             </CardContent>
@@ -559,8 +559,8 @@ const TeacherAnalytics = () => {
         {/* Detailed Stats Table */}
         <Card className="border-0 shadow-card">
           <CardHeader>
-            <CardTitle className="text-lg">{type === 'exams' ? t('nav.exams') : t('nav.assignments')} Details</CardTitle>
-            <CardDescription>Average scores and student distribution per {type === 'exams' ? 'exam' : 'assignment'}</CardDescription>
+            <CardTitle className="text-lg">{type === 'exams' ? t('analytics.examDetails') : t('analytics.assignmentDetails')}</CardTitle>
+            <CardDescription>{t('analytics.scoreDistributionPer', { itemType: type === 'exams' ? 'exam' : 'assignment' })}</CardDescription>
           </CardHeader>
           <CardContent>
             {performance.length > 0 ? (

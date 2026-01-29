@@ -27,6 +27,12 @@
     --accent: 175 70% 45%;
     --accent-foreground: 222 47% 11%;
 
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --hero: 222 65% 25%;
+    --hero-foreground: 210 40% 98%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
@@ -50,7 +56,7 @@
     --gradient-secondary: linear-gradient(135deg, hsl(175, 60%, 40%) 0%, hsl(175, 70%, 50%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(222, 65%, 20%) 0%, hsl(222, 55%, 30%) 50%, hsl(175, 50%, 35%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 25%, 98%) 100%);
-    
+
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1), 0 2px 4px -2px hsl(222 47% 11% / 0.1);
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
@@ -79,6 +85,12 @@
 
     --accent: 175 60% 45%;
     --accent-foreground: 222 47% 11%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 222 47% 11%;
+
+    --hero: 175 60% 45%;
+    --hero-foreground: 222 47% 11%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
@@ -145,12 +157,15 @@
 
   /* Hidden scrollbar utility - hides scrollbar while keeping scroll functionality */
   .scrollbar-hidden {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
   .scrollbar-hidden::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
   }
 
   .animate-fade-in {
@@ -170,6 +185,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -180,6 +196,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -191,6 +208,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

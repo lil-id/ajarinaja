@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { AlertTriangle, AlertCircle, Info, Loader2, BookOpen, FileText, ClipboardList, TrendingDown, ExternalLink } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, Loader2, BookOpen, FileText, ClipboardList, TrendingDown, ExternalLink, ChevronsUpDown } from 'lucide-react';
 import { useAtRiskStudents, RiskFactor } from '@/hooks/useAtRiskStudents';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Helper to get icon for risk factor type.
@@ -90,6 +93,7 @@ const getRiskLink = (factor: RiskFactor, courseId: string) => {
  * @returns {JSX.Element} The rendered At-Risk Students page.
  */
 export default function AtRiskStudents() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { atRiskStudents, isLoading, highRiskCount, mediumRiskCount, lowRiskCount } = useAtRiskStudents();
 
@@ -177,16 +181,16 @@ export default function AtRiskStudents() {
           <CardContent>
             <div className="space-y-4">
               {atRiskStudents.map((student) => (
-                <div
-                  key={`${student.studentId}-${student.courseId}`}
+                <Collapsible
+                  key={student.studentId}
                   className={cn(
-                    'p-4 rounded-xl border transition-colors',
+                    'rounded-xl border transition-all',
                     student.riskLevel === 'high' && 'border-destructive/50 bg-destructive/5',
                     student.riskLevel === 'medium' && 'border-orange-500/50 bg-orange-50 dark:bg-orange-950/10',
                     student.riskLevel === 'low' && 'border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/10'
                   )}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="p-4 flex items-start gap-4">
                     <Avatar className="w-12 h-12">
                       <AvatarFallback className={cn(
                         student.riskLevel === 'high' && 'bg-destructive/20 text-destructive',
@@ -196,52 +200,77 @@ export default function AtRiskStudents() {
                         {student.studentName.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-foreground">{student.studentName}</h3>
-                        <Badge
-                          variant={student.riskLevel === 'high' ? 'destructive' : 'outline'}
-                          className={cn(
-                            'w-fit',
-                            student.riskLevel === 'medium' && 'border-orange-500 text-orange-600 dark:text-orange-400',
-                            student.riskLevel === 'low' && 'border-yellow-500 text-yellow-600 dark:text-yellow-400'
-                          )}
-                        >
-                          {student.riskLevel.charAt(0).toUpperCase() + student.riskLevel.slice(1)} Risk
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{student.studentEmail}</p>
-                      <p className="text-sm text-muted-foreground mb-3">Course: {student.courseName}</p>
 
-                      {/* Risk Factors - now clickable */}
-                      <div className="flex flex-wrap gap-2">
-                        {student.riskFactors.map((factor, index) => {
-                          const Icon = getRiskIcon(factor.type);
-                          const link = getRiskLink(factor, student.courseId);
-                          return (
-                            <button
-                              key={index}
-                              onClick={() => navigate(link)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground">{student.studentName}</h3>
+                            <Badge
+                              variant={student.riskLevel === 'high' ? 'destructive' : 'outline'}
                               className={cn(
-                                'flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm',
-                                'hover:bg-muted transition-colors cursor-pointer group'
+                                'w-fit',
+                                student.riskLevel === 'medium' && 'border-orange-500 text-orange-600 dark:text-orange-400',
+                                student.riskLevel === 'low' && 'border-yellow-500 text-yellow-600 dark:text-yellow-400'
                               )}
                             >
-                              <Icon className={cn(
-                                'w-4 h-4',
-                                factor.severity === 'high' && 'text-destructive',
-                                factor.severity === 'medium' && 'text-orange-500',
-                                factor.severity === 'low' && 'text-yellow-500'
-                              )} />
-                              <span className="text-foreground">{factor.description}</span>
-                              <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
-                          );
-                        })}
+                              {student.riskLevel.charAt(0).toUpperCase() + student.riskLevel.slice(1)} Risk
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{student.studentEmail}</p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="h-7 text-xs px-3">
+                            {student.totalRiskFactors} {t('students.issues')}
+                          </Badge>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
+                              <ChevronsUpDown className="h-4 w-4" />
+                              <span className="sr-only">Toggle</span>
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
                       </div>
+
+                      <CollapsibleContent className="mt-4 space-y-3 animate-slide-up">
+                        {student.courses.map((course) => (
+                          <div
+                            key={course.courseId}
+                            className="space-y-2 p-3 bg-card/50 rounded-lg border border-border/50"
+                          >
+                            <p className="text-sm font-medium text-foreground">Course: {course.courseName}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {course.riskFactors.map((factor, index) => {
+                                const Icon = getRiskIcon(factor.type);
+                                const link = getRiskLink(factor, course.courseId);
+                                return (
+                                  <button
+                                    key={index}
+                                    onClick={() => navigate(link)}
+                                    className={cn(
+                                      'flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border text-sm',
+                                      'hover:bg-muted transition-colors cursor-pointer group'
+                                    )}
+                                  >
+                                    <Icon className={cn(
+                                      'w-4 h-4',
+                                      factor.severity === 'high' && 'text-destructive',
+                                      factor.severity === 'medium' && 'text-orange-500',
+                                      factor.severity === 'low' && 'text-yellow-500'
+                                    )} />
+                                    <span className="text-foreground">{factor.description}</span>
+                                    <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
                     </div>
                   </div>
-                </div>
+                </Collapsible>
               ))}
             </div>
           </CardContent>

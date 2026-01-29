@@ -524,7 +524,7 @@ const TeacherCourseDetail = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
-                  <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
+                  <Badge variant={course.status === 'published' ? 'success' : 'default'}>
                     {course.status}
                   </Badge>
                 </div>
@@ -575,80 +575,6 @@ const TeacherCourseDetail = () => {
           </div>
         </div>
       </div>
-
-      {/* Stats Cards - Clickable to navigate to tabs */}
-      {/* <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('students')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{enrollments.length}</p>
-              <p className="text-sm text-muted-foreground">{t('courses.students')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('exams')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseExams.length}</p>
-              <p className="text-sm text-muted-foreground">{t('courses.exams')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('assignments')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <ClipboardList className="w-5 h-5 text-destructive" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseAssignments.length}</p>
-              <p className="text-sm text-muted-foreground">{t('courses.assignments')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('materials')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-accent" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseMaterials.length}</p>
-              <p className="text-sm text-muted-foreground">{t('nav.materials')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => setActiveTab('announcements')}
-        >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-              <Megaphone className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{courseAnnouncements.length}</p>
-              <p className="text-sm text-muted-foreground">{t('courses.announcements')}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div> */}
 
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -861,7 +787,7 @@ const TeacherCourseDetail = () => {
                         <CardTitle className="text-lg">{exam.title}</CardTitle>
                         <CardDescription>{exam.description || 'No description'}</CardDescription>
                       </div>
-                      <Badge variant={exam.status === 'published' ? 'default' : 'secondary'}>
+                      <Badge variant={exam.status === 'published' ? 'success' : 'default'}>
                         {t('common.active')}
                       </Badge>
                     </div>
@@ -930,7 +856,7 @@ const TeacherCourseDetail = () => {
                         <CardTitle className="text-lg">{assignment.title}</CardTitle>
                         <CardDescription>{assignment.description || 'No description'}</CardDescription>
                       </div>
-                      <Badge variant={assignment.status === 'published' ? 'default' : 'secondary'}>
+                      <Badge variant={assignment.status === 'published' ? 'success' : 'default'}>
                         {assignment.status}
                       </Badge>
                     </div>
