@@ -172,7 +172,7 @@ const TeacherAnnouncements = () => {
             <p className="text-muted-foreground text-center mb-4">
               {t('courseDetail.postAnnouncement')}
             </p>
-            <Button variant="hero" onClick={() => setIsDialogOpen(true)}>
+            <Button variant="default" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
               {t('courseDetail.postAnnouncement')}
             </Button>

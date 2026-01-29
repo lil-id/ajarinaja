@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { localDateTimeToUTC, utcToLocalDateTime } from '@/lib/dateUtils';
 import {
   Form,
   FormControl,
@@ -182,7 +183,7 @@ export default function CreateAssignment() {
         description: existingAssignment.description || '',
         instructions: existingAssignment.instructions || '',
         due_date: existingAssignment.due_date
-          ? new Date(existingAssignment.due_date).toISOString().slice(0, 16)
+          ? utcToLocalDateTime(existingAssignment.due_date)
           : '',
         max_points: existingAssignment.max_points,
         allow_late_submissions: existingAssignment.allow_late_submissions,
@@ -379,7 +380,7 @@ export default function CreateAssignment() {
         title: data.title,
         description: data.description,
         instructions: data.instructions,
-        due_date: data.due_date,
+        due_date: localDateTimeToUTC(data.due_date),
         max_points: data.assignment_type === 'questions'
           ? questions.reduce((sum, q) => sum + q.points, 0)
           : data.max_points,

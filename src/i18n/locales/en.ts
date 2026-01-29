@@ -309,6 +309,8 @@ export default {
     assignmentTitle: 'Assignment Title',
     dueDate: 'Due Date',
     maxPoints: 'Maximum Points',
+    totalPoints: 'Total Points',
+    status: 'Status',
     instructions: 'Instructions',
     submissions: 'Submissions',
     submitted: 'Submitted',

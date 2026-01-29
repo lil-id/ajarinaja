@@ -25,6 +25,7 @@ import SortableItem from '@/components/SortableItem';
 import { arrayMove } from '@dnd-kit/sortable';
 import StudentPreviewMode from '@/components/StudentPreviewMode';
 import { useSidebarContext } from '@/contexts/SidebarContext';
+import { localDateTimeToUTC, utcToLocalDateTime } from '@/lib/dateUtils';
 
 /**
  * Edit Exam page.
@@ -92,8 +93,8 @@ const EditExam = () => {
         title: exam.title,
         description: exam.description || '',
         duration: exam.duration,
-        start_date: exam.start_date ? new Date(exam.start_date).toISOString().slice(0, 16) : '',
-        end_date: exam.end_date ? new Date(exam.end_date).toISOString().slice(0, 16) : '',
+        start_date: exam.start_date ? utcToLocalDateTime(exam.start_date) : '',
+        end_date: exam.end_date ? utcToLocalDateTime(exam.end_date) : '',
         kkm: (exam as any).kkm || 60,
       });
       setQuestions(exam.questions || []);
@@ -132,8 +133,8 @@ const EditExam = () => {
         title: examForm.title,
         description: examForm.description || null,
         duration: examForm.duration,
-        start_date: examForm.start_date ? new Date(examForm.start_date).toISOString() : null,
-        end_date: examForm.end_date ? new Date(examForm.end_date).toISOString() : null,
+        start_date: examForm.start_date ? localDateTimeToUTC(examForm.start_date) : null,
+        end_date: examForm.end_date ? localDateTimeToUTC(examForm.end_date) : null,
         kkm: examForm.kkm,
         risk_on_missed: missedCriterion?.enabled || false,
         risk_on_below_kkm: belowKkmCriterion?.enabled || false,

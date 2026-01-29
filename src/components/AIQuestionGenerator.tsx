@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Upload, FileText, Trash2, Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ export function AIQuestionGenerator() {
     const [topic, setTopic] = useState('');
     const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestion[]>([]);
     const [editingQuestions, setEditingQuestions] = useState<GeneratedQuestion[]>([]);
+    const configSectionRef = useRef<HTMLDivElement>(null);
 
     const handleGenerate = () => {
         if (!selectedMaterial) return;
@@ -297,7 +298,15 @@ export function AIQuestionGenerator() {
                                                 variant="outline"
                                                 size="sm"
                                                 className="w-full mt-3"
-                                                onClick={() => setSelectedMaterial(material.id)}
+                                                onClick={() => {
+                                                    setSelectedMaterial(material.id);
+                                                    setTimeout(() => {
+                                                        configSectionRef.current?.scrollIntoView({
+                                                            behavior: 'smooth',
+                                                            block: 'start'
+                                                        });
+                                                    }, 100);
+                                                }}
                                             >
                                                 <Sparkles className="w-4 h-4 mr-2" />
                                                 {t('ai.generateQuestions')}
@@ -313,11 +322,11 @@ export function AIQuestionGenerator() {
 
             {/* Generation Configuration */}
             {selectedMaterial && generatedQuestions.length === 0 && (
-                <Card>
+                <Card ref={configSectionRef}>
                     <CardHeader>
                         <CardTitle>{t('ai.generateQuestions')}</CardTitle>
                         <CardDescription>
-                            Configure AI question generation parameters
+                            {t('ai.configureParameters')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -389,7 +398,7 @@ export function AIQuestionGenerator() {
                             <div>
                                 <CardTitle>{t('ai.generatedQuestions')}</CardTitle>
                                 <CardDescription>
-                                    {editingQuestions.length} questions generated - Review and edit before saving
+                                    {editingQuestions.length} {t('ai.questionsGenerated')} - {t('ai.reviewBeforeSaving')}
                                 </CardDescription>
                             </div>
                             <Button onClick={handleSaveToBank} disabled={saveToBank.isPending}>
@@ -407,7 +416,7 @@ export function AIQuestionGenerator() {
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Badge variant="secondary">Question {index + 1}</Badge>
+                                                <Badge variant="secondary">{t('ai.questionLabel')} {index + 1}</Badge>
                                                 <Badge>{question.difficulty || 'medium'}</Badge>
                                             </div>
                                             <Textarea
@@ -430,7 +439,7 @@ export function AIQuestionGenerator() {
                                 {question.question_type === 'multiple_choice' && question.options && (
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-medium">Pilihan Jawaban</Label>
+                                            <Label className="text-sm font-medium">{t('ai.optionsLabel')}</Label>
                                             {question.options.map((option, optionIndex) => (
                                                 <div key={optionIndex} className="flex items-center gap-2">
                                                     <div className="flex items-center gap-2 flex-1">
@@ -459,7 +468,7 @@ export function AIQuestionGenerator() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-medium">Jawaban Benar</Label>
+                                            <Label className="text-sm font-medium">{t('ai.correctAnswerLabel')}</Label>
                                             <Select
                                                 value={question.correct_answer?.toString()}
                                                 onValueChange={(value) =>
@@ -481,13 +490,13 @@ export function AIQuestionGenerator() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-medium">Penjelasan Jawaban</Label>
+                                            <Label className="text-sm font-medium">{t('ai.explanationLabel')}</Label>
                                             <Textarea
                                                 value={question.explanation || ''}
                                                 onChange={(e) =>
                                                     handleEditQuestion(index, { explanation: e.target.value })
                                                 }
-                                                placeholder="Tambahkan penjelasan mengapa jawaban ini benar..."
+                                                placeholder={t('ai.explanationPlaceholder')}
                                                 className="min-h-[100px]"
                                             />
                                         </div>

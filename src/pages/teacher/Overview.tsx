@@ -194,7 +194,7 @@ const TeacherOverview = () => {
                           {courseExams.length} {t('exams.title').toLowerCase()}
                         </p>
                         {upcomingExam && (
-                          <p className="text-xs text-destructive mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {t('exams.deadline')}: {format(new Date(upcomingExam.end_date!), 'MMM d, yyyy h:mm a')}
                           </p>
                         )}

@@ -41,6 +41,7 @@ import { useCreateExam, useExamWithQuestions, useUpdateExam, Question } from '@/
 import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
 import { useAddQuestion, useUpdateQuestion, useDeleteQuestion } from '@/hooks/useQuestions';
 import { toast } from 'sonner';
+import { localDateTimeToUTC, utcToLocalDateTime } from '@/lib/dateUtils';
 import VisualEquationBuilder from '@/components/VisualEquationBuilder';
 import FormulaText from '@/components/FormulaText';
 import RiskCriteriaBuilder, { RiskCriterion } from '@/components/RiskCriteriaBuilder';
@@ -166,10 +167,10 @@ export default function CreateExam() {
         duration: existingExam.duration,
         kkm: examData.kkm || 60,
         start_date: existingExam.start_date
-          ? new Date(existingExam.start_date).toISOString().slice(0, 16)
+          ? utcToLocalDateTime(existingExam.start_date)
           : '',
         end_date: existingExam.end_date
-          ? new Date(existingExam.end_date).toISOString().slice(0, 16)
+          ? utcToLocalDateTime(existingExam.end_date)
           : '',
         status: existingExam.status as 'draft' | 'published',
         risk_on_missed: examData.risk_on_missed || false,
@@ -376,8 +377,8 @@ export default function CreateExam() {
           description: data.description || null,
           duration: data.duration,
           kkm: data.kkm,
-          start_date: data.start_date ? new Date(data.start_date).toISOString() : null,
-          end_date: data.end_date ? new Date(data.end_date).toISOString() : null,
+          start_date: data.start_date ? localDateTimeToUTC(data.start_date) : null,
+          end_date: data.end_date ? localDateTimeToUTC(data.end_date) : null,
           status: data.status,
           risk_on_missed: missedCriterion?.enabled || false,
           risk_on_below_kkm: belowKkmCriterion?.enabled || false,
@@ -725,11 +726,10 @@ export default function CreateExam() {
                           {filteredBankQuestions.map((q) => (
                             <div
                               key={q.id}
-                              className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                                selectedBankQuestions.includes(q.id)
-                                  ? 'border-secondary bg-secondary/10'
-                                  : 'border-border hover:bg-muted/50'
-                              }`}
+                              className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedBankQuestions.includes(q.id)
+                                ? 'border-secondary bg-secondary/10'
+                                : 'border-border hover:bg-muted/50'
+                                }`}
                               onClick={() => toggleBankQuestion(q.id)}
                             >
                               <Checkbox checked={selectedBankQuestions.includes(q.id)} />
@@ -914,12 +914,11 @@ export default function CreateExam() {
                               {q.options.map((opt, i) => (
                                 <div
                                   key={i}
-                                  className={`text-xs px-2 py-1 rounded ${
-                                    (q.type === 'multiple-choice' && q.correct_answer === i) ||
+                                  className={`text-xs px-2 py-1 rounded ${(q.type === 'multiple-choice' && q.correct_answer === i) ||
                                     (q.type === 'multi-select' && q.correct_answers.includes(i))
-                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                      : 'bg-background'
-                                  }`}
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                    : 'bg-background'
+                                    }`}
                                 >
                                   {String.fromCharCode(65 + i)}. <FormulaText text={opt} className="inline" />
                                 </div>

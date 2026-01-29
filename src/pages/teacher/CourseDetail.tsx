@@ -544,7 +544,7 @@ const TeacherCourseDetail = () => {
                   {t('courses.edit')}
                 </Button>
                 <Button
-                  variant={course.status === 'published' ? 'outline' : 'hero'}
+                  variant={course.status === 'published' ? 'outline' : 'default'}
                   onClick={handlePublish}
                   disabled={updateCourse.isPending}
                 >
@@ -696,7 +696,7 @@ const TeacherCourseDetail = () => {
             )}
             <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="hero">
+                <Button variant="default">
                   <UserPlus className="w-4 h-4" />
                   {t('courses.enrollStudent')}
                 </Button>
@@ -834,7 +834,7 @@ const TeacherCourseDetail = () => {
         {/* Exams Tab */}
         <TabsContent value="exams" className="space-y-4">
           <div className="flex justify-end">
-            <Button variant="hero" onClick={() => navigate(`/teacher/exams/new?courseId=${courseId}`)}>
+            <Button variant="default" onClick={() => navigate(`/teacher/exams/new?courseId=${courseId}`)}>
               <Plus className="w-4 h-4" />
               {t('courses.createExam')}
             </Button>
@@ -903,7 +903,7 @@ const TeacherCourseDetail = () => {
         {/* Assignments Tab */}
         <TabsContent value="assignments" className="space-y-4">
           <div className="flex justify-end">
-            <Button variant="hero" onClick={() => navigate(`/teacher/assignments/new?courseId=${courseId}`)}>
+            <Button variant="default" onClick={() => navigate(`/teacher/assignments/new?courseId=${courseId}`)}>
               <Plus className="w-4 h-4" />
               {t('courses.createAssignment')}
             </Button>
@@ -996,7 +996,7 @@ const TeacherCourseDetail = () => {
           <div className="flex justify-end">
             <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="hero">
+                <Button variant="default">
                   <Upload className="w-4 h-4" />
                   {t('courses.uploadMaterial')}
                 </Button>
@@ -1194,7 +1194,7 @@ const TeacherCourseDetail = () => {
           <div className="flex justify-end">
             <Dialog open={isAnnouncementDialogOpen} onOpenChange={setIsAnnouncementDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="hero">
+                <Button variant="default">
                   <Plus className="w-4 h-4" />
                   {t('courses.postAnnouncement')}
                 </Button>

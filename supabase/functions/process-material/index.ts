@@ -273,9 +273,26 @@ function smartChunk(
 }
 
 async function parsePDF(arrayBuffer: ArrayBuffer): Promise<{ text: string; numpages: number }> {
-    // PDF parsing not supported in current implementation
-    // For now, suggest users to convert PDF to TXT
-    throw new Error("PDF processing not yet supported. Please upload TXT files or convert your PDF to TXT format.");
+    try {
+        // Import unpdf - lightweight PDF parser for server-side (no browser dependencies)
+        const { extractText, getDocumentProxy } = await import("https://esm.sh/unpdf@0.11.0");
+
+        // Convert ArrayBuffer to Uint8Array for unpdf
+        const uint8Array = new Uint8Array(arrayBuffer);
+
+        // Extract text from PDF
+        const { text, totalPages } = await extractText(uint8Array, {
+            mergePages: true  // Combine all pages into single text
+        });
+
+        return {
+            text: text || '',
+            numpages: totalPages || 0
+        };
+    } catch (error) {
+        console.error("PDF parsing error:", error);
+        throw new Error(`PDF parse failed: ${error.message}`);
+    }
 }
 
 async function generateEmbedding(
