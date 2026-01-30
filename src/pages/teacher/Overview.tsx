@@ -4,17 +4,17 @@ import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useCourseMetrics } from '@/hooks/useCourseMetrics';
-import { useQuickActionBadges } from '@/hooks/useQuickActionBadges';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { BookOpen, Users, FileText, TrendingUp, Loader2, ClipboardList, Calendar, AlertCircle } from 'lucide-react';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { BookOpen, FileText, TrendingUp, Loader2, ClipboardList, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
 import { RecentSubmissionsWidget } from '@/components/dashboard/RecentSubmissionsWidget';
 import { PendingGradingWidget } from '@/components/dashboard/PendingGradingWidget';
+import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 
 /**
  * Teacher Dashboard Overview page.
@@ -25,7 +25,7 @@ import { PendingGradingWidget } from '@/components/dashboard/PendingGradingWidge
  * - Activity performance chart
  * - Recent submissions widget
  * - Pending grading widget
- * - Enhanced quick actions with badges and tooltips
+ * - Calendar widget with deadlines
  * - Course grid with engagement metrics
  * 
  * @returns {JSX.Element} The rendered Overview page.
@@ -40,7 +40,6 @@ const TeacherOverview = () => {
 
   const courseIds = courses.map(c => c.id);
   const { data: courseMetrics = [], isLoading: metricsLoading } = useCourseMetrics(courseIds);
-  const { data: actionBadges, isLoading: badgesLoading } = useQuickActionBadges();
 
   const isLoading = coursesLoading || examsLoading || assignmentsLoading;
 
@@ -127,106 +126,20 @@ const TeacherOverview = () => {
           ))}
         </div>
 
-        {/* Activity Chart */}
-        <ActivityChart />
-
-        {/* Widgets Grid - Recent Submissions & Pending Grading */}
+        {/* Row 2: Activity Chart & Pending Grading */}
         <div className="grid lg:grid-cols-2 gap-6">
-          <RecentSubmissionsWidget />
+          <ActivityChart />
           <PendingGradingWidget />
         </div>
 
-        {/* Quick Actions with Badges and Tooltips */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Card
-                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-                onClick={() => navigate('/teacher/calendar')}
-              >
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center relative">
-                    <Calendar className="w-6 h-6 text-secondary" />
-                    {!badgesLoading && actionBadges && actionBadges.calendar > 0 && (
-                      <Badge
-                        variant="destructive"
-                        className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
-                      >
-                        {actionBadges.calendar}
-                      </Badge>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{t('nav.calendar')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('dashboard.upcomingDeadlines')}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('dashboard.calendarTooltip')}</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Card
-                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-                onClick={() => navigate('/teacher/students')}
-              >
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center relative">
-                    <Users className="w-6 h-6 text-primary" />
-                    {!badgesLoading && actionBadges && actionBadges.students > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
-                      >
-                        {actionBadges.students}
-                      </Badge>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{t('nav.students')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('courses.enrolledStudents')}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('dashboard.studentsTooltip')}</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Card
-                className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-                onClick={() => navigate('/teacher/analytics')}
-              >
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center relative">
-                    <TrendingUp className="w-6 h-6 text-accent-foreground" />
-                    {!badgesLoading && actionBadges && actionBadges.analytics > 0 && (
-                      <Badge
-                        variant="outline"
-                        className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
-                      >
-                        {actionBadges.analytics}
-                      </Badge>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{t('nav.analytics')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('analytics.performance')}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('dashboard.analyticsTooltip')}</p>
-            </TooltipContent>
-          </Tooltip>
+        {/* Row 3: Recent Submissions & Calendar Widget */}
+        <div className="grid lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-2">
+            <RecentSubmissionsWidget />
+          </div>
+          <div className="lg:col-span-3">
+            <CalendarWidget />
+          </div>
         </div>
 
         {/* My Courses - Grid Layout with Engagement Metrics */}

@@ -47,6 +47,7 @@ export default {
     indonesian: 'Indonesia',
     noDescription: 'Tidak ada deskripsi',
     noEmail: 'Tidak ada email',
+    viewAll: 'Lihat Semua',
     viewDetails: 'Lihat Detail',
     createdAt: 'Dibuat',
     points: 'poin',

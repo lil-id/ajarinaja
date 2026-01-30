@@ -34,6 +34,7 @@ export default {
     graded: 'Graded',
     pass: 'Pass',
     fail: 'Fail',
+    viewAll: 'View All',
     noData: 'No data available',
     error: 'An error occurred',
     success: 'Success',

@@ -300,7 +300,7 @@ const ReportCards = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  {t('reportCards.reportCardList')} - {currentPeriod?.name}
+                  {t('reportCards.reportCardList')} - {t('reportCards.semester')} {currentPeriod?.semester} {currentPeriod?.academic_year}
                 </CardTitle>
                 <CardDescription>
                   {currentPeriod && format(new Date(currentPeriod.start_date), 'd MMM yyyy', { locale: dateLocale })} - {currentPeriod && format(new Date(currentPeriod.end_date), 'd MMM yyyy', { locale: dateLocale })}

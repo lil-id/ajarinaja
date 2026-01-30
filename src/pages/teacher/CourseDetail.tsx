@@ -524,8 +524,8 @@ const TeacherCourseDetail = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
-                  <Badge variant={course.status === 'published' ? 'success' : 'default'}>
-                    {course.status}
+                  <Badge variant={course.status === 'published' ? 'secondary' : 'default'}>
+                    {course.status === 'published' ? t('common.published') : t('common.draft')}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground max-w-2xl">
@@ -787,7 +787,7 @@ const TeacherCourseDetail = () => {
                         <CardTitle className="text-lg">{exam.title}</CardTitle>
                         <CardDescription>{exam.description || 'No description'}</CardDescription>
                       </div>
-                      <Badge variant={exam.status === 'published' ? 'success' : 'default'}>
+                      <Badge variant={exam.status === 'published' ? 'secondary' : 'default'}>
                         {t('common.active')}
                       </Badge>
                     </div>
@@ -856,7 +856,7 @@ const TeacherCourseDetail = () => {
                         <CardTitle className="text-lg">{assignment.title}</CardTitle>
                         <CardDescription>{assignment.description || 'No description'}</CardDescription>
                       </div>
-                      <Badge variant={assignment.status === 'published' ? 'success' : 'default'}>
+                      <Badge variant={assignment.status === 'published' ? 'secondary' : 'default'}>
                         {assignment.status}
                       </Badge>
                     </div>
