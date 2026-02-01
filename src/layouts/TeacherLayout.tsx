@@ -11,13 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Users, 
-  Settings, 
-  LogOut, 
-  Menu, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  Users,
+  Settings,
+  LogOut,
+  Menu,
   X,
   GraduationCap,
   FileText,
@@ -43,9 +43,10 @@ const TeacherLayout = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: t('nav.overview'), href: '/teacher', icon: LayoutDashboard },
+    { name: t('nav.dashboard'), href: '/teacher', icon: LayoutDashboard },
     { name: t('nav.courses'), href: '/teacher/courses', icon: BookOpen },
     { name: t('nav.calendar'), href: '/teacher/calendar', icon: Calendar },
+    { name: t('attendance.title') || 'Attendance', href: '/teacher/attendance', icon: ClipboardList },
     { name: t('nav.assignments'), href: '/teacher/assignments', icon: ClipboardList },
     { name: t('nav.exams'), href: '/teacher/exams', icon: FileText },
     { name: t('nav.questionBank'), href: '/teacher/question-bank', icon: Library },
@@ -65,7 +66,7 @@ const TeacherLayout = () => {
     <div className="min-h-screen bg-background">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-foreground/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -80,11 +81,11 @@ const TeacherLayout = () => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-            <div 
+            <div
               className={cn(
                 "flex items-center gap-3 cursor-pointer",
                 sidebarCollapsed && "lg:justify-center"
-              )} 
+              )}
               onClick={() => navigate('/teacher')}
             >
               <div className="w-10 h-10 bg-sidebar-primary rounded-xl flex items-center justify-center flex-shrink-0">
@@ -172,7 +173,7 @@ const TeacherLayout = () => {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              
+
               {/* Desktop sidebar toggle */}
               <Button
                 variant="ghost"
@@ -191,7 +192,7 @@ const TeacherLayout = () => {
 
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">

@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BookOpen, FileText, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { StudentActiveSessionWidget } from '@/components/attendance/StudentActiveSessionWidget';
 
 /**
  * Student Dashboard page.
@@ -98,6 +99,9 @@ const StudentDashboard = () => {
           {t('dashboard.recentActivity')}
         </p>
       </div>
+
+      {/* Attendance Check-in Widget */}
+      <StudentActiveSessionWidget />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

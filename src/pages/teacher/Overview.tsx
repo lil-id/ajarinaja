@@ -11,10 +11,12 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { BookOpen, FileText, TrendingUp, Loader2, ClipboardList, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { id, enUS } from 'date-fns/locale';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
 import { RecentSubmissionsWidget } from '@/components/dashboard/RecentSubmissionsWidget';
 import { PendingGradingWidget } from '@/components/dashboard/PendingGradingWidget';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
+import { LiveSessionWidget } from '@/components/dashboard/LiveSessionWidget';
 
 /**
  * Teacher Dashboard Overview page.
@@ -31,7 +33,9 @@ import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
  * @returns {JSX.Element} The rendered Overview page.
  */
 const TeacherOverview = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const getDateLocale = () => (i18n.language === 'id' ? id : enUS);
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
@@ -101,6 +105,9 @@ const TeacherOverview = () => {
             {t('dashboard.recentActivity')}
           </p>
         </div>
+
+        {/* Live Attendance Session Widget */}
+        <LiveSessionWidget />
 
         {/* Stats Grid - Clickable */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -227,7 +234,8 @@ const TeacherOverview = () => {
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(metrics.upcoming_deadline.date), {
-                                addSuffix: true
+                                addSuffix: true,
+                                locale: getDateLocale()
                               })}
                             </p>
                           </div>

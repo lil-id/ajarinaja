@@ -17,11 +17,8 @@ serve(async (req) => {
     }
 
     try {
-        console.log("=== Process Material Started ===");
-
         // Get request data
         const { materialId, chunkSize = 500, chunkOverlap = 50 } = await req.json();
-        console.log(`Material ID: ${materialId}`);
 
         if (!materialId) {
             throw new Error("materialId is required");
@@ -57,17 +54,7 @@ serve(async (req) => {
 
         // Decode base64url payload
         const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-
-        console.log("=== JWT Payload Debug ===");
-        console.log("Full payload:", JSON.stringify(payload, null, 2));
-        console.log("Available keys:", Object.keys(payload));
-        console.log("payload.sub:", payload.sub);
-        console.log("payload.user_id:", payload.user_id);
-        console.log("payload.id:", payload.id);
-
         const userId = payload.sub || payload.user_id || payload.id;
-
-        console.log(`Extracted User ID: ${userId}`);
 
         if (!userId) {
             console.error("FAILED: No user ID field found in JWT");
@@ -120,8 +107,6 @@ serve(async (req) => {
             .update({ status: "processing" })
             .eq("id", materialId);
 
-        console.log(`Processing: ${material.title}`);
-
         // Download file
         const { data: fileData, error: downloadError } = await serviceClient
             .storage
@@ -141,16 +126,12 @@ serve(async (req) => {
             const arrayBuffer = await fileData.arrayBuffer();
             const pdfData = await parsePDF(arrayBuffer);
             extractedText = pdfData.text;
-            console.log(`PDF: ${pdfData.numpages} pages`);
         } else {
             throw new Error(`Unsupported: ${material.file_type}`);
         }
 
-        console.log(`Extracted ${extractedText.length} chars`);
-
         // Chunk text
         const chunks = smartChunk(extractedText, chunkSize, chunkOverlap);
-        console.log(`${chunks.length} chunks created`);
 
         // Generate embeddings
         const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
@@ -162,7 +143,6 @@ serve(async (req) => {
 
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
-            console.log(`Chunk ${i + 1}/${chunks.length}`);
 
             const embedding = await generateEmbedding(chunk.text, GEMINI_API_KEY);
 

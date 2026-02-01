@@ -11,12 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { 
-  Home, 
-  BookOpen, 
-  FileText, 
-  Settings, 
-  LogOut, 
+import {
+  Home,
+  BookOpen,
+  FileText,
+  Settings,
+  LogOut,
   GraduationCap,
   User,
   Megaphone,
@@ -48,6 +48,7 @@ const StudentLayout = () => {
     { name: t('nav.courses'), href: '/student/courses', icon: BookOpen },
     { name: t('nav.exploreCourses'), href: '/student/explore', icon: GraduationCap },
     { name: t('nav.calendar'), href: '/student/calendar', icon: Calendar },
+    { name: t('attendance.title') || 'Attendance', href: '/student/attendance', icon: ClipboardList },
     { name: t('nav.assignments'), href: '/student/assignments', icon: ClipboardList },
     { name: t('nav.exams'), href: '/student/exams', icon: FileText },
     { name: t('nav.materials'), href: '/student/materials', icon: FolderOpen },
@@ -66,7 +67,7 @@ const StudentLayout = () => {
     <div className="min-h-screen bg-background">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-foreground/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -81,11 +82,11 @@ const StudentLayout = () => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-            <div 
+            <div
               className={cn(
                 "flex items-center gap-3 cursor-pointer",
                 sidebarCollapsed && "lg:justify-center"
-              )} 
+              )}
               onClick={() => navigate('/student')}
             >
               <div className="w-10 h-10 bg-sidebar-primary rounded-xl flex items-center justify-center flex-shrink-0">
@@ -173,7 +174,7 @@ const StudentLayout = () => {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              
+
               {/* Desktop sidebar toggle */}
               <Button
                 variant="ghost"
@@ -193,7 +194,7 @@ const StudentLayout = () => {
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
               <NotificationBell basePath="/student" />
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-3 h-auto py-2">

@@ -90,8 +90,7 @@ export function useCourses() {
           schema: 'public',
           table: 'courses',
         },
-        (payload: RealtimePostgresChangesPayload<Course>) => {
-          console.log('Course change:', payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ['courses'] });
         }
       )

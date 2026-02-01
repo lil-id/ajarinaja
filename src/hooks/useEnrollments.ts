@@ -318,7 +318,6 @@ export function useTeacherEnrollStudent() {
             contentTitle: courseName,
           }),
         });
-        console.log('Enrollment email sent successfully');
       } catch (emailError) {
         console.error('Failed to send enrollment email:', emailError);
         // Don't throw - enrollment succeeded, email is secondary

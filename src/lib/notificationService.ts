@@ -36,8 +36,6 @@ export async function sendCourseNotification(params: SendNotificationParams): Pr
       const error = await response.json();
       throw new Error(error.error || 'Failed to send notification');
     }
-
-    console.log(`Notification emails sent to ${params.recipients.length} recipients`);
   } catch (error) {
     console.error('Failed to send notification email:', error);
     // Don't throw - the main action succeeded, email is secondary

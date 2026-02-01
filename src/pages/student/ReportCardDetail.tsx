@@ -76,7 +76,7 @@ const StudentReportCardDetail = () => {
     enabled: !!reportCardId && !!user,
   });
 
-  const reportCard = reportCardQuery.data;
+  const reportCard = reportCardQuery.data as any; // Cast to any to avoid TS errors for new columns for now, or define interface
   const { entries, isLoading: entriesLoading } = useReportCardEntries(reportCardId);
 
   // Calculate stats
@@ -245,7 +245,30 @@ const StudentReportCardDetail = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+
+
+        {/* Attendance Card */}
+        < Card >
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                <Calendar className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t('attendance.attendancePercentage') || 'Attendance'}</p>
+                <p className="text-2xl font-bold">
+                  {reportCard.attendance_percentage !== null && reportCard.attendance_percentage !== undefined
+                    ? `${reportCard.attendance_percentage.toFixed(1)}%`
+                    : '-'}
+                </p>
+                <div className="text-xs text-muted-foreground">
+                  Score: {reportCard.attendance_grade?.toFixed(1) || '-'}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card >
+      </div >
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Grades Table */}
@@ -296,6 +319,8 @@ const StudentReportCardDetail = () => {
                       <TableCell className="text-center">
                         {entry.assignment_average?.toFixed(1) || '-'}
                       </TableCell>
+                      {/* Attendance Column (Optional, if we want per-subject attendance or just overall) */}
+                      {/* Usually Report Card has Overall Attendance, but here we can add it if needed. For now sticking to Overall Cards */}
                       <TableCell className="text-center font-bold text-lg">
                         {entry.final_grade}
                       </TableCell>
@@ -395,7 +420,7 @@ const StudentReportCardDetail = () => {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

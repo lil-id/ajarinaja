@@ -43,8 +43,6 @@ serve(async (req) => {
             throw new Error("Unauthorized");
         }
 
-        console.log(`Generating ${numQuestions} questions for material ${materialId}`);
-
         // Get material info
         const { data: material, error: materialError } = await supabaseClient
             .from("ai_materials")
@@ -83,8 +81,6 @@ serve(async (req) => {
             throw new Error(`Search error: ${searchError.message}`);
         }
 
-        console.log(`Found ${relevantChunks?.length || 0} relevant chunks`);
-
         // Construct context from chunks
         const context = relevantChunks
             ?.map((chunk: any) => chunk.chunk_text)
@@ -103,8 +99,6 @@ serve(async (req) => {
             questionTypes,
             apiKey: GEMINI_API_KEY,
         });
-
-        console.log(`Generated ${questions.length} questions`);
 
         // Save to database
         const { data: savedGeneration, error: saveError } = await supabaseClient

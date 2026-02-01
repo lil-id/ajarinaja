@@ -11,6 +11,7 @@ import { useCourseMaterials, extractYouTubeId, getYouTubeThumbnail } from '@/hoo
 import { useExams } from '@/hooks/useExams';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useEnrollments, useUnenroll } from '@/hooks/useEnrollments';
+import { StudentAttendanceView } from '@/components/attendance/StudentAttendanceView';
 import { MaterialViewer } from '@/components/MaterialViewer';
 import {
   FileText,
@@ -208,11 +209,17 @@ const StudentCourseDetail = () => {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           <Tabs defaultValue="materials" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="materials">{t('courseDetailPage.materialsTab')}</TabsTrigger>
               <TabsTrigger value="exams">{t('courseDetailPage.examsTab')}</TabsTrigger>
               <TabsTrigger value="announcements">{t('courseDetailPage.announcementsTab')}</TabsTrigger>
+              <TabsTrigger value="attendance">{t('attendance.title')}</TabsTrigger>
             </TabsList>
+
+            {/* Attendance Tab */}
+            <TabsContent value="attendance" className="mt-4">
+              <StudentAttendanceView courseId={courseId!} />
+            </TabsContent>
 
             {/* Materials Tab */}
             <TabsContent value="materials" className="space-y-4 mt-4">

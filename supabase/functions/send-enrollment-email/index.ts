@@ -108,8 +108,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     await client.close();
 
-    console.log("Enrollment email sent successfully to:", studentEmail);
-
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {

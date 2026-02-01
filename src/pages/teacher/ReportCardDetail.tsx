@@ -593,7 +593,7 @@ const ReportCardDetail = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{t('reportCards.gradePerSubject')}</CardTitle>
-              <CardDescription>{t('reportCards.autoCalculated')}</CardDescription>
+              <CardDescription className='mt-2'>{t('reportCards.autoCalculated')}</CardDescription>
             </div>
             <div className="flex gap-2">
               <Button
@@ -683,6 +683,12 @@ const ReportCardDetail = () => {
                           className="w-full"
                         />
                       </TableCell>
+                      {/* Attendance: Show Read-Only or Calculated? 
+                          Currently per-subject attendance isn't fully linked in Rapor entries table, 
+                          but typically Report Card has 1 Overall Attendance. 
+                          If we want Per-Course Attendance, we'd need to fetch it separately. 
+                          For now, just sticking to standard marks. 
+                      */}
                       <TableCell>
                         <div className="text-center font-medium">
                           {(() => {
@@ -752,6 +758,34 @@ const ReportCardDetail = () => {
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Attendance Stats */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
+              <Clock className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold">{t('attendance.attendancePercentage') || 'Attendance'}</h3>
+              <p className="text-muted-foreground">{t('reportCards.calculatedFromAttendance') || 'Based on session records'}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">{t('reportCards.grade')}</p>
+              <div className="flex items-baseline gap-2 justify-end">
+                <span className="text-3xl font-bold text-blue-600">
+                  {(reportCard as any).attendance_percentage !== null && (reportCard as any).attendance_percentage !== undefined
+                    ? `${(reportCard as any).attendance_percentage.toFixed(1)}%`
+                    : '-'}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  ({(reportCard as any).attendance_grade?.toFixed(1) || '-'})
+                </span>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

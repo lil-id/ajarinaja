@@ -37,6 +37,8 @@ import TeacherCalendar from "./pages/teacher/Calendar";
 import TeacherAtRiskStudents from "./pages/teacher/AtRiskStudents";
 import TeacherReportCards from "./pages/teacher/ReportCards";
 import TeacherReportCardDetail from "./pages/teacher/ReportCardDetail";
+import TeacherAttendanceSessionDetail from "./pages/teacher/AttendanceSessionDetail";
+import TeacherAttendance from "./pages/teacher/Attendance";
 
 // Student Pages
 import StudentLayout from "./layouts/StudentLayout";
@@ -59,6 +61,7 @@ import StudentAnalytics from "./pages/student/Analytics";
 import StudentCalendar from "./pages/student/Calendar";
 import StudentReportCards from "./pages/student/ReportCards";
 import StudentReportCardDetail from "./pages/student/ReportCardDetail";
+import StudentAttendance from "./pages/student/Attendance";
 
 // Demo Pages
 import DemoLayout from "./layouts/DemoLayout";
@@ -132,6 +135,7 @@ const App = () => (
               <Route index element={<TeacherOverview />} />
               <Route path="courses" element={<TeacherCourses />} />
               <Route path="courses/:courseId" element={<TeacherCourseDetail />} />
+              <Route path="courses/:courseId/attendance/:sessionId" element={<TeacherAttendanceSessionDetail />} />
               <Route path="exams" element={<TeacherExams />} />
               <Route path="exams/new" element={<TeacherCreateExam />} />
               <Route path="exams/:examId/edit" element={<TeacherEditExam />} />
@@ -149,8 +153,8 @@ const App = () => (
               <Route path="at-risk" element={<TeacherAtRiskStudents />} />
               <Route path="report-cards" element={<TeacherReportCards />} />
               <Route path="report-cards/:reportCardId" element={<TeacherReportCardDetail />} />
+              <Route path="attendance" element={<TeacherAttendance />} />
               <Route path="profile" element={<TeacherProfile />} />
-              <Route path="settings" element={<TeacherSettings />} />
               <Route path="settings" element={<TeacherSettings />} />
             </Route>
 
@@ -163,7 +167,6 @@ const App = () => (
               <Route index element={<StudentDashboard />} />
               <Route path="courses" element={<StudentCourses />} />
               <Route path="explore" element={<StudentExploreCourses />} />
-              <Route path="courses/:courseId" element={<StudentCourseDetail />} />
               <Route path="courses/:courseId" element={<StudentCourseDetail />} />
               <Route path="exams" element={<StudentExams />} />
               <Route path="exam/:examId" element={<TakeExam />} />
@@ -178,6 +181,7 @@ const App = () => (
               <Route path="calendar" element={<StudentCalendar />} />
               <Route path="report-cards" element={<StudentReportCards />} />
               <Route path="report-cards/:reportCardId" element={<StudentReportCardDetail />} />
+              <Route path="attendance" element={<StudentAttendance />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
             </Route>

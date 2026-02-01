@@ -305,8 +305,6 @@ const handler = async (req: Request): Promise<Response> => {
 
         // QUIT
         await sendCommand(`QUIT`);
-
-        console.log(`Email sent to: ${recipient.email}`);
       } finally {
         conn.close();
       }

@@ -82,6 +82,10 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MaterialViewer } from '@/components/MaterialViewer';
 import { format } from 'date-fns';
+import { AttendanceSessionsTable } from '@/components/attendance/AttendanceSessionsTable';
+import { AttendanceStudentSummary } from '@/components/attendance/AttendanceStudentSummary';
+import { AttendanceSettingsDialog } from '@/components/attendance/AttendanceSettingsDialog';
+import { OpenSessionDialog } from '@/components/attendance/OpenSessionDialog';
 
 /**
  * Helper to format file size.
@@ -584,7 +588,45 @@ const TeacherCourseDetail = () => {
           <TabsTrigger value="assignments">{t('courses.assignments')} ({courseAssignments.length})</TabsTrigger>
           <TabsTrigger value="materials">{t('nav.materials')} ({courseMaterials.length})</TabsTrigger>
           <TabsTrigger value="announcements">{t('courses.announcements')} ({courseAnnouncements.length})</TabsTrigger>
+          <TabsTrigger value="attendance">{t('attendance.title') || 'Attendance'}</TabsTrigger>
         </TabsList>
+
+        {/* Attendance Tab */}
+        <TabsContent value="attendance" className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-muted/30 p-6 rounded-lg border">
+            <div>
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                {t('attendance.title') || 'Attendance Management'}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t('attendance.manageSubtitle') || 'Manage attendance sessions, settings, and view reports.'}
+              </p>
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <AttendanceSettingsDialog courseId={courseId!} />
+              <OpenSessionDialog courseId={courseId!} />
+            </div>
+          </div>
+
+          <Tabs defaultValue="sessions" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="sessions">{t('attendance.sessions') || 'Sessions'}</TabsTrigger>
+              <TabsTrigger value="summary">{t('attendance.summary') || 'Student Summary'}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="sessions" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-md font-medium">{t('attendance.sessionHistory') || 'Session History'}</h4>
+              </div>
+              <AttendanceSessionsTable courseId={courseId!} />
+            </TabsContent>
+
+            <TabsContent value="summary">
+              <AttendanceStudentSummary courseId={courseId!} />
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
 
         {/* Students Tab */}
         <TabsContent value="students" className="space-y-4">
@@ -592,7 +634,7 @@ const TeacherCourseDetail = () => {
             {enrollments.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
+                  <Button variant="outline">
                     <UsersRound className="w-4 h-4" />
                     {t('courses.removeAll')} ({enrollments.length})
                   </Button>
