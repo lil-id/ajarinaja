@@ -51,18 +51,21 @@ export function useStudentCheckIn() {
     return useMutation({
         mutationFn: async ({
             sessionId,
+            studentId,
             pin,
             location
         }: {
             sessionId: string;
+            studentId: string;
             pin?: string;
             location?: { lat: number; lng: number }
         }) => {
             const { data, error } = await supabase.rpc('student_check_in' as any, {
                 p_session_id: sessionId,
+                p_student_id: studentId,
                 p_pin: pin,
-                p_lat: location?.lat,
-                p_lon: location?.lng
+                p_latitude: location?.lat,
+                p_longitude: location?.lng
             });
 
             if (error) throw error;

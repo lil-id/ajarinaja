@@ -7,7 +7,8 @@ import { useCourses } from '@/hooks/useCourses';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useExams } from '@/hooks/useExams';
 import { useCourseMaterials } from '@/hooks/useCourseMaterials';
-import { useExamSubmissions, useMaterialViews } from '@/hooks/useProgress';
+import { useExamSubmissions, useMaterialViews, useAllAssignmentSubmissions } from '@/hooks/useProgress';
+import { useAllAssignmentsBasic } from '@/hooks/useAssignments';
 import { BookOpen, Loader2, ArrowRight } from 'lucide-react';
 
 /**
@@ -30,6 +31,8 @@ const StudentCourses = () => {
   const { materials } = useCourseMaterials();
   const { data: submissions = [] } = useExamSubmissions();
   const { data: materialViews = [] } = useMaterialViews();
+  const { data: allAssignments = [] } = useAllAssignmentsBasic();
+  const { data: assignmentSubmissions = [] } = useAllAssignmentSubmissions();
 
   const isLoading = coursesLoading || enrollmentsLoading;
 
@@ -45,14 +48,34 @@ const StudentCourses = () => {
   const getCourseProgress = (courseId: string) => {
     const courseExams = exams.filter(e => e.course_id === courseId && e.status === 'published');
     const courseMaterials = materials.filter(m => m.course_id === courseId);
+    const courseAssignments = allAssignments.filter(a => a.course_id === courseId);
 
     const completedExams = submissions.filter(s => courseExams.some(e => e.id === s.exam_id)).length;
     const viewedMaterials = materialViews.filter(v => courseMaterials.some(m => m.id === v.material_id)).length;
+    const completedAssignments = courseAssignments.filter(a => assignmentSubmissions.includes(a.id)).length;
 
     const examProgress = courseExams.length > 0 ? (completedExams / courseExams.length) * 100 : 100;
     const materialProgress = courseMaterials.length > 0 ? (viewedMaterials / courseMaterials.length) * 100 : 100;
+    const assignmentProgress = courseAssignments.length > 0 ? (completedAssignments / courseAssignments.length) * 100 : 100;
 
-    return Math.round((examProgress + materialProgress) / 2);
+    // Calculate overall progress as average of components that have items
+    let components = 0;
+    let totalProgress = 0;
+
+    if (courseExams.length > 0) {
+      components++;
+      totalProgress += examProgress;
+    }
+    if (courseMaterials.length > 0) {
+      components++;
+      totalProgress += materialProgress;
+    }
+    if (courseAssignments.length > 0) {
+      components++;
+      totalProgress += assignmentProgress;
+    }
+
+    return components > 0 ? Math.round(totalProgress / components) : 0;
   };
 
   if (isLoading) {

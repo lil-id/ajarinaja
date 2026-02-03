@@ -8,6 +8,7 @@ import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
+import { useAllAssignmentSubmissions } from '@/hooks/useProgress';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -19,6 +20,7 @@ interface CalendarEvent {
   courseName: string;
   status: string;
   isPastDue: boolean;
+  isSubmitted?: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export default function StudentCalendar() {
   const { courses, isLoading: coursesLoading } = useCourses();
   const { exams, isLoading: examsLoading } = useExams();
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
+  const { data: submittedAssignmentIds = [] } = useAllAssignmentSubmissions();
 
   const isLoading = enrollmentsLoading || coursesLoading || examsLoading || assignmentsLoading;
 
@@ -94,6 +97,8 @@ export default function StudentCalendar() {
       .forEach((assignment) => {
         if (assignment.due_date) {
           const dueDate = new Date(assignment.due_date);
+          const isSubmitted = submittedAssignmentIds.includes(assignment.id);
+
           allEvents.push({
             id: assignment.id,
             title: assignment.title,
@@ -101,13 +106,14 @@ export default function StudentCalendar() {
             type: 'assignment',
             courseName: courseMap.get(assignment.course_id) || t('calendar.unknown'),
             status: assignment.status,
-            isPastDue: isPast(dueDate),
+            isPastDue: !isSubmitted && isPast(dueDate),
+            isSubmitted,
           });
         }
       });
 
     return allEvents;
-  }, [exams, assignments, enrolledCourseIds, courseMap]);
+  }, [exams, assignments, enrolledCourseIds, courseMap, submittedAssignmentIds]);
 
   // Get days in current month view
   const monthStart = startOfMonth(currentMonth);
@@ -315,6 +321,11 @@ export default function StudentCalendar() {
                         >
                           {event.type === 'exam' ? t('calendar.exam') : t('calendar.assignment')}
                         </Badge>
+                        {event.isSubmitted && (
+                          <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                            {t('common.submitted')}
+                          </Badge>
+                        )}
                         {event.isPastDue && (
                           <Badge variant="destructive" className="text-xs">
                             {t('calendar.pastDue')}

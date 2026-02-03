@@ -103,6 +103,14 @@ export function LiveSessionWidget() {
     if (isLoading) return null; // Don't show skeleton to save space, or maybe small spinner
     if (!session) return null; // No active session
 
+    // Check if session is expired (time is up)
+    const now = new Date();
+    // Use a small buffer (e.g., 1 second) or strict check? Strict is fine.
+    // We check against close_time.
+    const isExpired = session.close_time && now >= new Date(session.close_time);
+
+    if (isExpired) return null;
+
     // Format time left
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;

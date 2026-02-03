@@ -12,6 +12,11 @@ import { BookOpen, FileText, CheckCircle, ArrowRight, Loader2 } from 'lucide-rea
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { StudentActiveSessionWidget } from '@/components/attendance/StudentActiveSessionWidget';
+import { StudentCalendarWidget } from '@/components/dashboard/StudentCalendarWidget';
+import { StudentRecentActivityWidget } from '@/components/dashboard/StudentRecentActivityWidget';
+import { StudentActivityChart } from '@/components/dashboard/StudentActivityChart';
+import { StudentWaitingGradingWidget } from '@/components/dashboard/StudentWaitingGradingWidget';
+import { StudentEnrolledCoursesWidget } from '@/components/dashboard/StudentEnrolledCoursesWidget';
 
 /**
  * Student Dashboard page.
@@ -149,42 +154,35 @@ const StudentDashboard = () => {
         </Card>
       </div>
 
-      {/* Upcoming Exams */}
-      {upcomingExams.length > 0 && (
-        <Card className="border-0 shadow-card">
-          <CardHeader>
-            <CardTitle>{t('exams.title')}</CardTitle>
-            <CardDescription>{t('exams.takeExam')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {upcomingExams.slice(0, 3).map((exam) => {
-                const course = courses.find(c => c.id === exam.course_id);
-                return (
-                  <div
-                    key={exam.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div>
-                      <h3 className="font-semibold text-foreground">{exam.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {course?.title} • {exam.duration} min • {exam.total_points} pts
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(`/student/exam/${exam.id}`)}
-                    >
-                      {t('exams.takeExam')}
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Main Content Rows */}
+      <div className="space-y-6">
+
+        {/* Row 1: Recent Activity (40%) & Calendar (60%) */}
+        <div className="grid lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-2 h-full">
+            <StudentRecentActivityWidget />
+          </div>
+          <div className="lg:col-span-3 h-full">
+            <StudentCalendarWidget />
+          </div>
+        </div>
+
+        {/* Row 2: Activity Chart (50%) & Waiting Grading (50%) */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="h-full">
+            <StudentActivityChart />
+          </div>
+          <div className="h-full">
+            <StudentWaitingGradingWidget />
+          </div>
+        </div>
+
+        {/* Row 3: Enrolled Courses */}
+        <div>
+          <StudentEnrolledCoursesWidget />
+        </div>
+
+      </div>
     </div>
   );
 };

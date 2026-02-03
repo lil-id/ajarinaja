@@ -86,39 +86,112 @@ export function useMarkMaterialViewed() {
 }
 
 /**
- * Custom hook to calculate course progress based on completed exams and viewed materials.
+ * Custom hook to fetch all assignment submissions for the current user.
+ * Combines both file-based and question-based submissions.
+ * 
+ * @returns {UseQueryResult} The query result containing unique assignment IDs that have been submitted.
+ */
+export function useAllAssignmentSubmissions() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['all-assignment-submissions', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const [fileSubmissions, questionSubmissions] = await Promise.all([
+        supabase
+          .from('assignment_submissions')
+          .select('assignment_id')
+          .eq('student_id', user.id),
+        supabase
+          .from('assignment_question_submissions')
+          .select('assignment_id')
+          .eq('student_id', user.id)
+      ]);
+
+      if (fileSubmissions.error) throw fileSubmissions.error;
+      if (questionSubmissions.error) throw questionSubmissions.error;
+
+      const submittedAssignmentIds = new Set([
+        ...(fileSubmissions.data?.map(s => s.assignment_id) || []),
+        ...(questionSubmissions.data?.map(s => s.assignment_id) || [])
+      ]);
+
+      return Array.from(submittedAssignmentIds);
+    },
+    enabled: !!user,
+  });
+}
+
+/**
+ * Custom hook to calculate course progress based on completed exams, viewed materials, and submitted assignments.
  * 
  * @param {string} courseId - The ID of the course.
  * @param {string[]} examIds - List of exam IDs in the course.
  * @param {string[]} materialIds - List of material IDs in the course.
+ * @param {string[]} assignmentIds - List of assignment IDs in the course.
  * @returns {object} Progress statistics and helper functions.
  */
-export function useCourseProgress(courseId: string, examIds: string[], materialIds: string[]) {
+export function useCourseProgress(
+  courseId: string,
+  examIds: string[],
+  materialIds: string[],
+  assignmentIds: string[] = []
+) {
   const { data: submissions = [] } = useExamSubmissions();
   const { data: materialViews = [] } = useMaterialViews();
+  const { data: submittedAssignments = [] } = useAllAssignmentSubmissions();
 
   const completedExams = submissions.filter(s => examIds.includes(s.exam_id));
   const viewedMaterials = materialViews.filter(v => materialIds.includes(v.material_id));
+  const completedAssignments = submittedAssignments.filter(id => assignmentIds.includes(id));
 
   const examProgress = examIds.length > 0
-    ? Math.round((completedExams.length / examIds.length) * 100)
+    ? (completedExams.length / examIds.length) * 100
     : 100;
 
   const materialProgress = materialIds.length > 0
-    ? Math.round((viewedMaterials.length / materialIds.length) * 100)
+    ? (viewedMaterials.length / materialIds.length) * 100
     : 100;
 
-  const overallProgress = Math.round((examProgress + materialProgress) / 2);
+  const assignmentProgress = assignmentIds.length > 0
+    ? (completedAssignments.length / assignmentIds.length) * 100
+    : 100;
+
+  // Calculate overall progress as average of the three components
+  // Only include components that have items
+  let components = 0;
+  let totalProgress = 0;
+
+  if (examIds.length > 0) {
+    components++;
+    totalProgress += examProgress;
+  }
+  if (materialIds.length > 0) {
+    components++;
+    totalProgress += materialProgress;
+  }
+  if (assignmentIds.length > 0) {
+    components++;
+    totalProgress += assignmentProgress;
+  }
+
+  const overallProgress = components > 0 ? Math.round(totalProgress / components) : 0;
 
   return {
     completedExams: completedExams.length,
     totalExams: examIds.length,
     viewedMaterials: viewedMaterials.length,
     totalMaterials: materialIds.length,
-    examProgress,
-    materialProgress,
+    completedAssignments: completedAssignments.length,
+    totalAssignments: assignmentIds.length,
+    examProgress: Math.round(examProgress),
+    materialProgress: Math.round(materialProgress),
+    assignmentProgress: Math.round(assignmentProgress),
     overallProgress,
     isExamCompleted: (examId: string) => completedExams.some(s => s.exam_id === examId),
     isMaterialViewed: (materialId: string) => viewedMaterials.some(v => v.material_id === materialId),
+    isAssignmentSubmitted: (assignmentId: string) => submittedAssignments.includes(assignmentId),
   };
 }

@@ -50,10 +50,6 @@ const StudentAttendance = () => {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <CardTitle>{t('attendance.history') || 'Attendance History'}</CardTitle>
-                            <CardDescription>{t('attendance.historyDesc') || 'View your attendance records for this course'}</CardDescription>
-                        </div>
 
                         {/* Course Selector */}
                         <div className="w-full sm:w-[250px]">

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2, Download, ExternalLink, X, FileText, File, Video, FileImage } from 'lucide-react';
+import { Loader2, Download, ExternalLink, X, FileText, File, Video, FileImage, Check, Eye } from 'lucide-react';
 import { getMaterialSignedUrl, extractYouTubeId } from '@/hooks/useCourseMaterials';
+import { useMarkMaterialViewed, useMaterialViews } from '@/hooks/useProgress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -42,6 +43,20 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
   const { t } = useTranslation();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { mutateAsync: markAsViewed, isPending: isMarking } = useMarkMaterialViewed();
+  const { data: materialViews = [] } = useMaterialViews();
+
+  const isViewed = material ? materialViews.some(v => v.material_id === material.id) : false;
+
+  const handleMarkAsViewed = async () => {
+    if (!material) return;
+    try {
+      await markAsViewed(material.id);
+      toast.success(t('common.success'));
+    } catch (error) {
+      toast.error(t('common.error'));
+    }
+  };
 
   useEffect(() => {
     const fetchUrl = async () => {
@@ -199,6 +214,25 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
             {material.title}
           </DialogTitle>
           <div className="flex items-center gap-2">
+            <Button
+              variant={isViewed ? "secondary" : "default"}
+              size="sm"
+              onClick={handleMarkAsViewed}
+              disabled={isViewed || isMarking}
+              className="gap-1"
+            >
+              {isViewed ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  {t('common.viewed')}
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  {t('common.markAsViewed')}
+                </>
+              )}
+            </Button>
             {material.file_path && (
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-1" />

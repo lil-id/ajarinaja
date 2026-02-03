@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { useActiveCourseSession, useStudentCheckIn } from '@/hooks/useAttendanceSessions';
+import { useStudentActiveSessions, useStudentCheckIn } from '@/hooks/useStudentAttendance';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -25,8 +25,9 @@ export function StudentLiveSessionWidget({ courseId }: StudentLiveSessionWidgetP
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [checkInSuccess, setCheckInSuccess] = useState(false);
 
-    // Fetch active session for this course
-    const { data: session, isLoading } = useActiveCourseSession(courseId || '');
+    // Fetch active sessions (which already filters out checked-in ones)
+    const { data: activeSessions, isLoading } = useStudentActiveSessions();
+    const session = activeSessions?.find((s: any) => s.course_id === courseId);
 
     // Check-in mutation
     const checkInMutation = useStudentCheckIn();

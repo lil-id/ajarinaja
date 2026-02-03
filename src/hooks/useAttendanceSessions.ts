@@ -152,6 +152,28 @@ export function useCloseSession() {
     });
 }
 
+// Delete session (Hard Delete)
+export function useDeleteSession() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (sessionId: string) => {
+            const { error } = await supabase
+                .from('attendance_sessions')
+                .delete()
+                .eq('id', sessionId);
+
+            if (error) throw error;
+        },
+        onSuccess: (_, sessionId) => {
+            queryClient.invalidateQueries({ queryKey: ['attendance-sessions'] });
+            queryClient.invalidateQueries({ queryKey: ['attendance-session', sessionId] });
+            queryClient.invalidateQueries({ queryKey: ['active-teacher-session'] });
+            queryClient.invalidateQueries({ queryKey: ['course-attendance-stats'] });
+        },
+    });
+}
+
 // Manual update attendance record
 export function useUpdateAttendanceManual() {
     const queryClient = useQueryClient();

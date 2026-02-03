@@ -81,6 +81,26 @@ export function useAssignments(courseId?: string) {
 }
 
 /**
+ * Custom hook to fetch all assignments with minimal data (id, course_id).
+ * Useful for calculating progress across multiple courses.
+ * 
+ * @returns {UseQueryResult} The query result containing assignments.
+ */
+export function useAllAssignmentsBasic() {
+  return useQuery({
+    queryKey: ['all-assignments-basic'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('id, course_id');
+
+      if (error) throw error;
+      return data as { id: string; course_id: string }[];
+    },
+  });
+}
+
+/**
  * Custom hook to fetch a single assignment by ID.
  * 
  * @param {string} assignmentId - The ID of the assignment.

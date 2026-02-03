@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, Eye, Lock, Unlock, PlayCircle } from 'lucide-react';
+import { MoreVertical, Eye, Lock, Unlock, PlayCircle, Trash2, AlertTriangle } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -15,12 +15,23 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAttendanceSessions, useCloseSession } from '@/hooks/useAttendanceSessions';
+import { useAttendanceSessions, useCloseSession, useDeleteSession } from '@/hooks/useAttendanceSessions';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AttendanceSessionsTableProps {
     courseId: string;
@@ -32,6 +43,9 @@ export function AttendanceSessionsTable({ courseId }: AttendanceSessionsTablePro
     const { toast } = useToast();
     const { data: sessions, isLoading } = useAttendanceSessions(courseId);
     const closeSession = useCloseSession();
+    const deleteSession = useDeleteSession();
+
+    const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
     const handleCloseSession = async (sessionId: string) => {
         try {
@@ -43,6 +57,25 @@ export function AttendanceSessionsTable({ courseId }: AttendanceSessionsTablePro
         } catch (error) {
             toast({
                 title: t('common.error'),
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const handleDeleteSession = async () => {
+        if (!sessionToDelete) return;
+
+        try {
+            await deleteSession.mutateAsync(sessionToDelete);
+            toast({
+                title: t('attendance.sessionDeleted'),
+                description: t('attendance.sessionDeletedDescription'),
+            });
+            setSessionToDelete(null);
+        } catch (error) {
+            toast({
+                title: t('common.error'),
+                description: t('attendance.sessionDeleteFailed'),
                 variant: 'destructive',
             });
         }
@@ -116,7 +149,7 @@ export function AttendanceSessionsTable({ courseId }: AttendanceSessionsTablePro
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="h-8 w-8 p-0">
+                                        <Button variant="ghost" className="h-8 w-8 p-0">
                                             <span className="sr-only">Open menu</span>
                                             <MoreVertical className="h-4 w-4" />
                                         </Button>
@@ -137,6 +170,14 @@ export function AttendanceSessionsTable({ courseId }: AttendanceSessionsTablePro
                                                 {t('common.close')}
                                             </DropdownMenuItem>
                                         )}
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={() => setSessionToDelete(session.id)}
+                                            className="text-destructive focus:text-destructive"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            {t('common.delete')}
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
@@ -144,6 +185,29 @@ export function AttendanceSessionsTable({ courseId }: AttendanceSessionsTablePro
                     ))}
                 </TableBody>
             </Table>
+
+            <AlertDialog open={!!sessionToDelete} onOpenChange={(open) => !open && setSessionToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                            <AlertTriangle className="h-5 w-5" />
+                            {t('attendance.deleteSessionTitle')}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t('attendance.deleteSessionConfirm')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteSession}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {deleteSession.isPending ? t('common.deleting') : t('common.delete')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

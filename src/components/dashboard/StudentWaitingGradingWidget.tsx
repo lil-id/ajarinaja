@@ -1,27 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { usePendingGrading } from '@/hooks/usePendingGrading';
-import { Loader2, AlertCircle, ArrowRight, ClipboardList, FileText } from 'lucide-react';
+import { useStudentWaitingGrading } from '@/hooks/useStudentWaitingGrading';
+import { Loader2, Clock, ArrowRight, ClipboardList, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { formatDistanceToNow } from 'date-fns';
 
-export function PendingGradingWidget() {
+export function StudentWaitingGradingWidget() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { data, isLoading } = usePendingGrading();
+    const { data, isLoading } = useStudentWaitingGrading();
 
-    const handleNavigate = (item: typeof data.items[0]) => {
+    const handleNavigate = (item: any) => {
         if (item.type === 'assignment') {
-            navigate(`/teacher/assignments/${item.id}/submissions`);
+            navigate(`/student/assignments/${item.id}`);
         } else {
-            navigate(`/teacher/exams/${item.id}/grade`);
+            navigate(`/student/exam/${item.id}/results`);
         }
     };
 
     if (isLoading) {
         return (
-            <Card className="border-0 shadow-card">
+            <Card className="border-0 shadow-card h-full">
                 <CardHeader>
                     <CardTitle className="text-lg">{t('dashboard.pendingGrading')}</CardTitle>
                 </CardHeader>
@@ -37,34 +37,33 @@ export function PendingGradingWidget() {
     const { total = 0, items = [] } = data || {};
 
     return (
-        <Card className="border-0 shadow-card">
-            <CardHeader>
+        <Card className="border-0 shadow-card h-full flex flex-col">
+            <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-primary" />
+                    <Clock className="w-5 h-5 text-yellow-500" />
                     {t('dashboard.pendingGrading')}
                 </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
                 {total === 0 ? (
-                    <div className="text-center py-8">
+                    <div className="text-center py-8 h-full flex flex-col items-center justify-center">
                         <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-2">
-                            <AlertCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                            <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            {t('dashboard.noPendingGrading')}
+                            {t('dashboard.allGraded')}
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {/* Total Badge */}
-                        <div className="flex items-center justify-center gap-2 p-4 rounded-lg bg-primary/10">
-                            <span className="text-3xl font-bold text-primary">{total}</span>
+                        <div className="flex items-center justify-center gap-2 p-4 rounded-lg bg-yellow-500/10">
+                            <span className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{total}</span>
                             <span className="text-sm text-muted-foreground">
-                                {t('dashboard.submissionsPending')}
+                                {t('assignments.ungraded')}
                             </span>
                         </div>
 
-                        {/* Items List */}
                         <div className="space-y-2">
                             {items.slice(0, 5).map((item) => (
                                 <div
@@ -74,8 +73,8 @@ export function PendingGradingWidget() {
                                 >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.type === 'assignment'
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'bg-secondary/10 text-secondary'
+                                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                                            : 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400'
                                             }`}>
                                             {item.type === 'assignment' ? (
                                                 <ClipboardList className="w-4 h-4" />
@@ -88,35 +87,19 @@ export function PendingGradingWidget() {
                                                 {item.title}
                                             </p>
                                             <p className="text-xs text-muted-foreground truncate">
-                                                {item.course_title}
+                                                {item.courseName}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 flex-shrink-0">
-                                        {item.is_overdue && (
-                                            <Badge variant="destructive" className="text-xs">
-                                                {t('assignments.ungraded')}
-                                            </Badge>
-                                        )}
-                                        <Badge variant="outline" className="text-xs">
-                                            {item.pending_count}
-                                        </Badge>
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {formatDistanceToNow(new Date(item.submittedAt), { addSuffix: true })}
+                                        </span>
                                         <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </div>
                             ))}
                         </div>
-
-                        {items.length > 0 && (
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => navigate('/teacher/assignments')}
-                            >
-                                {t('dashboard.viewAllGrading')}
-                                <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        )}
                     </div>
                 )}
             </CardContent>

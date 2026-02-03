@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useCourses } from '@/hooks/useCourses';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useExams } from '@/hooks/useExams';
@@ -43,26 +44,6 @@ const StudentExams = () => {
 
   const now = new Date();
 
-  // Filter exams: published, enrolled, and within schedule (if set)
-  const allAvailableExams = exams.filter(e => {
-    if (e.status !== 'published') return false;
-    if (!enrolledCourseIds.includes(e.course_id)) return false;
-
-    // Check schedule if dates are set
-    if (e.start_date && new Date(e.start_date) > now) return false;
-    if (e.end_date && new Date(e.end_date) < now) return false;
-
-    return true;
-  });
-
-  // Upcoming scheduled exams (not yet available)
-  const allUpcomingExams = exams.filter(e => {
-    if (e.status !== 'published') return false;
-    if (!enrolledCourseIds.includes(e.course_id)) return false;
-    if (e.start_date && new Date(e.start_date) > now) return true;
-    return false;
-  });
-
   // Apply search and course filter
   const filterExams = (examList: typeof exams) => {
     return examList.filter(exam => {
@@ -74,12 +55,52 @@ const StudentExams = () => {
     });
   };
 
-  const availableExams = filterExams(allAvailableExams);
-  const upcomingExams = filterExams(allUpcomingExams);
-
   const completedExamIds = submissions.map(s => s.exam_id);
-  const completedExams = availableExams.filter(e => completedExamIds.includes(e.id));
-  const pendingExams = availableExams.filter(e => !completedExamIds.includes(e.id));
+
+  // Completed exams: All exams with submissions, for enrolled courses.
+  // We do NOT check for 'published' status here to ensure history is preserved even if exam is archived.
+  const rawCompletedExams = exams.filter(e =>
+    completedExamIds.includes(e.id) &&
+    enrolledCourseIds.includes(e.course_id)
+  );
+  const completedExams = filterExams(rawCompletedExams);
+
+  // Available exams: Published, Enrolled, Within Schedule, Not Completed
+  const rawAvailableExams = exams.filter(e => {
+    if (completedExamIds.includes(e.id)) return false;
+    if (e.status !== 'published') return false;
+    if (!enrolledCourseIds.includes(e.course_id)) return false;
+
+    // Check schedule
+    if (e.start_date && new Date(e.start_date) > now) return false;
+    if (e.end_date && new Date(e.end_date) < now) return false;
+
+    return true;
+  });
+  const availableExams = filterExams(rawAvailableExams);
+
+  // Upcoming exams: Published, Enrolled, Future Start Date
+  const rawUpcomingExams = exams.filter(e => {
+    if (e.status !== 'published') return false;
+    if (!enrolledCourseIds.includes(e.course_id)) return false;
+    if (e.start_date && new Date(e.start_date) > now) return true;
+    return false;
+  });
+  const upcomingExams = filterExams(rawUpcomingExams);
+
+  const pendingExams = availableExams;
+
+  // Calculate stats
+  const filteredExamsCount = availableExams.length + upcomingExams.length + completedExams.length;
+  const submittedCount = completedExams.length;
+  const gradedCount = completedExams.filter(e => {
+    const sub = submissions.find(s => s.exam_id === e.id);
+    return sub && sub.score !== null;
+  }).length;
+
+  const completionRate = filteredExamsCount > 0
+    ? Math.round((submittedCount / filteredExamsCount) * 100)
+    : 0;
 
   if (isLoading) {
     return (
@@ -270,7 +291,37 @@ const StudentExams = () => {
         </div>
       </div>
 
-      {availableExams.length === 0 && upcomingExams.length === 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>{t('exams.totalExams')}</CardDescription>
+            <CardTitle className="text-2xl">{filteredExamsCount}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>{t('assignments.submitted')}</CardDescription>
+            <CardTitle className="text-2xl">{submittedCount}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>{t('assignments.graded')}</CardDescription>
+            <CardTitle className="text-2xl">{gradedCount}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>{t('assignments.completionRate')}</CardDescription>
+            <CardTitle className="text-2xl">{completionRate}%</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Progress value={completionRate} className="h-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {availableExams.length === 0 && upcomingExams.length === 0 && completedExams.length === 0 ? (
         <Card className="border-0 shadow-card">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

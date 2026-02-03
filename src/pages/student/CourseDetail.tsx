@@ -9,8 +9,10 @@ import { Progress } from '@/components/ui/progress';
 import { useCourse } from '@/hooks/useCourses';
 import { useCourseMaterials, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 import { useExams } from '@/hooks/useExams';
+import { useAssignments } from '@/hooks/useAssignments';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useEnrollments, useUnenroll } from '@/hooks/useEnrollments';
+import { useCourseProgress } from '@/hooks/useProgress';
 import { StudentAttendanceView } from '@/components/attendance/StudentAttendanceView';
 import { MaterialViewer } from '@/components/MaterialViewer';
 import {
@@ -65,22 +67,27 @@ const StudentCourseDetail = () => {
   const { data: course, isLoading: courseLoading } = useCourse(courseId!);
   const { materials, isLoading: materialsLoading } = useCourseMaterials(courseId);
   const { exams, isLoading: examsLoading } = useExams(courseId);
+  const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments(courseId);
   const { announcements, isLoading: announcementsLoading } = useAnnouncements(courseId);
   const { mutateAsync: unenroll, isPending: isUnenrolling } = useUnenroll();
+
+  // Progress hook for unified status checks
+  const {
+    overallProgress: progress,
+    isExamCompleted,
+    isMaterialViewed,
+    isAssignmentSubmitted
+  } = useCourseProgress(
+    courseId!,
+    exams.map(e => e.id),
+    materials.map(m => m.id),
+    assignments.map(a => a.id)
+  );
+
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<typeof materials[0] | null>(null);
 
-  const isLoading = courseLoading || materialsLoading || examsLoading || announcementsLoading;
-
-  // Calculate progress
-  const progress = useMemo(() => {
-    if (!materials || !exams) return 0;
-    const totalItems = materials.length + exams.length;
-    if (totalItems === 0) return 0;
-    // For now, simple mock progress based on items existing
-    // In a real app, we'd track viewed/completed status
-    return 0;
-  }, [materials, exams]);
+  const isLoading = courseLoading || materialsLoading || examsLoading || announcementsLoading || assignmentsLoading;
 
   const handleUnenroll = async () => {
     if (!courseId) return;
@@ -209,8 +216,9 @@ const StudentCourseDetail = () => {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           <Tabs defaultValue="materials" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="materials">{t('courseDetailPage.materialsTab')}</TabsTrigger>
+              <TabsTrigger value="assignments">{t('dashboard.assignments') || 'Assignments'}</TabsTrigger>
               <TabsTrigger value="exams">{t('courseDetailPage.examsTab')}</TabsTrigger>
               <TabsTrigger value="announcements">{t('courseDetailPage.announcementsTab')}</TabsTrigger>
               <TabsTrigger value="attendance">{t('attendance.title')}</TabsTrigger>
@@ -261,11 +269,6 @@ const StudentCourseDetail = () => {
                           <div>
                             <div className="flex items-start justify-between">
                               <h3 className="font-semibold text-lg line-clamp-1">{material.title}</h3>
-                              {isVideo && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {t('studentMaterials.video')}
-                                </Badge>
-                              )}
                             </div>
                             {material.description && (
                               <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -274,10 +277,18 @@ const StudentCourseDetail = () => {
                             )}
                           </div>
                           <div className="flex items-center justify-between mt-4">
-                            <span className="text-xs text-muted-foreground">
-                              {format(new Date(material.created_at), 'MMM d, yyyy')}
-                            </span>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(material.created_at), 'MMM d, yyyy')}
+                              </span>
+                              <span className={`text-xs font-medium ${isMaterialViewed(material.id) ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                {isMaterialViewed(material.id)
+                                  ? (t('common.viewed') || 'Viewed')
+                                  : (t('common.notViewed') || 'Not Viewed')
+                                }
+                              </span>
+                            </div>
+                            <div className="flex gap-2 items-center">
                               {isVideo ? (
                                 <Button size="sm" onClick={() => handleViewMaterial(material)}>
                                   <Play className="w-4 h-4 mr-1" />
@@ -310,6 +321,74 @@ const StudentCourseDetail = () => {
               )}
             </TabsContent>
 
+            {/* Assignments Tab */}
+            <TabsContent value="assignments" className="space-y-4 mt-4">
+              {assignments.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 flex flex-col items-center text-center">
+                    <FileText className="w-12 h-12 text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">{t('courseDetailPage.noAssignmentsAvailable') || 'No assignments available'}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                assignments.map((assignment) => {
+                  const isSubmitted = isAssignmentSubmitted(assignment.id);
+                  const isOverdue = !isSubmitted && new Date() > new Date(assignment.due_date);
+
+                  return (
+                    <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-lg">{assignment.title}</h3>
+                              {isSubmitted ? (
+                                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                                  {t('assignments.submitted') || 'Submitted'}
+                                </Badge>
+                              ) : isOverdue ? (
+                                <Badge variant="destructive">
+                                  {t('common.overdue') || 'Overdue'}
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary">
+                                  {t('common.pending') || 'Pending'}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {t('common.due')}: {format(new Date(assignment.due_date), 'MMM d, HH:mm')}
+                              </span>
+                              <Badge variant="outline">{assignment.max_points} pts</Badge>
+                            </div>
+                            {assignment.description && (
+                              <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                                {assignment.description}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            onClick={() => navigate(`/student/assignments/${assignment.id}`)}
+                            disabled={!isSubmitted && isOverdue}
+                            variant={isSubmitted ? "outline" : "default"}
+                          >
+                            {isSubmitted
+                              ? (t('courses.viewSubmissions') || 'View Submission')
+                              : isOverdue
+                                ? (t('common.overdue') || 'Overdue')
+                                : (t('common.submit') || 'Submit')
+                            }
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </TabsContent>
+
             {/* Exams Tab */}
             <TabsContent value="exams" className="space-y-4 mt-4">
               {exams.length === 0 ? (
@@ -325,7 +404,14 @@ const StudentCourseDetail = () => {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-lg">{exam.title}</h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-lg">{exam.title}</h3>
+                            {isExamCompleted(exam.id) && (
+                              <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                                {t('exams.completed') || 'Submitted'}
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
@@ -341,8 +427,13 @@ const StudentCourseDetail = () => {
                             {exam.description}
                           </p>
                         </div>
-                        <Button onClick={() => navigate(`/student/exam/${exam.id}`)}>
-                          {t('courseDetailPage.takeExam')}
+                        <Button
+                          onClick={() => navigate(`/student/exam/${exam.id}`)}
+                          variant={isExamCompleted(exam.id) ? "outline" : "default"}
+                        >
+                          {isExamCompleted(exam.id)
+                            ? (t('exams.viewResults') || 'View Results')
+                            : (t('courseDetailPage.takeExam'))}
                         </Button>
                       </div>
                     </CardContent>
@@ -437,6 +528,11 @@ const StudentCourseDetail = () => {
                   <Award className="w-5 h-5 text-primary mx-auto mb-1" />
                   <div className="text-xl font-bold">{exams.length}</div>
                   <div className="text-xs text-muted-foreground">{t('courseDetailPage.examsTab')}</div>
+                </div>
+                <div className="col-span-2 p-3 bg-accent/10 rounded-lg text-center">
+                  <FileText className="w-5 h-5 text-accent mx-auto mb-1" />
+                  <div className="text-xl font-bold">{assignments.length}</div>
+                  <div className="text-xs text-muted-foreground">{t('dashboard.assignments') || 'Assignments'}</div>
                 </div>
               </div>
             </CardContent>
