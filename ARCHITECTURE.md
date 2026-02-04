@@ -691,14 +691,14 @@ The application uses **React Router v6** with nested routing and role-based prot
 
 ```mermaid
 graph TD
-    A[/ Root] --> B[/login]
-    A --> C[/courses Public]
-    A --> D[/teacher/*]
-    A --> E[/student/*]
-    A --> F[/demo/*]
+    A["Root /"] --> B["Login /login"]
+    A --> C["Public Courses /courses"]
+    A --> D["Teacher Routes /teacher/*"]
+    A --> E["Student Routes /student/*"]
+    A --> F["Demo Routes /demo/*"]
     
-    D --> G[ProtectedRoute role=teacher]
-    E --> H[ProtectedRoute role=student]
+    D --> G["ProtectedRoute role=teacher"]
+    E --> H["ProtectedRoute role=student"]
     
     G --> I[TeacherLayout]
     H --> J[StudentLayout]
