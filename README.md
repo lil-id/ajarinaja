@@ -65,7 +65,7 @@ classroom-companion/
 │   │   ├── AuthContext.tsx      # Authentication state
 │   │   └── DemoContext.tsx      # Demo mode state
 │   ├── data/                    # Static data and constants
-│   ├── hooks/                   # Custom React hooks (23 hooks)
+│   ├── hooks/                   # Custom React hooks (38 hooks)
 │   │   ├── useAcademicPeriods.ts
 │   │   ├── useAnnouncements.ts
 │   │   ├── useAssignments.ts
@@ -114,68 +114,76 @@ classroom-companion/
 
 ## 🗄️ Database Schema
 
-The application uses **Supabase PostgreSQL** with the following main tables:
+The application uses **Supabase PostgreSQL** with **20+ tables** organized into functional groups:
 
 ### Core Tables
-- **profiles**: User profile information (name, avatar, bio)
+- **profiles**: User profile information (name, avatar, bio, language preference)
 - **user_roles**: Role assignments (teacher/student) with enum type
 - **courses**: Course information (title, description, status, teacher)
-- **enrollments**: Student-course relationships
+- **enrollments**: Student-course relationships with enrollment dates
 - **course_materials**: Learning materials (PDFs, videos, documents)
 
 ### Assessment Tables
-- **exams**: Exam metadata (duration, points, status)
-- **questions**: Exam questions (MCQ, multiple-select, essay)
+- **exams**: Exam metadata (duration, points, status, passing grade)
+- **questions**: Exam questions (MCQ, multiple-select, essay, fill-in-blank)
 - **exam_submissions**: Student exam submissions and scores
-- **question_bank**: Reusable question library
-- **assignments**: Assignment details and deadlines
+- **question_bank**: Reusable question library across exams
+- **assignments**: Assignment details, deadlines, and rubrics
 - **assignment_questions**: Assignment question content
-- **assignment_submissions**: Student assignment submissions
+- **assignment_submissions**: Student assignment submissions with file uploads
 
 ### Analytics & Tracking
-- **notifications**: User notifications system
-- **badges**: Achievement badges
-- **user_badges**: User badge awards
-- **announcements**: Course announcements
-- **calendar_events**: Scheduled events
+- **notifications**: User notifications system with real-time updates
+- **badges**: Achievement badges (First Course, Perfect Score, etc.)
+- **user_badges**: User badge awards with timestamps
+- **announcements**: Course announcements to enrolled students
+- **calendar_events**: Scheduled events and deadlines
 - **academic_periods**: Semester/term management
-- **report_cards**: Student report cards
-- **report_card_items**: Individual grade items
+- **report_cards**: Student report cards with teacher comments
+- **report_card_items**: Individual grade items per subject
 - **at_risk_students**: Students needing intervention
-- **at_risk_settings**: Risk detection criteria
-- **progress_tracking**: Student progress data
+- **at_risk_settings**: Risk detection criteria and thresholds
+- **progress_tracking**: Student progress data over time
+
+### Attendance System
+- **attendance_sessions**: Attendance tracking sessions
+- **attendance_records**: Individual student attendance records
 
 ### Security Features
-- **Row-Level Security (RLS)** policies on all tables
-- **Helper functions**: `has_role()`, `is_enrolled()`, `owns_course()`
-- **Triggers**: Auto-update timestamps, user profile creation
-- **Realtime subscriptions** for live updates
+- **Row-Level Security (RLS)** policies on all tables for database-level authorization
+- **Helper functions**: `has_role()`, `is_enrolled()`, `owns_course()` for reusable policy logic
+- **Triggers**: Auto-update timestamps, user profile creation on signup, notification creation
+- **Realtime subscriptions** enabled for live updates (<100ms latency)
+
+> 📚 **For detailed schema documentation**, see [ARCHITECTURE.md](./ARCHITECTURE.md) - Phase 2: Backend Architecture
 
 ## 🚀 Features
 
 ### For Teachers 👨‍🏫
 - **Course Builder**: Create courses with videos, PDFs, and rich content
-- **Smart Exam Creator**: MCQ, multiple-select & essay questions with question bank
-- **Auto-Grading**: Instant grading for MCQ exams with rubric-based scoring
-- **Assignment Management**: Create, assign, and grade assignments
-- **Performance Analytics**: Track class averages and student performance
-- **At-Risk Detection**: Identify struggling students automatically
-- **Question Bank**: Reusable question library across exams
-- **Schedule Management**: Calendar view for deadlines and events
-- **Announcement System**: Broadcast updates to students
-- **Report Cards**: Generate comprehensive semester reports
-- **PDF Export**: Export grades and analytics
+- **Smart Exam Creator**: MCQ, multiple-select, essay & fill-in-blank questions with question bank
+- **Auto-Grading**: Instant grading for MCQ exams with customizable rubric-based scoring
+- **Assignment Management**: Create, assign, and grade assignments with file uploads
+- **Performance Analytics**: Track class averages, student performance, and trends
+- **At-Risk Detection**: Identify struggling students automatically with configurable thresholds
+- **Question Bank**: Reusable question library with categories and difficulty levels
+- **Attendance Tracking**: PIN-based attendance system with session management and reports
+- **Schedule Management**: Calendar view for deadlines, exams, and events
+- **Announcement System**: Broadcast updates to enrolled students with real-time notifications
+- **Report Cards**: Generate comprehensive semester reports with customizable grading scales
+- **PDF Export**: Export grades, analytics, and attendance reports
 
 ### For Students 🎓
-- **Course Discovery**: Browse and enroll in available courses
-- **Learning Materials**: Access videos and PDFs in-platform
-- **Exam Taking**: Clean, distraction-free exam interface
-- **Assignment Submission**: Submit assignments with file uploads
-- **Progress Tracking**: Visual analytics of grades and performance
-- **Notifications**: Real-time alerts for updates and deadlines
-- **Badges**: Earn achievement badges for milestones
-- **Calendar View**: Track upcoming exams and assignments
-- **Report Cards**: View semester grades and teacher feedback
+- **Course Discovery**: Browse and enroll in available courses with course previews
+- **Learning Materials**: Access videos and PDFs in-platform with built-in viewers
+- **Exam Taking**: Clean, distraction-free exam interface with timer
+- **Assignment Submission**: Submit assignments with multiple file uploads
+- **Progress Tracking**: Visual analytics of grades, performance trends, and class ranking
+- **Notifications**: Real-time alerts for grades, announcements, and upcoming deadlines
+- **Badges**: Earn achievement badges for milestones (First Course, Perfect Score, etc.)
+- **Attendance**: Check-in via PIN code entry
+- **Calendar View**: Track upcoming exams, assignments, and events
+- **Report Cards**: View semester grades, teacher feedback, and detailed performance breakdown
 
 ### For Institutions 🏫
 - **Unlimited Users**: Support for students and teachers
@@ -254,6 +262,15 @@ This generates optimized production files in the `dist/` directory.
 ```bash
 npm run preview
 ```
+
+## 📖 Documentation
+
+For comprehensive technical documentation:
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Complete technical architecture documentation (3,050+ lines)
+  - **Phase 1**: Frontend Architecture - Components, hooks, routing, state management
+  - **Phase 2**: Backend Architecture - Database schema, RLS policies, storage, real-time
+  - **Phase 3**: Developer Guide - Workflows, troubleshooting, migrations, best practices
 
 ## 📝 Usage Guide
 
@@ -357,11 +374,21 @@ VITE_SUPABASE_PUBLISHABLE_KEY
 - Custom hooks for data fetching and state management
 
 ### Adding New Features
+
+For detailed workflow guides, see [ARCHITECTURE.md - Developer Guide](./ARCHITECTURE.md#developer-guide):
+
+1. **Adding a Page**: Component → Route → Navigation → Hook
+2. **Adding a Table**: Migration → RLS policies → Types → Hook
+3. **Adding Notifications**: Database trigger → Real-time subscription
+4. **Adding Forms**: Zod schema → React Hook Form → Validation
+
+Quick steps:
 1. Create components in `src/components/`
 2. Add pages in `src/pages/`
 3. Create custom hooks in `src/hooks/`
 4. Update routes in `src/App.tsx`
 5. Add database migrations in `supabase/migrations/`
+6. Regenerate TypeScript types
 
 ## 📊 Key Technologies Explained
 
@@ -392,11 +419,35 @@ Provides backend infrastructure:
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these guidelines:
+
+### Branch Naming
+- `feature/feature-name` - New features
+- `fix/bug-description` - Bug fixes
+- `migration/table-name` - Database migrations
+
+### Commit Messages
+Use conventional commits:
+```bash
+feat: add course analytics page
+fix: resolve RLS policy for student enrollments
+docs: update README with new features
+refactor: extract grading logic to hook
+```
+
+### Pull Request Workflow
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Test thoroughly (see manual testing checklist in ARCHITECTURE.md)
+5. Commit with descriptive messages
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Create a Pull Request with:
+   - What changed
+   - Why it changed
+   - How to test it
+   - Screenshots (if UI changes)
+
+For detailed guidelines, see [ARCHITECTURE.md - Developer Guide](./ARCHITECTURE.md#developer-guide)
 
 ## 📄 License
 

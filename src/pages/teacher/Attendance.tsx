@@ -123,14 +123,14 @@ const TeacherAttendance = () => {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        {/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
                                 <CardTitle>{t('nav.courses')}</CardTitle>
                                 <CardDescription>{t('attendance.monitorStatus') || 'Monitor attendance status across all your students'}</CardDescription>
-                            </div>
+                            </div> */}
 
-                            {/* Course Selector */}
-                            <div className="w-full sm:w-[250px]">
+                        {/* Course Selector */}
+                        {/* <div className="w-full sm:w-[250px]">
                                 <Select
                                     value={selectedCourseId}
                                     onValueChange={setSelectedCourseId}
@@ -148,12 +148,31 @@ const TeacherAttendance = () => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Global Filters & Actions Row */}
                         {selectedCourseId && (
-                            <div className="flex flex-col sm:flex-row justify-between items-end gap-4 pt-4 border-t">
+                            <div className="flex flex-col sm:flex-row justify-between items-end gap-4 pt-4">
                                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                    {/* Course Selector */}
+                                    <div className="w-full sm:w-[250px]">
+                                        <Select
+                                            value={selectedCourseId}
+                                            onValueChange={setSelectedCourseId}
+                                            disabled={isLoading || activeCourses.length === 0}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t('common.selectCourse') || "Select Course"} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {activeCourses.map(course => (
+                                                    <SelectItem key={course.id} value={course.id}>
+                                                        {course.title}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                     {/* Period Filter */}
                                     <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
                                         <SelectTrigger className="w-[180px]">
