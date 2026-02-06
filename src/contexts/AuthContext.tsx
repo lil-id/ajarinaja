@@ -17,8 +17,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
-  role: 'teacher' | 'student' | null;
-  signUp: (email: string, password: string, name: string, role: 'teacher' | 'student') => Promise<{ error: Error | null }>;
+  role: 'teacher' | 'student' | 'parent' | null;
+  signUp: (email: string, password: string, name: string, role: 'teacher' | 'student' | 'parent') => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateLanguagePreference: (language: string) => Promise<void>;
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [role, setRole] = useState<'teacher' | 'student' | null>(null);
+  const [role, setRole] = useState<'teacher' | 'student' | 'parent' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (roleData) {
-        setRole(roleData.role as 'teacher' | 'student');
+        setRole(roleData.role as 'teacher' | 'student' | 'parent');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateLanguagePreference = async (language: string) => {
     if (!user) return;
-    
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, name: string, role: 'teacher' | 'student') => {
+  const signUp = async (email: string, password: string, name: string, role: 'teacher' | 'student' | 'parent') => {
     const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({

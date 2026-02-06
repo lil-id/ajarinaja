@@ -1,8 +1,11 @@
 export default {
   // Common
   common: {
+    name: 'Name',
+    email: 'Email',
     loading: 'Loading...',
     warning: 'Warning',
+    exportPDF: 'Export PDF',
     attention: 'Attention', // Added this too since I used it in code
     details: 'Details',
     action: 'Action',
@@ -166,6 +169,7 @@ export default {
     role: 'Role',
     teacher: 'Teacher',
     student: 'Student',
+    parent: 'Parent',
     forgotPassword: 'Forgot Password?',
     resetPassword: 'Reset Password',
     signIn: 'Sign In',
@@ -176,6 +180,7 @@ export default {
     hasAccount: 'Already have an account?',
     resetPasswordSent: 'Password reset email sent',
     welcomeBack: 'Welcome back',
+    checkEmailConfirmation: 'Registration successful! Please check your email inbox to confirm your account.',
   },
 
   // Landing/Branding
@@ -677,6 +682,9 @@ export default {
     unfinalize: 'Unfinalize',
     unfinalizeConfirm: 'Are you sure you want to revert this report card to draft status? This will allow editing but remove the finalized status.',
     unfinalizeSuccess: 'Report card reverted to draft status',
+    calculateFinalGrade: 'Calculate Final Grade',
+    calculateAttendance: 'Calculate Attendance',
+    syncingAttendance: 'Calculating attendance...',
   },
 
   // Analytics
@@ -842,6 +850,22 @@ export default {
     examSubmissionsDesc: 'Get notified when students submit exams',
     profileVisibility: 'Profile Visibility',
     profileVisibilityDesc: 'Show your profile to students',
+
+    // Parent Access
+    parentAccess: 'Parent Access',
+    parentAccessDescription: 'Manage parent access to your academic progress',
+    pairingCode: 'Pairing Code',
+    pairingCodeDesc: 'Share this code with your parent to allow them to view your progress',
+    codeCopied: 'Code copied to clipboard',
+    regenerateCode: 'Regenerate Code',
+    regenerateCodeTitle: 'Regenerate Pairing Code?',
+    regenerateCodeWarning: 'This will invalidate the current code. Your parents will need the new code to maintain access.',
+    codeRegenerated: 'New pairing code generated',
+    connectedParents: 'Connected Parents',
+    noParentsConnected: 'No parents have access yet',
+    removeParentTitle: 'Remove Parent Access?',
+    removeParentWarning: '{{name}} will no longer be able to view your academic progress.',
+    parentAccessRemoved: '{{name}}\'s access has been removed',
   },
 
   // Profile
@@ -982,6 +1006,8 @@ export default {
     failedToUpdateGrade: 'Failed to update grade',
     failedToDeleteGrade: 'Failed to delete grade',
     failedToSaveGrades: 'Failed to save grades',
+    attendanceSynced: 'Attendance synced successfully',
+    failedToSyncAttendance: 'Failed to sync attendance',
 
     // Profile
     profileUpdated: 'Profile updated successfully',
@@ -1723,4 +1749,120 @@ export default {
     clickToEdit: 'Click to edit',
     updateFor: 'Update attendance for {{student}} on {{date}}',
   },
+
+  // Parent
+  parent: {
+    myChildren: 'Student List',
+    addChild: 'Connect Student',
+    addFirstChild: 'Connect First Student',
+    noChildrenYet: 'No Students Connected',
+    noChildrenDescription: 'Connect a student using a Pairing Code to get started.',
+    overviewDescription: 'Monitor student activities and academic progress.',
+    viewProgress: 'View Progress',
+    linkedOn: 'Linked on',
+    childNotFound: 'Student not found',
+    step1SearchChild: 'Step 1: Search Student',
+    searchByNameOrEmail: 'Search by student name or email address',
+    searchPlaceholder: 'Type student name...',
+    searchResults: 'Search Results',
+    noStudentsFound: 'Student not found. Please ensure name spelling is correct.',
+    selectedStudent: 'Selected Student',
+    step2EnterCode: 'Step 2: Verify Code',
+    askChildForCode: 'Enter the Pairing Code found in the student app under Settings.',
+    pairingCode: 'Pairing Code',
+    codeFormat: 'Format: ABC-123-DEF',
+    verifying: 'Verifying...',
+    verifyAndAdd: 'Connect Account',
+    childAddedSuccess: 'Student Connected Successfully!',
+    redirecting: 'Redirecting to dashboard...',
+    addChildDescription: 'Add a student to your parent account monitoring.',
+
+    // Settings
+    notificationSettingsTitle: 'Notification Settings',
+    notificationSettingsDesc: 'Configure how you want to receive updates about your children.',
+    emailNotificationsLabel: 'Email Notifications',
+    emailNotificationsDesc: 'Receive emails for important updates like absence or exam scores.',
+
+    // Table View
+    coursePerformanceTable: 'Learning Progress Report',
+    tableNo: 'No',
+    tableSubject: 'Subject',
+    tableTeacher: 'Teacher',
+    tableAttendance: 'Attendance',
+    tableAssignmentAvg: 'Assignment Avg',
+    tableExamAvg: 'Exam Avg',
+    tableFinalGrade: 'Final Grade',
+    tableRemarks: 'Remarks',
+    remarkExcellent: 'Excellent',
+    remarkGood: 'Good',
+    remarkFair: 'Fair',
+    remarkPoor: 'Needs Improvement',
+    noDataAvailable: 'No data available',
+    gradeCalculationNote: 'Grade Calculation Note',
+    gradeCalculationFormula: 'Final Grade is calculated as: Assignment Average (40%) + Exam Average (60%)',
+    sortDefault: 'Default Order',
+    sortHighest: 'Highest Grade',
+    sortLowest: 'Lowest Grade',
+
+    // Child Dashboard
+    enrolledCourses: 'Enrolled Courses',
+    courses: 'Courses',
+    attendance: 'Attendance',
+    attendanceRate: 'Attendance Rate',
+    present: 'present',
+    assignments: 'Assignments',
+    exams: 'Exams',
+    graded: 'graded',
+    completed: 'completed',
+    activeCourses: 'active courses',
+    coursesDescription: 'All courses your child is enrolled in',
+    noCoursesYet: 'No courses yet',
+
+    // Attendance
+    attendanceFor: 'Attendance for',
+    viewAllAttendanceRecords: 'View all attendance history',
+    totalSessions: 'Total Sessions',
+    absent: 'Absent',
+    excused: 'Excused',
+    attendanceHistory: 'Attendance History',
+    allAttendanceRecordsDescription: 'Complete record of all attendance sessions',
+    noAttendanceRecords: 'No attendance records yet',
+    session: 'Session',
+    note: 'Note',
+    viewFullAttendance: 'View Full Attendance History',
+    attendanceDescription: 'Track your child\'s class attendance and participation',
+
+    // Assignments
+    assignmentsFor: 'Assignments for',
+    viewAllAssignments: 'View all assignments and submissions',
+    totalAssignments: 'Total Assignments',
+    pending: 'Pending',
+    averageScore: 'Average Score',
+    allAssignments: 'All Assignments',
+    assignmentsListDescription: 'Assignments, submissions, and grades',
+    noAssignments: 'No assignments yet',
+    dueDate: 'Due Date',
+    score: 'Score',
+    assignmentsProgress: 'Assignments Progress',
+    assignmentsDescription: 'View assignments and track completion status',
+
+    // Exams
+    examsFor: 'Exams for',
+    viewAllExamResults: 'View all exam results and scores',
+    totalExams: 'Total Exams',
+    availableExams: 'Available exams',
+    gradedExams: 'Graded exams',
+    points: 'points',
+    averagePercentage: 'Average Percentage',
+    examResults: 'Exam Results',
+    examsListDescription: 'Exam scores and performance summary',
+    noExams: 'No exams yet',
+    duration: 'Duration',
+    minutes: 'minutes',
+    percentage: 'Percentage',
+    missed: 'Missed',
+    notTaken: 'Not Taken',
+    examsDescription: 'Monitor exam performance and results',
+  },
 };
+

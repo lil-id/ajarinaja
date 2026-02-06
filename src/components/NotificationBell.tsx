@@ -44,7 +44,7 @@ const getNotificationIcon = (type: Notification['type']) => {
  * Props for the NotificationBell component.
  */
 interface NotificationBellProps {
-  basePath: '/student' | '/teacher';
+  basePath: '/student' | '/teacher' | '/parent';
 }
 
 /**

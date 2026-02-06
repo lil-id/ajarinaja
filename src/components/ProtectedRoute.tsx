@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
  */
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredRole?: 'teacher' | 'student';
+  requiredRole?: 'teacher' | 'student' | 'parent';
 }
 
 /**
@@ -30,8 +30,12 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
         // Pass current location so Login can redirect back after auth
         navigate('/login', { state: { from: location.pathname }, replace: true });
       } else if (requiredRole && role && role !== requiredRole) {
-        // Only redirect if role is loaded AND doesn't match (prevents redirect during loading)
-        navigate(role === 'teacher' ? '/teacher' : '/student', { replace: true });
+        // Redirect to appropriate dashboard based on user's role
+        const redirectPath =
+          role === 'teacher' ? '/teacher' :
+            role === 'student' ? '/student' :
+              role === 'parent' ? '/parent' : '/';
+        navigate(redirectPath, { replace: true });
       }
     }
   }, [user, role, isLoading, requiredRole, navigate, location.pathname]);

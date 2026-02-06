@@ -1,6 +1,9 @@
 export default {
   // Common
   common: {
+    name: 'Nama',
+    email: 'Email',
+    exportPDF: 'Ekspor PDF',
     loading: 'Memuat...',
     save: 'Simpan',
     warning: 'Peringatan',
@@ -166,6 +169,7 @@ export default {
     role: 'Peran',
     teacher: 'Guru',
     student: 'Siswa',
+    parent: 'Orang Tua',
     forgotPassword: 'Lupa Kata Sandi?',
     resetPassword: 'Reset Kata Sandi',
     signIn: 'Masuk',
@@ -176,6 +180,7 @@ export default {
     hasAccount: 'Sudah punya akun?',
     resetPasswordSent: 'Email reset kata sandi telah dikirim',
     welcomeBack: 'Selamat datang kembali',
+    checkEmailConfirmation: 'Pendaftaran berhasil! Silakan cek inbox email Anda untuk konfirmasi akun.',
   },
 
   // Landing/Branding
@@ -754,6 +759,9 @@ export default {
     unfinalize: 'Batalkan Finalisasi',
     unfinalizeConfirm: 'Apakah Anda yakin ingin mengembalikan rapor ini ke status draft? Ini akan memungkinkan editing tetapi menghapus status final.',
     unfinalizeSuccess: 'Rapor dikembalikan ke status draft',
+    calculateFinalGrade: 'Hitung Nilai Akhir',
+    calculateAttendance: 'Hitung Absensi',
+    syncingAttendance: 'Menghitung absensi...',
   },
 
   // Analytics
@@ -919,6 +927,22 @@ export default {
     examSubmissionsDesc: 'Diberitahu ketika siswa mengumpulkan ujian',
     profileVisibility: 'Visibilitas Profil',
     profileVisibilityDesc: 'Tampilkan profil Anda ke siswa',
+
+    // Parent Access
+    parentAccess: 'Akses Orang Tua',
+    parentAccessDescription: 'Kelola akses orang tua untuk melihat kemajuan akademik Anda',
+    pairingCode: 'Kode Pairing',
+    pairingCodeDesc: 'Bagikan kode ini dengan orang tua Anda agar mereka dapat melihat progres Anda',
+    codeCopied: 'Kode disalin ke clipboard',
+    regenerateCode: 'Buat Ulang Kode',
+    regenerateCodeTitle: 'Buat Ulang Kode Pairing?',
+    regenerateCodeWarning: 'Ini akan membatalkan kode saat ini. Orang tua Anda akan memerlukan kode baru untuk tetap dapat mengakses.',
+    codeRegenerated: 'Kode pairing baru berhasil dibuat',
+    connectedParents: 'Orang Tua Terhubung',
+    noParentsConnected: 'Belum ada orang tua yang memiliki akses',
+    removeParentTitle: 'Hapus Akses Orang Tua?',
+    removeParentWarning: '{{name}} tidak akan dapat lagi melihat kemajuan akademik Anda.',
+    parentAccessRemoved: 'Akses {{name}} telah dihapus',
   },
 
   // Profile
@@ -1059,6 +1083,8 @@ export default {
     failedToUpdateGrade: 'Gagal memperbarui nilai',
     failedToDeleteGrade: 'Gagal menghapus nilai',
     failedToSaveGrades: 'Gagal menyimpan nilai',
+    attendanceSynced: 'Absensi berhasil disinkronisasi',
+    failedToSyncAttendance: 'Gagal menyinkronkan absensi',
 
     // Profile
     profileUpdated: 'Profil berhasil diperbarui',
@@ -1768,4 +1794,120 @@ export default {
     clickToEdit: 'Klik untuk ubah',
     updateFor: 'Perbarui absensi untuk {{student}} pada {{date}}',
   },
+
+  // Parent
+  parent: {
+    myChildren: 'Daftar Siswa',
+    addChild: 'Hubungkan Siswa',
+    addFirstChild: 'Hubungkan Siswa Pertama',
+    noChildrenYet: 'Belum Ada Siswa Terhubung',
+    noChildrenDescription: 'Hubungkan siswa menggunakan Kode Penghubung untuk memulai.',
+    overviewDescription: 'Pantau aktivitas dan perkembangan akademik siswa.',
+    viewProgress: 'Lihat Progres',
+    linkedOn: 'Terhubung pada',
+    childNotFound: 'Siswa tidak ditemukan',
+    step1SearchChild: 'Langkah 1: Cari Siswa',
+    searchByNameOrEmail: 'Cari berdasarkan nama atau alamat email siswa',
+    searchPlaceholder: 'Ketik nama siswa...',
+    searchResults: 'Hasil Pencarian',
+    noStudentsFound: 'Siswa tidak ditemukan. Pastikan ejaan nama sudah benar.',
+    selectedStudent: 'Siswa terpilih',
+    step2EnterCode: 'Langkah 2: Verifikasi Kode',
+    askChildForCode: 'Masukkan kode penghubung (Pairing Code) yang ada di akun siswa pada menu Pengaturan.',
+    pairingCode: 'Kode Penghubung',
+    codeFormat: 'Format: ABC-123-DEF',
+    verifying: 'Memverifikasi...',
+    verifyAndAdd: 'Hubungkan Akun',
+    childAddedSuccess: 'Siswa Berhasil Dihubungkan!',
+    redirecting: 'Mengalihkan ke dasbor...',
+    addChildDescription: 'Tambahkan siswa ke dalam pantauan akun orang tua Anda.',
+
+    // Settings
+    notificationSettingsTitle: 'Pengaturan Notifikasi',
+    notificationSettingsDesc: 'Atur bagaimana Anda ingin menerima pembaruan tentang anak Anda.',
+    emailNotificationsLabel: 'Notifikasi Email',
+    emailNotificationsDesc: 'Terima email untuk hal penting seperti ketidakhadiran atau nilai ujian.',
+
+    // Table View
+    coursePerformanceTable: 'Laporan Hasil Belajar',
+    tableNo: 'No',
+    tableSubject: 'Mata Pelajaran',
+    tableTeacher: 'Guru',
+    tableAttendance: 'Kehadiran',
+    tableAssignmentAvg: 'Rata-rata Tugas',
+    tableExamAvg: 'Rata-rata Ujian',
+    tableFinalGrade: 'Nilai Akhir',
+    tableRemarks: 'Keterangan',
+    remarkExcellent: 'Sangat Baik',
+    remarkGood: 'Baik',
+    remarkFair: 'Cukup',
+    remarkPoor: 'Kurang',
+    noDataAvailable: 'Belum ada data',
+    gradeCalculationNote: 'Nilai Akhir dihitung berdasarkan',
+    gradeCalculationFormula: 'Rata-rata Tugas (40%) + Rata-rata Ujian (60%)',
+    sortDefault: 'Urutan Default',
+    sortHighest: 'Nilai Tertinggi',
+    sortLowest: 'Nilai Terendah',
+
+    // Child Dashboard
+    enrolledCourses: 'Mata Pelajaran Terdaftar',
+    courses: 'Mata Pelajaran',
+    attendance: 'Kehadiran',
+    attendanceRate: 'Tingkat Kehadiran',
+    present: 'hadir',
+    assignments: 'Tugas',
+    exams: 'Ujian',
+    graded: 'dinilai',
+    completed: 'selesai',
+    activeCourses: 'mata pelajaran aktif',
+    coursesDescription: 'Semua mata pelajaran yang diikuti anak Anda',
+    noCoursesYet: 'Belum ada mata pelajaran',
+
+    // Attendance
+    attendanceFor: 'Kehadiran untuk',
+    viewAllAttendanceRecords: 'Lihat semua riwayat kehadiran',
+    totalSessions: 'Total Sesi',
+    absent: 'Alpa',
+    excused: 'Izin',
+    attendanceHistory: 'Riwayat Kehadiran',
+    allAttendanceRecordsDescription: 'Catatan lengkap semua sesi kehadiran',
+    noAttendanceRecords: 'Belum ada catatan kehadiran',
+    session: 'Sesi',
+    note: 'Catatan',
+    viewFullAttendance: 'Lihat Riwayat Kehadiran Lengkap',
+    attendanceDescription: 'Lacak kehadiran dan partisipasi kelas anak Anda',
+
+    // Assignments
+    assignmentsFor: 'Tugas untuk',
+    viewAllAssignments: 'Lihat semua tugas dan pengumpulan',
+    totalAssignments: 'Total Tugas',
+    pending: 'Tertunda',
+    averageScore: 'Nilai Rata-rata',
+    allAssignments: 'Semua Tugas',
+    assignmentsListDescription: 'Tugas, pengumpulan, dan nilai',
+    noAssignments: 'Belum ada tugas',
+    dueDate: 'Tenggat Waktu',
+    score: 'Nilai',
+    assignmentsProgress: 'Progres Tugas',
+    assignmentsDescription: 'Lihat tugas dan lacak status penyelesaian',
+
+    // Exams
+    examsFor: 'Ujian untuk',
+    viewAllExamResults: 'Lihat semua hasil dan nilai ujian',
+    totalExams: 'Total Ujian',
+    availableExams: 'Ujian tersedia',
+    gradedExams: 'Ujian dinilai',
+    points: 'poin',
+    averagePercentage: 'Persentase Rata-rata',
+    examResults: 'Hasil Ujian',
+    examsListDescription: 'Nilai ujian dan ringkasan kinerja',
+    noExams: 'Belum ada ujian',
+    duration: 'Durasi',
+    minutes: 'menit',
+    percentage: 'Persentase',
+    missed: 'Terlewat',
+    notTaken: 'Belum Dikerjakan',
+    examsDescription: 'Pantau kinerja dan hasil ujian',
+  },
 };
+

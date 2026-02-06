@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Shield, Loader2, Eye, EyeOff, Users, Copy, RefreshCw, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { usePairingCode } from '@/hooks/usePairingCode';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,12 +59,12 @@ const StudentSettings = () => {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordForm.newPassword.length < 6) {
       toast.error(t('toast.passwordTooShort'));
       return;
     }
-    
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error(t('toast.passwordsDoNotMatch'));
       return;
@@ -165,6 +167,9 @@ const StudentSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Parent Access Section */}
+      <ParentAccessSection />
+
       {/* Notifications */}
       <Card className="border-0 shadow-card">
         <CardHeader>
@@ -240,4 +245,183 @@ const StudentSettings = () => {
   );
 };
 
+/**
+ * Parent Access Section Component
+ * Manages pairing code for parent access
+ */
+const ParentAccessSection = () => {
+  const { t } = useTranslation();
+  const {
+    pairingCode,
+    connectedParents,
+    isLoading,
+    copyToClipboard,
+    regenerate,
+    isRegenerating,
+    removeParent
+  } = usePairingCode();
+
+  const handleCopyCode = () => {
+    copyToClipboard();
+  };
+
+  const handleRegenerateCode = () => {
+    regenerate();
+  };
+
+  const handleRemoveParent = (parentUserId: string) => {
+    removeParent(parentUserId);
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="border-0 shadow-card">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-0 shadow-card">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-primary" />
+          <CardTitle>{t('settings.parentAccess')}</CardTitle>
+        </div>
+        <CardDescription>{t('settings.parentAccessDescription')}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Pairing Code Display */}
+        <div>
+          <h4 className="font-medium mb-3">{t('settings.pairingCode')}</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            {t('settings.pairingCodeDesc')}
+          </p>
+
+          {pairingCode && (
+            <div className="space-y-3">
+              {/* Code Display */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-muted rounded-lg p-4">
+                  <p className="text-2xl font-mono font-bold text-center tracking-wider">
+                    {pairingCode}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyCode}
+                  disabled={isLoading}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Regenerate Button */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isRegenerating}
+                  >
+                    {isRegenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {t('common.loading')}
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        {t('settings.regenerateCode')}
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('settings.regenerateCodeTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('settings.regenerateCodeWarning')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRegenerateCode}>
+                      {t('settings.regenerateCode')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </div>
+
+        {/* Connected Parents */}
+        <div>
+          <h4 className="font-medium mb-3">{t('settings.connectedParents')}</h4>
+          {connectedParents.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t('settings.noParentsConnected')}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {connectedParents.map((parent) => (
+                <div
+                  key={parent.relationship_id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={parent.avatar_url} alt={parent.name} />
+                      <AvatarFallback>
+                        {parent.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{parent.name}</p>
+                      <p className="text-sm text-muted-foreground">{parent.email}</p>
+                    </div>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('settings.removeParentTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('settings.removeParentWarning', { name: parent.name })}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleRemoveParent(parent.parent_user_id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {t('common.remove')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default StudentSettings;
+

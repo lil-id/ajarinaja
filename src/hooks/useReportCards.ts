@@ -17,6 +17,9 @@ export interface ReportCard {
   finalized_by: string | null;
   teacher_signature: string | null;
   principal_signature: string | null;
+  attendance_percentage: number | null;
+  attendance_sessions_total: number | null;
+  attendance_sessions_present: number | null;
   created_at: string;
   updated_at: string;
   // Joined data
@@ -42,6 +45,10 @@ export interface ReportCardEntry {
   kkm: number;
   passed: boolean;
   teacher_notes: string | null;
+  attendance_grade: number | null;
+  attendance_percentage: number | null;
+  attendance_sessions_total: number | null;
+  attendance_sessions_present: number | null;
   created_at: string;
   updated_at: string;
   // Joined data
@@ -82,25 +89,25 @@ export function useReportCards(periodId?: string) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       // Manually fetch student profiles since we don't have a direct FK
       const reportCards = data || [];
       const studentIds = reportCards.map(rc => rc.student_id);
-      
+
       if (studentIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
           .select('user_id, name, email, avatar_url')
           .in('user_id', studentIds);
-        
+
         const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-        
+
         return reportCards.map(rc => ({
           ...rc,
           student: profileMap.get(rc.student_id) || null,
         })) as ReportCard[];
       }
-      
+
       return reportCards as ReportCard[];
     },
     enabled: !!periodId && role === 'teacher',
@@ -268,10 +275,10 @@ export function useReportCardEntries(reportCardId?: string) {
         return (data || []).map(entry => ({
           ...entry,
           course: courseMap.get(entry.course_id) || null,
-        })) as ReportCardEntry[];
+        })) as any;
       }
 
-      return data as ReportCardEntry[];
+      return data as any;
     },
     enabled: !!reportCardId,
   });
@@ -367,4 +374,28 @@ export function useReportCardEntries(reportCardId?: string) {
     deleteEntry,
     bulkUpsertEntries,
   };
+}
+
+export function useSyncStudentAttendance() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ studentId, periodId }: { studentId: string; periodId: string }) => {
+      const { data, error } = await supabase.rpc('sync_student_attendance_grades' as any, {
+        p_student_id: studentId,
+        p_period_id: periodId,
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['report-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['report-card-entries'] });
+      toast.success(i18next.t('toast.attendanceSynced'));
+    },
+    onError: (error: Error) => {
+      toast.error(`${i18next.t('toast.failedToSyncAttendance')}: ${error.message}`);
+    },
+  });
 }

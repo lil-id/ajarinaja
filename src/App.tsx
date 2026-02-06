@@ -63,6 +63,18 @@ import StudentReportCards from "./pages/student/ReportCards";
 import StudentReportCardDetail from "./pages/student/ReportCardDetail";
 import StudentAttendance from "./pages/student/Attendance";
 
+// Parent Pages
+import ParentLayout from "./layouts/ParentLayout";
+import ParentOverview from "./pages/parent/ParentOverview";
+import AddChild from "./pages/parent/AddChild";
+import ChildDashboard from "./pages/parent/ChildDashboard";
+import ChildAttendance from "./pages/parent/ChildAttendance";
+import ChildAssignments from "./pages/parent/ChildAssignments";
+import ChildExams from "./pages/parent/ChildExams";
+
+import ParentNotifications from "./pages/parent/ParentNotifications";
+import ParentSettings from "./pages/parent/ParentSettings";
+
 // Demo Pages
 import DemoLayout from "./layouts/DemoLayout";
 import DemoTeacherOverview from "./pages/demo/DemoTeacherOverview";
@@ -184,6 +196,25 @@ const App = () => (
               <Route path="attendance" element={<StudentAttendance />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
+            </Route>
+
+            {/* Parent Routes */}
+            <Route path="/parent" element={
+              <ProtectedRoute requiredRole="parent">
+                <ParentLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<ParentOverview />} />
+              <Route path="children" element={<ParentOverview />} />
+              <Route path="add-child" element={<AddChild />} />
+              <Route path="children/:childId" element={<ChildDashboard />} />
+              <Route path="children/:childId/attendance" element={<ChildAttendance />} />
+              <Route path="children/:childId/assignments" element={<ChildAssignments />} />
+              <Route path="children/:childId/exams" element={<ChildExams />} />
+              <Route path="children/:childId/courses" element={<DemoGenericPage />} />
+              <Route path="notifications" element={<ParentNotifications />} />
+              <Route path="profile" element={<ParentSettings />} />
+              <Route path="settings" element={<ParentSettings />} />
             </Route>
 
             {/* Demo Routes */}

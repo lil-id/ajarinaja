@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type {
     AttendanceSession,
     AttendanceSessionWithCourse,
@@ -393,3 +394,29 @@ export function useStudentCheckIn() {
         },
     });
 }
+
+// Sync attendance grades to report card
+export function useSyncAttendanceGrades() {
+    return useMutation({
+        mutationFn: async (courseId: string) => {
+            const { data, error } = await supabase.rpc('sync_course_attendance_grades', {
+                p_course_id: courseId
+            });
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: (data: any) => {
+            if (data.success) {
+                toast.success(`Attendance grades synced for ${data.updated_count} students`);
+            } else {
+                toast.error(data.message || 'Failed to sync grades');
+            }
+        },
+        onError: (error: any) => {
+            console.error('Error syncing grades:', error);
+            toast.error('Failed to sync attendance grades');
+        }
+    });
+}
+

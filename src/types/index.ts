@@ -2,9 +2,37 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'teacher' | 'student';
+  role: 'teacher' | 'student' | 'parent';
   avatar?: string;
 }
+
+export interface PairingCode {
+  id: string;
+  student_user_id: string;
+  code: string;
+  created_at: string;
+  is_active: boolean;
+}
+
+export interface ParentChildRelationship {
+  id: string;
+  parent_user_id: string;
+  student_user_id: string;
+  verified_at: string;
+  created_at: string;
+  is_active: boolean;
+}
+
+export interface ChildProfile {
+  relationship_id: string;
+  verified_at: string;
+  user_id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  role: 'student';
+}
+
 
 export interface Course {
   id: string;

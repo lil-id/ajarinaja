@@ -53,6 +53,128 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_generated_questions: {
+        Row: {
+          created_at: string | null
+          id: string
+          material_id: string | null
+          parameters: Json | null
+          questions: Json
+          status: string | null
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          material_id?: string | null
+          parameters?: Json | null
+          questions?: Json
+          status?: string | null
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          material_id?: string | null
+          parameters?: Json | null
+          questions?: Json
+          status?: string | null
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generated_questions_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "ai_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_questions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ai_generated_questions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      ai_materials: {
+        Row: {
+          course_id: string | null
+          created_at: string | null
+          error_message: string | null
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          metadata: Json | null
+          status: string | null
+          teacher_id: string
+          title: string
+          total_chunks: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          teacher_id: string
+          title: string
+          total_chunks?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          teacher_id?: string
+          title?: string
+          total_chunks?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_materials_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_materials_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ai_materials_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       announcements: {
         Row: {
           content: string
@@ -330,6 +452,215 @@ export type Database = {
           },
         ]
       }
+      attendance_excuses: {
+        Row: {
+          attachment_url: string | null
+          course_id: string | null
+          created_at: string | null
+          end_date: string
+          excuse_type: string
+          id: string
+          reason: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string | null
+          student_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attachment_url?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          end_date: string
+          excuse_type: string
+          id?: string
+          reason: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: string | null
+          student_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attachment_url?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          end_date?: string
+          excuse_type?: string
+          id?: string
+          reason?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string | null
+          student_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_excuses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_records: {
+        Row: {
+          check_in_method: string | null
+          check_in_time: string | null
+          created_at: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          marked_by: string | null
+          notes: string | null
+          original_status: string | null
+          pin_attempts: number | null
+          session_id: string | null
+          status: string
+          student_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          check_in_method?: string | null
+          check_in_time?: string | null
+          created_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          marked_by?: string | null
+          notes?: string | null
+          original_status?: string | null
+          pin_attempts?: number | null
+          session_id?: string | null
+          status: string
+          student_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          check_in_method?: string | null
+          check_in_time?: string | null
+          created_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          marked_by?: string | null
+          notes?: string | null
+          original_status?: string | null
+          pin_attempts?: number | null
+          session_id?: string | null
+          status?: string
+          student_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_attendance_student_profile"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_attendance_student_profile"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      attendance_sessions: {
+        Row: {
+          absent_count: number | null
+          close_time: string | null
+          course_id: string | null
+          created_at: string | null
+          excused_count: number | null
+          grace_end_time: string | null
+          id: string
+          late_count: number | null
+          open_time: string | null
+          pin_encrypted: string | null
+          pin_hash: string | null
+          present_count: number | null
+          session_date: string
+          session_number: number
+          sick_count: number | null
+          status: string | null
+          teacher_id: string | null
+          topic: string | null
+          total_students: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          absent_count?: number | null
+          close_time?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          excused_count?: number | null
+          grace_end_time?: string | null
+          id?: string
+          late_count?: number | null
+          open_time?: string | null
+          pin_encrypted?: string | null
+          pin_hash?: string | null
+          present_count?: number | null
+          session_date: string
+          session_number: number
+          sick_count?: number | null
+          status?: string | null
+          teacher_id?: string | null
+          topic?: string | null
+          total_students?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          absent_count?: number | null
+          close_time?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          excused_count?: number | null
+          grace_end_time?: string | null
+          id?: string
+          late_count?: number | null
+          open_time?: string | null
+          pin_encrypted?: string | null
+          pin_hash?: string | null
+          present_count?: number | null
+          session_date?: string
+          session_number?: number
+          sick_count?: number | null
+          status?: string | null
+          teacher_id?: string | null
+          topic?: string | null
+          total_students?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           color: string
@@ -407,6 +738,50 @@ export type Database = {
           },
         ]
       }
+      course_attendance_settings: {
+        Row: {
+          calculation_method: string | null
+          course_id: string
+          created_at: string | null
+          grace_period_minutes: number | null
+          late_window_minutes: number | null
+          minimum_percentage: number | null
+          scoring: Json | null
+          updated_at: string | null
+          weight_in_grade: number | null
+        }
+        Insert: {
+          calculation_method?: string | null
+          course_id: string
+          created_at?: string | null
+          grace_period_minutes?: number | null
+          late_window_minutes?: number | null
+          minimum_percentage?: number | null
+          scoring?: Json | null
+          updated_at?: string | null
+          weight_in_grade?: number | null
+        }
+        Update: {
+          calculation_method?: string | null
+          course_id?: string
+          created_at?: string | null
+          grace_period_minutes?: number | null
+          late_window_minutes?: number | null
+          minimum_percentage?: number | null
+          scoring?: Json | null
+          updated_at?: string | null
+          weight_in_grade?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_attendance_settings_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: true
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_materials: {
         Row: {
           course_id: string
@@ -459,6 +834,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          academic_period_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -469,6 +845,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          academic_period_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -479,6 +856,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          academic_period_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -488,25 +866,36 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_academic_period_id_fkey"
+            columns: ["academic_period_id"]
+            isOneToOne: false
+            referencedRelation: "academic_periods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enrollments: {
         Row: {
           course_id: string
           enrolled_at: string
           id: string
+          status: string | null
           student_id: string
         }
         Insert: {
           course_id: string
           enrolled_at?: string
           id?: string
+          status?: string | null
           student_id: string
         }
         Update: {
           course_id?: string
           enrolled_at?: string
           id?: string
+          status?: string | null
           student_id?: string
         }
         Relationships: [
@@ -516,6 +905,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "courses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_enrollments_profiles"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_enrollments_profiles"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -625,6 +1028,44 @@ export type Database = {
           },
         ]
       }
+      material_chunks: {
+        Row: {
+          chunk_index: number
+          chunk_text: string
+          created_at: string | null
+          embedding: string | null
+          id: string
+          material_id: string
+          metadata: Json | null
+        }
+        Insert: {
+          chunk_index: number
+          chunk_text: string
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          material_id: string
+          metadata?: Json | null
+        }
+        Update: {
+          chunk_index?: number
+          chunk_text?: string
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          material_id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_chunks_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "ai_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_views: {
         Row: {
           id: string
@@ -687,6 +1128,33 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_child_relationships: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          parent_user_id: string
+          student_user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          parent_user_id: string
+          student_user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          parent_user_id?: string
+          student_user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -723,6 +1191,36 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          active: boolean | null
+          browser: string | null
+          created_at: string | null
+          id: string
+          subscription: Json
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          browser?: string | null
+          created_at?: string | null
+          id?: string
+          subscription: Json
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          browser?: string | null
+          created_at?: string | null
+          id?: string
+          subscription?: Json
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       question_bank: {
         Row: {
           category: string
@@ -730,6 +1228,7 @@ export type Database = {
           correct_answers: number[] | null
           course_id: string | null
           created_at: string
+          explanation: string | null
           id: string
           options: Json | null
           points: number
@@ -746,6 +1245,7 @@ export type Database = {
           correct_answers?: number[] | null
           course_id?: string | null
           created_at?: string
+          explanation?: string | null
           id?: string
           options?: Json | null
           points?: number
@@ -762,6 +1262,7 @@ export type Database = {
           correct_answers?: number[] | null
           course_id?: string | null
           created_at?: string
+          explanation?: string | null
           id?: string
           options?: Json | null
           points?: number
@@ -832,6 +1333,7 @@ export type Database = {
       report_card_entries: {
         Row: {
           assignment_average: number | null
+          attendance_grade: number | null
           course_id: string
           created_at: string
           exam_average: number | null
@@ -845,6 +1347,7 @@ export type Database = {
         }
         Insert: {
           assignment_average?: number | null
+          attendance_grade?: number | null
           course_id: string
           created_at?: string
           exam_average?: number | null
@@ -858,6 +1361,7 @@ export type Database = {
         }
         Update: {
           assignment_average?: number | null
+          attendance_grade?: number | null
           course_id?: string
           created_at?: string
           exam_average?: number | null
@@ -888,6 +1392,10 @@ export type Database = {
       }
       report_cards: {
         Row: {
+          attendance_grade: number | null
+          attendance_percentage: number | null
+          attendance_sessions_present: number | null
+          attendance_sessions_total: number | null
           created_at: string
           finalized_at: string | null
           finalized_by: string | null
@@ -904,6 +1412,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attendance_grade?: number | null
+          attendance_percentage?: number | null
+          attendance_sessions_present?: number | null
+          attendance_sessions_total?: number | null
           created_at?: string
           finalized_at?: string | null
           finalized_by?: string | null
@@ -920,6 +1432,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attendance_grade?: number | null
+          attendance_percentage?: number | null
+          attendance_sessions_present?: number | null
+          attendance_sessions_total?: number | null
           created_at?: string
           finalized_at?: string | null
           finalized_by?: string | null
@@ -1036,6 +1552,30 @@ export type Database = {
           },
         ]
       }
+      student_pairing_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          student_user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          student_user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          student_user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -1126,6 +1666,49 @@ export type Database = {
       }
     }
     Functions: {
+      approve_excuse_request: {
+        Args: { p_excuse_id: string; p_review_notes?: string }
+        Returns: Json
+      }
+      auto_close_expired_sessions: { Args: never; Returns: undefined }
+      bulk_update_attendance: {
+        Args: { p_notes?: string; p_session_id: string; p_status: string }
+        Returns: Json
+      }
+      calculate_attendance_grade: {
+        Args: { p_course_id: string; p_student_id: string }
+        Returns: number
+      }
+      calculate_attendance_overview: {
+        Args: { p_period_id: string; p_student_id: string }
+        Returns: {
+          attendance_grade: number
+          attendance_percentage: number
+          present_sessions: number
+          total_sessions: number
+        }[]
+      }
+      cleanup_orphaned_chunks: { Args: never; Returns: number }
+      generate_pairing_code: { Args: never; Returns: string }
+      get_material_stats: {
+        Args: { material_uuid: string }
+        Returns: {
+          avg_chunk_length: number
+          has_embeddings: boolean
+          status: string
+          total_chunks: number
+        }[]
+      }
+      get_teacher_ai_stats: {
+        Args: { teacher_uuid: string }
+        Returns: {
+          processing_materials: number
+          ready_materials: number
+          total_chunks: number
+          total_materials: number
+          total_questions_generated: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1137,13 +1720,95 @@ export type Database = {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
       }
+      is_parent_of: {
+        Args: { p_parent_user_id: string; p_student_user_id: string }
+        Returns: boolean
+      }
+      match_material_chunks: {
+        Args: {
+          filter_material_id?: string
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          chunk_index: number
+          chunk_text: string
+          id: string
+          material_id: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      open_attendance_session: {
+        Args: { p_duration_minutes?: number; p_session_id: string }
+        Returns: Json
+      }
       owns_course: {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
       }
+      regenerate_pairing_code: {
+        Args: { p_student_user_id: string }
+        Returns: string
+      }
+      reject_excuse_request: {
+        Args: { p_excuse_id: string; p_review_notes?: string }
+        Returns: Json
+      }
+      remove_parent_access: {
+        Args: { p_parent_user_id: string; p_student_user_id: string }
+        Returns: boolean
+      }
+      search_ai_materials: {
+        Args: { search_query: string; teacher_uuid: string }
+        Returns: {
+          course_id: string | null
+          created_at: string | null
+          error_message: string | null
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          metadata: Json | null
+          status: string | null
+          teacher_id: string
+          title: string
+          total_chunks: number | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ai_materials"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      student_check_in: {
+        Args: {
+          p_latitude?: number
+          p_longitude?: number
+          p_pin: string
+          p_session_id: string
+          p_student_id: string
+        }
+        Returns: Json
+      }
+      update_attendance_manual: {
+        Args: { p_new_status: string; p_notes?: string; p_record_id: string }
+        Returns: Json
+      }
+      verify_pairing_code: {
+        Args: {
+          p_pairing_code: string
+          p_parent_user_id: string
+          p_student_user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
-      app_role: "teacher" | "student"
+      app_role: "teacher" | "student" | "parent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1271,7 +1936,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["teacher", "student"],
+      app_role: ["teacher", "student", "parent"],
     },
   },
 } as const

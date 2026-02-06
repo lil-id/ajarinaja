@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { GraduationCap, Loader2, BookOpen, Users } from 'lucide-react';
+import { GraduationCap, Loader2, BookOpen, Users, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -33,7 +33,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'teacher' | 'student'>('student');
+  const [selectedRole, setSelectedRole] = useState<'teacher' | 'student' | 'parent'>('student');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, role } = useAuth();
   const navigate = useNavigate();
@@ -53,7 +53,9 @@ const Login = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success(t('common.success'));
+          toast.success(t('auth.checkEmailConfirmation'), {
+            duration: 6000, // Show for 6 seconds
+          });
           setIsSignUp(false);
         }
       } else {
@@ -76,7 +78,7 @@ const Login = () => {
     if (role && location.pathname === '/login') {
       // Check for a redirect path from state, otherwise use default dashboard
       const from = (location.state as { from?: string })?.from;
-      const defaultPath = role === 'teacher' ? '/teacher' : '/student';
+      const defaultPath = role === 'teacher' ? '/teacher' : role === 'parent' ? '/parent' : '/student';
       navigate(from || defaultPath, { replace: true });
     }
   }, [role, navigate, location]);
@@ -170,8 +172,8 @@ const Login = () => {
                       <Label>{t('auth.role')}</Label>
                       <RadioGroup
                         value={selectedRole}
-                        onValueChange={(v) => setSelectedRole(v as 'teacher' | 'student')}
-                        className="grid grid-cols-2 gap-4"
+                        onValueChange={(v) => setSelectedRole(v as 'teacher' | 'student' | 'parent')}
+                        className="grid grid-cols-3 gap-3"
                       >
                         <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
                           <RadioGroupItem value="teacher" id="teacher" />
@@ -185,6 +187,13 @@ const Login = () => {
                           <Label htmlFor="student" className="cursor-pointer flex items-center gap-2">
                             <Users className="w-4 h-4" />
                             {t('auth.student')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                          <RadioGroupItem value="parent" id="parent" />
+                          <Label htmlFor="parent" className="cursor-pointer flex items-center gap-2">
+                            <UserCircle className="w-4 h-4" />
+                            {t('auth.parent')}
                           </Label>
                         </div>
                       </RadioGroup>

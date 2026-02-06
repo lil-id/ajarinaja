@@ -43,9 +43,11 @@ import {
   PenTool,
   Download,
   RotateCcw,
-  BookOpen
+  BookOpen,
+  Calculator,
+  RefreshCw
 } from 'lucide-react';
-import { useReportCards, useReportCardEntries, type CreateReportCardEntryData } from '@/hooks/useReportCards';
+import { useReportCards, useReportCardEntries, useSyncStudentAttendance, type CreateReportCardEntryData } from '@/hooks/useReportCards';
 import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
 import { useCourses } from '@/hooks/useCourses';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,6 +124,7 @@ const ReportCardDetail = () => {
   const reportCard = reportCardQuery.data;
   const { entries, isLoading: entriesLoading, bulkUpsertEntries, deleteEntry } = useReportCardEntries(reportCardId);
   const { updateReportCard, finalizeReportCard } = useReportCards();
+  const syncStudentAttendance = useSyncStudentAttendance();
   const { courses } = useCourses();
 
   // Local state for entries
@@ -131,6 +134,7 @@ const ReportCardDetail = () => {
     final_grade: string;
     kkm: string;
     teacher_notes: string;
+    attendance_grade?: string;
   }>>({});
 
   // Initialize local entries from fetched data
@@ -144,6 +148,7 @@ const ReportCardDetail = () => {
           final_grade: entry.final_grade.toString(),
           kkm: entry.kkm.toString(),
           teacher_notes: entry.teacher_notes || '',
+          attendance_grade: entry.attendance_grade?.toString() || '',
         };
       });
       setLocalEntries(entriesMap);
@@ -196,11 +201,10 @@ const ReportCardDetail = () => {
     }
   };
 
-  const handleAutoCalculate = async () => {
+  const handleCalculateFinalGrade = async () => {
     if (!reportCard) return;
 
     setIsCalculating(true);
-    toast.info(t('reportCards.calculatingGrades'));
 
     try {
       const updatedEntries: Record<string, any> = {};
@@ -282,12 +286,29 @@ const ReportCardDetail = () => {
       }
 
       setLocalEntries(prev => ({ ...prev, ...updatedEntries }));
-      toast.success(t('toast.gradesSaved'));
+      toast.success(t('toast.gradesCalculated') || 'Grades calculated');
     } catch (error) {
       console.error('Error calculating grades:', error);
       toast.error(t('toast.failedToSaveGrades'));
     } finally {
       setIsCalculating(false);
+    }
+  };
+
+  const handleSyncAttendance = async () => {
+    if (!reportCardId || !reportCard?.period_id) return;
+
+    try {
+      await syncStudentAttendance.mutateAsync({
+        studentId: reportCard.student_id,
+        periodId: reportCard.period_id
+      });
+      // Note: syncStudentAttendance invalidates 'report-cards' which might update header via refetch
+      // and 'report-card-entries' which updates the list.
+      // Because 'entries' updates, the useEffect at line 133 will update 'localEntries', 
+      // reflecting the new attendance_percentage/grade in the UI immediately.
+    } catch (error) {
+      // Toast handled by hook
     }
   };
 
@@ -598,11 +619,20 @@ const ReportCardDetail = () => {
             <div className="flex gap-2">
               <Button
                 variant="secondary"
-                onClick={handleAutoCalculate}
+                onClick={handleCalculateFinalGrade}
                 disabled={reportCard.status === 'finalized' || isCalculating || entries.length === 0}
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                {isCalculating ? t('reportCards.calculatingGrades') : t('reportCards.autoCalculate')}
+                <Calculator className="w-4 h-4 mr-2" />
+                {isCalculating ? t('reportCards.calculatingGrades') : t('reportCards.calculateFinalGrade')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleSyncAttendance}
+                disabled={reportCard.status === 'finalized' || syncStudentAttendance.isPending}
+                title={t('reportCards.calculatedFromAttendance')}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${syncStudentAttendance.isPending ? 'animate-spin' : ''}`} />
+                {syncStudentAttendance.isPending ? t('reportCards.syncingAttendance') : t('reportCards.calculateAttendance')}
               </Button>
               <Button
                 variant="outline"
@@ -636,6 +666,7 @@ const ReportCardDetail = () => {
                   <TableHead>{t('reportCards.subject')}</TableHead>
                   <TableHead className="w-32">{t('reportCards.examAverage')}</TableHead>
                   <TableHead className="w-32">{t('reportCards.assignmentAverage')}</TableHead>
+                  <TableHead className="w-24">{t('attendance.title') || 'Attendance'}</TableHead>
                   <TableHead className="w-32">{t('reportCards.overallAverage')}</TableHead>
                   <TableHead className="w-32">{t('reportCards.finalGrade')}</TableHead>
                   <TableHead className="w-24">{t('reportCards.kkm')}</TableHead>
@@ -653,6 +684,7 @@ const ReportCardDetail = () => {
                     final_grade: entry.final_grade.toString(),
                     kkm: entry.kkm.toString(),
                     teacher_notes: entry.teacher_notes || '',
+                    attendance_grade: entry.attendance_grade?.toString() || '',
                   };
                   const finalGrade = parseFloat(localEntry.final_grade) || 0;
                   const kkm = parseInt(localEntry.kkm) || 60;
@@ -689,6 +721,13 @@ const ReportCardDetail = () => {
                           If we want Per-Course Attendance, we'd need to fetch it separately. 
                           For now, just sticking to standard marks. 
                       */}
+                      <TableCell>
+                        <div className="text-center font-medium bg-muted/50 p-2 rounded">
+                          {localEntry.attendance_grade
+                            ? parseFloat(localEntry.attendance_grade).toFixed(1)
+                            : '-'}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="text-center font-medium">
                           {(() => {
