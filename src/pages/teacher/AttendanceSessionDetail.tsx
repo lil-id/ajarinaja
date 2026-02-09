@@ -117,7 +117,7 @@ export default function AttendanceSessionDetail() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
-                    <Button variant="ghost" className="mb-2 pl-0 hover:pl-0" onClick={() => navigate(`/teacher/courses/${courseId}`)}>
+                    <Button variant="ghost" className="mb-2" onClick={() => navigate(`/teacher/courses/${courseId}`)}>
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         {t('attendance.backToCourse')}
                     </Button>

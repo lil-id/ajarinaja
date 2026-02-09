@@ -198,7 +198,7 @@ export default function SubmitAssignment() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/student/assignments')}>
           <ArrowLeft className="h-4 w-4" />
@@ -273,43 +273,75 @@ export default function SubmitAssignment() {
                     (answer as number[])?.every(a => q.correct_answers!.includes(a))
                     : null;
 
+                const isGraded = submission.graded && q.type !== 'essay';
+
                 return (
-                  <div key={q.id} className={cn(
-                    "p-3 border rounded-lg space-y-2",
-                    submission.graded && q.type !== 'essay' && (
-                      isCorrect ? "border-green-300 bg-green-50 dark:bg-green-900/10" : "border-red-300 bg-red-50 dark:bg-red-900/10"
-                    )
-                  )}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium">{index + 1}. <FormulaText text={q.question} /></p>
-                      {submission.graded && q.type !== 'essay' && (
-                        <Badge variant={isCorrect ? "default" : "destructive"} className="flex-shrink-0">
-                          {isCorrect ? t('submitAssignment.correct') : t('submitAssignment.incorrect')}
-                        </Badge>
-                      )}
+                  <div key={q.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm">
+                    {/* Question Header */}
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="font-medium text-base leading-relaxed">
+                        {index + 1}. <FormulaText text={q.question} />
+                      </div>
+                      <Badge variant="secondary" className="shrink-0">
+                        {q.points} {t('common.pts')}
+                      </Badge>
                     </div>
-                    <div className="text-sm">
-                      {q.type === 'essay' && (
-                        <div className="text-muted-foreground whitespace-pre-wrap">{answer as string || t('submitAssignment.noAnswer')}</div>
-                      )}
-                      {q.type === 'multiple-choice' && q.options && (
-                        <div className="space-y-1">
-                          <p><span className="font-medium">{t('submitAssignment.yourAnswer')}</span> {(q.options as string[])[answer as number] || t('submitAssignment.noAnswer')}</p>
-                          {submission.graded && !isCorrect && q.correct_answer !== null && (
-                            <p className="text-green-600 dark:text-green-400">
-                              <span className="font-medium">{t('submitAssignment.correctAnswer')}</span> {(q.options as string[])[q.correct_answer]}
-                            </p>
+
+                    <div className="grid gap-3">
+                      {/* Student Answer Block */}
+                      <div className={cn(
+                        "p-4 rounded-lg border text-sm transition-colors",
+                        isGraded
+                          ? (isCorrect
+                            ? "bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30"
+                            : "bg-red-50 border-red-200 dark:bg-red-900/10 dark:border-red-900/30")
+                          : "bg-muted/30 border-border"
+                      )}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className={cn(
+                            "text-xs font-bold uppercase tracking-wider",
+                            isGraded
+                              ? (isCorrect ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400")
+                              : "text-muted-foreground"
+                          )}>
+                            {t('submitAssignment.yourAnswer')}
+                          </span>
+                          {isGraded && (
+                            <Badge variant={isCorrect ? "default" : "destructive"} className={cn(isCorrect && "bg-green-600 hover:bg-green-700")}>
+                              {isCorrect ? t('submitAssignment.correct') : t('submitAssignment.incorrect')}
+                            </Badge>
                           )}
                         </div>
-                      )}
-                      {q.type === 'multi-select' && q.options && (
-                        <div className="space-y-1">
-                          <p><span className="font-medium">{t('submitAssignment.yourAnswer')}</span> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || t('submitAssignment.noAnswer')}</p>
-                          {submission.graded && !isCorrect && q.correct_answers && (
-                            <p className="text-green-600 dark:text-green-400">
-                              <span className="font-medium">{t('submitAssignment.correctAnswers')}</span> {q.correct_answers.map(i => (q.options as string[])[i]).join(', ')}
-                            </p>
-                          )}
+
+                        {q.type === 'essay' && (
+                          <div className="whitespace-pre-wrap">{answer as string || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}</div>
+                        )}
+                        {q.type === 'multiple-choice' && q.options && (
+                          <div className="font-medium">
+                            {(q.options as string[])[answer as number] || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}
+                          </div>
+                        )}
+                        {q.type === 'multi-select' && q.options && (
+                          <div className="font-medium">
+                            {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Correct Answer Block (Only if incorrect) */}
+                      {isGraded && !isCorrect && (q.type === 'multiple-choice' || q.type === 'multi-select') && (
+                        <div className="p-4 rounded-lg border border-green-200 bg-green-50/50 dark:border-green-900/30 dark:bg-green-900/5 text-sm">
+                          <span className="text-xs font-bold uppercase tracking-wider text-green-700 dark:text-green-400 mb-2 block">
+                            {q.type === 'multi-select' ? t('submitAssignment.correctAnswers') : t('submitAssignment.correctAnswer')}
+                          </span>
+                          <div className="font-medium text-foreground">
+                            {q.type === 'multiple-choice' && q.options && q.correct_answer !== null && (
+                              (q.options as string[])[q.correct_answer]
+                            )}
+                            {q.type === 'multi-select' && q.options && q.correct_answers && (
+                              q.correct_answers.map(i => (q.options as string[])[i]).join(', ')
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

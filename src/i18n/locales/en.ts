@@ -84,6 +84,7 @@ export default {
     dangerZone: 'Danger Zone',
     irreversibleActions: 'Irreversible actions',
     deleteAccount: 'Delete Account',
+    goBack: 'Back',
 
     // Shared actions (exam/question bank)
     selected: 'selected',
@@ -1604,6 +1605,7 @@ export default {
     activeSession: 'Active Session',
     checkInPrompt: 'Please check in for today\'s class.',
     title: 'Attendance',
+    sessionClosedDescription: 'Session has been closed',
     monitorStatus: 'Monitor attendance status across all your students',
     studentName: 'Student Name',
     markAllPresent: 'Mark All Present',

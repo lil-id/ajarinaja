@@ -84,6 +84,7 @@ export default {
     deleteAccount: 'Hapus Akun',
     deleting: 'Menghapus...',
     optional: 'opsional',
+    goBack: 'Kembali',
 
     // Shared actions (exam/question bank)
     selected: 'dipilih',
@@ -1765,6 +1766,7 @@ export default {
     attendancePIN: 'PIN Absensi',
     sharePINWithStudents: 'Bagikan PIN ini kepada siswa Anda',
     pinCopied: 'PIN disalin ke clipboard',
+    sessionClosedDescription: 'Sesi telah ditutup',
 
     // Student Check-in
     enterPIN: 'Masukkan PIN',

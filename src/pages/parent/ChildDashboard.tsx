@@ -72,6 +72,7 @@ export default function ChildDashboard() {
             <div className="text-center py-12">
                 <h2 className="text-2xl font-bold mb-4">{t('parent.childNotFound')}</h2>
                 <Button onClick={() => navigate('/parent')}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
                     {t('common.goBack')}
                 </Button>
             </div>

@@ -122,7 +122,13 @@ export function useStudentActiveSessions() {
                 return rec.status === 'absent';
             });
 
-            return relevantSessions as any[];
+            const now = new Date();
+            const activeRelevantSessions = relevantSessions.filter((s: any) => {
+                const closeTime = new Date(s.close_time);
+                return closeTime > now;
+            });
+
+            return activeRelevantSessions as any[];
         }
     });
 }
