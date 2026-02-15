@@ -281,6 +281,15 @@ const ExamResults = () => {
                 </Badge>
               </div>
               <CardContent className="p-4">
+                {q.image_url && (
+                  <div className="mb-4">
+                    <img
+                      src={q.image_url}
+                      alt={`Question ${idx + 1}`}
+                      className="max-h-[300px] w-auto object-contain rounded-lg border bg-white"
+                    />
+                  </div>
+                )}
                 <p className="font-medium text-foreground mb-4">
                   <span className="text-muted-foreground mr-2">Q{idx + 1}.</span>
                   {q.question}
@@ -289,40 +298,52 @@ const ExamResults = () => {
                   {q.options?.map((option, optIdx) => {
                     const isSelected = selectedOption === optIdx;
                     const isCorrectOption = q.correct_answer === optIdx;
+                    const isString = typeof option === 'string';
+                    const text = isString ? option : (option as any).text;
+                    const imageUrl = !isString ? (option as any).image_url : undefined;
 
                     return (
                       <div
                         key={optIdx}
                         className={cn(
-                          "p-3 rounded-lg border flex items-center gap-3",
+                          "p-3 rounded-lg border flex items-start gap-3",
                           isCorrectOption && "bg-green-50 border-green-300",
                           isSelected && !isCorrectOption && "bg-red-50 border-red-300",
                           !isSelected && !isCorrectOption && "bg-muted/30 border-border"
                         )}
                       >
                         <div className={cn(
-                          "w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium",
+                          "w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5",
                           isCorrectOption && "bg-green-600 text-white",
                           isSelected && !isCorrectOption && "bg-red-600 text-white",
                           !isSelected && !isCorrectOption && "bg-muted text-muted-foreground"
                         )}>
                           {String.fromCharCode(65 + optIdx)}
                         </div>
-                        <span className={cn(
-                          "flex-1",
-                          isCorrectOption && "text-green-700 font-medium",
-                          isSelected && !isCorrectOption && "text-red-700"
-                        )}>
-                          {option}
-                        </span>
+                        <div className="flex-1">
+                          <span className={cn(
+                            "block",
+                            isCorrectOption && "text-green-700 font-medium",
+                            isSelected && !isCorrectOption && "text-red-700"
+                          )}>
+                            {text}
+                          </span>
+                          {imageUrl && (
+                            <img
+                              src={imageUrl}
+                              alt={`Option ${optIdx + 1}`}
+                              className="mt-2 h-20 w-auto object-contain rounded border bg-white"
+                            />
+                          )}
+                        </div>
                         {isCorrectOption && (
-                          <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                          <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 ml-auto flex-shrink-0">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             {t('examResults.correctAnswer')}
                           </Badge>
                         )}
                         {isSelected && !isCorrectOption && (
-                          <span className="text-xs text-red-600 font-medium">{t('examResults.yourAnswer')}</span>
+                          <span className="text-xs text-red-600 font-medium ml-auto flex-shrink-0">{t('examResults.yourAnswer')}</span>
                         )}
                       </div>
                     );
@@ -406,17 +427,29 @@ const ExamResults = () => {
                       <span className="text-muted-foreground mr-2">Q{mcQuestions.length + idx + 1}.</span>
                       {q.question}
                     </p>
+                    {q.image_url && (
+                      <div className="mb-4">
+                        <img
+                          src={q.image_url}
+                          alt={`Question ${mcQuestions.length + idx + 1}`}
+                          className="max-h-[300px] w-auto object-contain rounded-lg border bg-white"
+                        />
+                      </div>
+                    )}
                     <p className="text-sm text-muted-foreground mb-4">(Select all that apply)</p>
                     <div className="space-y-2">
                       {q.options?.map((option, optIdx) => {
                         const isSelected = studentAnswers.includes(optIdx);
                         const isCorrectOption = correctAnswers.includes(optIdx);
+                        const isString = typeof option === 'string';
+                        const text = isString ? option : (option as any).text;
+                        const imageUrl = !isString ? (option as any).image_url : undefined;
 
                         return (
                           <div
                             key={optIdx}
                             className={cn(
-                              "p-3 rounded-lg border flex items-center gap-3",
+                              "p-3 rounded-lg border flex items-start gap-3",
                               isCorrectOption && isSelected && "bg-green-50 border-green-300",
                               isCorrectOption && !isSelected && "bg-amber-50 border-amber-300",
                               !isCorrectOption && isSelected && "bg-red-50 border-red-300",
@@ -424,7 +457,7 @@ const ExamResults = () => {
                             )}
                           >
                             <div className={cn(
-                              "w-6 h-6 rounded flex items-center justify-center text-sm font-medium",
+                              "w-6 h-6 rounded flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5",
                               isCorrectOption && isSelected && "bg-green-600 text-white",
                               isCorrectOption && !isSelected && "bg-amber-600 text-white",
                               !isCorrectOption && isSelected && "bg-red-600 text-white",
@@ -432,26 +465,35 @@ const ExamResults = () => {
                             )}>
                               {String.fromCharCode(65 + optIdx)}
                             </div>
-                            <span className={cn(
-                              "flex-1",
-                              isCorrectOption && "text-green-700 font-medium",
-                              !isCorrectOption && isSelected && "text-red-700"
-                            )}>
-                              {option}
-                            </span>
+                            <div className="flex-1">
+                              <span className={cn(
+                                "block",
+                                isCorrectOption && "text-green-700 font-medium",
+                                !isCorrectOption && isSelected && "text-red-700"
+                              )}>
+                                {text}
+                              </span>
+                              {imageUrl && (
+                                <img
+                                  src={imageUrl}
+                                  alt={`Option ${optIdx + 1}`}
+                                  className="mt-2 h-20 w-auto object-contain rounded border bg-white"
+                                />
+                              )}
+                            </div>
                             {isCorrectOption && isSelected && (
-                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 ml-auto flex-shrink-0">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Correct
                               </Badge>
                             )}
                             {isCorrectOption && !isSelected && (
-                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300">
+                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300 ml-auto flex-shrink-0">
                                 Missed
                               </Badge>
                             )}
                             {!isCorrectOption && isSelected && (
-                              <span className="text-xs text-red-600 font-medium">Should not select</span>
+                              <span className="text-xs text-red-600 font-medium ml-auto flex-shrink-0">Should not select</span>
                             )}
                           </div>
                         );

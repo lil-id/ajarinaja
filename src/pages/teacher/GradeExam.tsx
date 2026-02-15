@@ -434,12 +434,36 @@ const GradeExam = () => {
                                 <p className="font-medium text-sm">Q{idx + 1}: {q.question}</p>
                                 <p className="text-sm mt-1">
                                   <span className="text-muted-foreground">{t('gradeExam.answer')}: </span>
-                                  {q.options && answer !== undefined ? q.options[Number(answer)] : t('gradeExam.noAnswer')}
+                                  {q.options && answer !== undefined ? (
+                                    typeof q.options[Number(answer)] === 'string'
+                                      ? q.options[Number(answer)]
+                                      : (q.options[Number(answer)] as any).text
+                                  ) : t('gradeExam.noAnswer')}
                                 </p>
+                                {q.options && answer !== undefined && typeof q.options[Number(answer)] !== 'string' && (q.options[Number(answer)] as any).image_url && (
+                                  <img
+                                    src={(q.options[Number(answer)] as any).image_url}
+                                    alt="Student Answer"
+                                    className="mt-2 h-20 w-auto object-contain rounded border bg-white"
+                                  />
+                                )}
                                 {!isCorrect && q.options && q.correct_answer !== null && (
-                                  <p className="text-sm text-green-700 mt-1">
-                                    {t('submissionsPage.correct')}: {q.options[q.correct_answer]}
-                                  </p>
+                                  <div className="mt-1">
+                                    <p className="text-sm text-green-700">
+                                      {t('submissionsPage.correct')}: {
+                                        typeof q.options[q.correct_answer] === 'string'
+                                          ? q.options[q.correct_answer]
+                                          : (q.options[q.correct_answer] as any).text
+                                      }
+                                    </p>
+                                    {typeof q.options[q.correct_answer] !== 'string' && (q.options[q.correct_answer] as any).image_url && (
+                                      <img
+                                        src={(q.options[q.correct_answer] as any).image_url}
+                                        alt="Correct Answer"
+                                        className="mt-1 h-20 w-auto object-contain rounded border bg-white"
+                                      />
+                                    )}
+                                  </div>
                                 )}
                               </div>
                               <div className="flex items-center gap-2">
@@ -519,7 +543,20 @@ const GradeExam = () => {
                                         {wasSelected && !isCorrectAnswer && <X className="w-4 h-4 text-red-600" />}
                                         {!wasSelected && isCorrectAnswer && <span className="w-4 h-4 text-xs font-bold text-yellow-600">!</span>}
                                         {!wasSelected && !isCorrectAnswer && <span className="w-4 h-4" />}
-                                        <span>{option}</span>
+                                        {typeof option === 'string' ? (
+                                          <span>{option}</span>
+                                        ) : (
+                                          <div className="flex flex-col gap-1">
+                                            <span>{(option as any).text}</span>
+                                            {(option as any).image_url && (
+                                              <img
+                                                src={(option as any).image_url}
+                                                alt="Option"
+                                                className="h-10 w-auto object-contain rounded border bg-white"
+                                              />
+                                            )}
+                                          </div>
+                                        )}
                                         {isCorrectAnswer && <span className="text-xs text-green-600 ml-auto">({t('submissionsPage.correct')})</span>}
                                       </div>
                                     );

@@ -6,11 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FormulaText from '@/components/FormulaText';
 import { cn } from '@/lib/utils';
 
+interface QuestionOption {
+  text: string;
+  image_url?: string;
+}
+
 interface Question {
   id: string;
   type: string;
   question: string;
-  options?: string[] | null;
+  image_url?: string;
+  options?: string[] | QuestionOption[] | null;
   points: number;
 }
 
@@ -143,38 +149,64 @@ export default function StudentPreviewMode({
                         </Badge>
                         <span className="text-sm text-muted-foreground">{q.points} pts</span>
                       </div>
+
+                      {q.image_url && (
+                        <div className="mb-4">
+                          <img
+                            src={q.image_url}
+                            alt={`Question ${index + 1}`}
+                            className="w-full h-auto max-h-[600px] rounded-lg border object-contain bg-muted/50"
+                          />
+                        </div>
+                      )}
+
                       <div className="text-foreground mb-4">
                         <FormulaText text={q.question || 'No question text'} />
                       </div>
                       {(q.type === 'multiple-choice' || q.type === 'multi-select') && q.options && (
                         <div className="space-y-2">
-                          {(q.options as string[]).map((opt, optIndex) => (
-                            <label
-                              key={optIndex}
-                              className={cn(
-                                'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
-                                'hover:bg-muted/50'
-                              )}
-                            >
-                              {q.type === 'multiple-choice' ? (
-                                <input
-                                  type="radio"
-                                  name={`preview-q-${q.id}`}
-                                  disabled
-                                  className="w-4 h-4"
-                                />
-                              ) : (
-                                <input
-                                  type="checkbox"
-                                  disabled
-                                  className="w-4 h-4"
-                                />
-                              )}
-                              <span className="text-foreground">
-                                <FormulaText text={opt || `Option ${optIndex + 1}`} />
-                              </span>
-                            </label>
-                          ))}
+                          {q.options.map((opt, optIndex) => {
+                            const isString = typeof opt === 'string';
+                            const text = isString ? opt : opt.text;
+                            const imageUrl = !isString ? opt.image_url : undefined;
+
+                            return (
+                              <label
+                                key={optIndex}
+                                className={cn(
+                                  'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                                  'hover:bg-muted/50'
+                                )}
+                              >
+                                {q.type === 'multiple-choice' ? (
+                                  <input
+                                    type="radio"
+                                    name={`preview-q-${q.id}`}
+                                    disabled
+                                    className="w-4 h-4"
+                                  />
+                                ) : (
+                                  <input
+                                    type="checkbox"
+                                    disabled
+                                    className="w-4 h-4"
+                                  />
+                                )}
+                                <div className="flex flex-col gap-2 w-full">
+                                  <span className="text-foreground">
+                                    <FormulaText text={text || `Option ${optIndex + 1}`} />
+                                  </span>
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Option ${optIndex + 1}`}
+                                      className="w-full h-auto max-h-[300px] object-contain rounded border mt-2"
+                                    />
+                                  )}
+                                </div>
+                              </label>
+                            );
+                          })}
                         </div>
                       )}
                       {q.type === 'essay' && (

@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, Eye, ListChecks, Save } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, Eye, ListChecks, Save, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -70,11 +70,17 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+interface LocalOption {
+  text: string;
+  image_url?: string;
+}
+
 interface LocalQuestion {
   id: string;
   type: 'multiple-choice' | 'multi-select' | 'essay';
   question: string;
-  options: string[];
+  image_url?: string;
+  options: LocalOption[];
   correct_answer: number | null;
   correct_answers: number[];
   points: number;
@@ -125,18 +131,49 @@ export default function CreateExam() {
   const [newQuestion, setNewQuestion] = useState<{
     type: 'multiple-choice' | 'multi-select' | 'essay';
     question: string;
-    options: string[];
+    image_url?: string;
+    options: LocalOption[];
     correctAnswer: number;
     correctAnswers: number[];
     points: number;
   }>({
     type: 'multiple-choice',
     question: '',
-    options: ['', '', '', ''],
+    options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
     correctAnswer: 0,
     correctAnswers: [],
     points: 10,
   });
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      setIsUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('question-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('question-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error(t('toast.uploadFailed'));
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -206,7 +243,10 @@ export default function CreateExam() {
           id: q.id,
           type: q.type as 'multiple-choice' | 'multi-select' | 'essay',
           question: q.question,
-          options: q.options || ['', '', '', ''],
+          image_url: q.image_url || undefined,
+          options: q.options
+            ? q.options.map((o: any) => typeof o === 'string' ? { text: o } : { text: o.text, image_url: o.image_url })
+            : [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
           correct_answer: q.correct_answer,
           correct_answers: q.correct_answers || [],
           points: q.points,
@@ -260,6 +300,7 @@ export default function CreateExam() {
       id: crypto.randomUUID(),
       type: newQuestion.type,
       question: newQuestion.question,
+      image_url: newQuestion.image_url,
       options: newQuestion.type !== 'essay' ? newQuestion.options : [],
       correct_answer: newQuestion.type === 'multiple-choice' ? newQuestion.correctAnswer : null,
       correct_answers: newQuestion.type === 'multi-select' ? newQuestion.correctAnswers : [],
@@ -272,6 +313,7 @@ export default function CreateExam() {
     setNewQuestion({
       type: 'multiple-choice',
       question: '',
+      image_url: undefined,
       options: ['', '', '', ''],
       correctAnswer: 0,
       correctAnswers: [],
@@ -332,7 +374,10 @@ export default function CreateExam() {
         id: crypto.randomUUID(),
         type: mapBankTypeToExamType(bankQ.type),
         question: bankQ.question,
-        options: bankQ.options || ['', '', '', ''],
+        image_url: bankQ.image_url || undefined,
+        options: bankQ.options
+          ? bankQ.options.map((o: any) => typeof o === 'string' ? { text: o } : { text: o.text, image_url: o.image_url })
+          : [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
         correct_answer: bankQ.correct_answer,
         correct_answers: (bankQ as any).correct_answers || [],
         points: bankQ.points,
@@ -409,6 +454,7 @@ export default function CreateExam() {
               correct_answers: q.correct_answers.length > 0 ? q.correct_answers : null,
               points: q.points,
               order_index: i,
+              image_url: q.image_url,
             });
           } else {
             await updateQuestion.mutateAsync({
@@ -420,6 +466,7 @@ export default function CreateExam() {
               correct_answers: q.correct_answers.length > 0 ? q.correct_answers : null,
               points: q.points,
               order_index: i,
+              image_url: q.image_url,
             });
           }
         }
@@ -511,6 +558,7 @@ export default function CreateExam() {
               id: q.id,
               type: q.type,
               question: q.question,
+              image_url: q.image_url,
               options: q.type !== 'essay' ? q.options : null,
               points: q.points,
             }))}
@@ -800,7 +848,48 @@ export default function CreateExam() {
 
                         <div className="space-y-4 pt-4">
                           <div className="space-y-2">
-                            <Label>{t('exams.question')}</Label>
+                            <div className="flex items-center justify-between">
+                              <Label>{t('exams.question')}</Label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  id="new-exam-question-image"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const url = await uploadImage(file);
+                                      if (url) setNewQuestion({ ...newQuestion, image_url: url });
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor="new-exam-question-image">
+                                  <Button type="button" variant="ghost" size="sm" asChild disabled={isUploading}>
+                                    <span className="cursor-pointer text-xs h-8">
+                                      {isUploading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <ImageIcon className="w-3 h-3 mr-1" />}
+                                      {newQuestion.image_url ? t('common.changeImage') : t('common.addImage')}
+                                    </span>
+                                  </Button>
+                                </Label>
+                                {newQuestion.image_url && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-destructive"
+                                    onClick={() => setNewQuestion({ ...newQuestion, image_url: undefined })}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            {newQuestion.image_url && (
+                              <div className="mb-2">
+                                <img src={newQuestion.image_url} alt="Question" className="h-24 object-contain rounded border bg-muted" />
+                              </div>
+                            )}
                             <VisualEquationBuilder
                               value={newQuestion.question}
                               onChange={(val) => setNewQuestion({ ...newQuestion, question: val })}
@@ -812,23 +901,67 @@ export default function CreateExam() {
                             <Label>{t('exams.options')}</Label>
                             <p className="text-xs text-muted-foreground mb-2">{t('exams.selectCorrectAnswer')}</p>
                             {newQuestion.options.map((opt, i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <input
-                                  type="radio"
-                                  name="correct"
-                                  checked={newQuestion.correctAnswer === i}
-                                  onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
-                                  className="w-4 h-4"
-                                />
-                                <VisualEquationBuilder
-                                  value={opt}
-                                  onChange={(val) => {
-                                    const opts = [...newQuestion.options];
-                                    opts[i] = val;
-                                    setNewQuestion({ ...newQuestion, options: opts });
-                                  }}
-                                  placeholder={`${t('exams.option')} ${String.fromCharCode(65 + i)}`}
-                                />
+                              <div key={i} className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="correct"
+                                    checked={newQuestion.correctAnswer === i}
+                                    onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
+                                    className="w-4 h-4 flex-shrink-0"
+                                  />
+                                  <VisualEquationBuilder
+                                    value={opt.text}
+                                    onChange={(val) => {
+                                      const opts = [...newQuestion.options];
+                                      opts[i] = { ...opts[i], text: val };
+                                      setNewQuestion({ ...newQuestion, options: opts });
+                                    }}
+                                    placeholder={`${t('exams.option')} ${String.fromCharCode(65 + i)}`}
+                                  />
+                                  <div className="relative">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      id={`new-exam-opt-img-${i}`}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          const url = await uploadImage(file);
+                                          if (url) {
+                                            const opts = [...newQuestion.options];
+                                            opts[i] = { ...opts[i], image_url: url };
+                                            setNewQuestion({ ...newQuestion, options: opts });
+                                          }
+                                        }
+                                      }}
+                                    />
+                                    <Label htmlFor={`new-exam-opt-img-${i}`}>
+                                      <Button type="button" variant="ghost" size="icon" className="h-9 w-9" asChild disabled={isUploading}>
+                                        <span className="cursor-pointer">
+                                          {opt.image_url ? <ImageIcon className="w-4 h-4 text-primary" /> : <ImageIcon className="w-4 h-4 text-muted-foreground border border-dashed rounded-sm" />}
+                                        </span>
+                                      </Button>
+                                    </Label>
+                                  </div>
+                                </div>
+                                {opt.image_url && (
+                                  <div className="relative group w-fit ml-6">
+                                    <img src={opt.image_url} alt={`Option ${i + 1}`} className="h-12 w-12 object-cover rounded border" />
+                                    <button
+                                      type="button"
+                                      className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() => {
+                                        const opts = [...newQuestion.options];
+                                        opts[i] = { ...opts[i], image_url: undefined };
+                                        setNewQuestion({ ...newQuestion, options: opts });
+                                      }}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </TabsContent>
@@ -837,20 +970,64 @@ export default function CreateExam() {
                             <Label>{t('exams.options')}</Label>
                             <p className="text-xs text-muted-foreground mb-2">{t('exams.selectAllCorrect')}</p>
                             {newQuestion.options.map((opt, i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={newQuestion.correctAnswers.includes(i)}
-                                  onCheckedChange={() => toggleCorrectAnswer(i)}
-                                />
-                                <VisualEquationBuilder
-                                  value={opt}
-                                  onChange={(val) => {
-                                    const opts = [...newQuestion.options];
-                                    opts[i] = val;
-                                    setNewQuestion({ ...newQuestion, options: opts });
-                                  }}
-                                  placeholder={`${t('exams.option')} ${String.fromCharCode(65 + i)}`}
-                                />
+                              <div key={i} className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={newQuestion.correctAnswers.includes(i)}
+                                    onCheckedChange={() => toggleCorrectAnswer(i)}
+                                  />
+                                  <VisualEquationBuilder
+                                    value={opt.text}
+                                    onChange={(val) => {
+                                      const opts = [...newQuestion.options];
+                                      opts[i] = { ...opts[i], text: val };
+                                      setNewQuestion({ ...newQuestion, options: opts });
+                                    }}
+                                    placeholder={`${t('exams.option')} ${String.fromCharCode(65 + i)}`}
+                                  />
+                                  <div className="relative">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      id={`new-exam-opt-img-ms-${i}`}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          const url = await uploadImage(file);
+                                          if (url) {
+                                            const opts = [...newQuestion.options];
+                                            opts[i] = { ...opts[i], image_url: url };
+                                            setNewQuestion({ ...newQuestion, options: opts });
+                                          }
+                                        }
+                                      }}
+                                    />
+                                    <Label htmlFor={`new-exam-opt-img-ms-${i}`}>
+                                      <Button type="button" variant="ghost" size="icon" className="h-9 w-9" asChild disabled={isUploading}>
+                                        <span className="cursor-pointer">
+                                          {opt.image_url ? <ImageIcon className="w-4 h-4 text-primary" /> : <ImageIcon className="w-4 h-4 text-muted-foreground border border-dashed rounded-sm" />}
+                                        </span>
+                                      </Button>
+                                    </Label>
+                                  </div>
+                                </div>
+                                {opt.image_url && (
+                                  <div className="relative group w-fit ml-6">
+                                    <img src={opt.image_url} alt={`Option ${i + 1}`} className="h-auto max-h-[200px] object-contain rounded border" />
+                                    <button
+                                      type="button"
+                                      className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() => {
+                                        const opts = [...newQuestion.options];
+                                        opts[i] = { ...opts[i], image_url: undefined };
+                                        setNewQuestion({ ...newQuestion, options: opts });
+                                      }}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </TabsContent>
@@ -908,19 +1085,28 @@ export default function CreateExam() {
                             <Badge variant="outline" className="text-xs">{q.type}</Badge>
                             <span className="text-xs text-muted-foreground">{q.points} {t('common.pts')}</span>
                           </div>
+                          {q.image_url && (
+                            <div className="mb-2">
+                              <img src={q.image_url} alt="Question" className="w-full h-auto max-h-[400px] object-contain rounded border bg-background" />
+                            </div>
+                          )}
                           <FormulaText text={q.question} className="text-sm" />
                           {q.type !== 'essay' && q.options && q.options.length > 0 && (
                             <div className="mt-2 space-y-1">
                               {q.options.map((opt, i) => (
                                 <div
                                   key={i}
-                                  className={`text-xs px-2 py-1 rounded ${(q.type === 'multiple-choice' && q.correct_answer === i) ||
+                                  className={`flex items-center gap-2 text-xs px-2 py-1 rounded ${(q.type === 'multiple-choice' && q.correct_answer === i) ||
                                     (q.type === 'multi-select' && q.correct_answers.includes(i))
                                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                                     : 'bg-background'
                                     }`}
                                 >
-                                  {String.fromCharCode(65 + i)}. <FormulaText text={opt} className="inline" />
+                                  <span className="font-semibold">{String.fromCharCode(65 + i)}.</span>
+                                  <FormulaText text={opt.text} className="inline" />
+                                  {opt.image_url && (
+                                    <img src={opt.image_url} alt="Option" className="h-auto max-h-[150px] object-contain rounded border mt-1" />
+                                  )}
                                 </div>
                               ))}
                             </div>

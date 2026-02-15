@@ -114,7 +114,7 @@ interface VisualEquationBuilderProps {
  * @returns {JSX.Element} The visual equation builder component.
  */
 const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
-  value,
+  value = '', // Default to empty string to prevent crash
   onChange,
   placeholder = 'Click buttons below to build your equation, or type directly',
   className,
@@ -125,304 +125,330 @@ const VisualEquationBuilder: React.FC<VisualEquationBuilderProps> = ({
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [isInMathMode, setIsInMathMode] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
+
+  // Ensure value is always a string
+  const safeValue = typeof value === 'string' ? value : String(value || '');
 
   // Insert text at cursor or end
   const insertAtCursor = useCallback((text: string) => {
     // For simplicity, append to end or insert based on if in math mode
-    const newValue = value + text;
+    const newValue = safeValue + text;
     onChange(newValue);
-  }, [value, onChange]);
+  }, [safeValue, onChange]);
 
   // Start a formula block
   const startFormula = useCallback(() => {
-    if (!value.endsWith('$') && !isInMathMode) {
-      onChange(value + '$');
+    if (!safeValue.endsWith('$') && !isInMathMode) {
+      onChange(safeValue + '$');
       setIsInMathMode(true);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // End formula block
   const endFormula = useCallback(() => {
     if (isInMathMode) {
-      onChange(value + '$');
+      onChange(safeValue + '$');
       setIsInMathMode(false);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // Insert a fraction
   const insertFraction = useCallback(() => {
     const latex = '\\frac{□}{□}';
     if (!isInMathMode) {
-      onChange(value + '$' + latex + '$');
+      onChange(safeValue + '$' + latex + '$');
     } else {
-      onChange(value + latex);
+      onChange(safeValue + latex);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // Insert square root
   const insertSqrt = useCallback(() => {
     const latex = '\\sqrt{□}';
     if (!isInMathMode) {
-      onChange(value + '$' + latex + '$');
+      onChange(safeValue + '$' + latex + '$');
     } else {
-      onChange(value + latex);
+      onChange(safeValue + latex);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // Insert power/exponent
   const insertPower = useCallback(() => {
     const latex = '^{□}';
     if (!isInMathMode) {
-      onChange(value + '$□' + latex + '$');
+      onChange(safeValue + '$□' + latex + '$');
     } else {
-      onChange(value + latex);
+      onChange(safeValue + latex);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // Insert subscript
   const insertSubscript = useCallback(() => {
     const latex = '_{□}';
     if (!isInMathMode) {
-      onChange(value + '$□' + latex + '$');
+      onChange(safeValue + '$□' + latex + '$');
     } else {
-      onChange(value + latex);
+      onChange(safeValue + latex);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // Insert template
   const insertTemplate = useCallback((latex: string) => {
-    onChange(value + (value ? ' ' : '') + '$' + latex + '$');
-  }, [value, onChange]);
+    onChange(safeValue + (safeValue ? ' ' : '') + '$' + latex + '$');
+  }, [safeValue, onChange]);
 
   // Insert symbol
   const insertSymbol = useCallback((latex: string) => {
     if (!isInMathMode) {
-      onChange(value + '$' + latex + '$');
+      onChange(safeValue + '$' + latex + '$');
     } else {
-      onChange(value + latex);
+      onChange(safeValue + latex);
     }
-  }, [value, onChange, isInMathMode]);
+  }, [safeValue, onChange, isInMathMode]);
 
   // Check if value has formulas
-  const hasFormulas = value.includes('$');
+  const hasFormulas = safeValue.includes('$');
 
   return (
-    <div className={cn('space-y-3', className)}>
-      {/* Visual Calculator-Style Toolbar */}
-      <div className={cn("bg-muted/50 rounded-lg border", compact ? "p-2" : "p-3")}>
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="text-xs font-medium text-muted-foreground">Quick Insert:</span>
-          {QUICK_BUTTONS.map((btn) => (
-            <Button
-              key={btn.label}
-              type="button"
-              variant="secondary"
-              size="sm"
-              className={cn(compact ? "h-7 w-7" : "h-9 w-9", "p-0")}
-              onClick={() => insertSymbol(btn.insert.trim())}
-              title={btn.label}
-            >
-              {btn.icon}
-            </Button>
-          ))}
-        </div>
-
-        {/* Structure buttons - Fraction, Root, Power */}
-        {!compact && (
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-medium text-muted-foreground">Structures:</span>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 px-3 gap-2"
-              onClick={insertFraction}
-            >
-              <div className="flex flex-col items-center leading-none text-xs">
-                <span className="border-b border-current px-1">a</span>
-                <span className="px-1">b</span>
-              </div>
-              <span className="text-xs">Fraction</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 px-3 gap-2"
-              onClick={insertSqrt}
-            >
-              <span className="text-lg">√</span>
-              <span className="text-xs">Square Root</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 px-3 gap-2"
-              onClick={insertPower}
-            >
-              <span className="text-sm">x<sup className="text-xs">n</sup></span>
-              <span className="text-xs">Power</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 px-3 gap-2"
-              onClick={insertSubscript}
-            >
-              <span className="text-sm">x<sub className="text-xs">n</sub></span>
-              <span className="text-xs">Subscript</span>
-            </Button>
-          </div>
+    <div className={cn('space-y-2', className)}>
+      {/* Input Area - Always Visible */}
+      <div className="relative">
+        {singleLine ? (
+          <Input
+            value={safeValue}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            onBlur={onBlur}
+            className="font-mono pr-10"
+          />
+        ) : (
+          <Textarea
+            value={safeValue}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            rows={rows}
+            onBlur={onBlur}
+            className="font-mono min-h-[80px]"
+          />
         )}
 
-        {/* Compact mode structure buttons */}
-        {compact && (
-          <div className="flex flex-wrap items-center gap-1 mb-2">
-            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertFraction}>
-              <span className="text-xs">a/b</span>
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertSqrt}>
-              √
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertPower}>
-              x<sup>n</sup>
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertSubscript}>
-              x<sub>n</sub>
-            </Button>
-          </div>
-        )}
-
-        {/* Symbol categories and Templates */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Symbols Dropdown */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button type="button" variant="outline" size="sm" className="h-9 gap-1">
-                <span>Symbols</span>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-2" align="start">
-              <Tabs defaultValue="Numbers & Letters" className="w-full">
-                <TabsList className="w-full flex-wrap h-auto gap-0.5 bg-transparent p-0 mb-2">
-                  {Object.keys(SYMBOLS).map((cat) => (
-                    <TabsTrigger key={cat} value={cat} className="text-xs px-2 py-1 h-6">
-                      {cat}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                {Object.entries(SYMBOLS).map(([category, symbols]) => (
-                  <TabsContent key={category} value={category} className="mt-0">
-                    <ScrollArea className="h-24">
-                      <div className="grid grid-cols-5 gap-1">
-                        {symbols.map((sym) => (
-                          <Button
-                            key={sym.latex}
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 text-base font-mono"
-                            onClick={() => insertSymbol(sym.latex)}
-                          >
-                            {sym.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </PopoverContent>
-          </Popover>
-
-          {/* Templates Dropdown */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button type="button" variant="outline" size="sm" className="h-9 gap-1">
-                <Calculator className="h-3 w-3" />
-                <span>Templates</span>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-2" align="start">
-              <p className="text-xs text-muted-foreground mb-2">Click to insert a complete formula:</p>
-              <ScrollArea className="h-48">
-                <div className="space-y-1">
-                  {TEMPLATES.map((tmpl) => (
-                    <Button
-                      key={tmpl.label}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start h-auto py-2 px-3"
-                      onClick={() => insertTemplate(tmpl.latex)}
-                    >
-                      <div className="flex flex-col items-start gap-1">
-                        <span className="text-xs font-medium">{tmpl.label}</span>
-                        <div className="text-muted-foreground">
-                          <FormulaText text={`$${tmpl.latex}$`} />
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
-
-          {/* Preview toggle */}
-          {hasFormulas && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-1 ml-auto"
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              {showPreview ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              {showPreview ? 'Hide Preview' : 'Show Preview'}
-            </Button>
-          )}
-        </div>
+        {/* Toggle Button Positioned absolute or relative depending on design */}
       </div>
 
-      {/* Input Area */}
-      {singleLine ? (
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          onBlur={onBlur}
-          className="font-mono"
-        />
-      ) : (
-        <Textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={rows}
-          onBlur={onBlur}
-          className="font-mono"
-        />
+      {/* Toolbar Toggle */}
+      <div className="flex items-center">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 px-2 text-xs text-muted-foreground gap-1 hover:text-foreground"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", !isExpanded && "-rotate-90")} />
+          <span>{isExpanded ? 'Hide Symbols' : 'Show Symbols'}</span>
+        </Button>
+      </div>
+
+      {/* Collapsible Toolbar */}
+      {isExpanded && (
+        <div className={cn("bg-muted/50 rounded-lg border", compact ? "p-2" : "p-3", "animate-in slide-in-from-top-2 fade-in duration-200")}>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs font-medium text-muted-foreground">Quick Insert:</span>
+            {QUICK_BUTTONS.map((btn) => (
+              <Button
+                key={btn.label}
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={cn(compact ? "h-7 w-7" : "h-9 w-9", "p-0")}
+                onClick={() => insertSymbol(btn.insert.trim())}
+                title={btn.label}
+              >
+                {btn.icon}
+              </Button>
+            ))}
+          </div>
+
+          {/* Structure buttons - Fraction, Root, Power */}
+          {!compact && (
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="text-xs font-medium text-muted-foreground">Structures:</span>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-10 px-3 gap-2"
+                onClick={insertFraction}
+              >
+                <div className="flex flex-col items-center leading-none text-xs">
+                  <span className="border-b border-current px-1">a</span>
+                  <span className="px-1">b</span>
+                </div>
+                <span className="text-xs">Fraction</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-10 px-3 gap-2"
+                onClick={insertSqrt}
+              >
+                <span className="text-lg">√</span>
+                <span className="text-xs">Square Root</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-10 px-3 gap-2"
+                onClick={insertPower}
+              >
+                <span className="text-sm">x<sup className="text-xs">n</sup></span>
+                <span className="text-xs">Power</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-10 px-3 gap-2"
+                onClick={insertSubscript}
+              >
+                <span className="text-sm">x<sub className="text-xs">n</sub></span>
+                <span className="text-xs">Subscript</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Compact mode structure buttons */}
+          {compact && (
+            <div className="flex flex-wrap items-center gap-1 mb-2">
+              <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertFraction}>
+                <span className="text-xs">a/b</span>
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertSqrt}>
+                √
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertPower}>
+                x<sup>n</sup>
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={insertSubscript}>
+                x<sub>n</sub>
+              </Button>
+            </div>
+          )}
+
+          {/* Symbol categories and Templates */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Symbols Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" size="sm" className="h-9 gap-1">
+                  <span>Symbols</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-2" align="start">
+                <Tabs defaultValue="Numbers & Letters" className="w-full">
+                  <TabsList className="w-full flex-wrap h-auto gap-0.5 bg-transparent p-0 mb-2">
+                    {Object.keys(SYMBOLS).map((cat) => (
+                      <TabsTrigger key={cat} value={cat} className="text-xs px-2 py-1 h-6">
+                        {cat}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {Object.entries(SYMBOLS).map(([category, symbols]) => (
+                    <TabsContent key={category} value={category} className="mt-0">
+                      <ScrollArea className="h-24">
+                        <div className="grid grid-cols-5 gap-1">
+                          {symbols.map((sym) => (
+                            <Button
+                              key={sym.latex}
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-base font-mono"
+                              onClick={() => insertSymbol(sym.latex)}
+                            >
+                              {sym.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </PopoverContent>
+            </Popover>
+
+            {/* Templates Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" size="sm" className="h-9 gap-1">
+                  <Calculator className="h-3 w-3" />
+                  <span>Templates</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-2" align="start">
+                <p className="text-xs text-muted-foreground mb-2">Click to insert a complete formula:</p>
+                <ScrollArea className="h-48">
+                  <div className="space-y-1">
+                    {TEMPLATES.map((tmpl) => (
+                      <Button
+                        key={tmpl.label}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start h-auto py-2 px-3"
+                        onClick={() => insertTemplate(tmpl.latex)}
+                      >
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="text-xs font-medium">{tmpl.label}</span>
+                          <div className="text-muted-foreground">
+                            <FormulaText text={`$${tmpl.latex}$`} />
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
+
+            {/* Preview toggle */}
+            {hasFormulas && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1 ml-auto"
+                onClick={() => setShowPreview(!showPreview)}
+              >
+                {showPreview ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {showPreview ? 'Hide Preview' : 'Show Preview'}
+              </Button>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Inline help */}
-      <p className="text-xs text-muted-foreground">
-        💡 Tip: Replace □ placeholders with your values. Use $...$ to wrap math expressions.
-      </p>
+      {isExpanded && (
+        <p className="text-xs text-muted-foreground">
+          💡 Tip: Replace □ placeholders with your values. Use $...$ to wrap math expressions.
+        </p>
+      )}
 
       {/* Preview */}
-      {showPreview && hasFormulas && (
+      {(showPreview || !isExpanded) && hasFormulas && (
         <div className="p-3 rounded-md border bg-muted/30">
           <p className="text-xs text-muted-foreground mb-1">Preview:</p>
-          <FormulaText text={value} />
+          <FormulaText text={safeValue} />
         </div>
       )}
     </div>

@@ -1,12 +1,17 @@
 export default {
   // Common
   common: {
+    history: 'History',
+    publish: 'Publish',
+    changeImage: 'Change Image',
+    addImage: 'Add Image',
+    overdue: 'Overdue',
     name: 'Name',
     email: 'Email',
     loading: 'Loading...',
     warning: 'Warning',
     exportPDF: 'Export PDF',
-    attention: 'Attention', // Added this too since I used it in code
+    attention: 'Attention',
     details: 'Details',
     action: 'Action',
     save: 'Save',
@@ -191,6 +196,7 @@ export default {
 
   // Dashboard
   dashboard: {
+    averageScore: 'Average Score',
     welcome: 'Welcome',
     recentActivity: 'Here\'s what\'s happening with your courses.',
     upcomingDeadlines: 'View upcoming deadlines',
@@ -460,6 +466,8 @@ export default {
     totalExams: 'Total Exams',
     timeRemaining: 'Time Remaining',
     noExams: 'No exams available',
+    missing: 'Missing',
+    upcoming: 'Upcoming',
     noExamsFound: 'No exams found',
     examResults: 'Exam Results',
     gradeExam: 'Grade Exam',
@@ -979,6 +987,8 @@ export default {
   // Toast Messages
   toast: {
     // Academic Periods
+    uploadFailed: 'Failed to upload',
+    gradesCalculated: 'Grades calculated successfully',
     periodCreated: 'Academic period created successfully',
     periodUpdated: 'Academic period updated successfully',
     periodDeleted: 'Academic period deleted successfully',
@@ -1517,7 +1527,7 @@ export default {
     feedback: 'Feedback',
     pendingReview: 'Your submission is pending review',
     questions: 'Questions',
-    answerAllQuestions: 'Answer all {{count}} question(s) below',
+    answerAllQuestions: 'Answer all question(s) below',
     lateSubmission: 'Late Submission',
     latePenaltyApplied: 'A {{percent}}% penalty will be applied',
     submissionClosed: 'Submission Closed',

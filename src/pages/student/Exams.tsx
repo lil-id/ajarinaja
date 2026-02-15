@@ -13,6 +13,7 @@ import { useSubmissions } from '@/hooks/useSubmissions';
 import { FileText, Clock, Award, ArrowRight, CheckCircle, Loader2, Eye, Calendar, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 /**
  * Student Exams page.
@@ -79,6 +80,24 @@ const StudentExams = () => {
   });
   const availableExams = filterExams(rawAvailableExams);
 
+  // Missed exams: Published, Enrolled, Expired, Not Completed
+  const rawMissedExams = exams.filter(e => {
+    if (completedExamIds.includes(e.id)) return false;
+    if (e.status !== 'published') return false;
+    if (!enrolledCourseIds.includes(e.course_id)) return false;
+
+    // Must be expired
+    if (e.end_date && new Date(e.end_date) < now) return true;
+
+    return false;
+  });
+
+  // Combine Completed and Missed into "History"
+  const rawHistoryExams = [...rawCompletedExams, ...rawMissedExams].sort((a, b) =>
+    new Date(b.end_date || b.created_at).getTime() - new Date(a.end_date || a.created_at).getTime()
+  );
+  const historyExams = filterExams(rawHistoryExams);
+
   // Upcoming exams: Published, Enrolled, Future Start Date
   const rawUpcomingExams = exams.filter(e => {
     if (e.status !== 'published') return false;
@@ -91,8 +110,8 @@ const StudentExams = () => {
   const pendingExams = availableExams;
 
   // Calculate stats
-  const filteredExamsCount = availableExams.length + upcomingExams.length + completedExams.length;
-  const submittedCount = completedExams.length;
+  const filteredExamsCount = availableExams.length + upcomingExams.length + historyExams.length;
+  const submittedCount = rawCompletedExams.length;
   const gradedCount = completedExams.filter(e => {
     const sub = submissions.find(s => s.exam_id === e.id);
     return sub && sub.score !== null;
@@ -113,6 +132,7 @@ const StudentExams = () => {
   const renderExamCard = (exam: typeof exams[0], index: number) => {
     const course = courses.find(c => c.id === exam.course_id);
     const isCompleted = completedExamIds.includes(exam.id);
+    const isMissed = !isCompleted && exam.end_date && new Date(exam.end_date) < now;
     const submission = submissions.find(s => s.exam_id === exam.id);
 
     return (
@@ -120,35 +140,34 @@ const StudentExams = () => {
         key={exam.id}
         role="button"
         tabIndex={0}
-        onClick={() =>
-          isCompleted
-            ? navigate(`/student/exam/${exam.id}/results`)
-            : navigate(`/student/exam/${exam.id}`)
-        }
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            isCompleted
-              ? navigate(`/student/exam/${exam.id}/results`)
-              : navigate(`/student/exam/${exam.id}`);
-          }
+        onClick={() => {
+          if (isCompleted) navigate(`/student/exam/${exam.id}/results`);
+          // Missed exams might not have a link or could link to a "missed" page/modal. For now, disable click or show details.
         }}
-        className="border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className={cn(
+          "border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isMissed && "opacity-75 bg-muted/30"
+        )}
         style={{ animationDelay: `${index * 100}ms` }}
       >
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isCompleted ? 'bg-secondary/10' : 'bg-primary/10'
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isCompleted ? 'bg-secondary/10' : isMissed ? 'bg-destructive/10' : 'bg-primary/10'
                 }`}>
                 {isCompleted ? (
                   <CheckCircle className="w-6 h-6 text-secondary" />
+                ) : isMissed ? (
+                  <Clock className="w-6 h-6 text-destructive" />
                 ) : (
                   <FileText className="w-6 h-6 text-primary" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground">{exam.title}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-foreground">{exam.title}</h3>
+                  {isMissed && <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">{t('exams.missing')}</span>}
+                </div>
                 <p className="text-sm text-muted-foreground">{course?.title}</p>
                 {exam.description && (
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{exam.description}</p>
@@ -163,7 +182,7 @@ const StudentExams = () => {
                     {exam.total_points} {t('common.pts')}
                   </span>
                   {exam.end_date && (
-                    <span className="flex items-center gap-1 text-destructive">
+                    <span className={cn("flex items-center gap-1", isMissed ? "text-destructive" : "text-destructive")}>
                       <Calendar className="w-4 h-4" />
                       {t('exams.dueBy')}: {format(new Date(exam.end_date), 'MMM d, h:mm a')}
                     </span>
@@ -181,6 +200,14 @@ const StudentExams = () => {
                   </p>
                 </div>
               )}
+              {isMissed && (
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">{t('courses.status')}</p>
+                  <p className="text-lg font-bold text-destructive">
+                    {t('exams.missing')}
+                  </p>
+                </div>
+              )}
               {isCompleted ? (
                 <Button
                   variant="outline"
@@ -192,7 +219,7 @@ const StudentExams = () => {
                   <Eye className="w-4 h-4 mr-1" />
                   {t('exams.viewResults')}
                 </Button>
-              ) : (
+              ) : !isMissed ? (
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -201,6 +228,10 @@ const StudentExams = () => {
                 >
                   {t('exams.takeExam')}
                   <ArrowRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button variant="outline" disabled>
+                  {t('exams.missing')}
                 </Button>
               )}
             </div>
@@ -341,11 +372,11 @@ const StudentExams = () => {
             <TabsTrigger value="available">
               {t('exams.available')} ({pendingExams.length})
             </TabsTrigger>
-            <TabsTrigger value="completed">
-              {t('exams.completed')} ({completedExams.length})
+            <TabsTrigger value="history">
+              {t('common.history')} ({historyExams.length})
             </TabsTrigger>
             <TabsTrigger value="upcoming">
-              {t('assignments.upcoming')} ({upcomingExams.length})
+              {t('exams.upcoming')} ({upcomingExams.length})
             </TabsTrigger>
           </TabsList>
 
@@ -361,15 +392,15 @@ const StudentExams = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="completed" className="space-y-4">
-            {completedExams.length === 0 ? (
+          <TabsContent value="history" className="space-y-4">
+            {historyExams.length === 0 ? (
               <Card className="border-0 shadow-card">
                 <CardContent className="py-8 text-center text-muted-foreground">
                   {t('exams.noCompletedExams')}
                 </CardContent>
               </Card>
             ) : (
-              completedExams.map((exam, index) => renderExamCard(exam, index))
+              historyExams.map((exam, index) => renderExamCard(exam, index))
             )}
           </TabsContent>
 

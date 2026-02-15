@@ -2,12 +2,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Json } from '@/integrations/supabase/types';
 
+import { QuestionOption } from './useExams';
+
 export interface AssignmentQuestion {
   id: string;
   assignment_id: string;
   type: string;
   question: string;
-  options: string[] | null;
+  image_url?: string | null;
+  options: string[] | QuestionOption[] | null;
   correct_answer: number | null;
   correct_answers: number[] | null;
   points: number;
@@ -34,7 +37,7 @@ export function useAssignmentQuestions(assignmentId: string) {
       if (error) throw error;
       return (data || []).map(q => ({
         ...q,
-        options: q.options as string[] | null,
+        options: q.options as string[] | QuestionOption[] | null,
       })) as AssignmentQuestion[];
     },
     enabled: !!assignmentId,
@@ -54,6 +57,7 @@ export function useAddAssignmentQuestion() {
       assignmentId,
       type,
       question,
+      image_url,
       options,
       correct_answer,
       correct_answers,
@@ -63,7 +67,8 @@ export function useAddAssignmentQuestion() {
       assignmentId: string;
       type: string;
       question: string;
-      options: string[] | null;
+      image_url?: string | null;
+      options: string[] | QuestionOption[] | null;
       correct_answer: number | null;
       correct_answers: number[] | null;
       points: number;
@@ -75,6 +80,7 @@ export function useAddAssignmentQuestion() {
           assignment_id: assignmentId,
           type,
           question,
+          image_url,
           options: options as unknown as Json,
           correct_answer,
           correct_answers,
@@ -87,7 +93,7 @@ export function useAddAssignmentQuestion() {
       if (error) throw error;
       return {
         ...data,
-        options: data.options as string[] | null,
+        options: data.options as string[] | QuestionOption[] | null,
       } as AssignmentQuestion;
     },
     onSuccess: (_, { assignmentId }) => {
@@ -114,6 +120,7 @@ export function useUpdateAssignmentQuestion() {
         .from('assignment_questions')
         .update({
           ...updates,
+          image_url: updates.image_url,
           options: updates.options as unknown as Json,
         })
         .eq('id', id)

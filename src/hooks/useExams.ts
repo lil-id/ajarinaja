@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
@@ -22,14 +23,21 @@ export interface Exam {
   updated_at: string;
 }
 
+export interface QuestionOption {
+  text: string;
+  image_url?: string;
+  id?: string; // Optional ID for tracking
+}
+
 export interface Question {
   id: string;
   exam_id: string;
-  type: string;
+  type: 'multiple-choice' | 'multi-select' | 'essay' | 'short-answer';
   question: string;
-  options: string[] | null;
-  correct_answer: number | null;
-  correct_answers: number[] | null;
+  image_url?: string | null;
+  options: any; // JSON
+  correct_answer: number;
+  correct_answers: number[];
   points: number;
   order_index: number;
 }
@@ -131,11 +139,12 @@ export function useExamWithQuestions(examId: string) {
 
         if (error) throw error;
         // Student view doesn't include correct_answer or correct_answers
-        questions = (data ?? []).map(q => ({
+        questions = (data as any[] ?? []).map(q => ({
           id: q.id!,
           exam_id: q.exam_id!,
           type: q.type!,
           question: q.question!,
+          image_url: q.image_url,
           options: q.options as string[] | null,
           correct_answer: null,
           correct_answers: null,
@@ -202,7 +211,8 @@ export function useCreateExam() {
           exam_id: exam.id,
           type: q.type,
           question: q.question,
-          options: q.options,
+          image_url: q.image_url,
+          options: q.options as unknown as Json,
           correct_answer: q.correct_answer,
           correct_answers: q.correct_answers,
           points: q.points,

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Question } from './useExams';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Mutation hook to update a specific question in an exam.
@@ -14,6 +15,7 @@ export function useUpdateQuestion() {
     mutationFn: async ({
       id,
       question,
+      image_url,
       options,
       correct_answer,
       correct_answers,
@@ -22,7 +24,15 @@ export function useUpdateQuestion() {
     }: Partial<Question> & { id: string }) => {
       const { data, error } = await supabase
         .from('questions')
-        .update({ question, options, correct_answer, correct_answers, points, type })
+        .update({
+          question,
+          image_url,
+          options: options as unknown as Json,
+          correct_answer,
+          correct_answers,
+          points,
+          type
+        })
         .eq('id', id)
         .select()
         .single();
@@ -73,6 +83,7 @@ export function useAddQuestion() {
     mutationFn: async ({
       examId,
       question,
+      image_url,
       options,
       correct_answer,
       correct_answers,
@@ -85,7 +96,8 @@ export function useAddQuestion() {
         .insert({
           exam_id: examId,
           question,
-          options,
+          image_url,
+          options: options as unknown as Json,
           correct_answer,
           correct_answers,
           points,

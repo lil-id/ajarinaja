@@ -1,6 +1,11 @@
 export default {
   // Common
   common: {
+    history: 'Riwayat',
+    publish: 'Aktifkan',
+    changeImage: 'Ubah Gambar',
+    addImage: 'Unggah Gambar',
+    overdue: 'Terlambat',
     name: 'Nama',
     email: 'Email',
     exportPDF: 'Ekspor PDF',
@@ -537,6 +542,8 @@ export default {
     submitExam: 'Kumpulkan Ujian',
     timeRemaining: 'Waktu Tersisa',
     noExams: 'Tidak ada ujian',
+    missing: 'Terlewat',
+    upcoming: 'Mendatang',
     noExamsFound: 'Tidak ada ujian ditemukan',
     examResults: 'Hasil Ujian',
     gradeExam: 'Nilai Ujian',
@@ -1056,6 +1063,8 @@ export default {
   // Toast Messages
   toast: {
     // Academic Periods
+    uploadFailed: 'Gagal mengunggah',
+    gradesCalculated: 'Nilai berhasil dihitung',
     periodCreated: 'Periode akademik berhasil dibuat',
     periodUpdated: 'Periode akademik berhasil diperbarui',
     periodDeleted: 'Periode akademik berhasil dihapus',
@@ -1595,7 +1604,7 @@ export default {
     feedback: 'Umpan Balik',
     pendingReview: 'Pengumpulan Anda sedang ditinjau',
     questions: 'Pertanyaan',
-    answerAllQuestions: 'Jawab semua {{count}} pertanyaan di bawah',
+    answerAllQuestions: 'Jawab semua pertanyaan di bawah',
     lateSubmission: 'Pengumpulan Terlambat',
     latePenaltyApplied: 'Penalti {{percent}}% akan diterapkan',
     submissionClosed: 'Pengumpulan Ditutup',

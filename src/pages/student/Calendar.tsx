@@ -3,8 +3,9 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMont
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, FileText, ClipboardList, Calendar as CalendarIcon, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, ClipboardList, Calendar as CalendarIcon, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useExams } from '@/hooks/useExams';
+import { useSubmissions } from '@/hooks/useSubmissions';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
@@ -43,10 +44,11 @@ export default function StudentCalendar() {
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { exams, isLoading: examsLoading } = useExams();
+  const { submissions, isLoading: submissionsLoading } = useSubmissions();
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
   const { data: submittedAssignmentIds = [] } = useAllAssignmentSubmissions();
 
-  const isLoading = enrollmentsLoading || coursesLoading || examsLoading || assignmentsLoading;
+  const isLoading = enrollmentsLoading || coursesLoading || examsLoading || assignmentsLoading || submissionsLoading;
 
   // Get enrolled course IDs
   const enrolledCourseIds = enrollments.map(e => e.course_id);
@@ -62,6 +64,8 @@ export default function StudentCalendar() {
     const now = new Date();
 
     // Add exam events
+    const completedExamIds = submissions.map(s => s.exam_id);
+
     (exams || [])
       .filter((e) => enrolledCourseIds.includes(e.course_id) && e.status === 'published')
       .forEach((exam) => {
@@ -73,8 +77,10 @@ export default function StudentCalendar() {
             date: endDate,
             type: 'exam',
             courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
+            courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
             status: exam.status,
-            isPastDue: isPast(endDate),
+            isPastDue: isPast(endDate) && !completedExamIds.includes(exam.id),
+            isSubmitted: completedExamIds.includes(exam.id),
           });
         }
         if (exam.start_date) {
@@ -323,7 +329,7 @@ export default function StudentCalendar() {
                         </Badge>
                         {event.isSubmitted && (
                           <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-                            {t('common.submitted')}
+                            {event.type === 'exam' ? t('common.completed') : t('common.submitted')}
                           </Badge>
                         )}
                         {event.isPastDue && (

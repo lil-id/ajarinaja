@@ -143,18 +143,95 @@ function GradeDialog({ submission, assignment, questions = [], open, onClose, is
                       )}
                       {q.type === 'multiple-choice' && q.options && (
                         <div>
-                          <p><strong>{t('submissionsPage.answer')}:</strong> {(q.options as string[])[answer as number] || t('submissionsPage.noAnswer')}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t('submissionsPage.correct')}: {(q.options as string[])[q.correct_answer]}
+                          <p>
+                            <strong>{t('submissionsPage.answer')}:</strong>{' '}
+                            {(() => {
+                              const ansIdx = answer as number;
+                              const opt = q.options![ansIdx];
+                              if (!opt) return t('submissionsPage.noAnswer');
+                              return typeof opt === 'string' ? opt : (
+                                <span className="inline-flex flex-col align-top">
+                                  <span>{opt.text}</span>
+                                  {opt.image_url && (
+                                    <img src={opt.image_url} alt="Answer" className="h-12 w-auto object-contain rounded border mt-1" />
+                                  )}
+                                </span>
+                              );
+                            })()}
                           </p>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {t('submissionsPage.correct')}:{' '}
+                            {(() => {
+                              const opt = q.options![q.correct_answer];
+                              if (!opt) return null;
+                              return typeof opt === 'string' ? opt : (
+                                <span className="inline-flex flex-col align-top">
+                                  <span>{opt.text}</span>
+                                  {opt.image_url && (
+                                    <img src={opt.image_url} alt="Correct" className="h-12 w-auto object-contain rounded border mt-1" />
+                                  )}
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </div>
                       )}
                       {q.type === 'multi-select' && q.options && (
                         <div>
-                          <p><strong>{t('submissionsPage.answer')}:</strong> {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || t('submissionsPage.noAnswer')}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t('submissionsPage.correct')}: {q.correct_answers?.map((i: number) => (q.options as string[])[i]).join(', ')}
+                          <p>
+                            <strong>{t('submissionsPage.answer')}:</strong>{' '}
+                            {(() => {
+                              const ansIndices = (answer as number[]) || [];
+                              if (ansIndices.length === 0) return t('submissionsPage.noAnswer');
+                              return (
+                                <div className="flex flex-col gap-1 mt-1">
+                                  {ansIndices.map(i => {
+                                    const opt = q.options![i];
+                                    if (!opt) return null;
+                                    return (
+                                      <div key={i} className="flex gap-2 items-center">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-foreground/50" />
+                                        {typeof opt === 'string' ? (
+                                          <span>{opt}</span>
+                                        ) : (
+                                          <div className="flex flex-col">
+                                            <span>{opt.text}</span>
+                                            {opt.image_url && (
+                                              <img src={opt.image_url} alt="Answer" className="h-12 w-auto object-contain rounded border mt-1" />
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
                           </p>
+                          <div className="text-xs text-muted-foreground mt-2">
+                            <p className="mb-1">{t('submissionsPage.correct')}:</p>
+                            <div className="flex flex-col gap-1">
+                              {q.correct_answers?.map((i: number) => {
+                                const opt = q.options![i];
+                                if (!opt) return null;
+                                return (
+                                  <div key={i} className="flex gap-2 items-center">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                    {typeof opt === 'string' ? (
+                                      <span>{opt}</span>
+                                    ) : (
+                                      <div className="flex flex-col">
+                                        <span>{opt.text}</span>
+                                        {opt.image_url && (
+                                          <img src={opt.image_url} alt="Correct" className="h-12 w-auto object-contain rounded border mt-1" />
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>

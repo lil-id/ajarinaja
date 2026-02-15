@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, AlertTriangle, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Loader2, Library, Search, CheckCircle, AlignLeft, AlertTriangle, Eye, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -78,11 +78,17 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+interface LocalOption {
+  text: string;
+  image_url?: string;
+}
+
 interface LocalQuestion {
   id: string;
   type: 'multiple-choice' | 'multi-select' | 'essay';
   question: string;
-  options: string[];
+  image_url?: string;
+  options: LocalOption[];
   correct_answer: number | null;
   correct_answers: number[];
   points: number;
@@ -134,18 +140,49 @@ export default function CreateAssignment() {
   const [newQuestion, setNewQuestion] = useState<{
     type: 'multiple-choice' | 'multi-select' | 'essay';
     question: string;
-    options: string[];
+    image_url?: string;
+    options: LocalOption[];
     correctAnswer: number;
     correctAnswers: number[];
     points: number;
   }>({
     type: 'multiple-choice',
     question: '',
-    options: ['', '', '', ''],
+    options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
     correctAnswer: 0,
     correctAnswers: [],
     points: 10,
   });
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      setIsUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('question-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('question-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error(t('toast.uploadFailed'));
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -249,7 +286,10 @@ export default function CreateAssignment() {
         id: q.id,
         type: q.type as 'multiple-choice' | 'multi-select' | 'essay',
         question: q.question,
-        options: q.options || ['', '', '', ''],
+        image_url: q.image_url || undefined,
+        options: q.options
+          ? q.options.map((o: any) => typeof o === 'string' ? { text: o } : { text: o.text, image_url: o.image_url })
+          : [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
         correct_answer: q.correct_answer,
         correct_answers: q.correct_answers || [],
         points: q.points,
@@ -285,6 +325,7 @@ export default function CreateAssignment() {
       id: crypto.randomUUID(),
       type: newQuestion.type,
       question: newQuestion.question,
+      image_url: newQuestion.image_url,
       options: newQuestion.type !== 'essay' ? newQuestion.options : [],
       correct_answer: newQuestion.type === 'multiple-choice' ? newQuestion.correctAnswer : null,
       correct_answers: newQuestion.type === 'multi-select' ? newQuestion.correctAnswers : [],
@@ -297,7 +338,8 @@ export default function CreateAssignment() {
     setNewQuestion({
       type: 'multiple-choice',
       question: '',
-      options: ['', '', '', ''],
+      image_url: undefined,
+      options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
       correctAnswer: 0,
       correctAnswers: [],
       points: 10,
@@ -355,7 +397,10 @@ export default function CreateAssignment() {
         id: crypto.randomUUID(),
         type,
         question: bankQ.question,
-        options: bankQ.options || ['', '', '', ''],
+        image_url: bankQ.image_url || undefined,
+        options: bankQ.options
+          ? bankQ.options.map((o: any) => typeof o === 'string' ? { text: o } : { text: o.text, image_url: o.image_url })
+          : [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
         correct_answer: bankQ.correct_answer,
         correct_answers: (bankQ as any).correct_answers || [],
         points: bankQ.points,
@@ -456,6 +501,7 @@ export default function CreateAssignment() {
                 correct_answers: q.correct_answers.length > 0 ? q.correct_answers : null,
                 points: q.points,
                 order_index: i,
+                image_url: q.image_url,
               });
             } else {
               await updateQuestion.mutateAsync({
@@ -468,6 +514,7 @@ export default function CreateAssignment() {
                 correct_answers: q.correct_answers.length > 0 ? q.correct_answers : null,
                 points: q.points,
                 order_index: i,
+                image_url: q.image_url,
               });
             }
           }
@@ -495,6 +542,7 @@ export default function CreateAssignment() {
               correct_answers: q.correct_answers.length > 0 ? q.correct_answers : null,
               points: q.points,
               order_index: i,
+              image_url: q.image_url,
             });
           }
         }
@@ -939,35 +987,121 @@ export default function CreateAssignment() {
                             <TabsTrigger value="essay">{t('assignments.essay')}</TabsTrigger>
                           </TabsList>
 
-                          <VisualEquationBuilder
-                            placeholder={t('assignments.enterQuestion')}
-                            value={newQuestion.question}
-                            onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
-                            rows={2}
-                          />
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                id="new-question-image"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const url = await uploadImage(file);
+                                    if (url) setNewQuestion({ ...newQuestion, image_url: url });
+                                  }
+                                }}
+                              />
+                              <Label htmlFor="new-question-image">
+                                <Button type="button" variant="outline" size="sm" asChild disabled={isUploading}>
+                                  <span className="cursor-pointer">
+                                    {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-2" />}
+                                    {newQuestion.image_url ? t('common.changeImage') : t('common.addImage')}
+                                  </span>
+                                </Button>
+                              </Label>
+                              {newQuestion.image_url && (
+                                <div className="relative group">
+                                  <img src={newQuestion.image_url} alt="Question" className="w-full h-auto max-h-[300px] object-contain rounded border" />
+                                  <button
+                                    type="button"
+                                    className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => setNewQuestion({ ...newQuestion, image_url: undefined })}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            <VisualEquationBuilder
+                              placeholder={t('assignments.enterQuestion')}
+                              value={newQuestion.question}
+                              onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
+                              rows={2}
+                            />
+                          </div>
 
                           <TabsContent value="multiple-choice" className="mt-3 space-y-2">
                             <p className="text-xs text-muted-foreground mb-1">{t('assignments.selectCorrectAnswer')}:</p>
                             <div className="grid gap-2">
                               {newQuestion.options.map((opt, i) => (
-                                <div key={i} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
-                                  <input
-                                    type="radio"
-                                    name="newCorrect"
-                                    checked={newQuestion.correctAnswer === i}
-                                    onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
-                                    className="w-4 h-4 flex-shrink-0"
-                                  />
-                                  <Input
-                                    placeholder={`${t('assignments.option')} ${i + 1}`}
-                                    value={opt}
-                                    onChange={(e) => {
-                                      const newOptions = [...newQuestion.options];
-                                      newOptions[i] = e.target.value;
-                                      setNewQuestion({ ...newQuestion, options: newOptions });
-                                    }}
-                                    className="flex-1"
-                                  />
+                                <div key={i} className="flex items-start gap-2 bg-muted/30 p-2 rounded-md">
+                                  <div className="pt-2">
+                                    <input
+                                      type="radio"
+                                      name="newCorrect"
+                                      checked={newQuestion.correctAnswer === i}
+                                      onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
+                                      className="w-4 h-4 flex-shrink-0"
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        placeholder={`${t('assignments.option')} ${i + 1}`}
+                                        value={opt.text}
+                                        onChange={(e) => {
+                                          const newOptions = [...newQuestion.options];
+                                          newOptions[i] = { ...newOptions[i], text: e.target.value };
+                                          setNewQuestion({ ...newQuestion, options: newOptions });
+                                        }}
+                                        className="flex-1"
+                                      />
+                                      <div className="relative">
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          id={`new-opt-img-${i}`}
+                                          onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                              const url = await uploadImage(file);
+                                              if (url) {
+                                                const newOptions = [...newQuestion.options];
+                                                newOptions[i] = { ...newOptions[i], image_url: url };
+                                                setNewQuestion({ ...newQuestion, options: newOptions });
+                                              }
+                                            }
+                                          }}
+                                        />
+                                        <Label htmlFor={`new-opt-img-${i}`}>
+                                          <Button type="button" variant="ghost" size="icon" className="h-9 w-9" asChild disabled={isUploading}>
+                                            <span className="cursor-pointer">
+                                              {opt.image_url ? <ImageIcon className="w-4 h-4 text-primary" /> : <ImageIcon className="w-4 h-4 text-muted-foreground" />}
+                                            </span>
+                                          </Button>
+                                        </Label>
+                                      </div>
+                                    </div>
+                                    {opt.image_url && (
+                                      <div className="relative group w-fit">
+                                        <img src={opt.image_url} alt={`Option ${i + 1}`} className="h-auto max-h-[150px] object-contain rounded border" />
+                                        <button
+                                          type="button"
+                                          className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          onClick={() => {
+                                            const newOptions = [...newQuestion.options];
+                                            newOptions[i] = { ...newOptions[i], image_url: undefined };
+                                            setNewQuestion({ ...newQuestion, options: newOptions });
+                                          }}
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -978,26 +1112,74 @@ export default function CreateAssignment() {
                             <p className="text-xs text-muted-foreground mb-1">{t('assignments.selectCorrectAnswers')}:</p>
                             <div className="grid gap-2">
                               {newQuestion.options.map((opt, i) => (
-                                <div key={i} className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
-                                  <Checkbox
-                                    checked={newQuestion.correctAnswers.includes(i)}
-                                    onCheckedChange={(checked) => {
-                                      const newAnswers = checked
-                                        ? [...newQuestion.correctAnswers, i]
-                                        : newQuestion.correctAnswers.filter(a => a !== i);
-                                      setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
-                                    }}
-                                  />
-                                  <Input
-                                    placeholder={`${t('assignments.option')} ${i + 1}`}
-                                    value={opt}
-                                    onChange={(e) => {
-                                      const newOptions = [...newQuestion.options];
-                                      newOptions[i] = e.target.value;
-                                      setNewQuestion({ ...newQuestion, options: newOptions });
-                                    }}
-                                    className="flex-1"
-                                  />
+                                <div key={i} className="flex items-start gap-2 bg-muted/30 p-2 rounded-md">
+                                  <div className="pt-2">
+                                    <Checkbox
+                                      checked={newQuestion.correctAnswers.includes(i)}
+                                      onCheckedChange={(checked) => {
+                                        const newAnswers = checked
+                                          ? [...newQuestion.correctAnswers, i]
+                                          : newQuestion.correctAnswers.filter(a => a !== i);
+                                        setNewQuestion({ ...newQuestion, correctAnswers: newAnswers });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        placeholder={`${t('assignments.option')} ${i + 1}`}
+                                        value={opt.text}
+                                        onChange={(e) => {
+                                          const newOptions = [...newQuestion.options];
+                                          newOptions[i] = { ...newOptions[i], text: e.target.value };
+                                          setNewQuestion({ ...newQuestion, options: newOptions });
+                                        }}
+                                        className="flex-1"
+                                      />
+                                      <div className="relative">
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          id={`new-opt-img-ms-${i}`}
+                                          onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                              const url = await uploadImage(file);
+                                              if (url) {
+                                                const newOptions = [...newQuestion.options];
+                                                newOptions[i] = { ...newOptions[i], image_url: url };
+                                                setNewQuestion({ ...newQuestion, options: newOptions });
+                                              }
+                                            }
+                                          }}
+                                        />
+                                        <Label htmlFor={`new-opt-img-ms-${i}`}>
+                                          <Button type="button" variant="ghost" size="icon" className="h-9 w-9" asChild disabled={isUploading}>
+                                            <span className="cursor-pointer">
+                                              {opt.image_url ? <ImageIcon className="w-4 h-4 text-primary" /> : <ImageIcon className="w-4 h-4 text-muted-foreground" />}
+                                            </span>
+                                          </Button>
+                                        </Label>
+                                      </div>
+                                    </div>
+                                    {opt.image_url && (
+                                      <div className="relative group w-fit">
+                                        <img src={opt.image_url} alt={`Option ${i + 1}`} className="h-12 w-12 object-cover rounded border" />
+                                        <button
+                                          type="button"
+                                          className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          onClick={() => {
+                                            const newOptions = [...newQuestion.options];
+                                            newOptions[i] = { ...newOptions[i], image_url: undefined };
+                                            setNewQuestion({ ...newQuestion, options: newOptions });
+                                          }}
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -1069,31 +1251,116 @@ export default function CreateAssignment() {
                               </div>
                             </div>
 
-                            <VisualEquationBuilder
-                              value={q.question}
-                              onChange={(v) => updateLocalQuestion(index, { question: v })}
-                            />
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  id={`q-img-${q.id}`}
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const url = await uploadImage(file);
+                                      if (url) updateLocalQuestion(index, { image_url: url });
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor={`q-img-${q.id}`}>
+                                  <Button type="button" variant="outline" size="sm" asChild disabled={isUploading}>
+                                    <span className="cursor-pointer">
+                                      {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-2" />}
+                                      {q.image_url ? t('common.changeImage') : t('common.addImage')}
+                                    </span>
+                                  </Button>
+                                </Label>
+                                {q.image_url && (
+                                  <div className="relative group">
+                                    <img src={q.image_url} alt="Question" className="w-full h-auto max-h-[400px] object-contain rounded border" />
+                                    <button
+                                      type="button"
+                                      className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() => updateLocalQuestion(index, { image_url: undefined })}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                              <VisualEquationBuilder
+                                value={q.question}
+                                onChange={(v) => updateLocalQuestion(index, { question: v })}
+                              />
+                            </div>
 
                             {q.type === 'multiple-choice' && q.options && (
                               <div className="space-y-2">
                                 {q.options.map((opt, optIndex) => (
-                                  <div key={optIndex} className="flex items-center gap-2">
-                                    <input
-                                      type="radio"
-                                      name={`correct-${q.id}`}
-                                      checked={q.correct_answer === optIndex}
-                                      onChange={() => updateLocalQuestion(index, { correct_answer: optIndex })}
-                                      className="w-4 h-4"
-                                    />
-                                    <VisualEquationBuilder
-                                      singleLine
-                                      value={opt}
-                                      onChange={(v) => {
-                                        const newOptions = [...q.options];
-                                        newOptions[optIndex] = v;
-                                        updateLocalQuestion(index, { options: newOptions });
-                                      }}
-                                    />
+                                  <div key={optIndex} className="flex items-start gap-2">
+                                    <div className="pt-2">
+                                      <input
+                                        type="radio"
+                                        name={`correct-${q.id}`}
+                                        checked={q.correct_answer === optIndex}
+                                        onChange={() => updateLocalQuestion(index, { correct_answer: optIndex })}
+                                        className="w-4 h-4"
+                                      />
+                                    </div>
+                                    <div className="flex-1 space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <VisualEquationBuilder
+                                          singleLine
+                                          value={opt.text}
+                                          onChange={(v) => {
+                                            const newOptions = [...q.options];
+                                            newOptions[optIndex] = { ...newOptions[optIndex], text: v };
+                                            updateLocalQuestion(index, { options: newOptions });
+                                          }}
+                                        />
+                                        <div className="relative">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            id={`q-opt-img-${q.id}-${optIndex}`}
+                                            onChange={async (e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const url = await uploadImage(file);
+                                                if (url) {
+                                                  const newOptions = [...q.options];
+                                                  newOptions[optIndex] = { ...newOptions[optIndex], image_url: url };
+                                                  updateLocalQuestion(index, { options: newOptions });
+                                                }
+                                              }
+                                            }}
+                                          />
+                                          <Label htmlFor={`q-opt-img-${q.id}-${optIndex}`}>
+                                            <Button type="button" variant="ghost" size="icon" className="h-9 w-9" asChild disabled={isUploading}>
+                                              <span className="cursor-pointer">
+                                                {opt.image_url ? <ImageIcon className="w-4 h-4 text-primary" /> : <ImageIcon className="w-4 h-4 text-muted-foreground" />}
+                                              </span>
+                                            </Button>
+                                          </Label>
+                                        </div>
+                                      </div>
+                                      {opt.image_url && (
+                                        <div className="relative group w-fit">
+                                          <img src={opt.image_url} alt={`Option ${optIndex + 1}`} className="h-auto max-h-[150px] object-contain rounded border" />
+                                          <button
+                                            type="button"
+                                            className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => {
+                                              const newOptions = [...q.options];
+                                              newOptions[optIndex] = { ...newOptions[optIndex], image_url: undefined };
+                                              updateLocalQuestion(index, { options: newOptions });
+                                            }}
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -1103,25 +1370,73 @@ export default function CreateAssignment() {
                               <div className="space-y-2">
                                 <p className="text-xs text-muted-foreground">Select all correct answers</p>
                                 {q.options.map((opt, optIndex) => (
-                                  <div key={optIndex} className="flex items-center gap-2">
-                                    <Checkbox
-                                      checked={q.correct_answers.includes(optIndex)}
-                                      onCheckedChange={(checked) => {
-                                        const newAnswers = checked
-                                          ? [...q.correct_answers, optIndex]
-                                          : q.correct_answers.filter(a => a !== optIndex);
-                                        updateLocalQuestion(index, { correct_answers: newAnswers });
-                                      }}
-                                    />
-                                    <VisualEquationBuilder
-                                      singleLine
-                                      value={opt}
-                                      onChange={(v) => {
-                                        const newOptions = [...q.options];
-                                        newOptions[optIndex] = v;
-                                        updateLocalQuestion(index, { options: newOptions });
-                                      }}
-                                    />
+                                  <div key={optIndex} className="flex items-start gap-2">
+                                    <div className="pt-2">
+                                      <Checkbox
+                                        checked={q.correct_answers.includes(optIndex)}
+                                        onCheckedChange={(checked) => {
+                                          const newAnswers = checked
+                                            ? [...q.correct_answers, optIndex]
+                                            : q.correct_answers.filter(a => a !== optIndex);
+                                          updateLocalQuestion(index, { correct_answers: newAnswers });
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="flex-1 space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <VisualEquationBuilder
+                                          singleLine
+                                          value={opt.text}
+                                          onChange={(v) => {
+                                            const newOptions = [...q.options];
+                                            newOptions[optIndex] = { ...newOptions[optIndex], text: v };
+                                            updateLocalQuestion(index, { options: newOptions });
+                                          }}
+                                        />
+                                        <div className="relative">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            id={`q-opt-img-ms-${q.id}-${optIndex}`}
+                                            onChange={async (e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const url = await uploadImage(file);
+                                                if (url) {
+                                                  const newOptions = [...q.options];
+                                                  newOptions[optIndex] = { ...newOptions[optIndex], image_url: url };
+                                                  updateLocalQuestion(index, { options: newOptions });
+                                                }
+                                              }
+                                            }}
+                                          />
+                                          <Label htmlFor={`q-opt-img-ms-${q.id}-${optIndex}`}>
+                                            <Button type="button" variant="ghost" size="icon" className="h-9 w-9" asChild disabled={isUploading}>
+                                              <span className="cursor-pointer">
+                                                {opt.image_url ? <ImageIcon className="w-4 h-4 text-primary" /> : <ImageIcon className="w-4 h-4 text-muted-foreground" />}
+                                              </span>
+                                            </Button>
+                                          </Label>
+                                        </div>
+                                      </div>
+                                      {opt.image_url && (
+                                        <div className="relative group w-fit">
+                                          <img src={opt.image_url} alt={`Option ${optIndex + 1}`} className="h-12 w-12 object-cover rounded border" />
+                                          <button
+                                            type="button"
+                                            className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => {
+                                              const newOptions = [...q.options];
+                                              newOptions[optIndex] = { ...newOptions[optIndex], image_url: undefined };
+                                              updateLocalQuestion(index, { options: newOptions });
+                                            }}
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -1213,6 +1528,7 @@ export default function CreateAssignment() {
                   id: q.id,
                   type: q.type,
                   question: q.question,
+                  image_url: q.image_url,
                   options: q.type !== 'essay' ? q.options : null,
                   points: q.points,
                 }))}

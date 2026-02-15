@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { Json } from "@/integrations/supabase/types";
+
+import { QuestionOption } from './useExams';
 
 export interface QuestionBankItem {
   id: string;
@@ -8,8 +11,9 @@ export interface QuestionBankItem {
   course_id: string | null;
   category: string;
   question: string;
+  image_url?: string | null;
   type: string;
-  options: string[] | null;
+  options: string[] | QuestionOption[] | null;
   correct_answer: number | null;
   correct_answers: number[] | null;
   points: number;
@@ -42,7 +46,10 @@ export function useQuestionBank(courseId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as QuestionBankItem[];
+      return (data || []).map(q => ({
+        ...q,
+        options: q.options as string[] | QuestionOption[] | null,
+      })) as QuestionBankItem[];
     },
     enabled: !!user,
   });
@@ -88,13 +95,18 @@ export function useCreateQuestionBankItem() {
         .from("question_bank")
         .insert({
           ...question,
+          image_url: question.image_url,
+          options: question.options as unknown as Json,
           teacher_id: user?.id,
         })
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        options: data.options as string[] | QuestionOption[] | null,
+      } as QuestionBankItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["question-bank"] });
@@ -118,7 +130,11 @@ export function useUpdateQuestionBankItem() {
     }: Partial<QuestionBankItem> & { id: string }) => {
       const { data, error } = await supabase
         .from("question_bank")
-        .update(updates)
+        .update({
+          ...updates,
+          image_url: updates.image_url,
+          options: updates.options as unknown as Json,
+        })
         .eq("id", id)
         .select()
         .single();
@@ -205,8 +221,9 @@ export function useSaveExamQuestionsToBank() {
     }: {
       questions: Array<{
         question: string;
+        image_url?: string | null;
         type: string;
-        options?: string[];
+        options?: string[] | QuestionOption[] | null;
         correct_answer?: number;
         correct_answers?: number[];
         points: number;
@@ -219,8 +236,9 @@ export function useSaveExamQuestionsToBank() {
         course_id: courseId,
         category,
         question: q.question,
+        image_url: q.image_url,
         type: q.type,
-        options: q.options || null,
+        options: q.options ? (q.options as unknown as Json) : null,
         correct_answer: q.correct_answer ?? null,
         correct_answers: q.correct_answers ?? null,
         points: q.points,

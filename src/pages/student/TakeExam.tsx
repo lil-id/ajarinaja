@@ -251,6 +251,15 @@ const TakeExam = () => {
               <span className="text-xs text-muted-foreground">{t('takeExam.selectAllThatApply')}</span>
             )}
           </div>
+          {question.image_url && (
+            <div className="mb-6">
+              <img
+                src={question.image_url}
+                alt="Question"
+                className="w-full h-auto max-h-[600px] object-contain rounded-lg border bg-muted/30"
+              />
+            </div>
+          )}
           <CardTitle className="text-xl leading-relaxed">
             <FormulaText text={question.question} />
           </CardTitle>
@@ -262,34 +271,53 @@ const TakeExam = () => {
               onValueChange={(v) => handleAnswer(Number(v))}
               className="space-y-3"
             >
-              {(question.options as string[]).map((option, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer",
-                    answers[question.id] === index
-                      ? "border-secondary bg-secondary/5"
-                      : "border-border hover:border-muted-foreground/30"
-                  )}
-                  onClick={() => handleAnswer(index)}
-                >
-                  <RadioGroupItem value={String(index)} id={`option-${index}`} />
-                  <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                    <FormulaText text={option} />
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          ) : question.type === 'multi-select' && question.options ? (
-            <div className="space-y-3">
-              {(question.options as string[]).map((option, index) => {
-                const currentAnswers = (answers[question.id] as number[]) || [];
-                const isSelected = currentAnswers.includes(index);
+              {question.options.map((option, index) => {
+                const isString = typeof option === 'string';
+                const text = isString ? option : option.text;
+                const imageUrl = !isString ? option.image_url : undefined;
+
                 return (
                   <div
                     key={index}
                     className={cn(
-                      "flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer",
+                      "flex items-start space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer",
+                      answers[question.id] === index
+                        ? "border-secondary bg-secondary/5"
+                        : "border-border hover:border-muted-foreground/30"
+                    )}
+                    onClick={() => handleAnswer(index)}
+                  >
+                    <RadioGroupItem value={String(index)} id={`option-${index}`} className="mt-1" />
+                    <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer font-normal">
+                      <div className="flex flex-col gap-2">
+                        <FormulaText text={text} />
+                        {imageUrl && (
+                          <img
+                            src={imageUrl}
+                            alt={`Option ${index + 1}`}
+                            className="w-full h-auto max-h-[400px] object-contain rounded border mt-2"
+                          />
+                        )}
+                      </div>
+                    </Label>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+          ) : question.type === 'multi-select' && question.options ? (
+            <div className="space-y-3">
+              {question.options.map((option, index) => {
+                const currentAnswers = (answers[question.id] as number[]) || [];
+                const isSelected = currentAnswers.includes(index);
+                const isString = typeof option === 'string';
+                const text = isString ? option : option.text;
+                const imageUrl = !isString ? option.image_url : undefined;
+
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      "flex items-start space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer",
                       isSelected
                         ? "border-secondary bg-secondary/5"
                         : "border-border hover:border-muted-foreground/30"
@@ -301,9 +329,18 @@ const TakeExam = () => {
                       handleAnswer(newAnswers);
                     }}
                   >
-                    <Checkbox checked={isSelected} />
-                    <Label className="flex-1 cursor-pointer">
-                      <FormulaText text={option} />
+                    <Checkbox checked={isSelected} className="mt-1" />
+                    <Label className="flex-1 cursor-pointer font-normal">
+                      <div className="flex flex-col gap-2">
+                        <FormulaText text={text} />
+                        {imageUrl && (
+                          <img
+                            src={imageUrl}
+                            alt={`Option ${index + 1}`}
+                            className="w-full h-auto max-h-[400px] object-contain rounded border mt-2"
+                          />
+                        )}
+                      </div>
                     </Label>
                   </div>
                 );

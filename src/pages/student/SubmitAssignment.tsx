@@ -278,13 +278,24 @@ export default function SubmitAssignment() {
                 return (
                   <div key={q.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm">
                     {/* Question Header */}
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="font-medium text-base leading-relaxed">
-                        {index + 1}. <FormulaText text={q.question} />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="font-medium text-base leading-relaxed">
+                          {index + 1}. <FormulaText text={q.question} />
+                        </div>
+                        <Badge variant="secondary" className="shrink-0">
+                          {q.points} {t('common.pts')}
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="shrink-0">
-                        {q.points} {t('common.pts')}
-                      </Badge>
+                      {q.image_url && (
+                        <div className="mb-2">
+                          <img
+                            src={q.image_url}
+                            alt="Question"
+                            className="w-full h-auto max-h-[600px] object-contain rounded-lg border bg-muted/30"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid gap-3">
@@ -317,13 +328,44 @@ export default function SubmitAssignment() {
                           <div className="whitespace-pre-wrap">{answer as string || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}</div>
                         )}
                         {q.type === 'multiple-choice' && q.options && (
-                          <div className="font-medium">
-                            {(q.options as string[])[answer as number] || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}
+                          <div className="font-medium max-w-full overflow-hidden">
+                            {(() => {
+                              const ansIdx = answer as number;
+                              if (ansIdx === undefined || ansIdx === null || !q.options[ansIdx]) {
+                                return <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>;
+                              }
+                              const opt = q.options[ansIdx];
+                              const text = typeof opt === 'string' ? opt : opt.text;
+                              const img = typeof opt === 'string' ? undefined : opt.image_url;
+                              return (
+                                <div className="flex flex-col gap-2">
+                                  <FormulaText text={text} />
+                                  {img && <img src={img} alt="Your Answer" className="w-full h-auto max-h-[300px] object-contain rounded border mt-2" />}
+                                </div>
+                              );
+                            })()}
                           </div>
                         )}
                         {q.type === 'multi-select' && q.options && (
-                          <div className="font-medium">
-                            {(answer as number[])?.map(i => (q.options as string[])[i]).join(', ') || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}
+                          <div className="font-medium space-y-2">
+                            {(() => {
+                              const ansIndices = (answer as number[]) || [];
+                              if (ansIndices.length === 0) return <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>;
+                              return ansIndices.map((idx) => {
+                                const opt = q.options![idx];
+                                if (!opt) return null;
+                                const text = typeof opt === 'string' ? opt : opt.text;
+                                const img = typeof opt === 'string' ? undefined : opt.image_url;
+                                return (
+                                  <div key={idx} className="flex items-center gap-2 border-b last:border-0 pb-1 last:pb-0">
+                                    <div className="flex flex-col gap-1">
+                                      <FormulaText text={text} />
+                                      {img && <img src={img} alt="Answer" className="w-full h-auto max-h-[300px] object-contain rounded border mt-2" />}
+                                    </div>
+                                  </div>
+                                );
+                              });
+                            })()}
                           </div>
                         )}
                       </div>
@@ -336,10 +378,34 @@ export default function SubmitAssignment() {
                           </span>
                           <div className="font-medium text-foreground">
                             {q.type === 'multiple-choice' && q.options && q.correct_answer !== null && (
-                              (q.options as string[])[q.correct_answer]
+                              (() => {
+                                const opt = q.options[q.correct_answer];
+                                if (!opt) return null;
+                                const text = typeof opt === 'string' ? opt : opt.text;
+                                const img = typeof opt === 'string' ? undefined : opt.image_url;
+                                return (
+                                  <div className="flex flex-col gap-2">
+                                    <FormulaText text={text} />
+                                    {img && <img src={img} alt="Correct Answer" className="w-full h-auto max-h-[300px] object-contain rounded border mt-2" />}
+                                  </div>
+                                );
+                              })()
                             )}
                             {q.type === 'multi-select' && q.options && q.correct_answers && (
-                              q.correct_answers.map(i => (q.options as string[])[i]).join(', ')
+                              <div className="space-y-2">
+                                {q.correct_answers.map(idx => {
+                                  const opt = q.options![idx];
+                                  if (!opt) return null;
+                                  const text = typeof opt === 'string' ? opt : opt.text;
+                                  const img = typeof opt === 'string' ? undefined : opt.image_url;
+                                  return (
+                                    <div key={idx} className="flex flex-col gap-1 border-b last:border-0 pb-1 last:pb-0 border-green-200">
+                                      <FormulaText text={text} />
+                                      {img && <img src={img} alt="Correct Answer" className="max-h-16 object-contain rounded border" />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -445,7 +511,7 @@ export default function SubmitAssignment() {
           <CardHeader>
             <CardTitle>{t('submitAssignment.questions')}</CardTitle>
             <CardDescription>
-              {t('submitAssignment.answerAllQuestions', { count: questions.length })}
+              {t('submitAssignment.answerAllQuestions')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -475,11 +541,22 @@ export default function SubmitAssignment() {
               <>
                 {questions.map((q, index) => (
                   <div key={q.id} className="p-4 border rounded-lg space-y-3">
-                    <div className="flex justify-between items-start gap-2">
-                      <p className="font-medium">
-                        {index + 1}. <FormulaText text={q.question} />
-                      </p>
-                      <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
+                    <div className="space-y-2">
+                      {q.image_url && (
+                        <div className="mb-2">
+                          <img
+                            src={q.image_url}
+                            alt="Question"
+                            className="max-h-80 w-full object-contain rounded-lg border bg-muted/30"
+                          />
+                        </div>
+                      )}
+                      <div className="flex justify-between items-start gap-2">
+                        <p className="font-medium">
+                          {index + 1}. <FormulaText text={q.question} />
+                        </p>
+                        <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
+                      </div>
                     </div>
 
                     {q.type === 'multiple-choice' && q.options && (
@@ -487,30 +564,65 @@ export default function SubmitAssignment() {
                         value={answers[q.id]?.toString()}
                         onValueChange={(value) => setAnswers({ ...answers, [q.id]: parseInt(value) })}
                       >
-                        {(q.options as string[]).map((option, optIndex) => (
-                          <div key={optIndex} className="flex items-center space-x-2">
-                            <RadioGroupItem value={optIndex.toString()} id={`${q.id}-${optIndex}`} />
-                            <Label htmlFor={`${q.id}-${optIndex}`}><FormulaText text={option} /></Label>
-                          </div>
-                        ))}
+                        {q.options.map((option, optIndex) => {
+                          const isString = typeof option === 'string';
+                          const text = isString ? option : option.text;
+                          const imageUrl = !isString ? option.image_url : undefined;
+
+                          return (
+                            <div key={optIndex} className="flex items-start space-x-2">
+                              <RadioGroupItem value={optIndex.toString()} id={`${q.id}-${optIndex}`} className="mt-1" />
+                              <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
+                                <div className="flex flex-col gap-2">
+                                  <FormulaText text={text} />
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Option ${optIndex + 1}`}
+                                      className="max-h-32 w-fit object-contain rounded border"
+                                    />
+                                  )}
+                                </div>
+                              </Label>
+                            </div>
+                          );
+                        })}
                       </RadioGroup>
                     )}
 
                     {q.type === 'multi-select' && q.options && (
                       <div className="space-y-2">
                         <p className="text-xs text-muted-foreground">{t('submitAssignment.selectAllThatApply')}</p>
-                        {(q.options as string[]).map((option, optIndex) => (
-                          <div key={optIndex} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`${q.id}-${optIndex}`}
-                              checked={((answers[q.id] as number[]) || []).includes(optIndex)}
-                              onCheckedChange={(checked) =>
-                                handleMultiSelectChange(q.id, optIndex, checked as boolean)
-                              }
-                            />
-                            <Label htmlFor={`${q.id}-${optIndex}`}><FormulaText text={option} /></Label>
-                          </div>
-                        ))}
+                        {q.options.map((option, optIndex) => {
+                          const isString = typeof option === 'string';
+                          const text = isString ? option : option.text;
+                          const imageUrl = !isString ? option.image_url : undefined;
+
+                          return (
+                            <div key={optIndex} className="flex items-start space-x-2">
+                              <Checkbox
+                                id={`${q.id}-${optIndex}`}
+                                checked={((answers[q.id] as number[]) || []).includes(optIndex)}
+                                onCheckedChange={(checked) =>
+                                  handleMultiSelectChange(q.id, optIndex, checked as boolean)
+                                }
+                                className="mt-1"
+                              />
+                              <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
+                                <div className="flex flex-col gap-2">
+                                  <FormulaText text={text} />
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Option ${optIndex + 1}`}
+                                      className="max-h-32 w-fit object-contain rounded border"
+                                    />
+                                  )}
+                                </div>
+                              </Label>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
