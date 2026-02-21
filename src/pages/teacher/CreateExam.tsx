@@ -314,7 +314,7 @@ export default function CreateExam() {
       type: 'multiple-choice',
       question: '',
       image_url: undefined,
-      options: ['', '', '', ''],
+      options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }],
       correctAnswer: 0,
       correctAnswers: [],
       points: 10,
@@ -446,7 +446,6 @@ export default function CreateExam() {
           if (q.isNew) {
             await addQuestion.mutateAsync({
               examId: examId!,
-              exam_id: examId!,
               type: q.type,
               question: q.question,
               options: q.type !== 'essay' ? q.options : null,

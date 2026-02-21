@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format, isPast } from 'date-fns';
-import { ArrowLeft, Upload, FileText, Calendar, CheckCircle, AlertTriangle, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Calendar, CheckCircle, AlertTriangle, X, Loader2, Clock, XCircle, AlignLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
 import { useAssignment, useMyAssignmentSubmission, useSubmitAssignment, useSubmissionFileUrl } from '@/hooks/useAssignments';
 import { useAssignmentQuestions, AssignmentQuestion } from '@/hooks/useAssignmentQuestions';
 import { supabase } from '@/integrations/supabase/client';
@@ -185,6 +186,34 @@ export default function SubmitAssignment() {
     }
   };
 
+  // Calculate stats for Question-Based submissions
+  const mcQuestions = questions.filter((q) => q.type === 'multiple-choice');
+  const multiSelectQuestions = questions.filter((q) => q.type === 'multi-select');
+  const essayQuestions = questions.filter((q) => q.type === 'essay');
+
+  let mcCorrect = 0;
+  const mcTotal = mcQuestions.length;
+  let msCorrect = 0;
+  const msTotal = multiSelectQuestions.length;
+
+  if (submission && isQuestionBased && 'answers' in submission) {
+    mcQuestions.forEach((q) => {
+      const answer = submission.answers[q.id];
+      if (answer !== undefined && Number(answer) === q.correct_answer) {
+        mcCorrect++;
+      }
+    });
+
+    multiSelectQuestions.forEach((q) => {
+      const answer = submission.answers[q.id];
+      const studentAnswers = Array.isArray(answer) ? answer.map(Number).sort() : [];
+      const correctAnswers = Array.isArray(q.correct_answers) ? [...q.correct_answers].sort() : [];
+      if (JSON.stringify(studentAnswers) === JSON.stringify(correctAnswers)) {
+        msCorrect++;
+      }
+    });
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -221,6 +250,92 @@ export default function SubmitAssignment() {
         </div>
       </div>
 
+      {/* Global Submission Header (Shown only if submitted) */}
+      {submission && (
+        <Card className="border-0 shadow-card overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white shadow-inner">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <p className="text-white/80 text-sm mb-1">{t('submitAssignment.yourScore')}</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold">
+                    {submission.graded ? submission.score : '—'}
+                  </span>
+                  <span className="text-2xl text-white/80">/ {assignment.max_points}</span>
+                </div>
+                {submission.graded && submission.score !== null && (
+                  <p className={cn("text-lg font-medium mt-2", "text-white")}>
+                    {Math.round((submission.score / assignment.max_points) * 100)}%
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                {submission.graded ? (
+                  <Badge variant="secondary" className="text-sm px-4 py-1 bg-white/20 hover:bg-white/30 text-white border-0">
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    {t('submitAssignment.graded')}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-sm px-4 py-1 bg-amber-100 text-amber-700 border-amber-300">
+                    <Clock className="w-4 h-4 mr-1" />
+                    {t('submitAssignment.pendingReview')}
+                  </Badge>
+                )}
+                <div className="text-right">
+                  <p className="text-sm text-white/90">
+                    {t('submitAssignment.submitted')} {format(new Date(submission.submitted_at), 'dd MMM yyyy, HH:mm')}
+                  </p>
+                  {'is_late' in submission && submission.is_late && (
+                    <Badge variant="destructive" className="mt-1 border-0">{t('submitAssignment.late')}</Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            {submission.graded && submission.score !== null && (
+              <div className="mt-4">
+                <Progress value={(submission.score / assignment.max_points) * 100} className="h-3 bg-black/20 [&>div]:bg-white" />
+              </div>
+            )}
+          </div>
+
+          {/* Stats Row for Question-Based Assignment */}
+          {submission.graded && isQuestionBased && (
+            <CardContent className="p-6 bg-card">
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-2">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{mcCorrect + msCorrect}</p>
+                  <p className="text-sm text-muted-foreground">{t('submitAssignment.correct')}</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-2">
+                    <XCircle className="w-6 h-6 text-red-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{(mcTotal - mcCorrect) + (msTotal - msCorrect)}</p>
+                  <p className="text-sm text-muted-foreground">{t('submitAssignment.incorrect')}</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-2">
+                    <CheckCircle className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{msTotal}</p>
+                  <p className="text-sm text-muted-foreground">{t('examResults.multiSelect') || 'Multi-Pilihan'}</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
+                    <AlignLeft className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{essayQuestions.length}</p>
+                  <p className="text-sm text-muted-foreground">{t('examResults.essays') || 'Esai'}</p>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
       {/* Description and Instructions */}
       {(assignment.description || assignment.instructions) && (
         <div className="space-y-4">
@@ -250,509 +365,459 @@ export default function SubmitAssignment() {
 
       {/* Submission Already Made - Question Based */}
       {submission && isQuestionBased && 'answers' in submission && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              {t('submitAssignment.submitted')}
-            </CardTitle>
-            <CardDescription>
-              {format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Show submitted answers */}
-            <div className="space-y-4">
-              <Label className="text-sm text-muted-foreground">{t('submitAssignment.yourAnswers')}</Label>
-              {questions.map((q, index) => {
-                const answer = submission.answers[q.id];
-                const isCorrect = q.type === 'multiple-choice'
-                  ? answer === q.correct_answer
-                  : q.type === 'multi-select' && q.correct_answers
-                    ? (answer as number[])?.length === q.correct_answers.length &&
-                    (answer as number[])?.every(a => q.correct_answers!.includes(a))
-                    : null;
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold mt-8 mb-4">{t('submitAssignment.yourAnswers')}</h2>
+          <div className="space-y-6">
+            {questions.map((q, index) => {
+              const answer = submission.answers[q.id];
+              const isCorrect = q.type === 'multiple-choice'
+                ? answer === q.correct_answer
+                : q.type === 'multi-select' && q.correct_answers
+                  ? (answer as number[])?.length === q.correct_answers.length &&
+                  (answer as number[])?.every(a => q.correct_answers!.includes(a))
+                  : null;
 
-                const isGraded = submission.graded && q.type !== 'essay';
+              const isGraded = submission.graded && q.type !== 'essay';
 
-                return (
-                  <div key={q.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm">
-                    {/* Question Header */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="font-medium text-base leading-relaxed">
-                          {index + 1}. <FormulaText text={q.question} />
-                        </div>
-                        <Badge variant="secondary" className="shrink-0">
-                          {q.points} {t('common.pts')}
-                        </Badge>
+              return (
+                <div key={q.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm">
+                  {/* Question Header */}
+                  <div className="space-y-2">
+                    {q.image_url && (
+                      <div className="mb-2">
+                        <img
+                          src={q.image_url}
+                          alt="Question"
+                          className="w-full h-auto max-h-[600px] object-contain rounded-lg border bg-muted/30"
+                        />
                       </div>
-                      {q.image_url && (
-                        <div className="mb-2">
-                          <img
-                            src={q.image_url}
-                            alt="Question"
-                            className="w-full h-auto max-h-[600px] object-contain rounded-lg border bg-muted/30"
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid gap-3">
-                      {/* Student Answer Block */}
-                      <div className={cn(
-                        "p-4 rounded-lg border text-sm transition-colors",
-                        isGraded
-                          ? (isCorrect
-                            ? "bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30"
-                            : "bg-red-50 border-red-200 dark:bg-red-900/10 dark:border-red-900/30")
-                          : "bg-muted/30 border-border"
-                      )}>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className={cn(
-                            "text-xs font-bold uppercase tracking-wider",
-                            isGraded
-                              ? (isCorrect ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400")
-                              : "text-muted-foreground"
-                          )}>
-                            {t('submitAssignment.yourAnswer')}
-                          </span>
-                          {isGraded && (
-                            <Badge variant={isCorrect ? "default" : "destructive"} className={cn(isCorrect && "bg-green-600 hover:bg-green-700")}>
-                              {isCorrect ? t('submitAssignment.correct') : t('submitAssignment.incorrect')}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {q.type === 'essay' && (
-                          <div className="whitespace-pre-wrap">{answer as string || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}</div>
-                        )}
-                        {q.type === 'multiple-choice' && q.options && (
-                          <div className="font-medium max-w-full overflow-hidden">
-                            {(() => {
-                              const ansIdx = answer as number;
-                              if (ansIdx === undefined || ansIdx === null || !q.options[ansIdx]) {
-                                return <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>;
-                              }
-                              const opt = q.options[ansIdx];
-                              const text = typeof opt === 'string' ? opt : opt.text;
-                              const img = typeof opt === 'string' ? undefined : opt.image_url;
-                              return (
-                                <div className="flex flex-col gap-2">
-                                  <FormulaText text={text} />
-                                  {img && <img src={img} alt="Your Answer" className="w-full h-auto max-h-[300px] object-contain rounded border mt-2" />}
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        )}
-                        {q.type === 'multi-select' && q.options && (
-                          <div className="font-medium space-y-2">
-                            {(() => {
-                              const ansIndices = (answer as number[]) || [];
-                              if (ansIndices.length === 0) return <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>;
-                              return ansIndices.map((idx) => {
-                                const opt = q.options![idx];
-                                if (!opt) return null;
-                                const text = typeof opt === 'string' ? opt : opt.text;
-                                const img = typeof opt === 'string' ? undefined : opt.image_url;
-                                return (
-                                  <div key={idx} className="flex items-center gap-2 border-b last:border-0 pb-1 last:pb-0">
-                                    <div className="flex flex-col gap-1">
-                                      <FormulaText text={text} />
-                                      {img && <img src={img} alt="Answer" className="w-full h-auto max-h-[300px] object-contain rounded border mt-2" />}
-                                    </div>
-                                  </div>
-                                );
-                              });
-                            })()}
-                          </div>
-                        )}
+                    )}
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="font-medium text-base leading-relaxed flex items-start">
+                        <span className="text-muted-foreground mr-2">Q{index + 1}.</span>
+                        <div><FormulaText text={q.question} /></div>
                       </div>
-
-                      {/* Correct Answer Block (Only if incorrect) */}
-                      {isGraded && !isCorrect && (q.type === 'multiple-choice' || q.type === 'multi-select') && (
-                        <div className="p-4 rounded-lg border border-green-200 bg-green-50/50 dark:border-green-900/30 dark:bg-green-900/5 text-sm">
-                          <span className="text-xs font-bold uppercase tracking-wider text-green-700 dark:text-green-400 mb-2 block">
-                            {q.type === 'multi-select' ? t('submitAssignment.correctAnswers') : t('submitAssignment.correctAnswer')}
-                          </span>
-                          <div className="font-medium text-foreground">
-                            {q.type === 'multiple-choice' && q.options && q.correct_answer !== null && (
-                              (() => {
-                                const opt = q.options[q.correct_answer];
-                                if (!opt) return null;
-                                const text = typeof opt === 'string' ? opt : opt.text;
-                                const img = typeof opt === 'string' ? undefined : opt.image_url;
-                                return (
-                                  <div className="flex flex-col gap-2">
-                                    <FormulaText text={text} />
-                                    {img && <img src={img} alt="Correct Answer" className="w-full h-auto max-h-[300px] object-contain rounded border mt-2" />}
-                                  </div>
-                                );
-                              })()
-                            )}
-                            {q.type === 'multi-select' && q.options && q.correct_answers && (
-                              <div className="space-y-2">
-                                {q.correct_answers.map(idx => {
-                                  const opt = q.options![idx];
-                                  if (!opt) return null;
-                                  const text = typeof opt === 'string' ? opt : opt.text;
-                                  const img = typeof opt === 'string' ? undefined : opt.image_url;
-                                  return (
-                                    <div key={idx} className="flex flex-col gap-1 border-b last:border-0 pb-1 last:pb-0 border-green-200">
-                                      <FormulaText text={text} />
-                                      {img && <img src={img} alt="Correct Answer" className="max-h-16 object-contain rounded border" />}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      <Badge variant="secondary" className="shrink-0">
+                        {q.points} {t('common.pts')}
+                      </Badge>
                     </div>
                   </div>
-                );
-              })}
-            </div>
 
-            {submission.graded && (
-              <>
-                <Separator />
-                <div>
-                  <Label className="text-sm text-muted-foreground">{t('submitAssignment.score')}</Label>
-                  <p className="text-2xl font-bold">
-                    {submission.score} / {assignment.max_points}
-                  </p>
+                  {/* Answer Display */}
+                  {(q.type === 'multiple-choice' || q.type === 'multi-select') && q.options ? (
+                    <div className="mt-4 space-y-3">
+                      {q.options.map((option, optIdx) => {
+                        const isString = typeof option === 'string';
+                        const text = isString ? option : option.text;
+                        const imageUrl = !isString ? option.image_url : undefined;
+
+                        const isSelected = q.type === 'multiple-choice'
+                          ? answer === optIdx
+                          : Array.isArray(answer) && answer.includes(optIdx);
+
+                        const isCorrectOption = q.type === 'multiple-choice'
+                          ? q.correct_answer === optIdx
+                          : Array.isArray(q.correct_answers) && q.correct_answers.includes(optIdx);
+
+                        return (
+                          <div
+                            key={optIdx}
+                            className={cn(
+                              "flex items-start gap-4 p-4 rounded-xl border transition-all",
+                              isGraded
+                                ? isCorrectOption
+                                  ? "bg-green-50/50 border-green-200"
+                                  : isSelected
+                                    ? "bg-red-50/50 border-red-200"
+                                    : "bg-card border-border/50 text-muted-foreground"
+                                : isSelected
+                                  ? "bg-primary/5 border-primary/20"
+                                  : "bg-card border-border/50 text-muted-foreground"
+                            )}
+                          >
+                            <div className={cn(
+                              "flex items-center justify-center w-8 h-8 rounded-full border text-sm font-medium flex-shrink-0",
+                              isGraded
+                                ? isCorrectOption
+                                  ? "bg-green-100 border-green-300 text-green-700"
+                                  : isSelected
+                                    ? "bg-red-100 border-red-300 text-red-700"
+                                    : "bg-muted border-muted-foreground/30"
+                                : isSelected
+                                  ? "bg-primary/10 border-primary/30 text-primary"
+                                  : "bg-muted border-muted-foreground/30"
+                            )}>
+                              {String.fromCharCode(65 + optIdx)}
+                            </div>
+                            <div className="flex-1">
+                              <span className={cn(
+                                "block",
+                                isGraded && isCorrectOption && "text-green-700 font-medium",
+                                isGraded && isSelected && !isCorrectOption && "text-red-700",
+                                !isGraded && isSelected && "text-primary font-medium"
+                              )}>
+                                <FormulaText text={text} />
+                              </span>
+                              {imageUrl && (
+                                <img
+                                  src={imageUrl}
+                                  alt={`Option ${optIdx + 1}`}
+                                  className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border bg-white"
+                                />
+                              )}
+                            </div>
+                            {isGraded && isCorrectOption && (
+                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 ml-auto flex-shrink-0">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                {t('submitAssignment.correctAnswer')}
+                              </Badge>
+                            )}
+                            {isGraded && isSelected && !isCorrectOption && (
+                              <span className="text-xs text-red-600 font-medium ml-auto flex-shrink-0">{t('submitAssignment.yourAnswer')}</span>
+                            )}
+                            {!isGraded && isSelected && (
+                              <Badge variant="secondary" className="ml-auto flex-shrink-0">
+                                {t('submitAssignment.yourAnswer')}
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 p-4 rounded-lg border bg-muted/30">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          {t('submitAssignment.yourAnswer')}
+                        </span>
+                      </div>
+                      {q.type === 'essay' && (
+                        <div className="whitespace-pre-wrap">{answer as string || <span className="text-muted-foreground italic">{t('submitAssignment.noAnswer')}</span>}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {'feedback' in submission && submission.feedback && (
-                  <div>
-                    <Label className="text-sm text-muted-foreground">{t('submitAssignment.teacherFeedback')}</Label>
-                    <p className="text-sm mt-1 whitespace-pre-wrap p-3 bg-muted rounded-lg">
-                      {submission.feedback}
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
+              );
+            })}
+          </div>
 
-            {!submission.graded && (
-              <p className="text-sm text-muted-foreground">
-                {t('submitAssignment.pendingReview')}
+          {submission.graded && 'feedback' in submission && submission.feedback && (
+            <div className="mt-6 p-4 bg-muted/50 rounded-xl border">
+              <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                {t('submitAssignment.teacherFeedback')}
+              </h3>
+              <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                {submission.feedback}
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Submission Already Made - File Based */}
-      {submission && !isQuestionBased && 'file_path' in submission && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              {t('submitAssignment.submitted')}
-            </CardTitle>
-            <CardDescription>
-              {format(new Date(submission.submitted_at), 'MMM d, yyyy h:mm a')}
-              {submission.is_late && (
-                <Badge variant="destructive" className="ml-2">{t('submitAssignment.late')}</Badge>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {submission.file_name && (
-              <div>
-                <Label className="text-sm text-muted-foreground">{t('submitAssignment.submittedFile')}</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm">{submission.file_name}</span>
-                </div>
-                {fileUrl && (
-                  <Button variant="link" size="sm" className="px-0" asChild>
-                    <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-                      {t('common.download')}
-                    </a>
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {submission.graded && (
-              <>
-                <Separator />
+      {
+        submission && !isQuestionBased && 'file_path' in submission && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>{t('submitAssignment.yourSubmission')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {submission.file_name && (
                 <div>
-                  <Label className="text-sm text-muted-foreground">{t('submitAssignment.score')}</Label>
-                  <p className="text-2xl font-bold">
-                    {submission.score} / {assignment.max_points}
-                  </p>
+                  <Label className="text-sm text-muted-foreground">{t('submitAssignment.submittedFile')}</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <FileText className="h-4 w-4" />
+                    <span className="text-sm">{submission.file_name}</span>
+                  </div>
+                  {fileUrl && (
+                    <Button variant="link" size="sm" className="px-0" asChild>
+                      <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                        {t('common.download')}
+                      </a>
+                    </Button>
+                  )}
                 </div>
-                {submission.feedback && (
+              )}
+
+              {submission.graded && submission.feedback && (
+                <>
+                  <Separator />
                   <div>
                     <Label className="text-sm text-muted-foreground">{t('submitAssignment.feedback')}</Label>
                     <p className="text-sm mt-1 whitespace-pre-wrap">{submission.feedback}</p>
                   </div>
-                )}
-              </>
-            )}
-
-            {!submission.graded && (
-              <p className="text-sm text-muted-foreground">
-                {t('submitAssignment.pendingReview')}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
 
       {/* Question-Based Assignment */}
-      {!submission && isQuestionBased && questions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('submitAssignment.questions')}</CardTitle>
-            <CardDescription>
-              {t('submitAssignment.answerAllQuestions')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {isOverdue && assignment.allow_late_submissions && (
-              <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-yellow-600">{t('submitAssignment.lateSubmission')}</p>
-                  <p className="text-muted-foreground">
-                    {t('submitAssignment.latePenaltyApplied', { percent: assignment.late_penalty_percent })}
-                  </p>
+      {
+        !submission && isQuestionBased && questions.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('submitAssignment.questions')}</CardTitle>
+              <CardDescription>
+                {t('submitAssignment.answerAllQuestions')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {isOverdue && assignment.allow_late_submissions && (
+                <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-yellow-600">{t('submitAssignment.lateSubmission')}</p>
+                    <p className="text-muted-foreground">
+                      {t('submitAssignment.latePenaltyApplied', { percent: assignment.late_penalty_percent })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {isOverdue && !assignment.allow_late_submissions ? (
-              <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-destructive">{t('submitAssignment.submissionClosed')}</p>
-                  <p className="text-muted-foreground">
-                    {t('submitAssignment.noLongerAccepts')}
-                  </p>
+              {isOverdue && !assignment.allow_late_submissions ? (
+                <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-destructive">{t('submitAssignment.submissionClosed')}</p>
+                    <p className="text-muted-foreground">
+                      {t('submitAssignment.noLongerAccepts')}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                {questions.map((q, index) => (
-                  <div key={q.id} className="p-4 border rounded-lg space-y-3">
-                    <div className="space-y-2">
-                      {q.image_url && (
-                        <div className="mb-2">
-                          <img
-                            src={q.image_url}
-                            alt="Question"
-                            className="max-h-80 w-full object-contain rounded-lg border bg-muted/30"
-                          />
+              ) : (
+                <>
+                  {questions.map((q, index) => (
+                    <div key={q.id} className="p-4 border rounded-lg space-y-3">
+                      <div className="space-y-2">
+                        {q.image_url && (
+                          <div className="mb-2">
+                            <img
+                              src={q.image_url}
+                              alt="Question"
+                              className="max-h-80 w-full object-contain rounded-lg border bg-muted/30"
+                            />
+                          </div>
+                        )}
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="font-medium">
+                            {index + 1}. <FormulaText text={q.question} />
+                          </p>
+                          <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
+                        </div>
+                      </div>
+
+                      {q.type === 'multiple-choice' && q.options && (
+                        <RadioGroup
+                          value={answers[q.id]?.toString()}
+                          onValueChange={(value) => setAnswers({ ...answers, [q.id]: parseInt(value) })}
+                        >
+                          {q.options.map((option, optIndex) => {
+                            const isString = typeof option === 'string';
+                            const text = isString ? option : option.text;
+                            const imageUrl = !isString ? option.image_url : undefined;
+
+                            return (
+                              <div key={optIndex} className="flex items-start space-x-2">
+                                <RadioGroupItem value={optIndex.toString()} id={`${q.id}-${optIndex}`} className="mt-1" />
+                                <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
+                                  <div className="flex flex-col gap-2">
+                                    <FormulaText text={text} />
+                                    {imageUrl && (
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Option ${optIndex + 1}`}
+                                        className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border"
+                                      />
+                                    )}
+                                  </div>
+                                </Label>
+                              </div>
+                            );
+                          })}
+                        </RadioGroup>
+                      )}
+
+                      {q.type === 'multi-select' && q.options && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">{t('submitAssignment.selectAllThatApply')}</p>
+                          {q.options.map((option, optIndex) => {
+                            const isString = typeof option === 'string';
+                            const text = isString ? option : option.text;
+                            const imageUrl = !isString ? option.image_url : undefined;
+
+                            return (
+                              <div key={optIndex} className="flex items-start space-x-2">
+                                <Checkbox
+                                  id={`${q.id}-${optIndex}`}
+                                  checked={((answers[q.id] as number[]) || []).includes(optIndex)}
+                                  onCheckedChange={(checked) =>
+                                    handleMultiSelectChange(q.id, optIndex, checked as boolean)
+                                  }
+                                  className="mt-1"
+                                />
+                                <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
+                                  <div className="flex flex-col gap-2">
+                                    <FormulaText text={text} />
+                                    {imageUrl && (
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Option ${optIndex + 1}`}
+                                        className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border"
+                                      />
+                                    )}
+                                  </div>
+                                </Label>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
-                      <div className="flex justify-between items-start gap-2">
-                        <p className="font-medium">
-                          {index + 1}. <FormulaText text={q.question} />
-                        </p>
-                        <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
-                      </div>
+
+                      {q.type === 'essay' && (
+                        <Textarea
+                          value={(answers[q.id] as string) || ''}
+                          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                          placeholder={t('submitAssignment.enterYourAnswer')}
+                          rows={4}
+                        />
+                      )}
                     </div>
+                  ))}
 
-                    {q.type === 'multiple-choice' && q.options && (
-                      <RadioGroup
-                        value={answers[q.id]?.toString()}
-                        onValueChange={(value) => setAnswers({ ...answers, [q.id]: parseInt(value) })}
-                      >
-                        {q.options.map((option, optIndex) => {
-                          const isString = typeof option === 'string';
-                          const text = isString ? option : option.text;
-                          const imageUrl = !isString ? option.image_url : undefined;
-
-                          return (
-                            <div key={optIndex} className="flex items-start space-x-2">
-                              <RadioGroupItem value={optIndex.toString()} id={`${q.id}-${optIndex}`} className="mt-1" />
-                              <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
-                                <div className="flex flex-col gap-2">
-                                  <FormulaText text={text} />
-                                  {imageUrl && (
-                                    <img
-                                      src={imageUrl}
-                                      alt={`Option ${optIndex + 1}`}
-                                      className="max-h-32 w-fit object-contain rounded border"
-                                    />
-                                  )}
-                                </div>
-                              </Label>
-                            </div>
-                          );
-                        })}
-                      </RadioGroup>
-                    )}
-
-                    {q.type === 'multi-select' && q.options && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">{t('submitAssignment.selectAllThatApply')}</p>
-                        {q.options.map((option, optIndex) => {
-                          const isString = typeof option === 'string';
-                          const text = isString ? option : option.text;
-                          const imageUrl = !isString ? option.image_url : undefined;
-
-                          return (
-                            <div key={optIndex} className="flex items-start space-x-2">
-                              <Checkbox
-                                id={`${q.id}-${optIndex}`}
-                                checked={((answers[q.id] as number[]) || []).includes(optIndex)}
-                                onCheckedChange={(checked) =>
-                                  handleMultiSelectChange(q.id, optIndex, checked as boolean)
-                                }
-                                className="mt-1"
-                              />
-                              <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
-                                <div className="flex flex-col gap-2">
-                                  <FormulaText text={text} />
-                                  {imageUrl && (
-                                    <img
-                                      src={imageUrl}
-                                      alt={`Option ${optIndex + 1}`}
-                                      className="max-h-32 w-fit object-contain rounded border"
-                                    />
-                                  )}
-                                </div>
-                              </Label>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {q.type === 'essay' && (
-                      <Textarea
-                        value={(answers[q.id] as string) || ''}
-                        onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-                        placeholder={t('submitAssignment.enterYourAnswer')}
-                        rows={4}
-                      />
-                    )}
-                  </div>
-                ))}
-
-                <Button
-                  className="w-full"
-                  onClick={handleQuestionSubmit}
-                  disabled={isSubmittingQuestions}
-                >
-                  {isSubmittingQuestions && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  {t('submitAssignment.submitAssignment')}
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                  <Button
+                    className="w-full"
+                    onClick={handleQuestionSubmit}
+                    disabled={isSubmittingQuestions}
+                  >
+                    {isSubmittingQuestions && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                    {t('submitAssignment.submitAssignment')}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
 
       {/* File-Based Assignment */}
-      {!submission && !isQuestionBased && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('submitAssignment.submitAssignment')}</CardTitle>
-            <CardDescription>
-              {t('submitAssignment.uploadOrEnterText')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isOverdue && assignment.allow_late_submissions && (
-              <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-yellow-600">{t('submitAssignment.lateSubmission')}</p>
-                  <p className="text-muted-foreground">
-                    {t('submitAssignment.latePenaltyApplied', { percent: assignment.late_penalty_percent })}
-                  </p>
+      {
+        !submission && !isQuestionBased && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('submitAssignment.submitAssignment')}</CardTitle>
+              <CardDescription>
+                {t('submitAssignment.uploadOrEnterText')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isOverdue && assignment.allow_late_submissions && (
+                <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-yellow-600">{t('submitAssignment.lateSubmission')}</p>
+                    <p className="text-muted-foreground">
+                      {t('submitAssignment.latePenaltyApplied', { percent: assignment.late_penalty_percent })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {isOverdue && !assignment.allow_late_submissions ? (
-              <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-destructive">{t('submitAssignment.submissionClosed')}</p>
-                  <p className="text-muted-foreground">
-                    {t('submitAssignment.noLongerAccepts')}
-                  </p>
+              {isOverdue && !assignment.allow_late_submissions ? (
+                <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-destructive">{t('submitAssignment.submissionClosed')}</p>
+                    <p className="text-muted-foreground">
+                      {t('submitAssignment.noLongerAccepts')}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label>{t('submitAssignment.uploadFile')}</Label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept={assignment.allowed_file_types?.map(t => `.${t}`).join(',')}
-                  />
-                  {file ? (
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        <span className="text-sm truncate">{file.name}</span>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>{t('submitAssignment.uploadFile')}</Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept={assignment.allowed_file_types?.map(t => `.${t}`).join(',')}
+                    />
+                    {file ? (
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          <span className="text-sm truncate">{file.name}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setFile(null)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
+                    ) : (
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setFile(null)}
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => fileInputRef.current?.click()}
                       >
-                        <X className="h-4 w-4" />
+                        <Upload className="h-4 w-4 mr-2" />
+                        {t('submitAssignment.chooseFile')}
                       </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {t('submitAssignment.chooseFile')}
-                    </Button>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {t('submitAssignment.maxSize')}: {assignment.max_file_size_mb}MB.
-                    {t('submitAssignment.allowed')}: {assignment.allowed_file_types?.join(', ')}
-                  </p>
-                </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {t('submitAssignment.maxSize')}: {assignment.max_file_size_mb}MB.
+                      {t('submitAssignment.allowed')}: {assignment.allowed_file_types?.join(', ')}
+                    </p>
+                  </div>
 
-                <div className="relative">
-                  <Separator />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-                    {t('submitAssignment.or')}
-                  </span>
-                </div>
+                  <div className="relative">
+                    <Separator />
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
+                      {t('submitAssignment.or')}
+                    </span>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label>{t('submitAssignment.textContent')}</Label>
-                  <Textarea
-                    value={textContent}
-                    onChange={(e) => setTextContent(e.target.value)}
-                    placeholder={t('submitAssignment.enterAnswerHere')}
-                    rows={6}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label>{t('submitAssignment.textContent')}</Label>
+                    <Textarea
+                      value={textContent}
+                      onChange={(e) => setTextContent(e.target.value)}
+                      placeholder={t('submitAssignment.enterAnswerHere')}
+                      rows={6}
+                    />
+                  </div>
 
-                <Button
-                  className="w-full"
-                  onClick={handleSubmit}
-                  disabled={submitAssignment.isPending || (!file && !textContent.trim())}
-                >
-                  {submitAssignment.isPending ? t('submitAssignment.submitting') : t('submitAssignment.submitAssignment')}
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                  <Button
+                    className="w-full"
+                    onClick={handleSubmit}
+                    disabled={submitAssignment.isPending || (!file && !textContent.trim())}
+                  >
+                    {submitAssignment.isPending ? t('submitAssignment.submitting') : t('submitAssignment.submitAssignment')}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )
+      }
+
+      {/* Bottom Back Button if submitted */}
+      {
+        submission && (
+          <div className="flex justify-center mt-8 border-t pt-6">
+            <Button onClick={() => navigate('/student/assignments')} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('common.backToAssignments')}
+            </Button>
+          </div>
+        )
+      }
+    </div >
   );
 }

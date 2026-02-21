@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 export function useAttendanceExport() {
     const { t } = useTranslation();
 
-    const exportToCSV = (data: any[], courseId: string, period: string) => {
+    const exportToCSV = (data: any[], courseId: string, period: string, courseName?: string) => {
         if (!data || data.length === 0) return;
 
         const headers = [
@@ -38,13 +38,16 @@ export function useAttendanceExport() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `attendance_summary_${courseId}_${period}.csv`);
+        const filename = courseName
+            ? `attendance_summary_${courseName.replace(/\s+/g, '_')}_${period}.csv`
+            : `attendance_summary_${courseId}_${period}.csv`;
+        link.setAttribute('download', filename);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
-    const exportToPDF = (data: any[], courseId: string, period: string, dateRangeText?: string) => {
+    const exportToPDF = (data: any[], courseId: string, period: string, dateRangeText?: string, courseName?: string) => {
         if (!data || data.length === 0) return;
 
         const doc = new jsPDF();
@@ -53,13 +56,17 @@ export function useAttendanceExport() {
         doc.text(t('attendance.studentSummary') || 'Student Attendance Summary', 14, 22);
 
         doc.setFontSize(11);
+        if (courseName) {
+            doc.text(`${t('courses.courseTitle') || 'Subject'}: ${courseName}`, 14, 30);
+        }
+
         let dateText = `${t('common.date')}: ${format(new Date(), 'PPP')}`;
         if (dateRangeText) {
             dateText += ` (${dateRangeText})`;
         } else if (period === 'all') {
             dateText += ` (${t('attendance.periodAll') || 'All Time'})`;
         }
-        doc.text(dateText, 14, 30);
+        doc.text(dateText, 14, courseName ? 38 : 30);
 
         const headers = [[
             t('auth.name'),
@@ -82,12 +89,15 @@ export function useAttendanceExport() {
         autoTable(doc, {
             head: headers,
             body: mappedData,
-            startY: 40,
+            startY: courseName ? 45 : 40,
             styles: { fontSize: 10 },
             headStyles: { fillColor: [63, 81, 181] },
         });
 
-        doc.save(`attendance_summary_${courseId}_${period}.pdf`);
+        const filename = courseName
+            ? `attendance_summary_${courseName.replace(/\s+/g, '_')}_${period}.pdf`
+            : `attendance_summary_${courseId}_${period}.pdf`;
+        doc.save(filename);
     };
 
     return { exportToCSV, exportToPDF };

@@ -90,7 +90,7 @@ export function useAddQuestion() {
       points,
       type,
       order_index
-    }: Omit<Question, 'id'> & { examId: string }) => {
+    }: Omit<Question, 'id' | 'exam_id'> & { examId: string }) => {
       const { data, error } = await supabase
         .from('questions')
         .insert({

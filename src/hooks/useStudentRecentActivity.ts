@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface StudentActivityItem {
   id: string;
+  submissionId?: string;
   type: 'assignment' | 'exam';
   title: string;
   courseName: string;
@@ -89,7 +90,8 @@ export function useStudentRecentActivity(limit: number = 5) {
         const assignment = sub.assignments as any;
         const course = assignment?.courses as any;
         activities.push({
-          id: sub.id,
+          id: assignment?.id,
+          submissionId: sub.id,
           type: 'assignment',
           title: assignment?.title || 'Unknown Assignment',
           courseName: course?.title || 'Unknown Course',
@@ -105,7 +107,8 @@ export function useStudentRecentActivity(limit: number = 5) {
         const assignment = sub.assignments as any;
         const course = assignment?.courses as any;
         activities.push({
-          id: sub.id,
+          id: assignment?.id,
+          submissionId: sub.id,
           type: 'assignment',
           title: assignment?.title || 'Unknown Assignment',
           courseName: course?.title || 'Unknown Course',
@@ -121,7 +124,8 @@ export function useStudentRecentActivity(limit: number = 5) {
         const exam = sub.exams as any;
         const course = exam?.courses as any;
         activities.push({
-          id: sub.id,
+          id: exam?.id,
+          submissionId: sub.id,
           type: 'exam',
           title: exam?.title || 'Unknown Exam',
           courseName: course?.title || 'Unknown Course',

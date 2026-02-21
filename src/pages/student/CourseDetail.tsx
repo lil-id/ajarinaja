@@ -179,6 +179,10 @@ const StudentCourseDetail = () => {
                   {exams.length} {t('courseDetailPage.examsTab')}
                 </span>
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {assignments.length} {t('courseDetailPage.assignmentsTab')}
+                </span>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
                   <FileText className="w-4 h-4" />
                   {materials.length} {t('courseDetailPage.materialsTab')}
                 </span>

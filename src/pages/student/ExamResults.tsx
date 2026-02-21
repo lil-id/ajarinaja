@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -120,25 +121,25 @@ const ExamResults = () => {
 
       {/* Score Overview Card */}
       <Card className="border-0 shadow-card overflow-hidden">
-        <div className="bg-gradient-hero p-6 text-primary-foreground">
+        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white shadow-inner">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-primary-foreground/80 text-sm mb-1">{t('examResults.yourScore')}</p>
+              <p className="text-white/80 text-sm mb-1">{t('examResults.yourScore')}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-bold">
                   {submission.graded ? submission.score : '—'}
                 </span>
-                <span className="text-2xl text-primary-foreground/80">/ {exam.total_points}</span>
+                <span className="text-2xl text-white/80">/ {exam.total_points}</span>
               </div>
               {submission.graded && (
-                <p className={cn("text-lg font-medium mt-2", "text-primary-foreground")}>
+                <p className={cn("text-lg font-medium mt-2", "text-white")}>
                   {grade.label} • {scorePercentage}%
                 </p>
               )}
             </div>
             <div className="flex flex-col items-end gap-2">
               {submission.graded ? (
-                <Badge variant="secondary" className="text-sm px-4 py-1">
+                <Badge variant="secondary" className="text-sm px-4 py-1 bg-white/20 hover:bg-white/30 text-white border-0">
                   <CheckCircle className="w-4 h-4 mr-1" />
                   {t('examResults.graded')}
                 </Badge>
@@ -148,14 +149,14 @@ const ExamResults = () => {
                   {t('examResults.awaitingGrade')}
                 </Badge>
               )}
-              <p className="text-sm text-primary-foreground/70">
-                {t('examResults.submitted')} {new Date(submission.submitted_at).toLocaleDateString()}
+              <p className="text-sm text-white/90">
+                {t('examResults.submitted')} {format(new Date(submission.submitted_at), 'dd MMM yyyy, HH:mm')}
               </p>
             </div>
           </div>
           {submission.graded && (
             <div className="mt-4">
-              <Progress value={scorePercentage} className="h-3 bg-primary-foreground/20" />
+              <Progress value={scorePercentage} className="h-3 bg-black/20 [&>div]:bg-white" />
             </div>
           )}
         </div>
@@ -332,7 +333,7 @@ const ExamResults = () => {
                             <img
                               src={imageUrl}
                               alt={`Option ${optIdx + 1}`}
-                              className="mt-2 h-20 w-auto object-contain rounded border bg-white"
+                              className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border bg-white"
                             />
                           )}
                         </div>
@@ -477,7 +478,7 @@ const ExamResults = () => {
                                 <img
                                   src={imageUrl}
                                   alt={`Option ${optIdx + 1}`}
-                                  className="mt-2 h-20 w-auto object-contain rounded border bg-white"
+                                  className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border bg-white"
                                 />
                               )}
                             </div>

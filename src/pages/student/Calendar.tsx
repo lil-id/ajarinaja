@@ -77,7 +77,6 @@ export default function StudentCalendar() {
             date: endDate,
             type: 'exam',
             courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
-            courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
             status: exam.status,
             isPastDue: isPast(endDate) && !completedExamIds.includes(exam.id),
             isSubmitted: completedExamIds.includes(exam.id),

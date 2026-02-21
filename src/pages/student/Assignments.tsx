@@ -142,9 +142,20 @@ export default function StudentAssignments() {
                 {courseMap.get(assignment.course_id) || t('materials.unknownCourse')}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
+              </span>
+              <span>{assignment.max_points} {t('common.points')}</span>
+            </div>
+            <div className="flex items-center gap-3">
               {isGraded && (
-                <Badge className="bg-green-500">
+                <Badge className="bg-green-500 hover:bg-green-600">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   {t('assignments.graded')}: {assignment.submission.score}/{assignment.max_points}
                 </Badge>
@@ -167,35 +178,24 @@ export default function StudentAssignments() {
                   {getDaysUntilDue(assignment.due_date)}
                 </Badge>
               )}
+              <Button
+                variant={isSubmitted ? 'outline' : 'default'}
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/student/assignments/${assignment.id}`);
+                }}
+              >
+                {isSubmitted ? (
+                  <>{t('assignments.viewSubmission')}</>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    {t('common.submit')}
+                  </>
+                )}
+              </Button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
-              </span>
-              <span>{assignment.max_points} {t('common.points')}</span>
-            </div>
-            <Button
-              variant={isSubmitted ? 'outline' : 'default'}
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/student/assignments/${assignment.id}`);
-              }}
-            >
-              {isSubmitted ? (
-                <>{t('assignments.viewSubmission')}</>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  {t('common.submit')}
-                </>
-              )}
-            </Button>
           </div>
           {assignment.description && (
             <p className="mt-2 text-sm text-muted-foreground line-clamp-2">

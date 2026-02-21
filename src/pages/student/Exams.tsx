@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -142,7 +143,6 @@ const StudentExams = () => {
         tabIndex={0}
         onClick={() => {
           if (isCompleted) navigate(`/student/exam/${exam.id}/results`);
-          // Missed exams might not have a link or could link to a "missed" page/modal. For now, disable click or show details.
         }}
         className={cn(
           "border-0 shadow-card hover:shadow-card-hover transition-all duration-300 animate-slide-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -193,11 +193,18 @@ const StudentExams = () => {
 
             <div className="flex items-center gap-4">
               {isCompleted && submission && (
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">{t('assignments.score')}</p>
-                  <p className="text-lg font-bold text-secondary">
-                    {submission.score ?? t('common.pending')}/{exam.total_points}
-                  </p>
+                <div>
+                  {submission.score !== null ? (
+                    <Badge className="bg-green-500 hover:bg-green-600 text-white border-0">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      {t('assignments.graded')}: {submission.score}/{exam.total_points}
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {t('assignments.submitted')}
+                    </Badge>
+                  )}
                 </div>
               )}
               {isMissed && (
@@ -372,11 +379,11 @@ const StudentExams = () => {
             <TabsTrigger value="available">
               {t('exams.available')} ({pendingExams.length})
             </TabsTrigger>
-            <TabsTrigger value="history">
-              {t('common.history')} ({historyExams.length})
-            </TabsTrigger>
             <TabsTrigger value="upcoming">
               {t('exams.upcoming')} ({upcomingExams.length})
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              {t('exams.completed')} ({historyExams.length})
             </TabsTrigger>
           </TabsList>
 

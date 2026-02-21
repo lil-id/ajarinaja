@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, CheckCircle2, XCircle, Clock, MapPin, Calendar } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Clock, MapPin, Calendar, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -21,9 +21,15 @@ export function StudentAttendanceView({ courseId }: StudentAttendanceViewProps) 
     const [pin, setPin] = useState('');
 
     const handleCheckIn = async (sessionId: string) => {
+        if (!data?.userId) {
+            toast.error('User information not found');
+            return;
+        }
+
         try {
             const result = await checkIn.mutateAsync({
                 sessionId,
+                studentId: data.userId,
                 pin: pin || undefined,
             });
 
@@ -108,12 +114,10 @@ export function StudentAttendanceView({ courseId }: StudentAttendanceViewProps) 
 
             {/* Attendance History */}
             <Card>
-                <CardHeader>
-                    <CardTitle>{t('attendance.sessionHistory')}</CardTitle>
-                </CardHeader>
                 <CardContent>
                     {sessions.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
+                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                            <ClipboardList className="w-12 h-12 text-muted-foreground/50 mb-3" />
                             {t('attendance.noSessionsYet')}
                         </div>
                     ) : (

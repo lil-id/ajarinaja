@@ -1052,7 +1052,7 @@ const TeacherCourseDetail = () => {
                   <div className="space-y-2">
                     <Label>{t('courses.materialTitle')}</Label>
                     <Input
-                      placeholder={t('courses.enterTitle')}
+                      placeholder={t('materials.materialTitlePlaceholder')}
                       value={materialForm.title}
                       onChange={(e) => setMaterialForm({ ...materialForm, title: e.target.value })}
                       maxLength={200}
@@ -1062,7 +1062,7 @@ const TeacherCourseDetail = () => {
                   <div className="space-y-2">
                     <Label>{t('courses.materialDescription')}</Label>
                     <Textarea
-                      placeholder={t('courses.enterDescription')}
+                      placeholder={t('materials.descriptionOptional')}
                       value={materialForm.description}
                       onChange={(e) => setMaterialForm({ ...materialForm, description: e.target.value })}
                       rows={2}
@@ -1184,7 +1184,7 @@ const TeacherCourseDetail = () => {
                   <div className="space-y-2">
                     <Label>{t('courses.announcementContent')}</Label>
                     <Textarea
-                      placeholder={t('courses.writeAnnouncement')}
+                      placeholder={t('courses.announcementContent')}
                       value={announcementForm.content}
                       onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
                       rows={4}

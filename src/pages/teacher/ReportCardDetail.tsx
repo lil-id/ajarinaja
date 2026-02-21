@@ -84,6 +84,8 @@ const ReportCardDetail = () => {
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [teacherNotes, setTeacherNotes] = useState('');
   const [isCalculating, setIsCalculating] = useState(false);
+  const [signatureImage, setSignatureImage] = useState<string | null>(null);
+  const [signatureMode, setSignatureMode] = useState<'draw' | 'upload'>('draw');
 
 
   // Fetch single report card
@@ -194,10 +196,23 @@ const ReportCardDetail = () => {
 
   const clearSignature = () => {
     const canvas = signatureCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    setSignatureImage(null);
+  };
+
+  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setSignatureImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -380,10 +395,19 @@ const ReportCardDetail = () => {
   };
 
   const handleFinalize = async () => {
-    const canvas = signatureCanvasRef.current;
-    if (!canvas) return;
+    let signature = signatureImage;
 
-    const signature = canvas.toDataURL('image/png');
+    if (signatureMode === 'draw') {
+      const canvas = signatureCanvasRef.current;
+      if (!canvas) return;
+      signature = canvas.toDataURL('image/png');
+    }
+
+    if (!signature) {
+      toast.error(t('reportCards.emptySignatureError') || 'Please provide a signature');
+      return;
+    }
+
     await finalizeReportCard.mutateAsync({
       id: reportCardId!,
       signature,
@@ -894,22 +918,59 @@ const ReportCardDetail = () => {
               {t('dialogs.drawSignature')}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <div className="border-2 border-dashed rounded-lg p-1">
-              <canvas
-                ref={signatureCanvasRef}
-                width={380}
-                height={150}
-                className="w-full cursor-crosshair bg-white rounded"
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-              />
+          <div className="py-4 space-y-4">
+            <div className="flex gap-2 border-b pb-2">
+              <Button
+                variant={signatureMode === 'draw' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSignatureMode('draw')}
+              >
+                Draw
+              </Button>
+              <Button
+                variant={signatureMode === 'upload' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSignatureMode('upload')}
+              >
+                Upload
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" className="mt-2" onClick={clearSignature}>
-              {t('dialogs.clearSignature')}
-            </Button>
+
+            {signatureMode === 'draw' ? (
+              <div className="space-y-2">
+                <div className="border-2 border-dashed rounded-lg p-1 bg-white">
+                  <canvas
+                    ref={signatureCanvasRef}
+                    width={380}
+                    height={150}
+                    className="w-full cursor-crosshair rounded"
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                  />
+                </div>
+                <Button variant="ghost" size="sm" onClick={clearSignature}>
+                  {t('dialogs.clearSignature')}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Input
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  onChange={handleSignatureUpload}
+                />
+                {signatureImage && (
+                  <div className="mt-4 border rounded p-2 bg-white flex justify-center">
+                    <img src={signatureImage} alt="Signature Preview" className="max-h-32 object-contain" />
+                  </div>
+                )}
+                <Button variant="ghost" size="sm" onClick={() => setSignatureImage(null)} disabled={!signatureImage}>
+                  {t('dialogs.clearSignature')}
+                </Button>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSignatureDialogOpen(false)}>

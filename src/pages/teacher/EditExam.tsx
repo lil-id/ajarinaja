@@ -227,7 +227,6 @@ const EditExam = () => {
         correct_answers: newQuestion.type === 'multi-select' ? newQuestion.correctAnswers : null,
         points: newQuestion.points,
         order_index: questions.length,
-        exam_id: examId!,
       });
 
       setQuestions([...questions, result as Question]);
@@ -294,8 +293,7 @@ const EditExam = () => {
 
         const result = await addQuestion.mutateAsync({
           examId: examId!,
-          exam_id: examId!,
-          type: bankQ.type === 'multiple_choice' ? 'multiple-choice' : bankQ.type,
+          type: (bankQ.type === 'multiple_choice' ? 'multiple-choice' : bankQ.type) as Question['type'],
           question: bankQ.question,
           options: bankQ.options,
           correct_answer: bankQ.correct_answer,

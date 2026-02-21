@@ -8,7 +8,13 @@ import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, FileText, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { BookOpen, FileText, CheckCircle, ArrowRight, Loader2, HelpCircle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { StudentActiveSessionWidget } from '@/components/attendance/StudentActiveSessionWidget';
@@ -109,47 +115,122 @@ const StudentDashboard = () => {
       <StudentActiveSessionWidget />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-all"
           onClick={() => navigate('/student/courses')}
         >
-          <CardContent className="p-6 text-center">
-            <BookOpen className="w-8 h-8 text-secondary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{enrolledCourses.length}</p>
-            <p className="text-sm text-muted-foreground">{t('dashboard.totalCourses')}</p>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('dashboard.totalCourses')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipTotalCourses')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-3xl font-bold text-foreground mt-2">{enrolledCourses.length}</p>
+              </div>
+              <div className="h-12 w-12 bg-secondary/10 rounded-xl flex items-center justify-center shrink-0">
+                <BookOpen className="h-6 w-6 text-secondary" />
+              </div>
+            </div>
           </CardContent>
         </Card>
+
         <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-all"
           onClick={() => navigate('/student/assignments')}
         >
-          <CardContent className="p-6 text-center">
-            <FileText className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">
-              {assignments.filter(a => a.status === 'published' && enrolledCourseIds.includes(a.course_id)).length}
-            </p>
-            <p className="text-sm text-muted-foreground">{t('dashboard.totalAssignments')}</p>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('dashboard.totalAssignments')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipTotalAssignments')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-3xl font-bold text-foreground mt-2">
+                  {assignments.filter(a => a.status === 'published' && enrolledCourseIds.includes(a.course_id)).length}
+                </p>
+              </div>
+              <div className="h-12 w-12 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">
+                <FileText className="h-6 w-6 text-blue-500" />
+              </div>
+            </div>
           </CardContent>
         </Card>
+
         <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-all"
           onClick={() => navigate('/student/exams')}
         >
-          <CardContent className="p-6 text-center">
-            <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{upcomingExams.length}</p>
-            <p className="text-sm text-muted-foreground">{t('dashboard.totalExams')}</p>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('dashboard.totalExams')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipTotalExams')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-3xl font-bold text-foreground mt-2">{upcomingExams.length}</p>
+              </div>
+              <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+            </div>
           </CardContent>
         </Card>
+
         <Card
-          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+          className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-all"
           onClick={() => navigate('/student/assignments')}
         >
-          <CardContent className="p-6 text-center">
-            <CheckCircle className="w-8 h-8 text-accent mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{completedAssignments}</p>
-            <p className="text-sm text-muted-foreground">{t('assignments.graded')}</p>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('assignments.graded')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipGradedAssignments')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-3xl font-bold text-foreground mt-2">{completedAssignments}</p>
+              </div>
+              <div className="h-12 w-12 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
+                <CheckCircle className="h-6 w-6 text-accent" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -176,12 +257,6 @@ const StudentDashboard = () => {
             <StudentWaitingGradingWidget />
           </div>
         </div>
-
-        {/* Row 3: Enrolled Courses */}
-        <div>
-          <StudentEnrolledCoursesWidget />
-        </div>
-
       </div>
     </div>
   );

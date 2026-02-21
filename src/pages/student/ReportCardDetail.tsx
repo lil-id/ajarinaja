@@ -21,7 +21,8 @@ import {
   Calendar,
   Award,
   BookOpen,
-  TrendingUp
+  TrendingUp,
+  HelpCircle
 } from 'lucide-react';
 import { useReportCardEntries } from '@/hooks/useReportCards';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,7 +30,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip as RechartsTooltip
+} from 'recharts';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))'];
 
@@ -71,7 +85,18 @@ const StudentReportCardDetail = () => {
         .eq('id', data.period_id)
         .single();
 
-      return { ...data, period };
+      // Fetch teacher info if finalized
+      let teacher = null;
+      if (data.finalized_by) {
+        const { data: teacherProfile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('user_id', data.finalized_by)
+          .single();
+        teacher = teacherProfile;
+      }
+
+      return { ...data, period, teacher };
     },
     enabled: !!reportCardId && !!user,
   });
@@ -193,20 +218,6 @@ const StudentReportCardDetail = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
-                <p className="text-2xl font-bold">{reportCard.overall_average?.toFixed(1) || '-'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
@@ -239,7 +250,7 @@ const StudentReportCardDetail = () => {
                 <Award className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('reportCards.highestGrade')}</p>
+                <p className="text-sm text-muted-foreground">{t('reportCards.highestSubjectGrade')}</p>
                 <p className="text-2xl font-bold">{bestSubject?.final_grade || '-'}</p>
               </div>
             </div>
@@ -356,12 +367,24 @@ const StudentReportCardDetail = () => {
           {pieData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{t('reportCards.passedSummary')}</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <span>{t('reportCards.passedSummary')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[250px] text-center font-normal">{t('reportCards.tooltipPassedSummary')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart margin={{ top: 0, right: 30, bottom: 0, left: 30 }}>
                       <Pie
                         data={pieData}
                         cx="50%"
@@ -370,17 +393,17 @@ const StudentReportCardDetail = () => {
                         outerRadius={70}
                         paddingAngle={5}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         labelLine={false}
                       >
                         {pieData.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
-                            fill={index === 0 ? '#22c55e' : '#ef4444'}
+                            fill={entry.name === t('reportCards.passed') ? '#22c55e' : '#ef4444'}
                           />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <RechartsTooltip />
+                      <Legend verticalAlign="bottom" height={36} formatter={(value, entry: any) => <span className="text-foreground">{value} ({entry.payload.value})</span>} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -411,9 +434,11 @@ const StudentReportCardDetail = () => {
                   <img
                     src={reportCard.teacher_signature}
                     alt={t('reportCards.teacherSignature')}
-                    className="max-w-full h-20 object-contain"
+                    className="max-w-full h-20 object-contain mx-auto"
                   />
-                  <p className="text-sm text-muted-foreground mt-2">{t('reportCards.teacher')}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {reportCard.teacher?.name || t('reportCards.teacher')}
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -8,10 +8,17 @@ import {
   TrendingUp,
   Award,
   ChevronRight,
-  GraduationCap
+  GraduationCap,
+  HelpCircle
 } from 'lucide-react';
 import { useReportCards } from '@/hooks/useReportCards';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /**
  * Student Report Cards page.
@@ -62,7 +69,19 @@ const StudentReportCards = () => {
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm text-muted-foreground">{t('reportCards.average')}</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('reportCards.tooltipAverage')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-2xl font-bold">{latestAverage.toFixed(1)}</p>
                 {trend !== 0 && (
                   <p className={`text-sm ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -81,7 +100,19 @@ const StudentReportCards = () => {
                 <Award className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('reportCards.highestGrade')}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm text-muted-foreground">{t('reportCards.highestReportCardGrade')}</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('reportCards.tooltipHighestGrade')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-2xl font-bold">{bestGrade.toFixed(1)}</p>
               </div>
             </div>
@@ -95,7 +126,19 @@ const StudentReportCards = () => {
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('reportCards.totalCourses')}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm text-muted-foreground">{t('reportCards.totalReportCards')}</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('reportCards.tooltipTotalReports')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-2xl font-bold">{myReportCards.length}</p>
               </div>
             </div>
@@ -129,7 +172,7 @@ const StudentReportCards = () => {
                     className="text-muted-foreground"
                     allowDecimals={false}
                   />
-                  <Tooltip
+                  <RechartsTooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
                       border: '1px solid hsl(var(--border))',

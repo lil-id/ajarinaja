@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -28,7 +28,14 @@ import {
   Clock,
   CheckCircle2,
   FileText,
+  HelpCircle,
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useTranslation } from 'react-i18next';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
@@ -253,7 +260,19 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('studentAnalytics.overallAverage')}</p>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('studentAnalytics.overallAverage')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipOverallAverage')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-3xl font-bold text-foreground">{overallAverage} pts</p>
                 <p className="text-xs text-muted-foreground mt-2">{t('studentAnalytics.acrossAllWork')}</p>
               </div>
@@ -268,7 +287,19 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('studentAnalytics.enrolledCourses')}</p>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('studentAnalytics.enrolledCourses')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipEnrolledCourses')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-3xl font-bold text-foreground">{totalCourses}</p>
                 <p className="text-xs text-muted-foreground mt-2">{t('studentAnalytics.activeEnrollments')}</p>
               </div>
@@ -283,7 +314,19 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('studentAnalytics.completedWork')}</p>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('studentAnalytics.completedWork')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipCompletedWork')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-3xl font-bold text-foreground">{totalExams + gradedAssignments.length}</p>
                 <p className="text-xs text-muted-foreground mt-2">
                   {t('studentAnalytics.workCount', { exams: totalExams, assignments: gradedAssignments.length })}
@@ -300,7 +343,19 @@ const StudentAnalytics = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('studentAnalytics.badgesEarned')}</p>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('studentAnalytics.badgesEarned')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipBadgesEarned')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-3xl font-bold text-foreground">{totalBadges}</p>
                 <p className="text-xs text-muted-foreground mt-2">{t('studentAnalytics.achievementsUnlocked')}</p>
               </div>
@@ -388,9 +443,19 @@ const StudentAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {analyticsType === 'exams' ? t('studentAnalytics.examsCompleted') : t('studentAnalytics.assignmentsGraded')}
-                  </p>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <span>{analyticsType === 'exams' ? t('studentAnalytics.examsCompleted') : t('studentAnalytics.assignmentsGraded')}</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipCompletedCount')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <p className="text-3xl font-bold text-foreground">{currentStats.count}</p>
                 </div>
                 <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center">
@@ -408,7 +473,19 @@ const StudentAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t('studentAnalytics.averageScore')}</p>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <span>{t('studentAnalytics.averageScore')}</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-[200px] text-center">{t('studentAnalytics.tooltipAverageScore')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <p className="text-3xl font-bold text-foreground">{currentStats.average} pts</p>
                 </div>
                 <div className="h-12 w-12 bg-secondary/10 rounded-xl flex items-center justify-center">
@@ -422,7 +499,19 @@ const StudentAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t('studentAnalytics.passRate')}</p>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <span>{t('studentAnalytics.passRate')}</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-[300px] text-center">{t('studentAnalytics.tooltipPassRate')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <p className="text-3xl font-bold text-foreground">{currentStats.passRate}%</p>
                   <Badge variant={currentStats.passRate >= 70 ? 'default' : 'secondary'} className="mt-2">
                     {t('studentAnalytics.passedCount', { count: currentStats.passCount })}
@@ -442,8 +531,20 @@ const StudentAnalytics = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                {t('studentAnalytics.scoreDistribution')}
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <span>{t('studentAnalytics.scoreDistribution')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[250px] text-center">{t('studentAnalytics.tooltipScoreDistribution')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -462,7 +563,7 @@ const StudentAnalytics = () => {
                       allowDecimals={false}
                       tickFormatter={(value) => Math.floor(value).toString()}
                     />
-                    <Tooltip
+                    <RechartsTooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
@@ -483,14 +584,26 @@ const StudentAnalytics = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card >
 
           {/* Pass/Fail Status Pie */}
-          <Card>
+          < Card >
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5 text-primary" />
-                {t('studentAnalytics.passFailStatus')}
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                  <span>{t('studentAnalytics.passFailStatus')}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-[250px] text-center">{t('studentAnalytics.tooltipStatusRatio')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -515,7 +628,7 @@ const StudentAnalytics = () => {
                             />
                           ))}
                         </Pie>
-                        <Tooltip
+                        <RechartsTooltip
                           contentStyle={{
                             backgroundColor: 'hsl(var(--popover))',
                             border: '1px solid hsl(var(--border))',
@@ -553,8 +666,8 @@ const StudentAnalytics = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </div>
+          </Card >
+        </div >
       </>
     );
   }

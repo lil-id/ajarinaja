@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Users, QrCode, Filter, Calendar as CalendarIcon, FileDown, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { LiveSessionWidget } from "@/components/dashboard/LiveSessionWidget";
 import { AttendanceComparisonTable } from "@/components/attendance/AttendanceComparisonTable";
-import { AttendanceStudentSummary } from "@/components/attendance/AttendanceStudentSummary";
+
 import {
     Select,
     SelectContent,
@@ -64,6 +64,12 @@ const TeacherAttendance = () => {
         }
     }, [courses]);
 
+    const selectedCourse = useMemo(() => {
+        return activeCourses.find(c => c.id === selectedCourseId);
+    }, [activeCourses, selectedCourseId]);
+
+
+
     // Calculate filter range based on period
     const filterRange = useMemo(() => {
         if (period === 'custom') {
@@ -91,21 +97,20 @@ const TeacherAttendance = () => {
         return { from, to };
     }, [period, dateRange]);
 
-    // Fetch stats for export capability (even if view is split, we need data to export)
-    // Note: We might want to pass this down or let the child fetch it. 
-    // For now, let's fetch it here so the Export button works globally for the "Summary" context.
+    // Fetch stats for export capability
     const { data: stats } = useCourseAttendanceStats(selectedCourseId, filterRange);
 
+
     const handleExport = (type: 'csv' | 'pdf') => {
-        if (!stats) return;
+        if (!stats || !selectedCourse) return;
         if (type === 'csv') {
-            exportToCSV(stats, selectedCourseId, period);
+            exportToCSV(stats, selectedCourseId, period, selectedCourse.title);
         } else {
             let dateText = undefined;
             if (filterRange?.from && filterRange?.to) {
                 dateText = `${format(filterRange.from, 'PP')} - ${format(filterRange.to, 'PP')}`;
             }
-            exportToPDF(stats, selectedCourseId, period, dateText);
+            exportToPDF(stats, selectedCourseId, period, dateText, selectedCourse.title);
         }
     };
 
@@ -123,38 +128,9 @@ const TeacherAttendance = () => {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col gap-4">
-                        {/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div>
-                                <CardTitle>{t('nav.courses')}</CardTitle>
-                                <CardDescription>{t('attendance.monitorStatus') || 'Monitor attendance status across all your students'}</CardDescription>
-                            </div> */}
-
-                        {/* Course Selector */}
-                        {/* <div className="w-full sm:w-[250px]">
-                                <Select
-                                    value={selectedCourseId}
-                                    onValueChange={setSelectedCourseId}
-                                    disabled={isLoading || activeCourses.length === 0}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('common.selectCourse') || "Select Course"} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {activeCourses.map(course => (
-                                            <SelectItem key={course.id} value={course.id}>
-                                                {course.title}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div> */}
-
-                        {/* Global Filters & Actions Row */}
                         {selectedCourseId && (
                             <div className="flex flex-col sm:flex-row justify-between items-end gap-4 pt-4">
                                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                                    {/* Course Selector */}
                                     <div className="w-full sm:w-[250px]">
                                         <Select
                                             value={selectedCourseId}
@@ -173,7 +149,6 @@ const TeacherAttendance = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    {/* Period Filter */}
                                     <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
                                         <SelectTrigger className="w-[180px]">
                                             <Filter className="w-4 h-4 mr-2" />
@@ -188,7 +163,6 @@ const TeacherAttendance = () => {
                                         </SelectContent>
                                     </Select>
 
-                                    {/* Custom Date Picker */}
                                     {period === 'custom' && (
                                         <Popover>
                                             <PopoverTrigger asChild>
@@ -228,7 +202,6 @@ const TeacherAttendance = () => {
                                     )}
                                 </div>
 
-                                {/* Export Actions */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" disabled={!stats || stats.length === 0}>
@@ -262,26 +235,10 @@ const TeacherAttendance = () => {
                     ) : courses?.length > 0 ? (
                         <div className="space-y-6">
                             {selectedCourseId ? (
-                                <Tabs defaultValue="sessions" className="space-y-4">
-                                    <TabsList>
-                                        <TabsTrigger value="sessions">{t('attendance.sessions') || 'Sessions'}</TabsTrigger>
-                                        <TabsTrigger value="overview">{t('attendance.summary') || 'Overview'}</TabsTrigger>
-                                    </TabsList>
-
-                                    <TabsContent value="sessions">
-                                        {/* Keep existing comparison table as "Sessions" view */}
-                                        <AttendanceComparisonTable courseId={selectedCourseId} />
-                                    </TabsContent>
-
-                                    {/* We pass the computed filterRange down to the Summary component */}
-                                    <TabsContent value="overview">
-                                        <AttendanceStudentSummary
-                                            courseId={selectedCourseId}
-                                            // @ts-ignore - we'll update the component prop type next
-                                            filterRange={filterRange}
-                                        />
-                                    </TabsContent>
-                                </Tabs>
+                                <AttendanceComparisonTable
+                                    courseId={selectedCourseId}
+                                    courseName={selectedCourse?.title}
+                                />
                             ) : (
                                 <div className="p-8 text-center text-muted-foreground">
                                     Please select a course to view attendance.
