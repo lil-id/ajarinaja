@@ -34,6 +34,8 @@ import {
   ClipboardCheck,
   Menu,
   X,
+  Sparkles,
+  School,
 } from "lucide-react";
 import heroClassroom from "@/assets/hero-classroom.jpg";
 import teacherTeaching from "@/assets/teacher-teaching.jpg";
@@ -84,6 +86,7 @@ const Index = () => {
     { href: "#features", label: "Features" },
     { href: "#for-teachers", label: "For Teachers" },
     { href: "#for-schools", label: "For Schools" },
+    { href: "#pricing", label: "Pricing" },
     { href: "#testimonials", label: "Testimonials" },
     { href: "#faq", label: "FAQ" },
   ];
@@ -104,10 +107,7 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-secondary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-foreground">AjarinAja</span>
+            <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-10 w-auto" />
           </div>
 
           {/* Desktop Navigation */}
@@ -146,10 +146,7 @@ const Index = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
-                        <GraduationCap className="w-6 h-6 text-secondary-foreground" />
-                      </div>
-                      <span className="text-xl font-bold text-foreground">AjarinAja</span>
+                      <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-10 w-auto" />
                     </div>
                   </div>
 
@@ -806,6 +803,137 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 px-6">
+        <div className="container mx-auto max-w-7xl">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
+              <Sparkles className="w-4 h-4" />
+              Pricing
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Satu Platform, Empat Harga yang Pas
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Pilih paket yang sesuai kebutuhan Anda — dari guru les privat hingga universitas besar.
+            </p>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card 1: Guru Les */}
+            <ScrollReveal animation="fade-up" delay={0}>
+              <div className="bg-card rounded-2xl border border-border/50 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+                <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
+                  <GraduationCap className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Guru Les / Privat</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-foreground">Rp 50rb</span>
+                  <span className="text-muted-foreground">/bulan</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Maksimal 30 siswa</p>
+                <ul className="space-y-3 mb-6 flex-1">
+                  {["Course builder", "AI soal generator", "Auto-grading MCQ", "Question bank"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button variant="outline" className="w-full" onClick={handleContactDemo}>
+                  <MessageSquare className="w-4 h-4" />
+                  Hubungi Kami
+                </Button>
+              </div>
+            </ScrollReveal>
+
+            {/* Card 2: Lembaga Kursus */}
+            <ScrollReveal animation="fade-up" delay={100}>
+              <div className="bg-card rounded-2xl border border-border/50 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+                <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-4">
+                  <BookOpen className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Lembaga Kursus / Bimbel</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-foreground">Rp 3-7jt</span>
+                  <span className="text-muted-foreground">/bulan</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Unlimited siswa & kelas</p>
+                <ul className="space-y-3 mb-6 flex-1">
+                  {["Semua fitur Guru Les", "Attendance PIN", "Analytics dashboard", "Multi-course management"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button variant="outline" className="w-full" onClick={handleContactDemo}>
+                  <MessageSquare className="w-4 h-4" />
+                  Hubungi Kami
+                </Button>
+              </div>
+            </ScrollReveal>
+
+            {/* Card 3: Sekolah (Popular) */}
+            <ScrollReveal animation="fade-up" delay={200}>
+              <div className="bg-card rounded-2xl border-2 border-primary p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-hero rounded-full text-xs font-semibold text-primary-foreground">
+                  Popular
+                </div>
+                <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-4">
+                  <School className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Sekolah SD-SMA</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-foreground">Rp 2-8jt</span>
+                  <span className="text-muted-foreground">/bulan</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Unlimited guru & siswa</p>
+                <ul className="space-y-3 mb-6 flex-1">
+                  {["Semua fitur Kursus", "At-risk detection", "Report cards & PDF", "Academic periods"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button variant="hero" className="w-full" onClick={handleContactDemo}>
+                  <MessageSquare className="w-4 h-4" />
+                  Hubungi Kami
+                </Button>
+              </div>
+            </ScrollReveal>
+
+            {/* Card 4: Universitas */}
+            <ScrollReveal animation="fade-up" delay={300}>
+              <div className="bg-card rounded-2xl border border-border/50 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+                <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-4">
+                  <Building2 className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Universitas / Kampus</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-foreground">Rp 10-25jt</span>
+                  <span className="text-muted-foreground">/bulan</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Multi-department, multi-fakultas</p>
+                <ul className="space-y-3 mb-6 flex-1">
+                  {["Semua fitur Sekolah", "API access", "SLA dedicated", "Bulk enrollment"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button variant="outline" className="w-full" onClick={handleContactDemo}>
+                  <MessageSquare className="w-4 h-4" />
+                  Hubungi Kami
+                </Button>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-4xl">
@@ -840,10 +968,7 @@ const Index = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-secondary-foreground" />
-                </div>
-                <span className="text-xl font-bold text-foreground">AjarinAja</span>
+                <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-10 w-auto" />
               </div>
               <p className="text-sm text-muted-foreground">
                 The complete learning management system for modern schools and educators.
