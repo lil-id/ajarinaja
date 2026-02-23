@@ -358,42 +358,6 @@ export function useActiveCourseSession(courseId: string) {
     });
 }
 
-// Student: Check In
-export function useStudentCheckIn() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: async ({
-            sessionId,
-            studentId,
-            pin,
-            latitude,
-            longitude
-        }: {
-            sessionId: string;
-            studentId: string;
-            pin?: string;
-            latitude?: number;
-            longitude?: number;
-        }) => {
-            const { data, error } = await supabase.rpc('student_check_in', {
-                p_session_id: sessionId,
-                p_student_id: studentId,
-                p_pin: pin,
-                p_latitude: latitude,
-                p_longitude: longitude
-            });
-
-            if (error) throw error;
-            return data; // returns record_id
-        },
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['attendance-session', variables.sessionId] });
-            queryClient.invalidateQueries({ queryKey: ['attendance-matrix'] }); // Update matrix immediately
-            queryClient.invalidateQueries({ queryKey: ['active-course-session'] }); // Might update status if logic changes
-        },
-    });
-}
 
 // Sync attendance grades to report card
 export function useSyncAttendanceGrades() {

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Json } from "@/integrations/supabase/types";
+import { logger, generateCorrelationId } from "@/lib/logger";
 
 import { QuestionOption } from './useExams';
 
@@ -183,20 +184,33 @@ export function useIncrementQuestionUsage() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: current, error: fetchError } = await supabase
-        .from("question_bank")
-        .select("used_count")
-        .eq("id", id)
-        .single();
+      const correlationId = generateCorrelationId();
+      const startTime = Date.now();
 
-      if (fetchError) throw fetchError;
+      logger.info('increment_question_usage', {
+        correlationId,
+        questionId: id
+      }, 'Operation start');
 
-      const { error } = await supabase
-        .from("question_bank")
-        .update({ used_count: (current?.used_count || 0) + 1 })
-        .eq("id", id);
+      const { error } = await supabase.rpc('increment_question_usage', {
+        p_question_id: id,
+      });
 
-      if (error) throw error;
+      if (error) {
+        logger.error('increment_question_usage', {
+          correlationId,
+          questionId: id,
+          error: error.message,
+          duration: Date.now() - startTime
+        }, 'Operation failure');
+        throw error;
+      }
+
+      logger.info('increment_question_usage', {
+        correlationId,
+        questionId: id,
+        duration: Date.now() - startTime
+      }, 'Operation success');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["question-bank"] });
@@ -231,6 +245,16 @@ export function useSaveExamQuestionsToBank() {
       courseId: string;
       category: string;
     }) => {
+      const correlationId = generateCorrelationId();
+      const startTime = Date.now();
+
+      logger.info('save_exam_questions_to_bank', {
+        correlationId,
+        userId: user?.id,
+        courseId,
+        questionCount: questions.length
+      }, 'Operation start');
+
       const bankItems = questions.map((q) => ({
         teacher_id: user?.id,
         course_id: courseId,
@@ -250,7 +274,22 @@ export function useSaveExamQuestionsToBank() {
         .insert(bankItems)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('save_exam_questions_to_bank', {
+          correlationId,
+          userId: user?.id,
+          error: error.message,
+          duration: Date.now() - startTime
+        }, 'Operation failure');
+        throw error;
+      }
+
+      logger.info('save_exam_questions_to_bank', {
+        correlationId,
+        userId: user?.id,
+        duration: Date.now() - startTime
+      }, 'Operation success');
+
       return data;
     },
     onSuccess: () => {

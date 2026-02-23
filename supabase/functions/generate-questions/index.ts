@@ -23,7 +23,10 @@ serve(async (req) => {
         } = await req.json();
 
         if (!materialId) {
-            throw new Error("materialId is required");
+            return new Response(
+                JSON.stringify({ error: "materialId is required" }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+            );
         }
 
         // Initialize Supabase client
@@ -40,7 +43,10 @@ serve(async (req) => {
         );
 
         if (userError || !user) {
-            throw new Error("Unauthorized");
+            return new Response(
+                JSON.stringify({ error: "Unauthorized" }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+            );
         }
 
         // Get material info
@@ -52,11 +58,17 @@ serve(async (req) => {
             .single();
 
         if (materialError || !material) {
-            throw new Error("Material not found or access denied");
+            return new Response(
+                JSON.stringify({ error: "Material not found or access denied" }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+            );
         }
 
         if (material.status !== "ready") {
-            throw new Error(`Material is ${material.status}. Please wait for processing to complete.`);
+            return new Response(
+                JSON.stringify({ error: `Material is ${material.status}. Please wait for processing to complete.` }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 422 }
+            );
         }
 
         // Generate query embedding for topic
@@ -261,7 +273,7 @@ PENTING: Response harus dalam format JSON yang valid. Jangan tambahkan teks lain
                 temperature: 0.7,
                 topK: 40,
                 topP: 0.95,
-                maxOutputTokens: 8192,
+                maxOutputTokens: 65536,
                 responseMimeType: "application/json",
             },
         }),
@@ -273,7 +285,15 @@ PENTING: Response harus dalam format JSON yang valid. Jangan tambahkan teks lain
     }
 
     const data = await response.json();
-    const text = data.candidates[0].content.parts[0].text;
+    const candidate = data.candidates[0];
+
+    if (candidate.finishReason === "MAX_TOKENS") {
+        throw new Error(
+            "AI response was truncated due to length. Try reducing the number of questions."
+        );
+    }
+
+    const text = candidate.content.parts[0].text;
 
     try {
         const parsed = JSON.parse(text);

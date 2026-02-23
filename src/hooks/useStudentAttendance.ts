@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { logger, generateCorrelationId } from '@/lib/logger';
 import type { AttendanceSession, AttendanceRecord, CheckInResponse } from '@/types/attendance';
 
 export function useStudentAttendance(courseId: string) {
@@ -60,21 +61,59 @@ export function useStudentCheckIn() {
             pin?: string;
             location?: { lat: number; lng: number }
         }) => {
-            const { data, error } = await supabase.rpc('student_check_in' as any, {
-                p_session_id: sessionId,
-                p_student_id: studentId,
-                p_pin: pin,
-                p_latitude: location?.lat,
-                p_longitude: location?.lng
-            });
+            const correlationId = generateCorrelationId();
+            const startTime = Date.now();
 
-            if (error) throw error;
-            return data as unknown as CheckInResponse;
+            logger.info('student_check_in', {
+                correlationId,
+                userId: studentId,
+                sessionId
+            }, 'Operation start');
+
+            try {
+                const { data, error } = await supabase.rpc('student_check_in' as any, {
+                    p_session_id: sessionId,
+                    p_student_id: studentId,
+                    p_pin: pin,
+                    p_latitude: location?.lat,
+                    p_longitude: location?.lng
+                });
+
+                if (error) {
+                    logger.error('student_check_in', {
+                        correlationId,
+                        userId: studentId,
+                        error: error.message,
+                        duration: Date.now() - startTime
+                    }, 'Operation failure');
+                    throw error;
+                }
+
+                logger.info('student_check_in', {
+                    correlationId,
+                    userId: studentId,
+                    duration: Date.now() - startTime
+                }, 'Operation success');
+
+                return data as unknown as CheckInResponse;
+            } catch (err: any) {
+                if (!(err instanceof Error) || !err.message.includes('student_check_in')) {
+                    logger.error('student_check_in', {
+                        correlationId,
+                        userId: studentId,
+                        error: err.message || 'Unknown error',
+                        duration: Date.now() - startTime
+                    }, 'Operation failure');
+                }
+                throw err;
+            }
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['student-attendance'] });
             queryClient.invalidateQueries({ queryKey: ['attendance-session', variables.sessionId] });
             queryClient.invalidateQueries({ queryKey: ['student-active-sessions'] });
+            queryClient.invalidateQueries({ queryKey: ['attendance-matrix'] });
+            queryClient.invalidateQueries({ queryKey: ['active-course-session'] });
         },
     });
 }
