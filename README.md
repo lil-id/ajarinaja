@@ -427,7 +427,7 @@ This project is licensed under the [MIT License](./LICENSE).
 ## 📞 Support & Contact
 
 For full demo or institutional inquiries:
-- **WhatsApp**: +62 822-9367-5164
+- **E-Mail**: holilhaqalimhakim@gmail.com
 - **Website**: Visit the landing page for more information
 
 ## 🎓 Credits
