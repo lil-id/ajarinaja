@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -91,10 +91,7 @@ const ResetPassword = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-secondary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-foreground">AjarinAja</span>
+          <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-10 w-auto" />
         </div>
 
         <Card className="shadow-xl border-0 bg-card">

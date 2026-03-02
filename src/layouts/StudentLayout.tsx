@@ -89,11 +89,10 @@ const StudentLayout = () => {
               )}
               onClick={() => navigate('/student')}
             >
-              <div className="w-10 h-10 bg-sidebar-primary rounded-xl flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="w-6 h-6 text-sidebar-primary-foreground" />
-              </div>
-              {!sidebarCollapsed && (
-                <span className="text-xl font-bold text-sidebar-foreground">AjarinAja</span>
+              {sidebarCollapsed ? (
+                <img src="/ajarinaja-logo-square.png" alt="AjarinAja" className="w-10 h-10 flex-shrink-0 brightness-0 invert" />
+              ) : (
+                <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-10 w-auto brightness-0 invert" />
               )}
             </div>
             <Button

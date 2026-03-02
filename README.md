@@ -418,40 +418,11 @@ Provides backend infrastructure:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these guidelines:
-
-### Branch Naming
-- `feature/feature-name` - New features
-- `fix/bug-description` - Bug fixes
-- `migration/table-name` - Database migrations
-
-### Commit Messages
-Use conventional commits:
-```bash
-feat: add course analytics page
-fix: resolve RLS policy for student enrollments
-docs: update README with new features
-refactor: extract grading logic to hook
-```
-
-### Pull Request Workflow
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Test thoroughly (see manual testing checklist in ARCHITECTURE.md)
-5. Commit with descriptive messages
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Create a Pull Request with:
-   - What changed
-   - Why it changed
-   - How to test it
-   - Screenshots (if UI changes)
-
-For detailed guidelines, see [ARCHITECTURE.md - Developer Guide](./ARCHITECTURE.md#developer-guide)
+Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) and [Code of Conduct](./CODE_OF_CONDUCT.md) before getting started.
 
 ## 📄 License
 
-This project is private and proprietary to the AjarinAja platform.
+This project is licensed under the [MIT License](./LICENSE).
 
 ## 📞 Support & Contact
 

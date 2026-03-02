@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStudentActiveSessions, useStudentCheckIn } from '@/hooks/useStudentAttendance';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 
 export function StudentActiveSessionWidget() {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const { data: sessions, isLoading } = useStudentActiveSessions();
     const checkIn = useStudentCheckIn();
     const [pins, setPins] = useState<Record<string, string>>({}); // Map session_id -> pin
@@ -20,9 +22,11 @@ export function StudentActiveSessionWidget() {
     };
 
     const handleCheckIn = async (sessionId: string) => {
+        if (!user) return;
         try {
             const result = await checkIn.mutateAsync({
                 sessionId,
+                studentId: user.id,
                 pin: pins[sessionId] || undefined,
             });
 
@@ -79,7 +83,7 @@ export function StudentActiveSessionWidget() {
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base font-bold flex justify-between items-start">
                                     <span>{session.course?.title}</span>
-                                    {timeStatus === 'late' && <Badge variant="warning" className="text-xs bg-yellow-100 text-yellow-800">Late</Badge>}
+                                    {timeStatus === 'late' && <Badge variant="destructive" className="text-xs bg-yellow-100 text-yellow-800">Late</Badge>}
                                 </CardTitle>
                                 <CardDescription className="text-xs space-y-1">
                                     <div className="flex justify-between">

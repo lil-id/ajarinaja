@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { GraduationCap, Loader2, BookOpen, Users, UserCircle } from 'lucide-react';
+import { Loader2, BookOpen, Users, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -93,10 +93,7 @@ const Login = () => {
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-hero p-12 flex-col justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-secondary/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <GraduationCap className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <span className="text-2xl font-bold text-primary-foreground">AjarinAja</span>
+          <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-12 w-auto brightness-0 invert" />
         </div>
 
         <div className="space-y-6">
@@ -139,10 +136,7 @@ const Login = () => {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="flex items-center justify-center gap-2 mb-8 lg:hidden">
-            <div className="w-10 h-10 bg-gradient-secondary rounded-xl flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-secondary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-foreground">AjarinAja</span>
+            <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-10 w-auto" />
           </div>
 
           <Card className="shadow-xl border-0 bg-card">

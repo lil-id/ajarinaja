@@ -15,7 +15,7 @@ import {
   X,
   Eye,
   MessageSquare,
-  GraduationCap,
+
   Menu,
   FolderOpen,
   Database,
@@ -72,8 +72,7 @@ export default function DemoLayout() {
       {/* Logo */}
       <div className="p-4 border-b">
         <Link to="/" className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-primary" />
-          <span className="font-bold text-xl">AjarinAja</span>
+          <img src="/ajarinaja-logo.png" alt="AjarinAja" className="h-8 w-auto" />
         </Link>
       </div>
 
@@ -169,7 +168,7 @@ export default function DemoLayout() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
             <div className="flex items-center gap-2">
-              <GraduationCap className="h-6 w-6 text-primary" />
+              <img src="/ajarinaja-logo-square.png" alt="AjarinAja" className="h-6 w-6" />
               <span className="font-bold">AjarinAja</span>
               <Badge variant="secondary" className="text-xs">Demo</Badge>
             </div>
