@@ -6,7 +6,7 @@
 
 AjarinAja is a full-stack web application that streamlines educational workflows and enhances the learning experience for both teachers and students. The platform features:
 
-- **Role-based access** for Teachers and Students
+- **Role-based access** for Teachers, Students, Parents
 - **Course management** with rich multimedia content
 - **Exam creation** with auto-grading capabilities
 - **Assignment tracking** and submission management
