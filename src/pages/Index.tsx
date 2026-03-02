@@ -86,7 +86,7 @@ const Index = () => {
     { href: "#features", label: "Features" },
     { href: "#for-teachers", label: "For Teachers" },
     { href: "#for-schools", label: "For Schools" },
-    { href: "#pricing", label: "Pricing" },
+    // { href: "#pricing", label: "Pricing" },
     { href: "#testimonials", label: "Testimonials" },
     { href: "#faq", label: "FAQ" },
   ];
@@ -804,7 +804,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-6">
+      {/* <section id="pricing" className="py-24 px-6">
         <div className="container mx-auto max-w-7xl">
           <ScrollReveal animation="fade-up" className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
@@ -817,11 +817,11 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Pilih paket yang sesuai kebutuhan Anda — dari guru les privat hingga universitas besar.
             </p>
-          </ScrollReveal>
+          </ScrollReveal> */}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Card 1: Guru Les */}
-            <ScrollReveal animation="fade-up" delay={0}>
+      {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"> */}
+      {/* Card 1: Guru Les */}
+      {/* <ScrollReveal animation="fade-up" delay={0}>
               <div className="bg-card rounded-2xl border border-border/50 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
                 <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4">
                   <GraduationCap className="w-6 h-6 text-blue-600" />
@@ -845,10 +845,10 @@ const Index = () => {
                   Hubungi Kami
                 </Button>
               </div>
-            </ScrollReveal>
+            </ScrollReveal> */}
 
-            {/* Card 2: Lembaga Kursus */}
-            <ScrollReveal animation="fade-up" delay={100}>
+      {/* Card 2: Lembaga Kursus */}
+      {/* <ScrollReveal animation="fade-up" delay={100}>
               <div className="bg-card rounded-2xl border border-border/50 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
                 <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-4">
                   <BookOpen className="w-6 h-6 text-purple-600" />
@@ -872,10 +872,10 @@ const Index = () => {
                   Hubungi Kami
                 </Button>
               </div>
-            </ScrollReveal>
+            </ScrollReveal> */}
 
-            {/* Card 3: Sekolah (Popular) */}
-            <ScrollReveal animation="fade-up" delay={200}>
+      {/* Card 3: Sekolah (Popular) */}
+      {/* <ScrollReveal animation="fade-up" delay={200}>
               <div className="bg-card rounded-2xl border-2 border-primary p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-hero rounded-full text-xs font-semibold text-primary-foreground">
                   Popular
@@ -902,10 +902,10 @@ const Index = () => {
                   Hubungi Kami
                 </Button>
               </div>
-            </ScrollReveal>
+            </ScrollReveal> */}
 
-            {/* Card 4: Universitas */}
-            <ScrollReveal animation="fade-up" delay={300}>
+      {/* Card 4: Universitas */}
+      {/* <ScrollReveal animation="fade-up" delay={300}>
               <div className="bg-card rounded-2xl border border-border/50 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
                 <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-4">
                   <Building2 className="w-6 h-6 text-orange-600" />
@@ -932,7 +932,7 @@ const Index = () => {
             </ScrollReveal>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 px-6">
