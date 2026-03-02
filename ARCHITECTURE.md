@@ -104,10 +104,12 @@ src/
 ├── layouts/            # Layout wrappers
 │   ├── TeacherLayout.tsx
 │   ├── StudentLayout.tsx
+│   ├── ParentLayout.tsx
 │   └── DemoLayout.tsx
-├── pages/              # Page components (69 pages)
+├── pages/              # Page components (77+ pages)
 │   ├── teacher/        # Teacher pages (23)
 │   ├── student/        # Student pages (20)
+│   ├── parent/         # Parent pages (8)
 │   ├── demo/           # Demo pages (30)
 │   └── *.tsx           # Public pages
 ├── integrations/       # Third-party integrations
@@ -151,7 +153,7 @@ graph TD
 1. **Application Root** ([main.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/main.tsx)) - Mounts React app
 2. **Global Providers** ([App.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/App.tsx)) - QueryClient, Auth, Tooltips, Toaster
 3. **Router** - React Router with route definitions
-4. **Layouts** - TeacherLayout, StudentLayout, DemoLayout (contain sidebar, navigation)
+4. **Layouts** - TeacherLayout, StudentLayout, ParentLayout, DemoLayout (contain sidebar, navigation)
 5. **Pages** - Main page components for each route
 6. **Feature Components** - Business logic components (CoursePreviewModal, MaterialViewer, etc.)
 7. **UI Components** - Pure presentational components (shadcn/ui)
@@ -201,16 +203,19 @@ Each user role has a dedicated layout with sidebar navigation:
 graph LR
     A[User Role] -->|Teacher| B[TeacherLayout]
     A -->|Student| C[StudentLayout]
+    A -->|Parent| P[ParentLayout]
     A -->|Demo| D[DemoLayout]
     
     B --> E[Sidebar + Navigation]
     C --> E
+    P --> E
     D --> E
     
     E --> F[Outlet for Page Content]
     
     style B fill:#3b82f6
     style C fill:#10b981
+    style P fill:#ec4899
     style D fill:#f59e0b
 ```
 
@@ -243,6 +248,7 @@ TeacherLayout
 **Code Reference:**
 - [TeacherLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/TeacherLayout.tsx#L38-L238)
 - [StudentLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/StudentLayout.tsx#L38-L240)
+- [ParentLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/ParentLayout.tsx) — 3 nav items: Dashboard, Add Child, Notifications
 - [DemoLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/DemoLayout.tsx)
 
 ### Shared Components
@@ -402,6 +408,16 @@ The 38 hooks are organized by domain:
 - `useAttendanceSettings` - Attendance configuration
 - `useAttendanceExport` - Export attendance data
 
+#### Parent Monitoring Hooks (6)
+- `useParentChildren` - Fetch children linked to parent account
+- `useVerifyChild` - Verify pairing code & add child
+- `useChildAttendance` - View child's attendance history
+- `useChildAssignments` - View child's assignments & submissions
+- `useChildExams` - View child's exam scores
+- `useChildCourses` - View child's enrolled courses
+- `useSearchStudents` - Search students by name/email (for adding children)
+- `usePairingCode` - Manage pairing codes (student-side, for parent linking)
+
 #### Content & Communication Hooks (4)
 - `useAnnouncements` - Course announcements
 - `useCalendarEvents` - Calendar events
@@ -511,7 +527,7 @@ interface AuthContextType {
   user: User | null;                              // Supabase user object
   session: Session | null;                        // Active session
   profile: Profile | null;                        // User profile data
-  role: 'teacher' | 'student' | null;            // User role
+  role: 'teacher' | 'student' | 'parent' | null; // User role
   signUp: (email, password, name, role) => Promise;
   signIn: (email, password) => Promise;
   signOut: () => Promise;
@@ -695,24 +711,30 @@ graph TD
     A --> C["Public Courses /courses"]
     A --> D["Teacher Routes /teacher/*"]
     A --> E["Student Routes /student/*"]
+    A --> PA["Parent Routes /parent/*"]
     A --> F["Demo Routes /demo/*"]
     
     D --> G["ProtectedRoute role=teacher"]
     E --> H["ProtectedRoute role=student"]
+    PA --> PB["ProtectedRoute role=parent"]
     
     G --> I[TeacherLayout]
     H --> J[StudentLayout]
+    PB --> PC[ParentLayout]
     F --> K[DemoLayout]
     
     I --> L[Teacher Pages]
     J --> M[Student Pages]
+    PC --> PD[Parent Pages]
     K --> N[Demo Pages]
     
     style D fill:#3b82f6
     style E fill:#10b981
+    style PA fill:#ec4899
     style F fill:#f59e0b
     style G fill:#ec4899
     style H fill:#ec4899
+    style PB fill:#ec4899
 ```
 
 ### Protected Routes Implementation
@@ -732,6 +754,21 @@ graph TD
   <Route path="exams" element={<TeacherExams />} />
   {/* ... more routes */}
 </Route>
+
+<Route path="/parent" element={
+  <ProtectedRoute requiredRole="parent">
+    <ParentLayout />
+  </ProtectedRoute>
+}>
+  <Route index element={<ParentOverview />} />
+  <Route path="add-child" element={<AddChild />} />
+  <Route path="children/:childId" element={<ChildDashboard />} />
+  <Route path="children/:childId/attendance" element={<ChildAttendance />} />
+  <Route path="children/:childId/assignments" element={<ChildAssignments />} />
+  <Route path="children/:childId/exams" element={<ChildExams />} />
+  <Route path="notifications" element={<ParentNotifications />} />
+  <Route path="settings" element={<ParentSettings />} />
+</Route>
 ```
 
 **ProtectedRoute Logic:**
@@ -746,31 +783,24 @@ export function ProtectedRoute({ children, requiredRole }: Props) {
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        // Redirect to login, preserve current path
         navigate('/login', { 
           state: { from: location.pathname }, 
           replace: true 
         });
       } else if (requiredRole && role && role !== requiredRole) {
-        // Wrong role, redirect to correct dashboard
-        navigate(role === 'teacher' ? '/teacher' : '/student', { 
-          replace: true 
-        });
+        // Redirect to correct dashboard based on role
+        const redirectPath =
+          role === 'teacher' ? '/teacher' :
+            role === 'student' ? '/student' :
+              role === 'parent' ? '/parent' : '/';
+        navigate(redirectPath, { replace: true });
       }
     }
   }, [user, role, isLoading, requiredRole]);
   
-  // Show loading spinner while checking auth
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  if (isLoading) return <LoadingSpinner />;
+  if (!user || (requiredRole && role !== requiredRole)) return null;
   
-  // Not authenticated or wrong role
-  if (!user || (requiredRole && role !== requiredRole)) {
-    return null;
-  }
-  
-  // Authenticated with correct role
   return <>{children}</>;
 }
 ```
@@ -828,6 +858,19 @@ Student Routes (Protected: role='student')
     ├── /calendar
     ├── /report-cards
     ├── /attendance
+    ├── /notifications
+    ├── /profile
+    └── /settings
+
+Parent Routes (Protected: role='parent')
+└── /parent
+    ├── / (Overview/Children List)
+    ├── /add-child
+    ├── /children/:childId
+    ├── /children/:childId/attendance
+    ├── /children/:childId/assignments
+    ├── /children/:childId/exams
+    ├── /children/:childId/courses
     ├── /notifications
     ├── /profile
     └── /settings

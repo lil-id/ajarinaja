@@ -185,13 +185,13 @@ The application uses **Supabase PostgreSQL** with **20+ tables** organized into 
 - **Calendar View**: Track upcoming exams, assignments, and events
 - **Report Cards**: View semester grades, teacher feedback, and detailed performance breakdown
 
-### For Institutions 🏫
-- **Unlimited Users**: Support for students and teachers
-- **Academic Period Management**: Organize by semester/term
-- **Institution-Wide Analytics**: Performance tracking across courses
-- **Centralized Content Library**: Secure material storage
-- **Multi-Language Support**: English & Indonesian interface
-- **Demo Mode**: Interactive platform demonstration
+### For Parents 👨‍👩‍👧‍👦
+- **Child Dashboard**: Monitor each child's academic progress at a glance
+- **Attendance Tracking**: View child's attendance history and status
+- **Assignment Monitoring**: Track assignment submissions and grades
+- **Exam Results**: Review exam scores and performance trends
+- **Pairing Code Linking**: Securely link to your child's account via pairing code
+- **Notifications**: Stay updated on your child's academic activities
 
 ## 🎨 UI/UX Highlights
 
