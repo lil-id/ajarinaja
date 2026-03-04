@@ -7,6 +7,7 @@ import i18next from 'i18next';
 interface UpdateProfileData {
   name?: string;
   bio?: string;
+  avatar_url?: string | null;
 }
 
 /**

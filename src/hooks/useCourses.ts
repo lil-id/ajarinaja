@@ -11,6 +11,9 @@ export interface Course {
   teacher_id: string;
   thumbnail_url: string | null;
   status: string;
+  semester?: string | null;
+  academic_year?: string | null;
+  period_id?: string | null;
   created_at: string;
   updated_at: string;
   category?: string;
@@ -219,7 +222,7 @@ export function useCreateCourse() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ title, description }: { title: string; description: string }) => {
+    mutationFn: async ({ title, description, period_id }: { title: string; description: string; period_id?: string }) => {
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -229,6 +232,7 @@ export function useCreateCourse() {
           description,
           teacher_id: user.id,
           status: 'draft',
+          period_id: period_id || null,
         })
         .select()
         .single();

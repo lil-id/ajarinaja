@@ -5,7 +5,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Loader2, Download, ArrowUpDown, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, ArrowUpDown, Info, CalendarDays, ClipboardList, BookOpen, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useParentChildren } from '@/hooks/useParentChildren';
 import { useChildCourses } from '@/hooks/useChildCourses';
@@ -48,8 +48,9 @@ export default function ChildDashboard() {
     const { childId } = useParams<{ childId: string }>();
     const navigate = useNavigate();
 
-    // Sorting state - MUST be before any conditional returns (Rules of Hooks)
+    // Sorting and filtering state - MUST be before any conditional returns (Rules of Hooks)
     const [sortOrder, setSortOrder] = useState<'default' | 'highest' | 'lowest'>('default');
+    const [selectedSemester, setSelectedSemester] = useState<string>('all');
 
     const { children, isLoading: isLoadingChildren } = useParentChildren();
     const { courses, isLoading: isLoadingCourses } = useChildCourses(childId);
@@ -132,15 +133,40 @@ export default function ChildDashboard() {
         };
     });
 
-    // Sort courses based on selected order
-    const sortedCourseRows = [...courseRows].sort((a, b) => {
-        if (sortOrder === 'highest') {
-            return b.finalGrade - a.finalGrade;
-        } else if (sortOrder === 'lowest') {
-            return a.finalGrade - b.finalGrade;
+    // Derive unique period options from courses data
+    const semesterOptions: { value: string; label: string }[] = [];
+    const seen = new Set<string>();
+    courses.forEach((course: any) => {
+        if (course.period_id && course.period_name) {
+            if (!seen.has(course.period_id)) {
+                seen.add(course.period_id);
+                semesterOptions.push({
+                    value: course.period_id,
+                    label: course.period_name,
+                });
+            }
         }
-        return 0; // default order
     });
+    // Sort period options by academic_year descending, then semester descending
+    semesterOptions.sort((a, b) => b.label.localeCompare(a.label));
+
+    // Sort courses based on selected order
+    const sortedCourseRows = [...courseRows]
+        .filter((row) => {
+            if (selectedSemester === 'all') return true;
+            const course = courses.find((c: any) => c.id === row.courseId);
+            return course?.period_id === selectedSemester;
+        })
+        .sort((a, b) => {
+            if (sortOrder === 'highest') return b.finalGrade - a.finalGrade;
+            if (sortOrder === 'lowest') return a.finalGrade - b.finalGrade;
+            return 0;
+        });
+
+    // Label for currently selected period (used in PDF)
+    const selectedSemesterLabel = selectedSemester === 'all'
+        ? t('courses.allSemesters')
+        : semesterOptions.find(o => o.value === selectedSemester)?.label ?? selectedSemester;
 
     // Export to PDF function
     const handleExportPDF = () => {
@@ -163,6 +189,7 @@ export default function ChildDashboard() {
                 .good { background-color: #dbeafe; color: #1e40af; }
                 .fair { background-color: #fef3c7; color: #92400e; }
                 .poor { background-color: #fee2e2; color: #991b1b; }
+                .no-print { display: none; }
                 @media print { body { margin: 0; } }
             </style>
         `;
@@ -180,6 +207,7 @@ export default function ChildDashboard() {
                     <p><strong>${t('common.name')}:</strong> ${child.name}</p>
                     <p><strong>${t('common.email')}:</strong> ${child.email}</p>
                     <p><strong>${t('common.date')}:</strong> ${new Date().toLocaleDateString()}</p>
+                    <p><strong>${t('courses.semester')}:</strong> ${selectedSemesterLabel}</p>
                 </div>
                 ${printContent.innerHTML}
                 <p style="margin-top: 20px; font-size: 12px; color: #666;">
@@ -233,19 +261,89 @@ export default function ChildDashboard() {
                 </AlertDescription>
             </Alert>
 
+            {/* Quick Links */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => navigate(`/parent/children/${childId}/attendance`)}
+                >
+                    <CardContent className="flex items-center justify-between p-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <CalendarDays className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-sm">{t('parent.attendance')}</p>
+                                <p className="text-xs text-muted-foreground">{t('common.viewDetails')}</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </CardContent>
+                </Card>
+
+                <Card
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => navigate(`/parent/children/${childId}/assignments`)}
+                >
+                    <CardContent className="flex items-center justify-between p-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <ClipboardList className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-sm">{t('parent.assignments')}</p>
+                                <p className="text-xs text-muted-foreground">{t('common.viewDetails')}</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </CardContent>
+                </Card>
+
+                <Card
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => navigate(`/parent/children/${childId}/exams`)}
+                >
+                    <CardContent className="flex items-center justify-between p-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-sm">{t('parent.exams')}</p>
+                                <p className="text-xs text-muted-foreground">{t('common.viewDetails')}</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </CardContent>
+                </Card>
+            </div>
+
             {/* Performance Table */}
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
                             <CardTitle>{t('parent.coursePerformanceTable')}</CardTitle>
                             <CardDescription>
                                 {t('parent.overviewDescription')}
                             </CardDescription>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder={t('courses.filterBySemester')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('courses.allSemesters')}</SelectItem>
+                                    {semesterOptions.map(opt => (
+                                        <SelectItem key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Select value={sortOrder} onValueChange={(value: any) => setSortOrder(value)}>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger className="w-full sm:w-[180px]">
                                     <ArrowUpDown className="h-4 w-4 mr-2" />
                                     <SelectValue />
                                 </SelectTrigger>
@@ -258,6 +356,7 @@ export default function ChildDashboard() {
                             <Button
                                 variant="outline"
                                 size="sm"
+                                className="w-full sm:w-auto"
                                 onClick={handleExportPDF}
                                 disabled={courseRows.length === 0}
                             >
@@ -289,7 +388,7 @@ export default function ChildDashboard() {
                                         <TableHead className="text-center">{t('parent.tableExamAvg')}</TableHead>
                                         <TableHead className="text-center">{t('parent.tableFinalGrade')}</TableHead>
                                         <TableHead>{t('parent.tableRemarks')}</TableHead>
-                                        <TableHead className="text-center">{t('common.actions')}</TableHead>
+                                        <TableHead className="text-center no-print">{t('common.actions')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -319,7 +418,7 @@ export default function ChildDashboard() {
                                                     {row.status}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="text-center">
+                                            <TableCell className="text-center no-print">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"

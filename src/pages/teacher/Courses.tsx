@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useTeacherCourses, useCreateCourse, useUpdateCourse, useDeleteCourse } from '@/hooks/useCourses';
+import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
 import { BookOpen, Plus, FileText, MoreVertical, Edit, Trash2, Loader2, Eye } from 'lucide-react';
 import {
   DropdownMenu,
@@ -15,6 +16,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 /**
@@ -36,9 +44,10 @@ const TeacherCourses = () => {
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
   const deleteCourse = useDeleteCourse();
+  const { periods } = useAcademicPeriods();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newCourse, setNewCourse] = useState({ title: '', description: '' });
+  const [newCourse, setNewCourse] = useState({ title: '', description: '', period_id: '' });
 
   const handleCreateCourse = async () => {
     if (!newCourse.title.trim()) {
@@ -50,8 +59,9 @@ const TeacherCourses = () => {
       await createCourse.mutateAsync({
         title: newCourse.title,
         description: newCourse.description,
+        period_id: newCourse.period_id || undefined,
       });
-      setNewCourse({ title: '', description: '' });
+      setNewCourse({ title: '', description: '', period_id: '' });
       setIsDialogOpen(false);
       toast.success(t('courses.courseCreated'));
     } catch (error) {
@@ -126,6 +136,26 @@ const TeacherCourses = () => {
                   onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
                 />
               </div>
+              {periods.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="period">{t('courses.academicPeriod')}</Label>
+                  <Select
+                    value={newCourse.period_id}
+                    onValueChange={(value) => setNewCourse({ ...newCourse, period_id: value })}
+                  >
+                    <SelectTrigger id="period">
+                      <SelectValue placeholder={t('courses.selectPeriod')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {periods.map(p => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <Button
                 onClick={handleCreateCourse}
                 className="w-full"

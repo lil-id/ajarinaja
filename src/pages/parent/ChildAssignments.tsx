@@ -5,7 +5,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CheckCircle2, Clock, XCircle, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, XCircle, FileText, Loader2, TrendingUp, Percent } from 'lucide-react';
 import { useParentChildren } from '@/hooks/useParentChildren';
 import { useChildAssignments } from '@/hooks/useChildAssignments';
 import { Button } from '@/components/ui/button';
@@ -82,10 +82,11 @@ export default function ChildAssignments() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
                             {t('parent.totalAssignments')}
                         </CardTitle>
+                        <TrendingUp className="w-4 h-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.total}</div>
@@ -93,10 +94,11 @@ export default function ChildAssignments() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-green-600">
                             {t('parent.completed')}
                         </CardTitle>
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600">{summary.completed}</div>
@@ -104,10 +106,11 @@ export default function ChildAssignments() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-orange-600">
                             {t('parent.pending')}
                         </CardTitle>
+                        <Clock className="w-4 h-4 text-orange-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-orange-600">{summary.pending}</div>
@@ -115,10 +118,11 @@ export default function ChildAssignments() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-blue-600">
                             {t('parent.graded')}
                         </CardTitle>
+                        <FileText className="w-4 h-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-blue-600">{summary.graded}</div>
@@ -126,17 +130,14 @@ export default function ChildAssignments() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
                             {t('parent.averageScore')}
                         </CardTitle>
+                        <Percent className="w-4 h-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.averageScore}</div>
-                        <Progress
-                            value={summary.averageScore}
-                            className="mt-2"
-                        />
                     </CardContent>
                 </Card>
             </div>
@@ -159,7 +160,7 @@ export default function ChildAssignments() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>{t('common.title')}</TableHead>
+                                        <TableHead>{t('parent.assigmentTitle')}</TableHead>
                                         <TableHead>{t('common.course')}</TableHead>
                                         <TableHead>{t('parent.dueDate')}</TableHead>
                                         <TableHead>{t('common.status')}</TableHead>
@@ -203,7 +204,7 @@ export default function ChildAssignments() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge className={`${config.bg} ${config.color} border-0`}>
+                                                    <Badge className={`${config.bg} ${config.color} border-0 hover:bg-transparent`}>
                                                         <Icon className="w-3 h-3 mr-1" />
                                                         {t(`assignments.${assignment.submission_status}`)}
                                                     </Badge>

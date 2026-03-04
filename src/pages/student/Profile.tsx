@@ -43,10 +43,12 @@ const StudentProfile = () => {
   const handleSave = () => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!fullName) return;
-    updateProfile.mutate({ name: fullName });
+    updateProfile.mutate({ name: fullName, avatar_url: avatarUrl });
   };
 
-  const hasChanges = profile?.name !== `${firstName.trim()} ${lastName.trim()}`.trim();
+  const hasChanges =
+    profile?.name !== `${firstName.trim()} ${lastName.trim()}`.trim() ||
+    (avatarUrl ?? null) !== (profile?.avatar_url ?? null);
   const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || t('profile.student');
 
   return (

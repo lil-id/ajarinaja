@@ -54,6 +54,7 @@ export default {
     completed: 'Completed',
     finalized: 'Finalized',
     graded: 'Graded',
+    course: 'Course',
     pass: 'Pass',
     fail: 'Fail',
     viewAll: 'View All',
@@ -333,6 +334,12 @@ export default {
     deleteAssignmentConfirm: 'Are you sure you want to delete this assignment?',
     addMaterial: 'Add Course Material',
     created: 'Created',
+    semester: 'Semester',
+    academicPeriod: 'Academic Period',
+    selectPeriod: 'Select Period',
+    noPeriod: 'No Period',
+    allSemesters: 'All Semesters',
+    filterBySemester: 'Filter by Period',
   },
 
   // Course Detail
@@ -604,6 +611,7 @@ export default {
     startDate: 'Start Date',
     endDate: 'End Date',
     noPeriods: 'No academic periods available',
+    noPeriodsOperatorNote: 'No academic periods have been created yet. Please contact the Academic Operator to create a new period.',
     createFirstPeriod: 'Create First Period',
     selectPeriod: 'Select a period to manage report cards',
     reportCardList: 'Report Card List',
@@ -1025,9 +1033,11 @@ export default {
     reportCardFinalized: 'Report card finalized successfully',
     reportCardDeleted: 'Report card deleted successfully',
     failedToCreateReportCard: 'Failed to create report card',
+    reportCardAlreadyExists: 'A report card for this student in this period already exists',
     failedToUpdateReportCard: 'Failed to update report card',
     failedToFinalizeReportCard: 'Failed to finalize report card',
     failedToDeleteReportCard: 'Failed to delete report card',
+    courseTeacherUpdated: 'Course teacher updated successfully',
 
     // Report Card Entries
     gradeAdded: 'Grade added successfully',
@@ -1851,7 +1861,7 @@ export default {
     courses: 'Courses',
     attendance: 'Attendance',
     attendanceRate: 'Attendance Rate',
-    present: 'present',
+    present: 'Present',
     assignments: 'Assignments',
     exams: 'Exams',
     graded: 'graded',
@@ -1861,6 +1871,7 @@ export default {
     noCoursesYet: 'No courses yet',
 
     // Attendance
+    time: 'Time',
     attendanceFor: 'Attendance for',
     viewAllAttendanceRecords: 'View all attendance history',
     totalSessions: 'Total Sessions',
@@ -1905,6 +1916,84 @@ export default {
     missed: 'Missed',
     notTaken: 'Not Taken',
     examsDescription: 'Monitor exam performance and results',
+  },
+
+  // Operator (Academic Staff)
+  operator: {
+    roleLabel: 'Academic Staff',
+    nav: {
+      dashboard: 'Dashboard',
+      periods: 'Academic Periods',
+      courses: 'Courses',
+      users: 'Users Management',
+      reports: 'Reports',
+    },
+    dashboard: {
+      title: 'Academic Dashboard',
+      description: 'School-wide statistics and activity overview',
+      activePeriod: 'Active Period',
+      periodsOverview: 'Academic Periods',
+      periodsOverviewDesc: 'List of all academic periods created',
+    },
+    stats: {
+      totalTeachers: 'Total Teachers',
+      totalStudents: 'Total Students',
+      totalCourses: 'Total Courses',
+      totalEnrollments: 'Total Enrollments',
+    },
+    statsTooltips: {
+      totalTeachers: 'Total number of registered and active teachers in the system.',
+      totalStudents: 'Total number of registered and active students in the system.',
+      totalCourses: 'Total number of courses created by all teachers.',
+      totalEnrollments: 'Total number of student enrollments across all active courses.',
+    },
+    periods: {
+      title: 'Academic Periods',
+      description: 'Manage school academic periods. Teachers will select from periods created here.',
+      listTitle: 'Periods List',
+      listDesc: 'All academic periods created for the school',
+      noPeriods: 'No academic periods yet. Create the first one.',
+      createPeriod: 'Create Period',
+      deletePeriod: 'Delete Period',
+      deleteConfirm: 'This action cannot be undone. Courses linked to this period will lose their period reference.',
+    },
+    courses: {
+      title: 'All Courses',
+      description: 'View all courses from all teachers (read-only)',
+      listTitle: 'All Courses',
+      listDesc: 'List of all courses created by teachers.',
+      searchPlaceholder: 'Search course or teacher...',
+      noCoursesFound: 'No courses found',
+      assignTeacher: 'Assign Teacher',
+      selectTeacher: 'Select Teacher',
+      assign: 'Save Assignment',
+      assignSuccess: 'Teacher assigned successfully',
+    },
+    users: {
+      title: 'Users Management',
+      description: 'Manage and view all teachers and students in the school.',
+      searchPlaceholder: 'Search name or email...',
+
+      tabStudents: 'Students',
+      studentsListTitle: 'Students List',
+      studentsListDesc: 'List of all students in the school and their course counts.',
+      noStudentsFound: 'No students found',
+
+      tabTeachers: 'Teachers',
+      teachersListTitle: 'Teachers List',
+      teachersListDesc: 'List of all teachers in the school.',
+      noTeachersFound: 'No teachers found',
+      courses: 'courses',
+    },
+    reports: {
+      title: 'School Reports',
+      description: 'School-level statistics and analytics',
+      topCourses: 'Most Popular Courses',
+      topCoursesDesc: 'Ranked by student enrollment count',
+      topTeachers: 'Most Active Teachers',
+      topTeachersDesc: 'Ranked by number of courses',
+      courses: 'courses',
+    },
   },
 };
 

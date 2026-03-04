@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
  */
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredRole?: 'teacher' | 'student' | 'parent';
+  requiredRole?: 'teacher' | 'student' | 'parent' | 'operator';
 }
 
 /**
@@ -34,7 +34,8 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
         const redirectPath =
           role === 'teacher' ? '/teacher' :
             role === 'student' ? '/student' :
-              role === 'parent' ? '/parent' : '/';
+              role === 'parent' ? '/parent' :
+                role === 'operator' ? '/operator' : '/';
         navigate(redirectPath, { replace: true });
       }
     }

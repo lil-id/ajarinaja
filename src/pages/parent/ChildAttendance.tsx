@@ -5,7 +5,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CheckCircle2, XCircle, AlertCircle, Clock, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, AlertCircle, Clock, CalendarDays, Percent, Loader2 } from 'lucide-react';
 import { useParentChildren } from '@/hooks/useParentChildren';
 import { useChildAttendance } from '@/hooks/useChildAttendance';
 import { Button } from '@/components/ui/button';
@@ -82,10 +82,11 @@ export default function ChildAttendance() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
                             {t('parent.totalSessions')}
                         </CardTitle>
+                        <CalendarDays className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.total}</div>
@@ -93,10 +94,11 @@ export default function ChildAttendance() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-green-600">
                             {t('parent.present')}
                         </CardTitle>
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600">{summary.present}</div>
@@ -104,10 +106,11 @@ export default function ChildAttendance() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-red-600">
                             {t('parent.absent')}
                         </CardTitle>
+                        <XCircle className="w-4 h-4 text-red-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-600">{summary.absent}</div>
@@ -115,10 +118,11 @@ export default function ChildAttendance() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-blue-600">
                             {t('parent.excused')}
                         </CardTitle>
+                        <AlertCircle className="w-4 h-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-blue-600">{summary.excused}</div>
@@ -126,14 +130,14 @@ export default function ChildAttendance() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
                             {t('parent.attendanceRate')}
                         </CardTitle>
+                        <Percent className="w-4 h-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.percentage}%</div>
-                        <Progress value={summary.percentage} className="mt-2" />
                     </CardContent>
                 </Card>
             </div>
@@ -157,6 +161,7 @@ export default function ChildAttendance() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>{t('common.date')}</TableHead>
+                                        <TableHead>{t('parent.time')}</TableHead>
                                         <TableHead>{t('common.course')}</TableHead>
                                         <TableHead>{t('parent.session')}</TableHead>
                                         <TableHead>{t('common.status')}</TableHead>
@@ -173,6 +178,9 @@ export default function ChildAttendance() {
                                                 <TableCell className="font-medium">
                                                     {new Date(record.session_date).toLocaleDateString()}
                                                 </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {new Date(record.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </TableCell>
                                                 <TableCell>
                                                     <div>
                                                         <p className="font-medium">{record.course_title}</p>
@@ -183,7 +191,7 @@ export default function ChildAttendance() {
                                                 </TableCell>
                                                 <TableCell>{record.session_title}</TableCell>
                                                 <TableCell>
-                                                    <Badge className={`${config.bg} ${config.color} border-0`}>
+                                                    <Badge className={`${config.bg} ${config.color} border-0 hover:bg-transparent`}>
                                                         <Icon className="w-3 h-3 mr-1" />
                                                         {t(`attendance.${record.status}`)}
                                                     </Badge>

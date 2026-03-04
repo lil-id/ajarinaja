@@ -48,11 +48,19 @@ const TeacherProfile = () => {
   const handleSave = () => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!fullName) return;
-    updateProfile.mutate({ name: fullName, bio: bio.trim() || undefined });
+    updateProfile.mutate({
+      name: fullName,
+      bio: bio.trim() || undefined,
+      avatar_url: avatarUrl
+    });
   };
 
   const currentName = `${firstName.trim()} ${lastName.trim()}`.trim();
-  const hasChanges = profile?.name !== currentName || (profile?.bio || '') !== bio;
+  const hasChanges =
+    profile?.name !== currentName ||
+    (profile?.bio || '') !== bio ||
+    (profile?.avatar_url || null) !== avatarUrl;
+
   const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || t('profile.teacher');
 
   return (

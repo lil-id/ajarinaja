@@ -75,6 +75,15 @@ import ChildExams from "./pages/parent/ChildExams";
 import ParentNotifications from "./pages/parent/ParentNotifications";
 import ParentSettings from "./pages/parent/ParentSettings";
 
+// Operator Pages
+import OperatorLayout from "./layouts/OperatorLayout";
+import OperatorDashboard from "./pages/operator/OperatorDashboard";
+import OperatorPeriods from "./pages/operator/OperatorPeriods";
+import OperatorCourses from "./pages/operator/OperatorCourses";
+import OperatorUsers from "./pages/operator/OperatorUsers";
+import OperatorReports from "./pages/operator/OperatorReports";
+import OperatorSettings from "./pages/operator/OperatorSettings";
+
 // Demo Pages
 import DemoLayout from "./layouts/DemoLayout";
 import DemoTeacherOverview from "./pages/demo/DemoTeacherOverview";
@@ -215,6 +224,20 @@ const App = () => (
               <Route path="notifications" element={<ParentNotifications />} />
               <Route path="profile" element={<ParentSettings />} />
               <Route path="settings" element={<ParentSettings />} />
+            </Route>
+
+            {/* Operator Routes */}
+            <Route path="/operator" element={
+              <ProtectedRoute requiredRole="operator">
+                <OperatorLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<OperatorDashboard />} />
+              <Route path="periods" element={<OperatorPeriods />} />
+              <Route path="courses" element={<OperatorCourses />} />
+              <Route path="users" element={<OperatorUsers />} />
+              <Route path="reports" element={<OperatorReports />} />
+              <Route path="settings" element={<OperatorSettings />} />
             </Route>
 
             {/* Demo Routes */}

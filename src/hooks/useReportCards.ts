@@ -163,8 +163,20 @@ export function useReportCards(periodId?: string) {
       queryClient.invalidateQueries({ queryKey: ['report-cards'] });
       toast.success(i18next.t('toast.reportCardCreated'));
     },
-    onError: (error: Error) => {
-      toast.error(`${i18next.t('toast.failedToCreateReportCard')}: ${error.message}`);
+    onError: (error: Error & { code?: string }) => {
+      // Log technical error for debugging
+      console.error('[useReportCards] createReportCard failed:', error);
+
+      // Translate known DB constraint violations into user-friendly messages
+      const isDuplicate = error.code === '23505' ||
+        error.message?.includes('duplicate key') ||
+        error.message?.includes('unique constraint');
+
+      if (isDuplicate) {
+        toast.error(i18next.t('toast.reportCardAlreadyExists'));
+      } else {
+        toast.error(i18next.t('toast.failedToCreateReportCard'));
+      }
     },
   });
 

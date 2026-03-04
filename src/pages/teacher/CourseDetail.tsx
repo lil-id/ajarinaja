@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses, useUpdateCourse, useDeleteCourse, useUploadCourseThumbnail } from '@/hooks/useCourses';
+import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
 import { useExams } from '@/hooks/useExams';
 import {
   useCourseMaterials,
@@ -125,6 +126,7 @@ const TeacherCourseDetail = () => {
   const updateCourse = useUpdateCourse();
   const deleteCourse = useDeleteCourse();
   const uploadThumbnail = useUploadCourseThumbnail();
+  const { periods } = useAcademicPeriods();
 
   const course = courses.find(c => c.id === courseId);
 
@@ -156,7 +158,7 @@ const TeacherCourseDetail = () => {
   const courseAssignments = assignments.filter(a => a.course_id === courseId);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ title: '', description: '' });
+  const [editForm, setEditForm] = useState({ title: '', description: '', period_id: '' });
   const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [studentEmailSearch, setStudentEmailSearch] = useState('');
@@ -207,13 +209,13 @@ const TeacherCourseDetail = () => {
   }
 
   const handleStartEdit = () => {
-    setEditForm({ title: course.title, description: course.description || '' });
+    setEditForm({ title: course.title, description: course.description || '', period_id: course.period_id || '' });
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditForm({ title: '', description: '' });
+    setEditForm({ title: '', description: '', period_id: '' });
   };
 
   const handleSaveEdit = async () => {
@@ -225,7 +227,8 @@ const TeacherCourseDetail = () => {
       await updateCourse.mutateAsync({
         id: course.id,
         title: editForm.title,
-        description: editForm.description
+        description: editForm.description,
+        period_id: editForm.period_id || null,
       });
       setIsEditing(false);
       toast.success(t('toast.courseUpdated'));
@@ -513,6 +516,27 @@ const TeacherCourseDetail = () => {
                     className="max-w-lg"
                   />
                 </div>
+                {periods.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-period">{t('courses.academicPeriod')}</Label>
+                    <Select
+                      value={editForm.period_id || '__none__'}
+                      onValueChange={(value) => setEditForm({ ...editForm, period_id: value === '__none__' ? '' : value })}
+                    >
+                      <SelectTrigger id="edit-period" className="max-w-xs">
+                        <SelectValue placeholder={t('courses.selectPeriod')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">{t('courses.noPeriod')}</SelectItem>
+                        {periods.map(p => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Button onClick={handleSaveEdit} disabled={updateCourse.isPending}>
                     {updateCourse.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

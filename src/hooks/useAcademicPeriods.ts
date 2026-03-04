@@ -37,12 +37,11 @@ export function useAcademicPeriods() {
   const queryClient = useQueryClient();
 
   const periodsQuery = useQuery({
-    queryKey: ['academic-periods', user?.id],
+    queryKey: ['academic-periods'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('academic_periods')
         .select('*')
-        .eq('created_by', user!.id)
         .order('academic_year', { ascending: false })
         .order('semester', { ascending: false });
 

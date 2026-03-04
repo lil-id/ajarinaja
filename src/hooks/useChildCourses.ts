@@ -9,11 +9,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Hook to fetch courses for a specific child
+ * Hook to fetch courses for a specific child, including their academic period info.
  * 
  * @param {string | undefined} childUserId - The user ID of the child
  * @returns {Object} Courses data and state
- * @returns {Array} courses - Array of enrolled courses with details
+ * @returns {Array} courses - Array of enrolled courses with period details
  * @returns {boolean} isLoading - Loading state
  * @returns {Error | null} error - Error object if fetch failed
  * 
@@ -49,6 +49,7 @@ export function useChildCourses(childUserId: string | undefined) {
             status,
             thumbnail_url,
             teacher_id,
+            period_id,
             created_at
           )
         `)
@@ -63,6 +64,13 @@ export function useChildCourses(childUserId: string | undefined) {
                 enrollments.map((e: any) => e.courses.teacher_id)
             )];
 
+            // Get unique period IDs (filter nulls)
+            const periodIds = [...new Set(
+                enrollments
+                    .map((e: any) => e.courses.period_id)
+                    .filter(Boolean)
+            )];
+
             // Fetch teacher profiles
             const { data: teachers, error: teacherError } = await supabase
                 .from('profiles')
@@ -71,6 +79,17 @@ export function useChildCourses(childUserId: string | undefined) {
 
             if (teacherError) throw teacherError;
 
+            // Fetch academic periods
+            let periodMap = new Map<string, any>();
+            if (periodIds.length > 0) {
+                const { data: periods } = await supabase
+                    .from('academic_periods')
+                    .select('id, name, semester, academic_year')
+                    .in('id', periodIds);
+
+                periodMap = new Map(periods?.map(p => [p.id, p]) || []);
+            }
+
             // Create teacher map
             const teacherMap = new Map(
                 teachers?.map(t => [t.user_id, t]) || []
@@ -78,6 +97,9 @@ export function useChildCourses(childUserId: string | undefined) {
 
             return enrollments.map((enrollment: any) => {
                 const teacher = teacherMap.get(enrollment.courses.teacher_id);
+                const period = enrollment.courses.period_id
+                    ? periodMap.get(enrollment.courses.period_id)
+                    : null;
                 return {
                     enrollment_id: enrollment.id,
                     enrolled_at: enrollment.enrolled_at,
@@ -85,6 +107,10 @@ export function useChildCourses(childUserId: string | undefined) {
                     ...enrollment.courses,
                     teacher_name: teacher?.name || 'Unknown',
                     teacher_email: teacher?.email || '',
+                    period_id: enrollment.courses.period_id ?? null,
+                    period_name: period?.name ?? null,
+                    period_semester: period?.semester ?? null,
+                    period_academic_year: period?.academic_year ?? null,
                 };
             });
         },

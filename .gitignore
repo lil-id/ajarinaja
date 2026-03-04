@@ -9,7 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
-docss
+docs
 dist-ssr
 *.local
 
@@ -26,4 +26,4 @@ dist-ssr
 *.env
 .env.*
 !.env.example
-.agent/
+.agent

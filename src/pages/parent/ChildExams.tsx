@@ -5,7 +5,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Trophy, Target, TrendingUp, Loader2 } from 'lucide-react';
+import { ArrowLeft, Trophy, Target, TrendingUp, Percent, Loader2 } from 'lucide-react';
 import { useParentChildren } from '@/hooks/useParentChildren';
 import { useChildExams } from '@/hooks/useChildExams';
 import { Button } from '@/components/ui/button';
@@ -86,7 +86,7 @@ export default function ChildExams() {
                         <CardTitle className="text-sm font-medium">
                             {t('parent.totalExams')}
                         </CardTitle>
-                        <Target className="w-4 h-4 text-muted-foreground" />
+                        <Target className="w-4 h-4 text-success" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.total}</div>
@@ -101,7 +101,7 @@ export default function ChildExams() {
                         <CardTitle className="text-sm font-medium">
                             {t('parent.completed')}
                         </CardTitle>
-                        <Trophy className="w-4 h-4 text-muted-foreground" />
+                        <Trophy className="w-4 h-4 text-orange-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.graded}</div>
@@ -116,7 +116,7 @@ export default function ChildExams() {
                         <CardTitle className="text-sm font-medium">
                             {t('parent.averageScore')}
                         </CardTitle>
-                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                        <TrendingUp className="w-4 h-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.averageScore}</div>
@@ -131,11 +131,10 @@ export default function ChildExams() {
                         <CardTitle className="text-sm font-medium">
                             {t('parent.averagePercentage')}
                         </CardTitle>
-                        <Target className="w-4 h-4 text-muted-foreground" />
+                        <Percent className="w-4 h-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{summary.averagePercentage}%</div>
-                        <Progress value={summary.averagePercentage} className="mt-2" />
                     </CardContent>
                 </Card>
             </div>
@@ -158,7 +157,7 @@ export default function ChildExams() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>{t('common.title')}</TableHead>
+                                        <TableHead>{t('parent.examsTitle')}</TableHead>
                                         <TableHead>{t('common.course')}</TableHead>
                                         <TableHead>{t('parent.duration')}</TableHead>
                                         <TableHead className="text-right">{t('parent.score')}</TableHead>
@@ -205,7 +204,7 @@ export default function ChildExams() {
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 {exam.percentage !== null ? (
-                                                    <Badge className={getScoreBadgeColor(exam.percentage)}>
+                                                    <Badge className={`hover:bg-transparent ${getScoreBadgeColor(exam.percentage)}`}>
                                                         {exam.percentage}%
                                                     </Badge>
                                                 ) : (
