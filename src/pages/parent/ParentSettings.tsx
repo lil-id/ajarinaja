@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Shield, Loader2, Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import { authApi } from '@/features/auth/api/auth.api.backend';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useUpdateProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 
 /**
@@ -23,7 +25,9 @@ import { toast } from 'sonner';
  */
 const ParentSettings = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
+    const { profile } = useAuth();
+    const updateProfile = useUpdateProfile();
+
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -31,6 +35,20 @@ const ParentSettings = () => {
         newPassword: '',
         confirmPassword: '',
     });
+    const [phoneNumber, setPhoneNumber] = useState('');
+
+    useEffect(() => {
+        if (profile?.phone_number) {
+            setPhoneNumber(profile.phone_number);
+        }
+    }, [profile?.phone_number]);
+
+    const handleSaveContact = (e: React.FormEvent) => {
+        e.preventDefault();
+        updateProfile.mutate({ phone_number: phoneNumber.trim() || null });
+    };
+
+    const hasContactChanges = (profile?.phone_number || '') !== phoneNumber;
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,6 +88,40 @@ const ParentSettings = () => {
                     {t('settings.subtitle')}
                 </p>
             </div>
+
+            {/* Contact Info Section */}
+            <Card className="border-0 shadow-card">
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <UserIcon className="w-5 h-5 text-primary" />
+                        <CardTitle>{t('profile.contactInformation')}</CardTitle>
+                    </div>
+                    <CardDescription>{t('profile.contactInfoDesc')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSaveContact} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="phoneNumber">{t('profile.emergencyPhoneNumber')}</Label>
+                            <Input
+                                id="phoneNumber"
+                                type="tel"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                placeholder={t('profile.phoneNumberPlaceholder')}
+                                maxLength={20}
+                            />
+                            <p className="text-xs text-muted-foreground">{t('profile.emergencyPhoneNumberDesc')}</p>
+                        </div>
+                        <Button
+                            type="submit"
+                            disabled={updateProfile.isPending || !hasContactChanges}
+                        >
+                            {updateProfile.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {t('profile.saveChanges')}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
 
             {/* Security Section */}
             <Card className="border-0 shadow-card">

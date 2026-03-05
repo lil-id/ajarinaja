@@ -7,6 +7,7 @@ export interface Profile {
     name: string;
     avatar_url: string | null;
     bio: string | null;
+    phone_number: string | null;
     language_preference: string;
 }
 

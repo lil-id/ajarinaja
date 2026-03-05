@@ -8,6 +8,7 @@ interface UpdateProfileData {
   name?: string;
   bio?: string;
   avatar_url?: string | null;
+  phone_number?: string | null;
 }
 
 /**

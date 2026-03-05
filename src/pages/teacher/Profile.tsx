@@ -29,6 +29,7 @@ const TeacherProfile = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [bio, setBio] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +44,10 @@ const TeacherProfile = () => {
     if (profile?.bio) {
       setBio(profile.bio);
     }
-  }, [profile?.name, profile?.avatar_url, profile?.bio]);
+    if (profile?.phone_number) {
+      setPhoneNumber(profile.phone_number);
+    }
+  }, [profile?.name, profile?.avatar_url, profile?.bio, profile?.phone_number]);
 
   const handleSave = () => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -51,6 +55,7 @@ const TeacherProfile = () => {
     updateProfile.mutate({
       name: fullName,
       bio: bio.trim() || undefined,
+      phone_number: phoneNumber.trim() || null,
       avatar_url: avatarUrl
     });
   };
@@ -59,6 +64,7 @@ const TeacherProfile = () => {
   const hasChanges =
     profile?.name !== currentName ||
     (profile?.bio || '') !== bio ||
+    (profile?.phone_number || '') !== phoneNumber ||
     (profile?.avatar_url || null) !== avatarUrl;
 
   const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || t('profile.teacher');
@@ -137,6 +143,18 @@ const TeacherProfile = () => {
                 rows={4}
               />
               <p className="text-xs text-muted-foreground">{t('profile.bioCharCount', { current: bio.length, max: 500 })}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">{t('profile.phoneNumber')}</Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder={t('profile.phoneNumberPlaceholder')}
+                maxLength={20}
+              />
+              <p className="text-xs text-muted-foreground">{t('profile.phoneNumberDescription')}</p>
             </div>
           </div>
 

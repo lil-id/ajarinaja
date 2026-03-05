@@ -27,6 +27,7 @@ const StudentProfile = () => {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,16 +39,24 @@ const StudentProfile = () => {
     if (profile?.avatar_url) {
       setAvatarUrl(profile.avatar_url);
     }
-  }, [profile?.name, profile?.avatar_url]);
+    if (profile?.phone_number) {
+      setPhoneNumber(profile.phone_number);
+    }
+  }, [profile?.name, profile?.avatar_url, profile?.phone_number]);
 
   const handleSave = () => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
     if (!fullName) return;
-    updateProfile.mutate({ name: fullName, avatar_url: avatarUrl });
+    updateProfile.mutate({
+      name: fullName,
+      phone_number: phoneNumber.trim() || null,
+      avatar_url: avatarUrl
+    });
   };
 
   const hasChanges =
     profile?.name !== `${firstName.trim()} ${lastName.trim()}`.trim() ||
+    (profile?.phone_number || '') !== phoneNumber ||
     (avatarUrl ?? null) !== (profile?.avatar_url ?? null);
   const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : profile?.name || t('profile.student');
 
@@ -113,6 +122,18 @@ const StudentProfile = () => {
                 className="bg-muted"
               />
               <p className="text-xs text-muted-foreground">{t('profile.emailCannotBeChanged')}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">{t('profile.phoneNumber')}</Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder={t('profile.phoneNumberPlaceholder')}
+                maxLength={20}
+              />
+              <p className="text-xs text-muted-foreground">{t('profile.phoneNumberDescription')}</p>
             </div>
           </div>
 
