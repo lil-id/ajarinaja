@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCourses } from '@/hooks/useCourses';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useCourseAttendanceStats } from '@/hooks/useAttendanceSessions';
 import { useAttendanceExport } from '@/hooks/useAttendanceExport';
 import {

@@ -6,6 +6,7 @@ import { Loader2, Download, ExternalLink, X, FileText, File, Video, FileImage, C
 import { getMaterialSignedUrl, extractYouTubeId } from '@/hooks/useCourseMaterials';
 import { useMarkMaterialViewed, useMaterialViews } from '@/hooks/useProgress';
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { toast } from 'sonner';
 
 /**
@@ -84,9 +85,7 @@ export const MaterialViewer = ({ isOpen, onClose, material }: MaterialViewerProp
     if (!material?.file_path || !material.file_name) return;
 
     try {
-      const { data, error } = await supabase.storage
-        .from('course-materials')
-        .download(material.file_path);
+      const { data, error } = await storageApi.downloadFile('course-materials', material.file_path);
 
       if (error) {
         toast.error(t('toast.failedToDownloadMaterial'));

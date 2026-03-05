@@ -53,7 +53,8 @@ import SortableItem from '@/components/SortableItem';
 import { arrayMove } from '@dnd-kit/sortable';
 import { sendCourseNotification, getEnrolledStudents } from '@/lib/notificationService';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
@@ -159,22 +160,19 @@ export default function CreateAssignment() {
     try {
       setIsUploading(true);
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${Math.random()}-${sanitizedName}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('question-images')
-        .upload(filePath, file);
+      const { error: uploadError } = await storageApi.uploadFile('question-images', filePath, file);
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from('question-images')
-        .getPublicUrl(filePath);
+      const { data } = storageApi.getPublicUrl('question-images', filePath);
 
-      return data.publicUrl;
+      return data?.publicUrl || null;
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error(t('toast.uploadFailed'));

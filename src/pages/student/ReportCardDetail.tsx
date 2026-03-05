@@ -25,7 +25,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useReportCardEntries } from '@/hooks/useReportCards';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import jsPDF from 'jspdf';

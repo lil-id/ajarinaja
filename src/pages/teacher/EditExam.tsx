@@ -26,7 +26,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import StudentPreviewMode from '@/components/StudentPreviewMode';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { localDateTimeToUTC, utcToLocalDateTime } from '@/lib/dateUtils';
-import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 
 /**
  * Edit Exam page.
@@ -174,23 +174,21 @@ const EditExam = () => {
 
   const uploadImage = async (file: File) => {
     try {
+      // setIsUploading(true); // This variable is not defined in the provided context. Assuming it's meant to be added elsewhere or is a placeholder.
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${Math.random()}-${sanitizedName}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('question-images')
-        .upload(filePath, file);
+      const { error: uploadError } = await storageApi.uploadFile('question-images', filePath, file);
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from('question-images')
-        .getPublicUrl(filePath);
+      const { data } = storageApi.getPublicUrl('question-images', filePath);
 
-      return data.publicUrl;
+      return data?.publicUrl || null;
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('Failed to upload image');

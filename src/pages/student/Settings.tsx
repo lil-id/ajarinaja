@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Shield, Loader2, Eye, EyeOff, Users, Copy, RefreshCw, X } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { authApi } from '@/features/auth/api/auth.api.backend';
 import { toast } from 'sonner';
 import { usePairingCode } from '@/hooks/usePairingCode';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -48,7 +48,7 @@ const StudentSettings = () => {
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
-      await supabase.auth.signOut();
+      await authApi.signOut();
       toast.success(t('toast.accountDeleted'));
       navigate('/');
     } catch (error: any) {
@@ -72,7 +72,7 @@ const StudentSettings = () => {
 
     setIsChangingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error } = await authApi.updateUser({
         password: passwordForm.newPassword,
       });
 

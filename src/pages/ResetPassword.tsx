@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { authApi } from '@/features/auth/api/auth.api.backend';
 
 /**
  * ResetPassword component.
@@ -30,7 +30,7 @@ const ResetPassword = () => {
   useEffect(() => {
     // Check if user arrived via password reset link
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await authApi.getSession();
       if (session) {
         setIsValidSession(true);
       } else {
@@ -57,7 +57,7 @@ const ResetPassword = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await authApi.updateUser({ password });
 
       if (error) {
         toast.error(error.message);
@@ -67,7 +67,7 @@ const ResetPassword = () => {
 
         // Sign out and redirect to login after 2 seconds
         setTimeout(async () => {
-          await supabase.auth.signOut();
+          await authApi.signOut();
           navigate('/login');
         }, 2000);
       }

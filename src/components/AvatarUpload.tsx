@@ -4,8 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 /**
  * Props for the AvatarUpload component.
@@ -69,21 +70,21 @@ export const AvatarUpload = ({
       // Delete old avatar if exists
       if (currentAvatarUrl) {
         const oldPath = currentAvatarUrl.split('/').slice(-2).join('/');
-        await supabase.storage.from('avatars').remove([oldPath]);
+        await storageApi.removeFiles('avatars', [oldPath]);
       }
 
       // Upload new avatar
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${user.id}/${Date.now()}-${sanitizedName}`;
+      const filePath = fileName;
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
+      const { error: uploadError } = await storageApi.uploadFile('avatars', filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get public URL
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const { data } = storageApi.getPublicUrl('avatars', filePath);
 
       // Update profile
       const { error: updateError } = await supabase
@@ -113,7 +114,7 @@ export const AvatarUpload = ({
     try {
       // Extract file path from URL
       const oldPath = currentAvatarUrl.split('/').slice(-2).join('/');
-      await supabase.storage.from('avatars').remove([oldPath]);
+      await storageApi.removeFiles('avatars', [oldPath]);
 
       // Update profile
       const { error: updateError } = await supabase

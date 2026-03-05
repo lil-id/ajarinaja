@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Json } from '@/integrations/supabase/types';
 
 export interface RubricItem {
@@ -366,12 +367,11 @@ export function useSubmitAssignment() {
       let fileType: string | null = null;
 
       if (file) {
-        const ext = file.name.split('.').pop();
-        filePath = `${user.id}/${assignmentId}/${Date.now()}.${ext}`;
+        const fileExt = file.name.split('.').pop();
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        filePath = `${user.id}/${assignmentId}/${Date.now()}-${sanitizedName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('assignment-submissions')
-          .upload(filePath, file);
+        const { error: uploadError } = await storageApi.uploadFile('assignment-submissions', filePath, file);
 
         if (uploadError) throw uploadError;
 
@@ -468,9 +468,7 @@ export function useSubmissionFileUrl(filePath: string | null) {
     queryFn: async () => {
       if (!filePath) return null;
 
-      const { data, error } = await supabase.storage
-        .from('assignment-submissions')
-        .createSignedUrl(filePath, 3600);
+      const { data, error } = await storageApi.createSignedUrl('assignment-submissions', filePath, 3600);
 
       if (error) throw error;
       return data.signedUrl;

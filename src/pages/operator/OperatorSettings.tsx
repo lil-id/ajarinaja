@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { authApi } from '@/features/auth/api/auth.api.backend';
 import { toast } from 'sonner';
 import {
     AlertDialog,
@@ -46,7 +46,7 @@ const OperatorSettings = () => {
         setIsDeletingAccount(true);
         try {
             // Sign out and redirect
-            await supabase.auth.signOut();
+            await authApi.signOut();
             toast.success(t('toast.accountDeleted'));
             navigate('/');
         } catch (error) {
@@ -70,7 +70,7 @@ const OperatorSettings = () => {
 
         setIsChangingPassword(true);
         try {
-            const { error } = await supabase.auth.updateUser({
+            const { error } = await authApi.updateUser({
                 password: passwordForm.newPassword,
             });
 

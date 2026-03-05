@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCourses } from '@/hooks/useCourses';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StudentLiveSessionWidget } from "@/components/dashboard/StudentLiveSessionWidget";
 import { AttendanceComparisonTable } from "@/components/attendance/AttendanceComparisonTable";

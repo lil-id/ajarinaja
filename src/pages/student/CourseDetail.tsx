@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -107,9 +108,7 @@ const StudentCourseDetail = () => {
 
   const handleDownload = async (filePath: string, fileName: string) => {
     try {
-      const { data, error } = await supabase.storage
-        .from('course-materials')
-        .download(filePath);
+      const { data, error } = await storageApi.downloadFile('course-materials', filePath);
 
       if (error) {
         console.error('Download error:', error);

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useEffect } from 'react';
 
 export interface CourseMaterial {
@@ -95,11 +96,11 @@ export function useUploadMaterial() {
 
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
-      const filePath = `${courseId}/${Date.now()}-${file.name}`;
+      // Sanitize file name to avoid InvalidKey errors (remove spaces and special chars)
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filePath = `${courseId}/${Date.now()}-${sanitizedName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('course-materials')
-        .upload(filePath, file);
+      const { error: uploadError } = await storageApi.uploadFile('course-materials', filePath, file);
 
       if (uploadError) throw uploadError;
 
@@ -182,9 +183,7 @@ export function useDeleteMaterial() {
     mutationFn: async ({ id, filePath }: { id: string; filePath?: string | null }) => {
       // Delete from storage if there's a file
       if (filePath) {
-        const { error: storageError } = await supabase.storage
-          .from('course-materials')
-          .remove([filePath]);
+        const { error: storageError } = await storageApi.removeFiles('course-materials', [filePath]);
 
         if (storageError) console.error('Storage delete error:', storageError);
       }
@@ -213,9 +212,7 @@ export function useDeleteMaterial() {
 export async function getMaterialSignedUrl(filePath: string | null): Promise<string | null> {
   if (!filePath) return null;
 
-  const { data, error } = await supabase.storage
-    .from('course-materials')
-    .createSignedUrl(filePath, 3600); // 1 hour expiry
+  const { data, error } = await storageApi.createSignedUrl('course-materials', filePath, 3600);
 
   if (error) {
     console.error('Failed to get signed URL:', error);

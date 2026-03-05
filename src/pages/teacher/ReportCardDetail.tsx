@@ -50,7 +50,7 @@ import {
 import { useReportCards, useReportCardEntries, useSyncStudentAttendance, type CreateReportCardEntryData } from '@/hooks/useReportCards';
 import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
 import { useCourses } from '@/hooks/useCourses';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';

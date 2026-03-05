@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';

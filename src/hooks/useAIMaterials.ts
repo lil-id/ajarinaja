@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { toast } from 'sonner';
 
 export interface AIMaterial {
@@ -57,7 +58,7 @@ export function useAIMaterials() {
                 .rpc('get_teacher_ai_stats', { teacher_uuid: user.id });
 
             if (error) throw error;
-            return data as MaterialStats;
+            return data as unknown as MaterialStats;
         },
     });
 
@@ -77,11 +78,10 @@ export function useAIMaterials() {
 
             // Upload file to storage
             const fileExt = file.name.split('.').pop();
-            const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const fileName = `${user.id}/${Date.now()}-${sanitizedName}`;
 
-            const { error: uploadError } = await supabase.storage
-                .from('materials')
-                .upload(fileName, file);
+            const { error: uploadError } = await storageApi.uploadFile('materials', fileName, file);
 
             if (uploadError) throw uploadError;
 
@@ -177,7 +177,7 @@ export function useAIMaterials() {
                 .single();
 
             if (material?.file_url) {
-                await supabase.storage.from('materials').remove([material.file_url]);
+                await storageApi.removeFiles('materials', [material.file_url]);
             }
 
             const { error } = await supabase

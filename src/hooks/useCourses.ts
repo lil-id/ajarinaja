@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { storageApi } from '@/features/storage/api/storage.api.backend';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useEffect } from 'react';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -262,20 +263,14 @@ export function useUploadCourseThumbnail() {
       const filePath = `${courseId}/thumbnail.${fileExt}`;
 
       // Delete existing thumbnail if any
-      await supabase.storage
-        .from('course-thumbnails')
-        .remove([filePath]);
+      await storageApi.removeFiles('course-thumbnails', [filePath]);
 
-      const { error: uploadError } = await supabase.storage
-        .from('course-thumbnails')
-        .upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await storageApi.uploadFile('course-thumbnails', filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
       // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('course-thumbnails')
-        .getPublicUrl(filePath);
+      const { data: urlData } = storageApi.getPublicUrl('course-thumbnails', filePath);
 
       // Update course with thumbnail URL
       const { data, error } = await supabase

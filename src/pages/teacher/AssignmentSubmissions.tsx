@@ -27,7 +27,7 @@ import { Label } from '@/components/ui/label';
 import { useAssignment, useAssignmentSubmissions, useGradeAssignment, useSubmissionFileUrl } from '@/hooks/useAssignments';
 import { useAssignmentQuestions } from '@/hooks/useAssignmentQuestions';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
