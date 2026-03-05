@@ -1,5 +1,8 @@
+declare const Deno: { env: { get(key: string): string | undefined } };
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logger } from "../_shared/logger.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -12,6 +15,9 @@ serve(async (req) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
+
+    const correlationId = logger.generateCorrelationId();
+    const startTime = Date.now();
 
     try {
         // Initialize Supabase client
@@ -28,6 +34,7 @@ serve(async (req) => {
         );
 
         if (userError || !user) {
+            logger.warn("list-materials rejected: Unauthorized", { correlationId, error: userError });
             throw new Error("Unauthorized");
         }
 
@@ -35,6 +42,13 @@ serve(async (req) => {
         const url = new URL(req.url);
         const search = url.searchParams.get("search") || "";
         const status = url.searchParams.get("status") || "";
+
+        logger.info("list-materials started", {
+            correlationId,
+            userId: user.id,
+            search,
+            status,
+        });
 
         // Build query
         let query = supabaseClient
@@ -67,6 +81,13 @@ serve(async (req) => {
             })
             .single();
 
+        logger.info("list-materials completed successfully", {
+            correlationId,
+            userId: user.id,
+            materialsCount: materials?.length || 0,
+            duration: Date.now() - startTime,
+        });
+
         return new Response(
             JSON.stringify({
                 success: true,
@@ -85,10 +106,15 @@ serve(async (req) => {
             }
         );
     } catch (error) {
-        console.error("Error listing materials:", error);
+        const err = error as Error;
+        logger.error("list-materials failed", {
+            correlationId,
+            error: err,
+            duration: Date.now() - startTime,
+        });
 
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: err.message }),
             {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 400,

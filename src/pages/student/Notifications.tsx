@@ -14,6 +14,7 @@ import {
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useSchoolAnnouncements } from '@/hooks/useSchoolAnnouncements';
 import {
   Bell,
   CheckCheck,
@@ -24,6 +25,7 @@ import {
   Info,
   Calendar,
   Loader2,
+  BookOpen,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -170,6 +172,9 @@ const StudentNotifications = () => {
   const enrolledCourseIds = enrollments.map(e => e.course_id);
   const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
 
+  // School-wide announcements
+  const { announcements: schoolAnnouncements, isLoading: schoolLoading } = useSchoolAnnouncements();
+
   const getCourseTitle = (courseId: string) => {
     return courses.find(c => c.id === courseId)?.title || t('studentMaterials.unknownCourse');
   };
@@ -210,11 +215,20 @@ const StudentNotifications = () => {
             )}
           </TabsTrigger>
           <TabsTrigger value="announcements" className="gap-2">
-            <Megaphone className="h-4 w-4" />
-            {t('studentNotifications.announcementsTab')}
+            <BookOpen className="h-4 w-4" />
+            {t('announcementTabs.course')}
             {myAnnouncements.length > 0 && (
               <Badge variant="outline" className="ml-1 h-5 px-1.5">
                 {myAnnouncements.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="school-announcements" className="gap-2">
+            <Megaphone className="h-4 w-4" />
+            {t('announcementTabs.school')}
+            {schoolAnnouncements.length > 0 && (
+              <Badge variant="outline" className="ml-1 h-5 px-1.5">
+                {schoolAnnouncements.length}
               </Badge>
             )}
           </TabsTrigger>
@@ -306,6 +320,52 @@ const StudentNotifications = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-foreground whitespace-pre-wrap">{announcement.content}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* School Announcements Tab */}
+        <TabsContent value="school-announcements" className="mt-4">
+          {schoolLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+            </div>
+          ) : schoolAnnouncements.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <Megaphone className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {t('operator.announcements.noAnnouncements')}
+                </h3>
+                <p className="text-muted-foreground text-center">
+                  {t('operator.announcements.noAnnouncementsDesc')}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {schoolAnnouncements.map((sa, index) => (
+                <Card
+                  key={sa.id}
+                  className="border-0 shadow-card animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CardHeader>
+                    <div>
+                      <CardTitle>{sa.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-1 mt-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(sa.created_at), 'PPp')}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground whitespace-pre-wrap">{sa.content}</p>
                   </CardContent>
                 </Card>
               ))}

@@ -10,6 +10,7 @@ import { useParentChildren } from '@/hooks/useParentChildren';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SchoolAnnouncementsBanner } from '@/components/dashboard/SchoolAnnouncementsBanner';
 
 export default function ParentOverview() {
     const { t } = useTranslation();
@@ -41,6 +42,9 @@ export default function ParentOverview() {
                     {t('parent.addChild')}
                 </Button>
             </div>
+
+            {/* School-Wide Announcements */}
+            <SchoolAnnouncementsBanner />
 
             {/* Empty State */}
             {children.length === 0 ? (

@@ -82,6 +82,7 @@ import OperatorPeriods from "./pages/operator/OperatorPeriods";
 import OperatorCourses from "./pages/operator/OperatorCourses";
 import OperatorUsers from "./pages/operator/OperatorUsers";
 import OperatorReports from "./pages/operator/OperatorReports";
+import OperatorAnnouncements from "./pages/operator/OperatorAnnouncements";
 import OperatorSettings from "./pages/operator/OperatorSettings";
 
 // Demo Pages
@@ -233,6 +234,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<OperatorDashboard />} />
+              <Route path="announcements" element={<OperatorAnnouncements />} />
               <Route path="periods" element={<OperatorPeriods />} />
               <Route path="courses" element={<OperatorCourses />} />
               <Route path="users" element={<OperatorUsers />} />

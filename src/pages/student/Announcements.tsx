@@ -2,20 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
-import { Megaphone, Loader2, Calendar } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Megaphone, Loader2, Calendar, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { useSchoolAnnouncements } from '@/hooks/useSchoolAnnouncements';
 
 /**
  * Student Announcements page.
- * 
- * Displays announcements from enrolled courses.
- * Features:
- * - Aggregated feed of announcements
- * - Course context tags
- * - Empty state handling
- * 
- * @returns {JSX.Element} The rendered Announcements page.
+ *
+ * Uses tabs to separate course-scoped announcements from school-wide announcements.
+ * - "Pengumuman Mapel" tab: announcements from enrolled courses
+ * - "Pengumuman Sekolah" tab: school-wide announcements from operator
  */
 const StudentAnnouncements = () => {
   const { t } = useTranslation();
@@ -23,11 +21,11 @@ const StudentAnnouncements = () => {
   const { courses, isLoading: coursesLoading } = useCourses();
   const { announcements, isLoading: announcementsLoading } = useAnnouncements();
 
-  const isLoading = enrollmentsLoading || coursesLoading || announcementsLoading;
+  const { announcements: schoolAnnouncements, isLoading: schoolLoading } = useSchoolAnnouncements();
+
+  const isLoading = enrollmentsLoading || coursesLoading || announcementsLoading || schoolLoading;
 
   const enrolledCourseIds = enrollments.map(e => e.course_id);
-
-  // Filter announcements for enrolled courses
   const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
 
   const getCourseTitle = (courseId: string) => {
@@ -43,7 +41,8 @@ const StudentAnnouncements = () => {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">{t('studentAnnouncements.title')}</h1>
         <p className="text-muted-foreground mt-1">
@@ -51,47 +50,108 @@ const StudentAnnouncements = () => {
         </p>
       </div>
 
-      {myAnnouncements.length === 0 ? (
-        <Card className="border-0 shadow-card">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Megaphone className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">{t('studentAnnouncements.noAnnouncementsYet')}</h3>
-            <p className="text-muted-foreground text-center">
-              {enrolledCourseIds.length === 0
-                ? t('studentAnnouncements.enrollToSee')
-                : t('studentAnnouncements.noTeacherPosts')}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {myAnnouncements.map((announcement, index) => (
-            <Card
-              key={announcement.id}
-              className="border-0 shadow-card animate-slide-up"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <CardHeader>
-                <div>
-                  <span className="text-xs font-medium text-secondary bg-secondary/10 px-2 py-1 rounded-full">
-                    {getCourseTitle(announcement.course_id)}
-                  </span>
-                  <CardTitle className="mt-2">{announcement.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-1 mt-1">
-                    <Calendar className="w-3 h-3" />
-                    {format(new Date(announcement.created_at), 'PPp')}
-                  </CardDescription>
+      {/* Tabs */}
+      <Tabs defaultValue="course" className="w-full">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="course" className="gap-2">
+            <BookOpen className="w-4 h-4" />
+            {t('announcementTabs.course')}
+          </TabsTrigger>
+          <TabsTrigger value="school" className="gap-2">
+            <Megaphone className="w-4 h-4" />
+            {t('announcementTabs.school')}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Course Announcements Tab */}
+        <TabsContent value="course" className="space-y-4 mt-4">
+          {myAnnouncements.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <Megaphone className="w-8 h-8 text-muted-foreground" />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground whitespace-pre-wrap">{announcement.content}</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {t('studentAnnouncements.noAnnouncementsYet')}
+                </h3>
+                <p className="text-muted-foreground text-center">
+                  {enrolledCourseIds.length === 0
+                    ? t('studentAnnouncements.enrollToSee')
+                    : t('studentAnnouncements.noTeacherPosts')}
+                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="space-y-4">
+              {myAnnouncements.map((announcement, index) => (
+                <Card
+                  key={announcement.id}
+                  className="border-0 shadow-card animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CardHeader>
+                    <div>
+                      <span className="text-xs font-medium text-secondary bg-secondary/10 px-2 py-1 rounded-full">
+                        {getCourseTitle(announcement.course_id)}
+                      </span>
+                      <CardTitle className="mt-2">{announcement.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-1 mt-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(announcement.created_at), 'PPp')}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground whitespace-pre-wrap">{announcement.content}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* School Announcements Tab */}
+        <TabsContent value="school" className="space-y-4 mt-4">
+          {schoolAnnouncements.length === 0 ? (
+            <Card className="border-0 shadow-card">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <Megaphone className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {t('operator.announcements.noAnnouncements')}
+                </h3>
+                <p className="text-muted-foreground text-center">
+                  {t('operator.announcements.noAnnouncementsDesc')}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {schoolAnnouncements.map((sa, index) => (
+                <Card
+                  key={sa.id}
+                  className="border-0 shadow-card animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CardHeader>
+                    <div>
+                      <CardTitle>{sa.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-1 mt-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(sa.created_at), 'PPp')}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground whitespace-pre-wrap">{sa.content}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -1,8 +1,8 @@
-// @ts-ignore: Deno global is available in Supabase Edge Functions
-declare const Deno: any;
+declare const Deno: { env: { get(key: string): string | undefined } };
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logger } from "../_shared/logger.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -16,11 +16,22 @@ serve(async (req) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
+    const correlationId = logger.generateCorrelationId();
+    const startTime = Date.now();
+
     try {
         // Get request data
         const { materialId, chunkSize = 500, chunkOverlap = 50 } = await req.json();
 
+        logger.info("process-material started", {
+            correlationId,
+            materialId,
+            chunkSize,
+            chunkOverlap,
+        });
+
         if (!materialId) {
+            logger.warn("process-material rejected: materialId missing", { correlationId });
             throw new Error("materialId is required");
         }
 
@@ -28,6 +39,7 @@ serve(async (req) => {
         const authHeader = req.headers.get("Authorization");
 
         if (!authHeader) {
+            logger.warn("process-material rejected: Missing authorization header", { correlationId, materialId });
             return new Response(
                 JSON.stringify({ error: "Missing authorization header" }),
                 {
@@ -43,6 +55,7 @@ serve(async (req) => {
         // JWT format: header.payload.signature
         const parts = token.split('.');
         if (parts.length !== 3) {
+            logger.warn("process-material rejected: Invalid JWT format", { correlationId, materialId });
             return new Response(
                 JSON.stringify({ error: "Invalid JWT format" }),
                 {
@@ -57,7 +70,7 @@ serve(async (req) => {
         const userId = payload.sub || payload.user_id || payload.id;
 
         if (!userId) {
-            console.error("FAILED: No user ID field found in JWT");
+            logger.error("FAILED: No user ID field found in JWT", { correlationId, materialId, payloadKeys: Object.keys(payload) });
             return new Response(
                 JSON.stringify({
                     error: "No user ID in JWT",
@@ -87,11 +100,13 @@ serve(async (req) => {
             .single();
 
         if (materialError || !material) {
+            logger.warn("process-material failed: Material not found", { correlationId, materialId });
             throw new Error("Material not found");
         }
 
         // Verify ownership
         if (material.teacher_id !== userId) {
+            logger.warn("process-material rejected: Unauthorized", { correlationId, materialId, userId });
             return new Response(
                 JSON.stringify({ error: "Unauthorized" }),
                 {
@@ -132,6 +147,7 @@ serve(async (req) => {
 
         // Chunk text
         const chunks = smartChunk(extractedText, chunkSize, chunkOverlap);
+        logger.debug("process-material chunking complete", { correlationId, materialId, chunkCount: chunks.length });
 
         // Generate embeddings
         const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
@@ -157,7 +173,7 @@ serve(async (req) => {
                 });
 
             if (insertError) {
-                console.error(`Insert error chunk ${i}:`, insertError);
+                logger.error(`process-material chunk insert error`, { correlationId, materialId, chunkIndex: i, error: insertError });
                 throw insertError;
             }
 
@@ -173,6 +189,13 @@ serve(async (req) => {
             })
             .eq("id", materialId);
 
+        logger.info("process-material completed successfully", {
+            correlationId,
+            materialId,
+            totalChunks: chunks.length,
+            duration: Date.now() - startTime,
+        });
+
         return new Response(
             JSON.stringify({
                 success: true,
@@ -186,7 +209,12 @@ serve(async (req) => {
             }
         );
     } catch (error) {
-        console.error("Error:", error);
+        const err = error as Error;
+        logger.error("process-material failed", {
+            correlationId,
+            error: err,
+            duration: Date.now() - startTime,
+        });
 
         const { materialId } = await req.json().catch(() => ({}));
         if (materialId) {
@@ -199,13 +227,13 @@ serve(async (req) => {
                 .from("ai_materials")
                 .update({
                     status: "error",
-                    error_message: error.message,
+                    error_message: err.message,
                 })
                 .eq("id", materialId);
         }
 
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: err.message }),
             {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 400,
@@ -218,7 +246,7 @@ function smartChunk(
     text: string,
     chunkSize: number,
     overlap: number
-): Array<{ text: string; metadata: any }> {
+): Array<{ text: string; metadata: Record<string, unknown> }> {
     const chunks = [];
     const paragraphs = text.split(/\n\n+/).filter((p) => p.trim().length > 0);
 
@@ -270,8 +298,9 @@ async function parsePDF(arrayBuffer: ArrayBuffer): Promise<{ text: string; numpa
             numpages: totalPages || 0
         };
     } catch (error) {
-        console.error("PDF parsing error:", error);
-        throw new Error(`PDF parse failed: ${error.message}`);
+        const err = error as Error;
+        logger.error("PDF parsing error", { error: err });
+        throw new Error(`PDF parse failed: ${err.message}`);
     }
 }
 

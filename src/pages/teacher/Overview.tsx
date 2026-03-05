@@ -17,6 +17,7 @@ import { RecentSubmissionsWidget } from '@/components/dashboard/RecentSubmission
 import { PendingGradingWidget } from '@/components/dashboard/PendingGradingWidget';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { LiveSessionWidget } from '@/components/dashboard/LiveSessionWidget';
+import { SchoolAnnouncementsBanner } from '@/components/dashboard/SchoolAnnouncementsBanner';
 
 /**
  * Teacher Dashboard Overview page.
@@ -108,6 +109,9 @@ const TeacherOverview = () => {
 
         {/* Live Attendance Session Widget */}
         <LiveSessionWidget />
+
+        {/* School-Wide Announcements */}
+        <SchoolAnnouncementsBanner />
 
         {/* Stats Grid - Clickable */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -20,7 +20,7 @@ const FormulaText: React.FC<FormulaTextProps> = ({ text, className }) => {
 
     // Split by LaTeX patterns: $$...$$ for block, $...$ for inline
     const parts: React.ReactNode[] = [];
-    let remaining = text;
+    const remaining = text;
     let key = 0;
 
     // Process block formulas first ($$...$$)

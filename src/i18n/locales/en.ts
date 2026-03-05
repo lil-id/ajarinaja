@@ -1224,6 +1224,12 @@ export default {
     noTeacherPosts: "Your teachers haven't posted any announcements yet",
   },
 
+  // Announcement Tabs
+  announcementTabs: {
+    course: 'Course Announcements',
+    school: 'School Announcements',
+  },
+
   // Badges
   badges: {
     title: 'My Badges',
@@ -1923,6 +1929,7 @@ export default {
     roleLabel: 'Academic Staff',
     nav: {
       dashboard: 'Dashboard',
+      announcements: 'School Announcements',
       periods: 'Academic Periods',
       courses: 'Courses',
       users: 'Users Management',
@@ -1983,6 +1990,10 @@ export default {
       teachersListTitle: 'Teachers List',
       teachersListDesc: 'List of all teachers in the school.',
       noTeachersFound: 'No teachers found',
+      exportTeachers: 'Export Teachers',
+      exportStudents: 'Export Students',
+      exportSuccess: 'Data exported successfully',
+      exportEmpty: 'No data to export',
       courses: 'courses',
     },
     reports: {
@@ -1993,6 +2004,31 @@ export default {
       topTeachers: 'Most Active Teachers',
       topTeachersDesc: 'Ranked by number of courses',
       courses: 'courses',
+      students: 'students',
+      top5Tooltip: 'Showing top 5 ranked entries',
+    },
+    announcements: {
+      title: 'School Announcements',
+      description: 'Post announcements for the entire school',
+      create: 'Create Announcement',
+      titleLabel: 'Title',
+      titlePlaceholder: 'Announcement title...',
+      contentLabel: 'Content',
+      contentPlaceholder: 'Write announcement content...',
+      targetRoles: 'Target Audience',
+      pinned: 'Pin Announcement',
+      pinnedDescription: 'Pinned announcements appear at the top',
+      noAnnouncements: 'No school announcements yet',
+      noAnnouncementsDesc: 'Create your first announcement to inform the entire school',
+      deleteConfirm: 'Delete Announcement?',
+      deleteConfirmDesc: 'This announcement will be permanently deleted.',
+      teachers: 'Teachers',
+      students: 'Students',
+      parents: 'Parents',
+      pinLabel: 'Pinned',
+      pinnedSuccess: 'Announcement pinned successfully',
+      unpinnedSuccess: 'Announcement unpinned successfully',
+      unpin: 'Unpin',
     },
   },
 };

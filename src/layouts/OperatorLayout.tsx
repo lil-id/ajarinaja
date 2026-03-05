@@ -29,6 +29,7 @@ import {
     X,
     PanelLeftClose,
     PanelLeft,
+    Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -43,6 +44,7 @@ const OperatorLayout = () => {
 
     const navigation = [
         { name: t('operator.nav.dashboard'), href: '/operator', icon: LayoutDashboard },
+        { name: t('operator.nav.announcements'), href: '/operator/announcements', icon: Megaphone },
         { name: t('operator.nav.periods'), href: '/operator/periods', icon: CalendarDays },
         { name: t('operator.nav.courses'), href: '/operator/courses', icon: BookOpen },
         { name: t('operator.nav.users'), href: '/operator/users', icon: Users },

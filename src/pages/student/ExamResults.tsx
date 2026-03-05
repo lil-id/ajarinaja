@@ -66,7 +66,7 @@ const ExamResults = () => {
 
   // Calculate MC score
   let mcCorrect = 0;
-  let mcTotal = mcQuestions.length;
+  const mcTotal = mcQuestions.length;
   mcQuestions.forEach((q: Question) => {
     const answer = submission.answers[q.id];
     if (answer !== undefined && Number(answer) === q.correct_answer) {
@@ -76,7 +76,7 @@ const ExamResults = () => {
 
   // Calculate multi-select score
   let msCorrect = 0;
-  let msTotal = multiSelectQuestions.length;
+  const msTotal = multiSelectQuestions.length;
   multiSelectQuestions.forEach((q: Question) => {
     const answer = submission.answers[q.id];
     const studentAnswers = Array.isArray(answer) ? answer.map(Number).sort() : [];

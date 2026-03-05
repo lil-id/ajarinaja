@@ -23,6 +23,7 @@ import { StudentRecentActivityWidget } from '@/components/dashboard/StudentRecen
 import { StudentActivityChart } from '@/components/dashboard/StudentActivityChart';
 import { StudentWaitingGradingWidget } from '@/components/dashboard/StudentWaitingGradingWidget';
 import { StudentEnrolledCoursesWidget } from '@/components/dashboard/StudentEnrolledCoursesWidget';
+import { SchoolAnnouncementsBanner } from '@/components/dashboard/SchoolAnnouncementsBanner';
 
 /**
  * Student Dashboard page.
@@ -113,6 +114,9 @@ const StudentDashboard = () => {
 
       {/* Attendance Check-in Widget */}
       <StudentActiveSessionWidget />
+
+      {/* School-Wide Announcements */}
+      <SchoolAnnouncementsBanner />
 
       {/* Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">

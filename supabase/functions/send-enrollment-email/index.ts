@@ -1,5 +1,8 @@
+declare const Deno: { env: { get(key: string): string | undefined } };
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { logger } from "../_shared/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,8 +33,18 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const correlationId = logger.generateCorrelationId();
+  const startTime = Date.now();
+
   try {
     const { studentEmail, studentName, courseName, teacherName }: EnrollmentEmailRequest = await req.json();
+
+    logger.info("send-enrollment-email started", {
+      correlationId,
+      studentEmail,
+      courseName,
+      teacherName,
+    });
 
     const gmailUser = Deno.env.get("GMAIL_USER");
     const gmailPassword = Deno.env.get("GMAIL_APP_PASSWORD");
@@ -108,6 +121,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     await client.close();
 
+    logger.info("send-enrollment-email completed successfully", {
+      correlationId,
+      studentEmail,
+      duration: Date.now() - startTime,
+    });
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
@@ -115,10 +134,15 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
-  } catch (error: any) {
-    console.error("Error sending enrollment email:", error);
+  } catch (error) {
+    const err = error as Error;
+    logger.error("send-enrollment-email failed", {
+      correlationId,
+      error: err,
+      duration: Date.now() - startTime,
+    });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: err.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

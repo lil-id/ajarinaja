@@ -1,4 +1,14 @@
+declare const Deno: { env: { get(key: string): string | undefined }, connectTls(options: Record<string, unknown>): Promise<SmtpConn> };
+
+interface SmtpConn {
+  write(data: Uint8Array): Promise<number>;
+  read(buffer: Uint8Array): Promise<number | null>;
+  close(): void;
+}
+
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { logger } from "../_shared/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -215,8 +225,18 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const correlationId = logger.generateCorrelationId();
+  const startTime = Date.now();
+
   try {
     const data: NotificationEmailRequest = await req.json();
+
+    logger.info("send-course-notification started", {
+      correlationId,
+      courseName: data.courseName,
+      contentType: data.contentType,
+      recipientCount: data.recipients.length,
+    });
 
     const gmailUser = Deno.env.get("GMAIL_USER");
     const gmailPassword = Deno.env.get("GMAIL_APP_PASSWORD");
@@ -258,10 +278,10 @@ const handler = async (req: Request): Promise<Response> => {
       ].join('\r\n');
 
       // Connect to Gmail SMTP
-      const conn = await Deno.connectTls({
+      const conn = (await Deno.connectTls({
         hostname: "smtp.gmail.com",
         port: 465,
-      });
+      })) as SmtpConn;
 
       const read = async (): Promise<string> => {
         const buffer = new Uint8Array(1024);
@@ -310,14 +330,25 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    logger.info("send-course-notification completed successfully", {
+      correlationId,
+      sentCount: data.recipients.length,
+      duration: Date.now() - startTime,
+    });
+
     return new Response(JSON.stringify({ success: true, sent: data.recipients.length }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-  } catch (error: any) {
-    console.error("Error sending notification email:", error);
+  } catch (error) {
+    const err = error as Error;
+    logger.error("send-course-notification failed", {
+      correlationId,
+      error: err,
+      duration: Date.now() - startTime,
+    });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: err.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

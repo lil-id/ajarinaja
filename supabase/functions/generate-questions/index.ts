@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logger } from "../_shared/logger.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,9 @@ serve(async (req) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
+    const correlationId = logger.generateCorrelationId();
+    const startTime = Date.now();
+
     try {
         const {
             materialId,
@@ -22,7 +26,16 @@ serve(async (req) => {
             questionTypes = ["multiple_choice"],
         } = await req.json();
 
+        logger.info("generate-questions started", {
+            correlationId,
+            materialId,
+            numQuestions,
+            difficulty,
+            topic,
+        });
+
         if (!materialId) {
+            logger.warn("generate-questions rejected: materialId missing", { correlationId });
             return new Response(
                 JSON.stringify({ error: "materialId is required" }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
@@ -43,11 +56,14 @@ serve(async (req) => {
         );
 
         if (userError || !user) {
+            logger.warn("generate-questions rejected: Unauthorized", { correlationId, error: userError });
             return new Response(
                 JSON.stringify({ error: "Unauthorized" }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
             );
         }
+
+        logger.info("generate-questions user authenticated", { correlationId, userId: user.id });
 
         // Get material info
         const { data: material, error: materialError } = await supabaseClient
@@ -58,6 +74,7 @@ serve(async (req) => {
             .single();
 
         if (materialError || !material) {
+            logger.warn("generate-questions rejected: Material not found or access denied", { correlationId, materialId });
             return new Response(
                 JSON.stringify({ error: "Material not found or access denied" }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
@@ -65,6 +82,7 @@ serve(async (req) => {
         }
 
         if (material.status !== "ready") {
+            logger.warn(`generate-questions rejected: Material status is ${material.status}`, { correlationId, materialId });
             return new Response(
                 JSON.stringify({ error: `Material is ${material.status}. Please wait for processing to complete.` }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 422 }
@@ -95,7 +113,7 @@ serve(async (req) => {
 
         // Construct context from chunks
         const context = relevantChunks
-            ?.map((chunk: any) => chunk.chunk_text)
+            ?.map((chunk: { chunk_text: string }) => chunk.chunk_text)
             .join("\n\n") || "";
 
         if (!context) {
@@ -134,6 +152,14 @@ serve(async (req) => {
             throw new Error(`Failed to save questions: ${saveError.message}`);
         }
 
+        logger.info("generate-questions completed successfully", {
+            correlationId,
+            generationId: savedGeneration.id,
+            userId: user.id,
+            duration: Date.now() - startTime,
+            chunksUsed: relevantChunks?.length || 0,
+        });
+
         return new Response(
             JSON.stringify({
                 success: true,
@@ -155,10 +181,15 @@ serve(async (req) => {
             }
         );
     } catch (error) {
-        console.error("Error generating questions:", error);
+        const err = error as Error;
+        logger.error("generate-questions failed", {
+            correlationId,
+            error: err,
+            duration: Date.now() - startTime
+        });
 
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: err.message }),
             {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 400,
@@ -209,7 +240,7 @@ async function generateQuestions(params: {
     topic: string;
     questionTypes: string[];
     apiKey: string;
-}): Promise<any[]> {
+}): Promise<Record<string, unknown>[]> {
     const {
         context,
         numQuestions,

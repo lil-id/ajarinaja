@@ -13,13 +13,18 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSchoolStudents } from '@/hooks/useSchoolStudents';
 import { useRoleUsers } from '@/hooks/useRoleUsers';
-import { Users, Search, GraduationCap } from 'lucide-react';
+import { useExportTeachers } from '@/hooks/useExportTeachers';
+import { useExportStudents } from '@/hooks/useExportStudents';
+import { Users, Search, GraduationCap, Download, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const OperatorUsers = () => {
     const { t } = useTranslation();
     const { students, isLoading: isLoadingStudents } = useSchoolStudents();
     const { data: teachers = [], isLoading: isLoadingTeachers } = useRoleUsers('teacher');
     const [search, setSearch] = useState('');
+    const { exportTeachers, isExporting: isExportingTeachers } = useExportTeachers();
+    const { exportStudents, isExporting: isExportingStudents } = useExportStudents();
 
     const filteredStudents = students.filter(s =>
         s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -68,7 +73,19 @@ const OperatorUsers = () => {
                                 <Users className="w-5 h-5" />
                                 {t('operator.users.studentsListTitle')}
                             </CardTitle>
-                            <CardDescription>{t('operator.users.studentsListDesc')}</CardDescription>
+                            <div className="flex items-center justify-between">
+                                <CardDescription>{t('operator.users.studentsListDesc')}</CardDescription>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={exportStudents}
+                                    disabled={isExportingStudents || filteredStudents.length === 0}
+                                    className="gap-2 flex-shrink-0"
+                                >
+                                    {isExportingStudents ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                    {t('operator.users.exportStudents')}
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoadingStudents ? (
@@ -118,7 +135,19 @@ const OperatorUsers = () => {
                                 <GraduationCap className="w-5 h-5" />
                                 {t('operator.users.teachersListTitle')}
                             </CardTitle>
-                            <CardDescription>{t('operator.users.teachersListDesc')}</CardDescription>
+                            <div className="flex items-center justify-between">
+                                <CardDescription>{t('operator.users.teachersListDesc')}</CardDescription>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={exportTeachers}
+                                    disabled={isExportingTeachers || filteredTeachers.length === 0}
+                                    className="gap-2 flex-shrink-0"
+                                >
+                                    {isExportingTeachers ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                    {t('operator.users.exportTeachers')}
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoadingTeachers ? (
