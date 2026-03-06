@@ -2027,6 +2027,12 @@ export default {
       studentRemoved: 'Siswa berhasil dihapus',
       failedToAddStudent: 'Gagal menambahkan siswa',
       failedToRemoveStudent: 'Gagal menghapus siswa',
+      manageStudents: 'Kelola Siswa',
+      searchStudent: 'Cari nama siswa...',
+      noStudentsInClass: 'Belum ada siswa di kelas ini.',
+      noStudentsFound: 'Siswa tidak ditemukan.',
+      addStudent: 'Tambahkan',
+      removeStudent: 'Keluarkan',
     },
     schedules: {
       title: 'Jadwal Pelajaran',

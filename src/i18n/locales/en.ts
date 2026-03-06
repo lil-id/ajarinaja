@@ -1976,6 +1976,12 @@ export default {
       studentRemoved: 'Student removed successfully',
       failedToAddStudent: 'Failed to add student',
       failedToRemoveStudent: 'Failed to remove student',
+      manageStudents: 'Manage Students',
+      searchStudent: 'Search student name...',
+      noStudentsInClass: 'No students enrolled in this class yet.',
+      noStudentsFound: 'No students found.',
+      addStudent: 'Add',
+      removeStudent: 'Remove',
     },
     schedules: {
       title: 'Schedules',

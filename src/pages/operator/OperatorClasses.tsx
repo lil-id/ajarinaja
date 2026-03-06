@@ -36,6 +36,7 @@ import { GraduationCap, MoreVertical, Plus, Trash2, Pencil, Users } from 'lucide
 import { useClasses, type CreateClassData } from '@/hooks/useClasses';
 import { useRoleUsers } from '@/hooks/useRoleUsers';
 import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
+import { ManageClassStudents } from './components/ManageClassStudents';
 
 const GRADE_LEVELS = [7, 8, 9, 10, 11, 12];
 
@@ -56,6 +57,7 @@ const OperatorClasses = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<CreateClassData>(emptyForm);
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+    const [manageStudentsClass, setManageStudentsClass] = useState<{ id: string, name: string } | null>(null);
 
     const activePeriod = periods.find((p) => p.is_active);
 
@@ -147,6 +149,10 @@ const OperatorClasses = () => {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => setManageStudentsClass({ id: cls.id, name: cls.name })}>
+                                                <Users className="w-4 h-4 mr-2" />
+                                                {t('operator.classes.manageStudents')}
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => openEdit(cls)}>
                                                 <Pencil className="w-4 h-4 mr-2" />
                                                 {t('common.edit')}
@@ -299,6 +305,16 @@ const OperatorClasses = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Manage Students Dialog */}
+            {manageStudentsClass && (
+                <ManageClassStudents
+                    open={!!manageStudentsClass}
+                    onOpenChange={(open) => !open && setManageStudentsClass(null)}
+                    classId={manageStudentsClass.id}
+                    classNameStr={manageStudentsClass.name}
+                />
+            )}
         </div>
     );
 };
