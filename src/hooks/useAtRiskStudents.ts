@@ -36,7 +36,7 @@ export interface RiskFactor {
 export function useAtRiskStudents() {
   const { user } = useAuth();
 
-  const { data: teacherCourses = [] } = useQuery({
+  const teacherCoursesQuery = useQuery({
     queryKey: ['teacher-courses', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -50,6 +50,7 @@ export function useAtRiskStudents() {
     enabled: !!user,
   });
 
+  const teacherCourses = teacherCoursesQuery.data || [];
   const courseIds = teacherCourses.map(c => c.id);
 
   // Fetch enrollments with student profiles
@@ -363,7 +364,7 @@ export function useAtRiskStudents() {
 
   return {
     atRiskStudents,
-    isLoading: !user || teacherCourses.length === 0,
+    isLoading: !user || teacherCoursesQuery.isLoading,
     highRiskCount: atRiskStudents.filter(s => s.riskLevel === 'high').length,
     mediumRiskCount: atRiskStudents.filter(s => s.riskLevel === 'medium').length,
     lowRiskCount: atRiskStudents.filter(s => s.riskLevel === 'low').length,

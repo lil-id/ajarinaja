@@ -34,6 +34,8 @@ import {
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/NotificationBell';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useStudentEnrolledClass } from '@/hooks/useStudentEnrolledClass';
+import { useEffect } from 'react';
 
 const StudentLayout = () => {
   const { t } = useTranslation();
@@ -42,6 +44,20 @@ const StudentLayout = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isEnrolled, isLoading } = useStudentEnrolledClass();
+
+  // Onboarding Blocker Logic
+  useEffect(() => {
+    if (isLoading) return;
+
+    const isOnboardingRoute = location.pathname === '/student/onboarding';
+
+    if (!isEnrolled && !isOnboardingRoute) {
+      navigate('/student/onboarding', { replace: true });
+    } else if (isEnrolled && isOnboardingRoute) {
+      navigate('/student', { replace: true });
+    }
+  }, [isLoading, isEnrolled, location.pathname, navigate]);
 
   const navigation = [
     { name: t('nav.dashboard'), href: '/student', icon: Home },
@@ -62,6 +78,21 @@ const StudentLayout = () => {
     await signOut();
     navigate('/');
   };
+
+  const isOnboardingRoute = location.pathname === '/student/onboarding';
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 text-center text-muted-foreground animate-pulse">
+        Verifying student status...
+      </div>
+    );
+  }
+
+  // If we are on the onboarding route (and allowed to be there), just render the page without the sidebar/header
+  if (isOnboardingRoute && !isEnrolled) {
+    return <Outlet />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

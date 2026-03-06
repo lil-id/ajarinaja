@@ -62,6 +62,7 @@ import StudentCalendar from "./pages/student/Calendar";
 import StudentReportCards from "./pages/student/ReportCards";
 import StudentReportCardDetail from "./pages/student/ReportCardDetail";
 import StudentAttendance from "./pages/student/Attendance";
+import StudentOnboarding from "./pages/student/StudentOnboarding";
 
 // Parent Pages
 import ParentLayout from "./layouts/ParentLayout";
@@ -86,6 +87,7 @@ import OperatorAnnouncements from "./pages/operator/OperatorAnnouncements";
 import OperatorSettings from "./pages/operator/OperatorSettings";
 import OperatorClasses from "./pages/operator/OperatorClasses";
 import OperatorSchedules from "./pages/operator/OperatorSchedules";
+import OperatorCalendar from "./pages/operator/OperatorCalendar";
 
 // Demo Pages
 import DemoLayout from "./layouts/DemoLayout";
@@ -189,6 +191,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<StudentDashboard />} />
+              <Route path="onboarding" element={<StudentOnboarding />} />
               <Route path="courses" element={<StudentCourses />} />
               <Route path="explore" element={<StudentExploreCourses />} />
               <Route path="courses/:courseId" element={<StudentCourseDetail />} />
@@ -244,6 +247,7 @@ const App = () => (
               <Route path="settings" element={<OperatorSettings />} />
               <Route path="classes" element={<OperatorClasses />} />
               <Route path="schedules" element={<OperatorSchedules />} />
+              <Route path="calendar" element={<OperatorCalendar />} />
             </Route>
 
             {/* Demo Routes */}

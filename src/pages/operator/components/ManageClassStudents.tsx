@@ -55,7 +55,7 @@ export const ManageClassStudents = ({ open, onOpenChange, classId, classNameStr 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-xl max-h-[90vh] flex flex-col">
+            <DialogContent className="max-w-4xl w-[95vw] md:w-[90vw] max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Users className="w-5 h-5" />

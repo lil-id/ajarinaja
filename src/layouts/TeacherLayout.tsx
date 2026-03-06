@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useHomeroomClass } from '@/hooks/useClasses';
 
 const TeacherLayout = () => {
   const { t } = useTranslation();
@@ -41,6 +42,7 @@ const TeacherLayout = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: homeroomClass } = useHomeroomClass();
 
   const navigation = [
     { name: t('nav.dashboard'), href: '/teacher', icon: LayoutDashboard },
@@ -51,7 +53,7 @@ const TeacherLayout = () => {
     { name: t('nav.exams'), href: '/teacher/exams', icon: FileText },
     { name: t('nav.questionBank'), href: '/teacher/question-bank', icon: Library },
     { name: t('nav.materials'), href: '/teacher/materials', icon: FolderOpen },
-    { name: t('nav.reportCards'), href: '/teacher/report-cards', icon: GraduationCap },
+    ...(homeroomClass ? [{ name: t('nav.reportCards'), href: '/teacher/report-cards', icon: GraduationCap }] : []),
     { name: t('nav.announcements'), href: '/teacher/announcements', icon: Megaphone },
     { name: t('nav.analytics'), href: '/teacher/analytics', icon: BarChart3 },
     { name: t('nav.students'), href: '/teacher/students', icon: Users },

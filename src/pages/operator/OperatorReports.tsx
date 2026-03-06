@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { WorkloadAnalyzer } from './components/WorkloadAnalyzer';
 import {
     BarChart,
     Bar,
@@ -304,8 +305,8 @@ const OperatorReports = () => {
                                     <div
                                         key={teacher.id}
                                         className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${idx === 0
-                                                ? 'border-amber-400 bg-amber-50/50 dark:border-amber-500/60 dark:bg-amber-950/30 shadow-sm'
-                                                : 'border-border hover:bg-muted/50'
+                                            ? 'border-amber-400 bg-amber-50/50 dark:border-amber-500/60 dark:bg-amber-950/30 shadow-sm'
+                                            : 'border-border hover:bg-muted/50'
                                             }`}
                                     >
                                         {/* Rank */}
@@ -342,6 +343,11 @@ const OperatorReports = () => {
                         )}
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Teacher Workload Analysis Section */}
+            <div className="pt-6 border-t border-border/50">
+                <WorkloadAnalyzer />
             </div>
         </div>
     );

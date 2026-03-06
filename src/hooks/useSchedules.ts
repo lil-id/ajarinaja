@@ -172,3 +172,29 @@ export function useUnassignedSchedules() {
         enabled: !!user,
     });
 }
+
+/**
+ * Hook to update an existing class schedule (e.g., assigning a substitute teacher).
+ */
+export function useUpdateSchedule() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, updates }: { id: string; updates: Partial<UpdateScheduleData> }) => {
+            const { data, error } = await supabase
+                .from('class_schedules')
+                .update(updates)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['class-schedules'] });
+            queryClient.invalidateQueries({ queryKey: ['unassigned-schedules'] });
+            queryClient.invalidateQueries({ queryKey: ['teacher-availability'] });
+        },
+    });
+}

@@ -219,3 +219,29 @@ export function useClassStudents(classId?: string) {
         removeStudent,
     };
 }
+
+/**
+ * Hook to check if current teacher is a homeroom teacher (Wali Kelas)
+ * for any class in the active period.
+ */
+export function useHomeroomClass() {
+    const { user } = useAuth();
+
+    return useQuery({
+        queryKey: ['homeroom-class', user?.id],
+        queryFn: async () => {
+            if (!user) return null;
+
+            const { data, error } = await supabase
+                .from('classes')
+                .select('*')
+                .eq('homeroom_teacher_id', user.id)
+                .maybeSingle();
+
+            if (error) throw error;
+            return data as SchoolClass | null;
+        },
+        enabled: !!user,
+    });
+}
+
