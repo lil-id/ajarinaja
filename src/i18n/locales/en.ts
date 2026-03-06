@@ -2006,6 +2006,8 @@ export default {
       failedToCreateSchedule: 'Failed to create schedule',
       failedToUpdateSchedule: 'Failed to update schedule',
       failedToDeleteSchedule: 'Failed to delete schedule',
+      invalidTime: 'End time must be after start time.',
+      overlapError: 'This schedule overlaps with another subject ({{course}}) at {{time}}.',
     },
     dashboard: {
       title: 'Academic Dashboard',

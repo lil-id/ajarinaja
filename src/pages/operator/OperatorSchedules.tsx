@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import {
     Dialog,
     DialogContent,
@@ -50,6 +51,17 @@ const emptyForm: CreateScheduleData = {
     room: '',
 };
 
+// Helper to add minutes to a HH:MM string
+const addMinutes = (timeString: string, minsToAdd: number): string => {
+    const [h, m] = timeString.split(':').map(Number);
+    const date = new Date();
+    date.setHours(h, m, 0, 0);
+    date.setMinutes(date.getMinutes() + minsToAdd);
+    const newH = String(date.getHours()).padStart(2, '0');
+    const newM = String(date.getMinutes()).padStart(2, '0');
+    return `${newH}:${newM}`;
+};
+
 const OperatorSchedules = () => {
     const { t } = useTranslation();
     const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } = useSchedules();
@@ -83,8 +95,44 @@ const OperatorSchedules = () => {
         setDialogOpen(true);
     };
 
+    const handleStartTimeChange = (newStartTime: string) => {
+        setForm({
+            ...form,
+            start_time: newStartTime,
+            end_time: addMinutes(newStartTime, 90), // Auto-suggest 90 minutes later
+        });
+    };
+
     const handleSave = () => {
         if (!form.class_id || !form.course_id) return;
+
+        // 1. Time logic validation
+        if (form.start_time >= form.end_time) {
+            toast.error(t('operator.schedules.invalidTime'));
+            return;
+        }
+
+        // 2. Overlap check for the same class on the same day
+        const isOverlapping = schedules.find(s => {
+            if (s.id === editingId) return false;
+            if (s.class_id !== form.class_id) return false;
+            if (s.day_of_week !== form.day_of_week) return false;
+
+            // Overlap formula: (StartA < EndB) and (EndA > StartB)
+            // Note: start_time/end_time from DB have seconds "HH:MM:SS", input has "HH:MM"
+            const dbStart = s.start_time.slice(0, 5);
+            const dbEnd = s.end_time.slice(0, 5);
+            return (form.start_time < dbEnd && form.end_time > dbStart);
+        });
+
+        if (isOverlapping) {
+            toast.error(t('operator.schedules.overlapError', {
+                course: (isOverlapping.course as unknown as { title: string })?.title || 'Unknown',
+                time: `${isOverlapping.start_time.slice(0, 5)} - ${isOverlapping.end_time.slice(0, 5)}`
+            }));
+            return;
+        }
+
         const payload = { ...form, teacher_id: form.teacher_id || null, room: form.room || null };
         if (editingId) {
             updateSchedule.mutate({ id: editingId, ...payload }, { onSuccess: () => setDialogOpen(false) });
@@ -307,7 +355,7 @@ const OperatorSchedules = () => {
                                     id="start-time"
                                     type="time"
                                     value={form.start_time}
-                                    onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+                                    onChange={(e) => handleStartTimeChange(e.target.value)}
                                 />
                             </div>
                             <div className="space-y-2">

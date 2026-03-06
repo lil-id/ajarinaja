@@ -2057,6 +2057,8 @@ export default {
       failedToCreateSchedule: 'Gagal membuat jadwal',
       failedToUpdateSchedule: 'Gagal memperbarui jadwal',
       failedToDeleteSchedule: 'Gagal menghapus jadwal',
+      invalidTime: 'Waktu selesai harus lebih lambat dari waktu mulai.',
+      overlapError: 'Jadwal ini bentrok dengan jadwal lain ({{course}}) pada pukul {{time}}.',
     },
     dashboard: {
       title: 'Dasbor Akademik',
