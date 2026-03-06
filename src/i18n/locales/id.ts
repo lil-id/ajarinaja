@@ -118,7 +118,7 @@ export default {
 
   // Navigation
   nav: {
-    dashboard: 'Dasbor',
+    dashboard: 'Beranda',
     overview: 'Ikhtisar',
     courses: 'Mata Pelajaran',
     assignments: 'Tugas',
@@ -2061,7 +2061,7 @@ export default {
       overlapError: 'Jadwal ini bentrok dengan jadwal lain ({{course}}) pada pukul {{time}}.',
     },
     dashboard: {
-      title: 'Dasbor Akademik',
+      title: 'Beranda Akademik',
       description: 'Ringkasan statistik dan aktivitas sekolah',
       activePeriod: 'Periode Aktif',
       periodsOverview: 'Periode Akademik',
@@ -2070,6 +2070,8 @@ export default {
       unassignedAlertsDesc: 'Jadwal kelas berikut belum memiliki guru pengampu.',
       assignTeacher: 'Tugaskan Guru',
       viewAllAlerts: 'Lihat {{count}} Peringatan Lainnya',
+      allClearTitle: 'Semua Jadwal Terisi',
+      allClearDesc: 'Tidak ada jadwal kelas yang kosong tanpa guru pengampu saat ini.',
     },
     stats: {
       totalTeachers: 'Total Guru',

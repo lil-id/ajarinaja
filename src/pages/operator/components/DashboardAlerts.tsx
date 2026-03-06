@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Clock, CalendarDays, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Clock, CalendarDays, ArrowRight, CheckCircle } from 'lucide-react';
 import { useUnassignedSchedules, DAY_LABELS } from '@/hooks/useSchedules';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -31,9 +31,21 @@ export const DashboardAlerts = () => {
         );
     }
 
-    // Don't render the alert box if everything is perfect (empty state)
+    // Empty state: All schedules are covered
     if (!unassignedSchedules || unassignedSchedules.length === 0) {
-        return null;
+        return (
+            <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                        <CheckCircle className="w-5 h-5 text-primary" />
+                        {t('operator.dashboard.allClearTitle')}
+                    </CardTitle>
+                    <CardDescription>
+                        {t('operator.dashboard.allClearDesc')}
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        );
     }
 
     return (

@@ -2019,6 +2019,8 @@ export default {
       unassignedAlertsDesc: 'The following class schedules do not have an assigned teacher.',
       assignTeacher: 'Assign Teacher',
       viewAllAlerts: 'View {{count}} More Alerts',
+      allClearTitle: 'All Schedules Covered',
+      allClearDesc: 'There are currently no empty class schedules without an assigned teacher.',
     },
     stats: {
       totalTeachers: 'Total Teachers',
