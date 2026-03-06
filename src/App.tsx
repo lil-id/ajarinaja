@@ -84,6 +84,8 @@ import OperatorUsers from "./pages/operator/OperatorUsers";
 import OperatorReports from "./pages/operator/OperatorReports";
 import OperatorAnnouncements from "./pages/operator/OperatorAnnouncements";
 import OperatorSettings from "./pages/operator/OperatorSettings";
+import OperatorClasses from "./pages/operator/OperatorClasses";
+import OperatorSchedules from "./pages/operator/OperatorSchedules";
 
 // Demo Pages
 import DemoLayout from "./layouts/DemoLayout";
@@ -240,6 +242,8 @@ const App = () => (
               <Route path="users" element={<OperatorUsers />} />
               <Route path="reports" element={<OperatorReports />} />
               <Route path="settings" element={<OperatorSettings />} />
+              <Route path="classes" element={<OperatorClasses />} />
+              <Route path="schedules" element={<OperatorSchedules />} />
             </Route>
 
             {/* Demo Routes */}

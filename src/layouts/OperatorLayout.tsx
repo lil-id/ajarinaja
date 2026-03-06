@@ -30,6 +30,8 @@ import {
     PanelLeftClose,
     PanelLeft,
     Megaphone,
+    GraduationCap,
+    CalendarRange,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -46,6 +48,8 @@ const OperatorLayout = () => {
         { name: t('operator.nav.dashboard'), href: '/operator', icon: LayoutDashboard },
         { name: t('operator.nav.announcements'), href: '/operator/announcements', icon: Megaphone },
         { name: t('operator.nav.periods'), href: '/operator/periods', icon: CalendarDays },
+        { name: t('operator.nav.classes'), href: '/operator/classes', icon: GraduationCap },
+        { name: t('operator.nav.schedules'), href: '/operator/schedules', icon: CalendarRange },
         { name: t('operator.nav.courses'), href: '/operator/courses', icon: BookOpen },
         { name: t('operator.nav.users'), href: '/operator/users', icon: Users },
         { name: t('operator.nav.reports'), href: '/operator/reports', icon: BarChart3 },
