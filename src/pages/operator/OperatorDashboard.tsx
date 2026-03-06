@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DashboardAlerts } from './components/DashboardAlerts';
 
 const OperatorDashboard = () => {
     const { t } = useTranslation();
@@ -117,37 +118,48 @@ const OperatorDashboard = () => {
                 ))}
             </div>
 
-            {/* Academic Periods Summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <CalendarDays className="w-5 h-5" />
-                        {t('operator.dashboard.periodsOverview')}
-                    </CardTitle>
-                    <CardDescription>{t('operator.dashboard.periodsOverviewDesc')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {periods.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-6">{t('operator.periods.noPeriods')}</p>
-                    ) : (
-                        <div className="space-y-2">
-                            {periods.slice(0, 5).map(period => (
-                                <div key={period.id} className="flex items-center justify-between p-3 rounded-lg border">
-                                    <div>
-                                        <p className="font-medium">{period.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('reportCards.semester')} {period.semester} {period.academic_year}
-                                        </p>
-                                    </div>
-                                    {period.is_active && (
-                                        <Badge variant="secondary">{t('reportCards.periodActive')}</Badge>
-                                    )}
+            {/* Main Content Area: Alerts (Left) and Overviews (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column: Alerts & Actions */}
+                <div className="lg:col-span-2 space-y-6">
+                    <DashboardAlerts />
+                </div>
+
+                {/* Right Column: Summaries */}
+                <div className="space-y-6">
+                    {/* Academic Periods Summary */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <CalendarDays className="w-5 h-5" />
+                                {t('operator.dashboard.periodsOverview')}
+                            </CardTitle>
+                            <CardDescription>{t('operator.dashboard.periodsOverviewDesc')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {periods.length === 0 ? (
+                                <p className="text-muted-foreground text-center py-6">{t('operator.periods.noPeriods')}</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {periods.slice(0, 5).map(period => (
+                                        <div key={period.id} className="flex items-center justify-between p-3 rounded-lg border">
+                                            <div>
+                                                <p className="font-medium">{period.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {t('reportCards.semester')} {period.semester} {period.academic_year}
+                                                </p>
+                                            </div>
+                                            {period.is_active && (
+                                                <Badge variant="secondary">{t('reportCards.periodActive')}</Badge>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 };

@@ -2013,6 +2013,10 @@ export default {
       activePeriod: 'Active Period',
       periodsOverview: 'Academic Periods',
       periodsOverviewDesc: 'List of all academic periods created',
+      actionRequired: 'Action Required',
+      unassignedAlertsDesc: 'The following class schedules do not have an assigned teacher.',
+      assignTeacher: 'Assign Teacher',
+      viewAllAlerts: 'View {{count}} More Alerts',
     },
     stats: {
       totalTeachers: 'Total Teachers',

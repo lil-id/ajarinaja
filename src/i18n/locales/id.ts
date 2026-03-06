@@ -2064,6 +2064,10 @@ export default {
       activePeriod: 'Periode Aktif',
       periodsOverview: 'Periode Akademik',
       periodsOverviewDesc: 'Daftar periode akademik yang telah dibuat',
+      actionRequired: 'Tindakan Diperlukan',
+      unassignedAlertsDesc: 'Jadwal kelas berikut belum memiliki guru pengampu.',
+      assignTeacher: 'Tugaskan Guru',
+      viewAllAlerts: 'Lihat {{count}} Peringatan Lainnya',
     },
     stats: {
       totalTeachers: 'Total Guru',
