@@ -202,7 +202,12 @@ export default {
 
   // Landing/Branding
   landing: {
-    platformDescription: 'A complete LMS platform for managing courses, assignments, exams, and learning analytics. Designed for teachers and students.',
+    contactUs: 'Contact Us',
+    platformDescription: 'A complete LMS platform integrating teachers, students, parents, and operators in one unified system. Enjoy a seamless experience for courses, assignments, exams, and analytics.',
+    teacherDesc: 'Create courses, assignments, & exams',
+    studentDesc: 'Enroll, access materials, & take exams',
+    operatorDesc: 'Manage master data & oversee school operations',
+    parentDesc: 'Monitor your child\'s progress & attendance',
   },
 
   // Dashboard

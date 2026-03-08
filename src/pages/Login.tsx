@@ -107,23 +107,48 @@ const Login = () => {
             {t('landing.platformDescription')}
           </p>
 
-          <div className="grid gap-4 pt-6">
-            <div className="flex items-center gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
-              <div className="w-12 h-12 bg-secondary/30 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-primary-foreground" />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pt-6">
+            {/* Teacher Card */}
+            <div className="flex items-start gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
+              <div className="w-10 h-10 bg-secondary/30 rounded-lg flex items-center justify-center shrink-0">
+                <BookOpen className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-primary-foreground">{t('auth.teacher')}</h3>
-                <p className="text-sm text-primary-foreground/70">{t('courses.createCourse')}, {t('assignments.title').toLowerCase()} & {t('exams.title').toLowerCase()}</p>
+                <h3 className="font-semibold text-primary-foreground leading-none mb-1.5">{t('auth.teacher')}</h3>
+                <p className="text-xs text-primary-foreground/70 leading-snug">{t('landing.teacherDesc')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
-              <div className="w-12 h-12 bg-secondary/30 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary-foreground" />
+
+            {/* Student Card */}
+            <div className="flex items-start gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
+              <div className="w-10 h-10 bg-secondary/30 rounded-lg flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-primary-foreground">{t('auth.student')}</h3>
-                <p className="text-sm text-primary-foreground/70">{t('courses.enrollNow')}, {t('materials.title').toLowerCase()} & {t('exams.takeExam').toLowerCase()}</p>
+                <h3 className="font-semibold text-primary-foreground leading-none mb-1.5">{t('auth.student')}</h3>
+                <p className="text-xs text-primary-foreground/70 leading-snug">{t('landing.studentDesc')}</p>
+              </div>
+            </div>
+
+            {/* Parent Card */}
+            <div className="flex items-start gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
+              <div className="w-10 h-10 bg-secondary/30 rounded-lg flex items-center justify-center shrink-0">
+                <UserCircle className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary-foreground leading-none mb-1.5">{t('auth.parent')}</h3>
+                <p className="text-xs text-primary-foreground/70 leading-snug">{t('landing.parentDesc')}</p>
+              </div>
+            </div>
+
+            {/* Operator Card */}
+            <div className="flex items-start gap-4 p-4 bg-primary-foreground/10 backdrop-blur-sm rounded-xl">
+              <div className="w-10 h-10 bg-secondary/30 rounded-lg flex items-center justify-center shrink-0">
+                <Briefcase className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary-foreground leading-none mb-1.5">{t('operator.roleLabel')}</h3>
+                <p className="text-xs text-primary-foreground/70 leading-snug">{t('landing.operatorDesc')}</p>
               </div>
             </div>
           </div>

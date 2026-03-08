@@ -202,7 +202,12 @@ export default {
 
   // Landing/Branding
   landing: {
-    platformDescription: 'Platform LMS lengkap untuk mengelola mata pelajaran, tugas, ujian, dan analitik pembelajaran. Dirancang untuk guru dan siswa.',
+    contactUs: 'Hubungi Kami',
+    platformDescription: 'Platform LMS lengkap yang mengintegrasikan guru, siswa, orang tua, dan operator dalam satu sistem terpadu. Nikmati pengalaman mulus untuk mata pelajaran, tugas, ujian, hingga analitik.',
+    teacherDesc: 'Buat kelas, tugas, & kelola ujian',
+    studentDesc: 'Akses materi, kerjakan ujian & tugas',
+    operatorDesc: 'Kelola data master & operasional sekolah',
+    parentDesc: 'Pantau perkembangan & presensi anak',
   },
 
   // Dashboard
