@@ -6,7 +6,7 @@
 
 AjarinAja is a full-stack web application that streamlines educational workflows and enhances the learning experience for both teachers and students. The platform features:
 
-- **Role-based access** for Teachers, Students, Parents
+- **Role-based access** for Teachers, Students, Parents, Operators
 - **Course management** with rich multimedia content
 - **Exam creation** with auto-grading capabilities
 - **Assignment tracking** and submission management
@@ -86,11 +86,13 @@ classroom-companion/
 │   ├── layouts/                 # Layout components
 │   │   ├── TeacherLayout.tsx    # Teacher dashboard layout
 │   │   ├── StudentLayout.tsx    # Student dashboard layout
+│   │   ├── OperatorLayout.tsx   # Operator dashboard layout
 │   │   └── DemoLayout.tsx       # Demo mode layout
 │   ├── lib/                     # Utility functions
 │   ├── pages/                   # Page components (69 pages)
 │   │   ├── teacher/             # Teacher-specific pages (19 pages)
 │   │   ├── student/             # Student-specific pages (18 pages)
+│   │   ├── operator/            # Operator-specific pages (9 pages)
 │   │   ├── demo/                # Demo mode pages (30 pages)
 │   │   ├── Index.tsx            # Landing page
 │   │   ├── Login.tsx
@@ -145,6 +147,13 @@ The application uses **Supabase PostgreSQL** with **20+ tables** organized into 
 - **at_risk_settings**: Risk detection criteria and thresholds
 - **progress_tracking**: Student progress data over time
 
+### Academic & Operational
+- **academic_periods**: Semester and academic year management (Operator-led)
+- **classes**: Rombongan Belajar management (e.g., Grade 10-A)
+- **class_students**: Student-to-class assignments
+- **class_schedules**: Weekly lesson scheduling for all classes
+- **school_announcements**: School-wide broadcast system with target roles
+
 ### Attendance System
 - **attendance_sessions**: Attendance tracking sessions
 - **attendance_records**: Individual student attendance records
@@ -192,6 +201,16 @@ The application uses **Supabase PostgreSQL** with **20+ tables** organized into 
 - **Exam Results**: Review exam scores and performance trends
 - **Pairing Code Linking**: Securely link to your child's account via pairing code
 - **Notifications**: Stay updated on your child's academic activities
+
+### For Operators (Academic Admin) 🏢
+- **Academic Periods**: Manage semesters, terms, and active school years
+- **Classes Management**: Create and organize "Rombongan Belajar" (classes)
+- **Student Placement**: Assign students to specific classes and sections
+- **Master Scheduling**: Build and maintain the school-wide weekly schedule
+- **Teacher Assignment**: Reassign teachers to courses and classes as needed
+- **School Announcements**: Broadcast school-wide updates to teachers, students, and parents
+- **Academic Auditing**: View comprehensive school-wide performance and attendance reports
+- **User Management**: Overview of all platform users and their roles
 
 ## 🎨 UI/UX Highlights
 
@@ -305,6 +324,8 @@ Try the platform without creating an account:
 - **Protected Routes**: Use `ProtectedRoute` component
 - **Teacher Routes**: Require `requiredRole="teacher"`
 - **Student Routes**: Require `requiredRole="student"`
+- **Parent Routes**: Require `requiredRole="parent"`
+- **Operator Routes**: Require `requiredRole="operator"`
 - **Demo Routes**: Accessible without authentication
 
 ## 🌐 Internationalization (i18n)

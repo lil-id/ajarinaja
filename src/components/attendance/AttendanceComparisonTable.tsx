@@ -164,12 +164,12 @@ export const AttendanceComparisonTable = ({
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('attendance.status.late')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm" />
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('attendance.status.absent')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('attendance.status.excused')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm" />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('attendance.status.absent')}</span>
                     </div>
                 </div>
             </div>

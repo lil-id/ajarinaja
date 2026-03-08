@@ -49,7 +49,6 @@ import {
 } from 'lucide-react';
 import { useReportCards, useReportCardEntries, useSyncStudentAttendance, type CreateReportCardEntryData } from '@/hooks/useReportCards';
 import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
-import { useCourses } from '@/hooks/useCourses';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -80,8 +79,6 @@ const ReportCardDetail = () => {
   const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
-  const [addCourseDialogOpen, setAddCourseDialogOpen] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
   const [teacherNotes, setTeacherNotes] = useState('');
   const [isCalculating, setIsCalculating] = useState(false);
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
@@ -114,10 +111,41 @@ const ReportCardDetail = () => {
         .eq('id', data.period_id)
         .single();
 
+      // Fetch homeroom teacher
+      let homeroomTeacherName = null;
+      const { data: classStudents } = await supabase
+        .from('class_students')
+        .select('class_id')
+        .eq('student_id', data.student_id);
+
+      if (classStudents && classStudents.length > 0) {
+        const classIds = classStudents.map(cs => cs.class_id);
+
+        const { data: matchedClasses } = await supabase
+          .from('classes')
+          .select('homeroom_teacher_id')
+          .in('id', classIds)
+          .eq('academic_year_id', data.period_id)
+          .limit(1);
+
+        if (matchedClasses && matchedClasses.length > 0 && matchedClasses[0].homeroom_teacher_id) {
+          const { data: teacherProfile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('user_id', matchedClasses[0].homeroom_teacher_id)
+            .single();
+
+          if (teacherProfile) {
+            homeroomTeacherName = teacherProfile.name;
+          }
+        }
+      }
+
       return {
         ...data,
         student: profile,
         period,
+        homeroomTeacherName,
       };
     },
     enabled: !!reportCardId,
@@ -127,7 +155,6 @@ const ReportCardDetail = () => {
   const { entries, isLoading: entriesLoading, bulkUpsertEntries, deleteEntry } = useReportCardEntries(reportCardId);
   const { updateReportCard, finalizeReportCard } = useReportCards();
   const syncStudentAttendance = useSyncStudentAttendance();
-  const { courses } = useCourses();
 
   // Local state for entries
   const [localEntries, setLocalEntries] = useState<Record<string, {
@@ -156,6 +183,63 @@ const ReportCardDetail = () => {
       setLocalEntries(entriesMap);
     }
   }, [entries]);
+
+  // Auto-sync missing enrolled courses
+  useEffect(() => {
+    const syncEnrolledCourses = async () => {
+      // Only do this once when reportCard and entries are ready, and it's not finalized
+      if (!reportCard || !reportCardId || reportCard.status === 'finalized' || entriesLoading) return;
+
+      try {
+        // Fetch student's enrollments
+        const { data: enrollments } = await supabase
+          .from('enrollments')
+          .select('course_id')
+          .eq('student_id', reportCard.student_id);
+
+        if (!enrollments || enrollments.length === 0) return;
+        const enrolledCourseIds = enrollments.map(e => e.course_id);
+
+        // Fetch courses to filter by period_id
+        const { data: courses } = await supabase
+          .from('courses')
+          .select('id')
+          .in('id', enrolledCourseIds)
+          .eq('period_id', reportCard.period_id);
+
+        if (!courses || courses.length === 0) return;
+        const periodCourseIds = courses.map(c => c.id);
+
+        // Diff against existing entries
+        const existingCourseIds = new Set(entries.map(e => e.course_id));
+        const missingCourseIds = periodCourseIds.filter(id => !existingCourseIds.has(id));
+
+        if (missingCourseIds.length > 0) {
+          // Batch insert
+          const newEntries = missingCourseIds.map(courseId => ({
+            report_card_id: reportCardId,
+            course_id: courseId,
+            final_grade: 0,
+            kkm: 60,
+          }));
+
+          const { error } = await supabase
+            .from('report_card_entries')
+            .insert(newEntries);
+
+          if (!error) {
+            toast.success(t('reportCards.subjectAdded'));
+            window.location.reload();
+          }
+        }
+      } catch (error) {
+        console.error('Error auto-syncing courses:', error);
+      }
+    };
+
+    syncEnrolledCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportCardId, reportCard?.status, reportCard?.student_id, reportCard?.period_id, entriesLoading]);
 
   useEffect(() => {
     if (reportCard?.teacher_notes) {
@@ -370,30 +454,6 @@ const ReportCardDetail = () => {
     });
   };
 
-  const handleAddCourse = async () => {
-    if (!selectedCourseId || !reportCardId) return;
-
-    const { error } = await supabase
-      .from('report_card_entries')
-      .insert({
-        report_card_id: reportCardId,
-        course_id: selectedCourseId,
-        final_grade: 0,
-        kkm: 60,
-      });
-
-    if (error) {
-      toast.error(`${t('reportCards.failedToAddSubject')}: ${error.message}`);
-      return;
-    }
-
-    toast.success(t('reportCards.subjectAdded'));
-    setAddCourseDialogOpen(false);
-    setSelectedCourseId('');
-    // Refetch entries
-    window.location.reload();
-  };
-
   const handleFinalize = async () => {
     let signature = signatureImage;
 
@@ -480,6 +540,7 @@ const ReportCardDetail = () => {
         entry.final_grade.toString(),
         entry.kkm.toString(),
         entry.passed ? t('reportCards.passed') : t('reportCards.notPassed'),
+        entry.teacher_notes || '-',
       ];
     });
 
@@ -493,11 +554,16 @@ const ReportCardDetail = () => {
         t('reportCards.overallAverage'),
         t('reportCards.finalGrade'),
         t('reportCards.kkm'),
-        t('reportCards.status')
+        t('reportCards.status'),
+        t('reportCards.notes')
       ]],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [59, 130, 246] },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        8: { cellWidth: 35 },
+      },
     });
 
     // Overall average
@@ -516,16 +582,11 @@ const ReportCardDetail = () => {
     if (reportCard.teacher_signature) {
       doc.addImage(reportCard.teacher_signature, 'PNG', 140, finalY + 20, 50, 25);
       doc.setFontSize(10);
-      doc.text(t('reportCards.teacherSignature'), 165, finalY + 50, { align: 'center' });
+      doc.text(reportCard.homeroomTeacherName || t('reportCards.teacherSignature'), 165, finalY + 50, { align: 'center' });
     }
 
     doc.save(`report-${reportCard.student?.name || 'student'}-${reportCard.period?.name || 'semester'}.pdf`);
   };
-
-  // Filter courses not yet added
-  const availableCourses = courses.filter(
-    c => !entries.some(e => e.course_id === c.id)
-  );
 
   if (reportCardQuery.isLoading) {
     return (
@@ -658,14 +719,6 @@ const ReportCardDetail = () => {
                 <RefreshCw className={`w-4 h-4 mr-2 ${syncStudentAttendance.isPending ? 'animate-spin' : ''}`} />
                 {syncStudentAttendance.isPending ? t('reportCards.syncingAttendance') : t('reportCards.calculateAttendance')}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setAddCourseDialogOpen(true)}
-                disabled={reportCard.status === 'finalized'}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t('reportCards.addSubject')}
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -677,11 +730,7 @@ const ReportCardDetail = () => {
           ) : entries.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground mb-4">{t('reportCards.noSubjectsYet')}</p>
-              <Button variant="outline" onClick={() => setAddCourseDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                {t('reportCards.addSubject')}
-              </Button>
+              <p className="text-muted-foreground mb-4">{t('reportCards.noSubjectsYet')} / Syncing subjects...</p>
             </div>
           ) : (
             <Table>
@@ -868,46 +917,6 @@ const ReportCardDetail = () => {
           />
         </CardContent>
       </Card>
-
-      {/* Add Course Dialog */}
-      <Dialog open={addCourseDialogOpen} onOpenChange={setAddCourseDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('dialogs.addSubject')}</DialogTitle>
-            <DialogDescription>
-              {t('dialogs.selectSubjectToAdd')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Label>{t('reportCards.subject')}</Label>
-            <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder={t('dialogs.chooseSubject')} />
-              </SelectTrigger>
-              <SelectContent>
-                {availableCourses.map((course) => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {availableCourses.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                {t('dialogs.allSubjectsAdded')}
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddCourseDialogOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={handleAddCourse} disabled={!selectedCourseId}>
-              {t('common.add')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Signature Dialog */}
       <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>

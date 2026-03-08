@@ -2,20 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCourses } from '@/hooks/useCourses';
-import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useCourseAttendanceStats } from '@/hooks/useAttendanceSessions';
 import { useAttendanceExport } from '@/hooks/useAttendanceExport';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Users, QrCode, Filter, Calendar as CalendarIcon, FileDown, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { LiveSessionWidget } from "@/components/dashboard/LiveSessionWidget";
 import { AttendanceComparisonTable } from "@/components/attendance/AttendanceComparisonTable";
@@ -27,7 +17,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";

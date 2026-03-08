@@ -61,7 +61,7 @@ export function useStudentEnrolledClass() {
                 .select(`
                     id,
                     class_id,
-                    classes!inner(academic_year_id)
+                    classes!inner(academic_year_id, name)
                 `)
                 .eq('student_id', user.id)
                 .eq('classes.academic_year_id', activePeriodId)

@@ -180,6 +180,27 @@ export function useReportCards(periodId?: string) {
     },
   });
 
+  // Bulk create report cards
+  const createBulkReportCards = useMutation({
+    mutationFn: async (data: CreateReportCardData[]) => {
+      const { data: result, error } = await supabase
+        .from('report_cards')
+        .insert(data)
+        .select();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['report-cards'] });
+      // Toast message will be handled by the caller to indicate the count
+    },
+    onError: (error: Error) => {
+      console.error('[useReportCards] createBulkReportCards failed:', error);
+      toast.error(i18next.t('toast.failedToCreateReportCard'));
+    },
+  });
+
   // Update report card
   const updateReportCard = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ReportCard> & { id: string }) => {
@@ -254,6 +275,7 @@ export function useReportCards(periodId?: string) {
     isLoading: reportCardsQuery.isLoading || myReportCardsQuery.isLoading,
     error: reportCardsQuery.error || myReportCardsQuery.error,
     createReportCard,
+    createBulkReportCards,
     updateReportCard,
     finalizeReportCard,
     deleteReportCard,

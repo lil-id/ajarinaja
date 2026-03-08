@@ -96,7 +96,37 @@ const StudentReportCardDetail = () => {
         teacher = teacherProfile;
       }
 
-      return { ...data, period, teacher };
+      // Fetch homeroom teacher
+      let homeroomTeacherName = null;
+      const { data: classStudents } = await supabase
+        .from('class_students')
+        .select('class_id')
+        .eq('student_id', data.student_id);
+
+      if (classStudents && classStudents.length > 0) {
+        const classIds = classStudents.map(cs => cs.class_id);
+
+        const { data: matchedClasses } = await supabase
+          .from('classes')
+          .select('homeroom_teacher_id')
+          .in('id', classIds)
+          .eq('academic_year_id', data.period_id)
+          .limit(1);
+
+        if (matchedClasses && matchedClasses.length > 0 && matchedClasses[0].homeroom_teacher_id) {
+          const { data: teacherProfile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('user_id', matchedClasses[0].homeroom_teacher_id)
+            .single();
+
+          if (teacherProfile) {
+            homeroomTeacherName = teacherProfile.name;
+          }
+        }
+      }
+
+      return { ...data, period, teacher, homeroomTeacherName };
     },
     enabled: !!reportCardId && !!user,
   });
@@ -170,7 +200,7 @@ const StudentReportCardDetail = () => {
       const signY = reportCard.teacher_notes ? finalY + 30 : finalY;
       doc.addImage(reportCard.teacher_signature, 'PNG', 140, signY, 50, 25);
       doc.setFontSize(10);
-      doc.text(t('reportCards.teacherSignature'), 165, signY + 30, { align: 'center' });
+      doc.text(reportCard.homeroomTeacherName || t('reportCards.teacherSignature'), 165, signY + 30, { align: 'center' });
     }
 
     doc.save(`${t('reportCards.digitalReportCard').toLowerCase().replace(/\s+/g, '-')}-${reportCard.period?.name || 'semester'}.pdf`);
@@ -437,7 +467,7 @@ const StudentReportCardDetail = () => {
                     className="max-w-full h-20 object-contain mx-auto"
                   />
                   <p className="text-sm text-muted-foreground mt-2">
-                    {reportCard.teacher?.name || t('reportCards.teacher')}
+                    {reportCard.homeroomTeacherName || reportCard.teacher?.name || t('reportCards.teacher')}
                   </p>
                 </div>
               </CardContent>

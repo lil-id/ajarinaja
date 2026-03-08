@@ -245,3 +245,27 @@ export function useHomeroomClass() {
     });
 }
 
+/**
+ * Hook to get all classes where current teacher is a homeroom teacher (Wali Kelas)
+ * for a specific academic period.
+ */
+export function useHomeroomClassesByPeriod(periodId: string) {
+    const { user } = useAuth();
+
+    return useQuery({
+        queryKey: ['homeroom-classes', user?.id, periodId],
+        queryFn: async () => {
+            if (!user || !periodId) return [];
+
+            const { data, error } = await supabase
+                .from('classes')
+                .select('*')
+                .eq('homeroom_teacher_id', user.id)
+                .eq('academic_year_id', periodId);
+
+            if (error) throw error;
+            return data as SchoolClass[];
+        },
+        enabled: !!user && !!periodId,
+    });
+}

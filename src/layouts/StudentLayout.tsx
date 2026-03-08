@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -44,7 +45,7 @@ const StudentLayout = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isEnrolled, isLoading } = useStudentEnrolledClass();
+  const { isEnrolled, isLoading, enrollmentData } = useStudentEnrolledClass();
 
   // Onboarding Blocker Logic
   useEffect(() => {
@@ -234,8 +235,15 @@ const StudentLayout = () => {
                         {profile?.name?.charAt(0) || 'S'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="hidden md:block text-left">
-                      <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.student')}</p>
+                    <div className="hidden md:flex md:flex-col md:items-start text-left gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.student')}</p>
+                        {isEnrolled && enrollmentData?.classes?.name && (
+                          <Badge variant="secondary" className="h-4 text-[10px] px-1 py-0 shadow-none font-medium text-blue-600 bg-blue-100/50 dark:text-blue-400 dark:bg-blue-900/30">
+                            {enrollmentData.classes.name}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">{profile?.email}</p>
                     </div>
                   </Button>

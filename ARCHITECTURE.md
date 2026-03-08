@@ -105,11 +105,13 @@ src/
 │   ├── TeacherLayout.tsx
 │   ├── StudentLayout.tsx
 │   ├── ParentLayout.tsx
+│   ├── OperatorLayout.tsx
 │   └── DemoLayout.tsx
-├── pages/              # Page components (77+ pages)
+├── pages/              # Page components (86+ pages)
 │   ├── teacher/        # Teacher pages (23)
 │   ├── student/        # Student pages (20)
 │   ├── parent/         # Parent pages (8)
+│   ├── operator/       # Operator pages (9)
 │   ├── demo/           # Demo pages (30)
 │   └── *.tsx           # Public pages
 ├── integrations/       # Third-party integrations
@@ -204,11 +206,13 @@ graph LR
     A[User Role] -->|Teacher| B[TeacherLayout]
     A -->|Student| C[StudentLayout]
     A -->|Parent| P[ParentLayout]
+    A -->|Operator| O[OperatorLayout]
     A -->|Demo| D[DemoLayout]
     
     B --> E[Sidebar + Navigation]
     C --> E
     P --> E
+    O --> E
     D --> E
     
     E --> F[Outlet for Page Content]
@@ -216,6 +220,7 @@ graph LR
     style B fill:#3b82f6
     style C fill:#10b981
     style P fill:#ec4899
+    style O fill:#8b5cf6
     style D fill:#f59e0b
 ```
 
@@ -249,6 +254,7 @@ TeacherLayout
 - [TeacherLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/TeacherLayout.tsx#L38-L238)
 - [StudentLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/StudentLayout.tsx#L38-L240)
 - [ParentLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/ParentLayout.tsx) — 3 nav items: Dashboard, Add Child, Notifications
+- [OperatorLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/OperatorLayout.tsx) — 9 items: Dashboard, Periods, Classes, Schedules, etc.
 - [DemoLayout.tsx](https://github.com/lil-id/classroom-companion/blob/main/src/layouts/DemoLayout.tsx)
 
 ### Shared Components
@@ -418,11 +424,17 @@ The 38 hooks are organized by domain:
 - `useSearchStudents` - Search students by name/email (for adding children)
 - `usePairingCode` - Manage pairing codes (student-side, for parent linking)
 
-#### Content & Communication Hooks (4)
+#### Content & Communication Hooks (5)
 - `useAnnouncements` - Course announcements
+- `useSchoolAnnouncements` - School-wide announcements
 - `useCalendarEvents` - Calendar events
 - `useReportCards` - Student report cards
 - `useAIMaterials` - AI-generated materials
+
+#### Academic Operations Hooks (Operator) (3)
+- `useAcademicPeriods` - Semester/term management
+- `useClasses` - Class management (Rombongan Belajar)
+- `useSchedules` - Class scheduling system
 
 #### Other Hooks (8)
 - `useAcademicPeriods` - Semester/term management
@@ -527,7 +539,7 @@ interface AuthContextType {
   user: User | null;                              // Supabase user object
   session: Session | null;                        // Active session
   profile: Profile | null;                        // User profile data
-  role: 'teacher' | 'student' | 'parent' | null; // User role
+  role: 'teacher' | 'student' | 'parent' | 'operator' | null; // User role
   signUp: (email, password, name, role) => Promise;
   signIn: (email, password) => Promise;
   signOut: () => Promise;
@@ -712,20 +724,24 @@ graph TD
     A --> D["Teacher Routes /teacher/*"]
     A --> E["Student Routes /student/*"]
     A --> PA["Parent Routes /parent/*"]
+    A --> O["Operator Routes /operator/*"]
     A --> F["Demo Routes /demo/*"]
     
     D --> G["ProtectedRoute role=teacher"]
     E --> H["ProtectedRoute role=student"]
     PA --> PB["ProtectedRoute role=parent"]
+    O --> PO["ProtectedRoute role=operator"]
     
     G --> I[TeacherLayout]
     H --> J[StudentLayout]
     PB --> PC[ParentLayout]
+    PO --> OK[OperatorLayout]
     F --> K[DemoLayout]
     
     I --> L[Teacher Pages]
     J --> M[Student Pages]
     PC --> PD[Parent Pages]
+    OK --> OP[Operator Pages]
     K --> N[Demo Pages]
     
     style D fill:#3b82f6
@@ -792,7 +808,8 @@ export function ProtectedRoute({ children, requiredRole }: Props) {
         const redirectPath =
           role === 'teacher' ? '/teacher' :
             role === 'student' ? '/student' :
-              role === 'parent' ? '/parent' : '/';
+              role === 'parent' ? '/parent' :
+                role === 'operator' ? '/operator' : '/';
         navigate(redirectPath, { replace: true });
       }
     }

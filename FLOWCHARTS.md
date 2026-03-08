@@ -267,3 +267,73 @@ graph LR
     Nav["Menu: Notifications"] --> List[Inbox Notifikasi]
     List --> MarkRead[Tandai Dibaca]
 ```
+---
+
+## 4. Flowchart Operator (Bagian Akademik)
+
+### Overview Alur Utama
+```mermaid
+graph TD
+    OperatorLogin[Login Operator] --> Layout[Operator Layout]
+    Layout --> Dashboard[Dashboard]
+    Layout --> Calendar[Calendar]
+    Layout --> Schedules[Schedules]
+    Layout --> Classes[Classes]
+    Layout --> Courses[Courses]
+    Layout --> Users[Users]
+    Layout --> Announcements[School Announcements]
+    Layout --> Periods[Academic Periods]
+    Layout --> Reports[Academic Reports]
+    Layout --> Settings["Settings/Profile"]
+```
+
+### Detail Per Menu
+
+#### Academic Periods (Tahun Ajaran/Semester)
+```mermaid
+graph LR
+    Nav["Menu: Periods"] --> List[List Periode Akademik]
+    List --> Create[Tambah Periode Baru]
+    List --> Toggle[Aktifkan/Nonaktifkan Periode]
+    List --> Edit[Edit Detail Periode]
+```
+
+#### Classes & Students (Manajemen Kelas)
+```mermaid
+graph TD
+    Nav["Menu: Classes"] --> List[Daftar Rombongan Belajar]
+    List --> Create[Buat Kelas Baru]
+    List --> Detail[Detail Kelas]
+    Detail --> AssignTeacher[Set Wali Kelas]
+    Detail --> ManageStudents[Kelola Daftar Siswa]
+    ManageStudents --> AddStudent[Tambah Siswa ke Kelas]
+    ManageStudents --> RemoveStudent[Hapus Siswa dari Kelas]
+```
+
+#### Schedules (Manajemen Jadwal)
+```mermaid
+graph LR
+    Nav["Menu: Schedules"] --> ClassList[Pilih Kelas]
+    ClassList --> ScheduleView[Lihat Jadwal Mingguan]
+    ScheduleView --> AddSchedule[Tambah Slot Jadwal]
+    AddSchedule --> AssignCourse[Pilih Mata Pelajaran]
+    AddSchedule --> AssignTeacher[Pilih Guru Pengampu]
+```
+
+#### School Announcements (Pengumuman Sekolah)
+```mermaid
+graph LR
+    Nav["Menu: Announcements"] --> List[Daftar Pengumuman]
+    List --> Create[Buat Pengumuman Baru]
+    Create --> SetTarget[Pilih Target Role]
+    List --> Pin[Pin Pengumuman]
+```
+
+#### Academic Reports (Laporan Akademik)
+```mermaid
+graph TD
+    Nav["Menu: Reports"] --> Overview[Overview Statistik Sekolah]
+    Overview --> ExportGrades[Export Nilai Siswa]
+    Overview --> ExportAttendance[Export Absensi Sekolah]
+    Overview --> Workload[Analisa Beban Mengajar]
+```

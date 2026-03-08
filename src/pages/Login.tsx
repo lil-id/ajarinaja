@@ -101,9 +101,9 @@ const Login = () => {
 
         <div className="space-y-6">
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight">
-            {t('dashboard.welcome')} AjarinAja
+            {t('dashboard.welcome')}
           </h1>
-          <p className="text-lg text-primary-foreground/80 max-w-md">
+          <p className="text-lg text-primary-foreground/80">
             {t('landing.platformDescription')}
           </p>
 

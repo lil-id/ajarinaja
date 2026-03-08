@@ -213,7 +213,7 @@ export default {
   // Dashboard
   dashboard: {
     allGraded: 'Semua sudah dinilai',
-    welcome: 'Selamat Datang',
+    welcome: 'Selamat Datang di AjarinAja',
     totalCourses: 'Total Mata Pelajaran',
     totalPublishedCourses: 'Mata Pelajaran Aktif',
     totalStudents: 'Total Siswa',
@@ -707,6 +707,12 @@ export default {
     selectPeriod: 'Pilih periode untuk mengelola rapor',
     reportCardList: 'Daftar Rapor',
     createReportCard: 'Buat Rapor',
+    createBulkReportCards: 'Buat Rapor Kelas (Bulk)',
+    createReportCardClass: 'Buat Rapor untuk Kelas',
+    selectHomeroomClass: 'Pilih kelas perwalian Anda. Ini akan membuat rapor untuk semua siswa di kelas ini pada periode yang dipilih.',
+    bulkReportCardsCreated: 'Berhasil membuat {{count}} rapor.',
+    noHomeroomClassNote: 'Anda tidak ditugaskan sebagai wali kelas untuk kelas manapun pada periode ini.',
+    noStudentsInClass: 'Tidak ada siswa yang ditemukan di kelas yang dipilih.',
     selectStudent: 'Pilih siswa untuk membuat rapor',
     noStudents: 'Belum ada siswa yang terdaftar di mata pelajaran Anda',
     noReportCards: 'Belum ada rapor',

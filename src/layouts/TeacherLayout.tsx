@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -203,8 +204,15 @@ const TeacherLayout = () => {
                         {profile?.name?.charAt(0) || 'T'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="hidden md:block text-left">
-                      <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.teacher')}</p>
+                    <div className="hidden md:flex md:flex-col md:items-start text-left gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.teacher')}</p>
+                        {homeroomClass && (
+                          <Badge variant="secondary" className="h-4 text-[10px] px-1 py-0 shadow-none font-medium text-emerald-600 bg-emerald-100/50 dark:text-emerald-400 dark:bg-emerald-900/30">
+                            {t('operator.classes.homeroomTeacher')}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">{profile?.email}</p>
                     </div>
                   </Button>

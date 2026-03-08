@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   FileText,
   Plus,
@@ -26,11 +25,15 @@ import {
   CheckCircle,
   Clock,
   GraduationCap,
-  Search
+  Search,
+  UsersRound
 } from 'lucide-react';
 import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
 import { useReportCards } from '@/hooks/useReportCards';
 import { useTeacherStudents } from '@/hooks/useEnrollments';
+import { useHomeroomClassesByPeriod } from '@/hooks/useClasses';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { id as idLocale, enUS } from 'date-fns/locale';
 
@@ -48,11 +51,14 @@ const ReportCards = () => {
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
   const [createReportOpen, setCreateReportOpen] = useState(false);
+  const [createBulkReportOpen, setCreateBulkReportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
 
   const { periods, isLoading: periodsLoading } = useAcademicPeriods();
-  const { reportCards, isLoading: reportCardsLoading, createReportCard } = useReportCards(selectedPeriod);
+  const { reportCards, isLoading: reportCardsLoading, createReportCard, createBulkReportCards } = useReportCards(selectedPeriod);
   const { data: enrolledStudents = [], isLoading: studentsLoading } = useTeacherStudents();
+  const { data: homeroomClasses = [], isLoading: homeroomClassesLoading } = useHomeroomClassesByPeriod(selectedPeriod);
 
   const dateLocale = i18n.language === 'id' ? idLocale : enUS;
 
@@ -68,6 +74,53 @@ const ReportCards = () => {
     if (!selectedPeriod) return;
     await createReportCard.mutateAsync({ student_id: studentId, period_id: selectedPeriod });
     setCreateReportOpen(false);
+  };
+
+  const handleCreateBulkReportCards = async () => {
+    if (!selectedPeriod || !selectedClassId) return;
+
+    try {
+      // Fetch students for the selected class
+      const { data: classStudents, error } = await supabase
+        .from('class_students')
+        .select('student_id')
+        .eq('class_id', selectedClassId);
+
+      if (error) throw error;
+
+      if (!classStudents || classStudents.length === 0) {
+        toast.error(t('reportCards.noStudentsInClass'));
+        return;
+      }
+
+      // Filter out students who already have a report card for this period
+      const existingStudentIds = new Set(reportCards.map((rc) => rc.student_id));
+      const newStudentIds = classStudents
+        .map((cs) => cs.student_id)
+        .filter((id) => !existingStudentIds.has(id));
+
+      if (newStudentIds.length === 0) {
+        toast.info(t('toast.reportCardAlreadyExists'));
+        setCreateBulkReportOpen(false);
+        return;
+      }
+
+      // Prepare payload
+      const bulkData = newStudentIds.map((studentId) => ({
+        student_id: studentId,
+        period_id: selectedPeriod,
+      }));
+
+      // Execute bulk creation
+      await createBulkReportCards.mutateAsync(bulkData);
+
+      toast.success(t('reportCards.bulkReportCardsCreated', { count: newStudentIds.length }));
+      setCreateBulkReportOpen(false);
+      setSelectedClassId('');
+    } catch (error) {
+      console.error('Failed to create bulk report cards:', error);
+      toast.error(t('toast.error'));
+    }
   };
 
   const filteredReportCards = reportCards.filter(rc =>
@@ -175,7 +228,7 @@ const ReportCards = () => {
                     </DialogHeader>
                     <div className="py-4">
                       {enrolledStudents && enrolledStudents.length > 0 ? (
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                        <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                           {enrolledStudents.map((student) => (
                             <div
                               key={student.user_id}
@@ -188,11 +241,11 @@ const ReportCards = () => {
                                   <AvatarFallback>{student.name?.charAt(0) || 'S'}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p className="font-medium">{student.name}</p>
-                                  <p className="text-sm text-muted-foreground">{student.email}</p>
+                                  <p className="font-medium inline-block max-w-[200px] truncate" title={student.name}>{student.name}</p>
+                                  <p className="text-sm text-muted-foreground inline-block max-w-[200px] truncate" title={student.email}>{student.email}</p>
                                 </div>
                               </div>
-                              <Plus className="w-5 h-5 text-muted-foreground" />
+                              <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                             </div>
                           ))}
                         </div>
@@ -202,6 +255,71 @@ const ReportCards = () => {
                         </p>
                       )}
                     </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Bulk Create Dialog */}
+                <Dialog open={createBulkReportOpen} onOpenChange={setCreateBulkReportOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary">
+                      <UsersRound className="w-4 h-4 mr-2" />
+                      {t('reportCards.createBulkReportCards')}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{t('reportCards.createReportCardClass')}</DialogTitle>
+                      <DialogDescription>
+                        {t('reportCards.selectHomeroomClass')}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                      {homeroomClassesLoading ? (
+                        <div className="space-y-2">
+                          <Skeleton className="h-12 w-full" />
+                          <Skeleton className="h-12 w-full" />
+                        </div>
+                      ) : homeroomClasses.length > 0 ? (
+                        <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                          {homeroomClasses.map((cls) => (
+                            <div
+                              key={cls.id}
+                              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${selectedClassId === cls.id ? 'border-primary bg-primary/5' : 'hover:bg-accent'
+                                }`}
+                              onClick={() => setSelectedClassId(cls.id)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-primary/10 rounded-full text-primary">
+                                  <UsersRound className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">{cls.name}</p>
+                                  <p className="text-sm text-muted-foreground">Level {cls.grade_level}</p>
+                                </div>
+                              </div>
+                              {selectedClassId === cls.id && (
+                                <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-8">
+                          {t('reportCards.noHomeroomClassNote')}
+                        </p>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setCreateBulkReportOpen(false)}>
+                        {t('common.cancel')}
+                      </Button>
+                      <Button
+                        onClick={handleCreateBulkReportCards}
+                        disabled={!selectedClassId || createBulkReportCards.isPending}
+                      >
+                        {createBulkReportCards.isPending ? t('common.creating') : t('common.create')}
+                      </Button>
+                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </div>
@@ -221,10 +339,16 @@ const ReportCards = () => {
                 <p className="text-muted-foreground mb-4">
                   {t('reportCards.selectStudent')}
                 </p>
-                <Button onClick={() => setCreateReportOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  {t('reportCards.createFirstReportCard')}
-                </Button>
+                <div className="flex justify-center gap-3 mt-4">
+                  <Button onClick={() => setCreateReportOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    {t('reportCards.createFirstReportCard')}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setCreateBulkReportOpen(true)}>
+                    <UsersRound className="w-4 h-4 mr-2" />
+                    {t('reportCards.createBulkReportCards')}
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
