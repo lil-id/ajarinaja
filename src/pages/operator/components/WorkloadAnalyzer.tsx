@@ -57,48 +57,140 @@ export function WorkloadAnalyzer() {
         );
     }
 
-    const chartData = workload.slice(0, 10).map(w => ({
-        name: w.teacherName.split(' ')[0], // Short name for x-axis
-        fullName: w.teacherName,
-        hours: w.totalWeeklyHours,
-        students: w.studentCount,
-    }));
+    // Aggregate data into distribution buckets
+    const hoursDistribution = {
+        '0-4': 0, '5-8': 0, '9-12': 0, '13-16': 0, '17-20': 0, '21-24': 0, '24+': 0
+    };
 
-    const getStatusBadge = (utilization: number) => {
-        if (utilization > 100) return <Badge variant="destructive">{t('operator.reports.overloaded')}</Badge>;
-        if (utilization >= 80) return <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300 border-orange-200">{t('operator.reports.atCapacity')}</Badge>;
-        return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300 border-green-200">{t('operator.reports.available')}</Badge>;
+    const studentsDistribution = {
+        '0-20': 0, '21-50': 0, '51-100': 0, '100+': 0
+    };
+
+    let overloadedCount = 0;
+    let idealCount = 0;
+    let underloadCount = 0;
+
+    workload.forEach(w => {
+        // Status counts based on JTM Compliance
+        if (w.complianceStatus === 'overload') overloadedCount++;
+        else if (w.complianceStatus === 'ideal') idealCount++;
+        else underloadCount++;
+
+        // Hours buckets (using total JTM)
+        if (w.totalWeeklyHours <= 4) hoursDistribution['0-4']++;
+        else if (w.totalWeeklyHours <= 8) hoursDistribution['5-8']++;
+        else if (w.totalWeeklyHours <= 12) hoursDistribution['9-12']++;
+        else if (w.totalWeeklyHours <= 16) hoursDistribution['13-16']++;
+        else if (w.totalWeeklyHours <= 20) hoursDistribution['17-20']++;
+        else if (w.totalWeeklyHours <= 24) hoursDistribution['21-24']++;
+        else hoursDistribution['24+']++;
+
+        // Students buckets
+        if (w.studentCount <= 20) studentsDistribution['0-20']++;
+        else if (w.studentCount <= 50) studentsDistribution['21-50']++;
+        else if (w.studentCount <= 100) studentsDistribution['51-100']++;
+        else studentsDistribution['100+']++;
+    });
+
+    const hoursChartData = [
+        { name: t('operator.reports.hours_0_4'), count: hoursDistribution['0-4'] },
+        { name: t('operator.reports.hours_5_8'), count: hoursDistribution['5-8'] },
+        { name: t('operator.reports.hours_9_12'), count: hoursDistribution['9-12'] },
+        { name: t('operator.reports.hours_13_16'), count: hoursDistribution['13-16'] },
+        { name: t('operator.reports.hours_17_20'), count: hoursDistribution['17-20'] },
+        { name: t('operator.reports.hours_21_24'), count: hoursDistribution['21-24'] },
+        { name: t('operator.reports.hours_24_plus'), count: hoursDistribution['24+'] },
+    ];
+
+    const studentsChartData = [
+        { name: t('operator.reports.students_0_20'), count: studentsDistribution['0-20'] },
+        { name: t('operator.reports.students_21_50'), count: studentsDistribution['21-50'] },
+        { name: t('operator.reports.students_51_100'), count: studentsDistribution['51-100'] },
+        { name: t('operator.reports.students_100_plus'), count: studentsDistribution['100+'] },
+    ];
+
+    const getStatusBadge = (status: 'underload' | 'ideal' | 'overload') => {
+        if (status === 'overload') return <Badge variant="destructive">{t('operator.reports.overloaded')}</Badge>;
+        if (status === 'ideal') return <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-950 dark:text-green-300 dark:hover:bg-green-900 border-green-200">{t('operator.reports.atCapacity')}</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900 border-blue-200">{t('operator.reports.available')}</Badge>;
     };
 
     return (
         <div className="space-y-6 animate-fade-in">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900/50 dark:bg-blue-950/20 shadow-sm">
+                    <CardContent className="p-6 flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                            <Clock className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">{t('operator.reports.available')}</p>
+                            <div className="flex items-baseline gap-1">
+                                <h3 className="text-2xl font-bold text-blue-600 dark:text-blue-400">{underloadCount}</h3>
+                                <span className="text-xs text-muted-foreground">{t('operator.reports.teachers')}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border-green-200 bg-green-50/50 dark:border-green-900/50 dark:bg-green-950/20 shadow-sm">
+                    <CardContent className="p-6 flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400">
+                            <Users className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">{t('operator.reports.atCapacity')}</p>
+                            <div className="flex items-baseline gap-1">
+                                <h3 className="text-2xl font-bold text-green-600 dark:text-green-400">{idealCount}</h3>
+                                <span className="text-xs text-muted-foreground">{t('operator.reports.teachers')}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border-destructive/20 bg-destructive/5 shadow-sm">
+                    <CardContent className="p-6 flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-destructive/10 text-destructive">
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">{t('operator.reports.overloaded')}</p>
+                            <div className="flex items-baseline gap-1">
+                                <h3 className="text-2xl font-bold text-destructive">{overloadedCount}</h3>
+                                <span className="text-xs text-muted-foreground">{t('operator.reports.teachers')}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Hours Distribution Chart */}
                 <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/30">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Clock className="w-5 h-5 text-blue-500" />
-                            {t('operator.reports.hoursPerWeek')}
+                            {t('operator.reports.distribution')} {t('operator.reports.hoursPerWeek')}
                         </CardTitle>
                         <CardDescription>{t('operator.reports.standardWorkload')}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
+                            <BarChart data={hoursChartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} />
                                 <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                                 <RechartsTooltip
+                                    cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
                                     contentStyle={{
                                         background: 'hsl(var(--card))',
                                         border: '1px solid hsl(var(--border))',
                                         borderRadius: '8px',
                                         fontSize: '13px',
                                     }}
-                                    formatter={(value: number) => [`${value} Jam`, '']}
+                                    formatter={(value: number) => [`${value} ${t('operator.reports.teachers')}`, '']}
                                 />
-                                <Bar dataKey="hours" radius={[4, 4, 0, 0]} barSize={32}>
-                                    {chartData.map((_entry, index) => (
+                                <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={28}>
+                                    {hoursChartData.map((_entry, index) => (
                                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                     ))}
                                 </Bar>
@@ -112,32 +204,32 @@ export function WorkloadAnalyzer() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Users className="w-5 h-5 text-green-500" />
-                            {t('operator.reports.studentLoad')}
+                            {t('operator.reports.distribution')} {t('operator.reports.studentLoad')}
                         </CardTitle>
                         <CardDescription>{t('operator.reports.topCoursesDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
+                            <BarChart data={studentsChartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} />
                                 <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                                 <RechartsTooltip
+                                    cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
                                     contentStyle={{
                                         background: 'hsl(var(--card))',
                                         border: '1px solid hsl(var(--border))',
                                         borderRadius: '8px',
                                         fontSize: '13px',
                                     }}
-                                    formatter={(value: number) => [`${value} Siswa`, '']}
+                                    formatter={(value: number) => [`${value} ${t('operator.reports.teachers')}`, '']}
                                 />
-                                <Bar dataKey="students" radius={[4, 4, 0, 0]} barSize={32} fill="hsl(160, 84%, 39%)" />
+                                <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={40} fill="hsl(160, 84%, 39%)" />
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
             </div>
-
             {/* Detailed Table */}
             <Card className="border-none shadow-md">
                 <CardHeader>
@@ -157,10 +249,11 @@ export function WorkloadAnalyzer() {
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
                                     <TableHead className="w-[250px]">{t('operator.schedules.teacher')}</TableHead>
-                                    <TableHead className="text-center">{t('operator.reports.hoursPerWeek')}</TableHead>
-                                    <TableHead className="text-center">{t('operator.reports.courseDiversity')}</TableHead>
+                                    <TableHead className="text-center">{t('operator.reports.baseJTM')}</TableHead>
+                                    <TableHead className="text-center">{t('operator.reports.additionalJTM')}</TableHead>
+                                    <TableHead className="text-center">{t('operator.reports.totalJTM')}</TableHead>
                                     <TableHead className="text-center">{t('operator.reports.studentLoad')}</TableHead>
-                                    <TableHead className="text-right">{t('operator.reports.utilizationPercentage')}</TableHead>
+                                    <TableHead className="text-right">{t('operator.reports.jtmCompliance')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -176,14 +269,20 @@ export function WorkloadAnalyzer() {
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex flex-col items-center">
-                                                <span className="font-bold">{teacher.totalWeeklyHours}</span>
+                                                <span className="font-bold">{teacher.baseWeeklyHours}</span>
                                                 <span className="text-[10px] text-muted-foreground uppercase">Jam</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex flex-col items-center">
-                                                <span className="font-bold">{teacher.courseCount}</span>
-                                                <span className="text-[10px] text-muted-foreground uppercase">{t('operator.reports.courses')}</span>
+                                                <span className="font-bold">+{teacher.additionalHours}</span>
+                                                <span className="text-[10px] text-muted-foreground uppercase">Jam</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className="font-bold text-primary">{teacher.totalWeeklyHours}</span>
+                                                <span className="text-[10px] text-muted-foreground uppercase">Total Jam</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center">
@@ -195,17 +294,14 @@ export function WorkloadAnalyzer() {
                                         <TableCell className="text-right">
                                             <div className="flex flex-col items-end gap-1.5">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-sm font-bold ${teacher.utilizationIndex > 100 ? 'text-destructive' : ''}`}>
-                                                        {teacher.utilizationIndex}%
-                                                    </span>
-                                                    {getStatusBadge(teacher.utilizationIndex)}
+                                                    {getStatusBadge(teacher.complianceStatus)}
                                                 </div>
-                                                <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                                                <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden mt-1">
                                                     <div
-                                                        className={`h-full transition-all duration-500 ${teacher.utilizationIndex > 100 ? 'bg-destructive' :
-                                                            teacher.utilizationIndex >= 80 ? 'bg-orange-500' : 'bg-green-500'
+                                                        className={`h-full transition-all duration-500 ${teacher.complianceStatus === 'overload' ? 'bg-destructive' :
+                                                            teacher.complianceStatus === 'ideal' ? 'bg-green-500' : 'bg-blue-500'
                                                             }`}
-                                                        style={{ width: `${Math.min(100, teacher.utilizationIndex)}%` }}
+                                                        style={{ width: `${Math.min(100, (teacher.totalWeeklyHours / 40) * 100)}%` }}
                                                     />
                                                 </div>
                                             </div>

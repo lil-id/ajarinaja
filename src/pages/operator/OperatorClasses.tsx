@@ -130,25 +130,37 @@ const OperatorClasses = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {classes.map((cls) => (
                         <Card key={cls.id} className="group relative hover:shadow-md transition-shadow">
-                            <CardHeader className="pb-2">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
-                                        <CardTitle className="text-lg leading-tight">{cls.name}</CardTitle>
-                                        <CardDescription>
-                                            {t('operator.classes.grade')} {cls.grade_level}
-                                        </CardDescription>
+                            <CardHeader className="pb-4 border-b bg-muted/20 relative overflow-hidden">
+                                {/* Subtle Background Pattern */}
+                                <div className="absolute right-0 top-0 opacity-5 pointer-events-none transform translate-x-4 -translate-y-4">
+                                    <GraduationCap className="w-32 h-32" />
+                                </div>
+                                <div className="flex items-start justify-between gap-3 relative z-10">
+                                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                                        {/* Illustration Icon */}
+                                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary flex-shrink-0 shadow-sm">
+                                            <GraduationCap className="w-6 h-6" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <CardTitle className="text-xl font-bold leading-tight truncate">{cls.name}</CardTitle>
+                                            <CardDescription className="flex items-center gap-1.5 mt-1 font-medium">
+                                                <Badge variant="secondary" className="px-1.5 py-0 text-[10px] bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+                                                    {t('operator.classes.grade')} {cls.grade_level}
+                                                </Badge>
+                                            </CardDescription>
+                                        </div>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm"
                                             >
                                                 <MoreVertical className="w-4 h-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent align="end" className="w-48">
                                             <DropdownMenuItem onClick={() => setManageStudentsClass({ id: cls.id, name: cls.name })}>
                                                 <Users className="w-4 h-4 mr-2" />
                                                 {t('operator.classes.manageStudents')}
@@ -159,7 +171,7 @@ const OperatorClasses = () => {
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => setDeleteTarget(cls.id)}
-                                                className="text-destructive"
+                                                className="text-destructive focus:text-destructive"
                                             >
                                                 <Trash2 className="w-4 h-4 mr-2" />
                                                 {t('common.delete')}
@@ -168,7 +180,7 @@ const OperatorClasses = () => {
                                     </DropdownMenu>
                                 </div>
                             </CardHeader>
-                            <CardContent className="space-y-2">
+                            <CardContent className="space-y-3 pt-4">
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Users className="w-4 h-4 flex-shrink-0" />
                                     <span>

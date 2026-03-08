@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar as CalendarIcon, Loader2, Users, SearchX, Clock } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSchedules } from '@/hooks/useSchedules';
 import { useRoleUsers } from '@/hooks/useRoleUsers';
 import { SubstituteFinderDialog } from './components/SubstituteFinderDialog';
+import { TeacherCombobox } from './components/TeacherCombobox';
 import { cn } from '@/lib/utils';
 import { ClassSchedule, DAY_LABELS } from '@/hooks/useSchedules';
 
@@ -110,19 +110,12 @@ export default function OperatorCalendar() {
                 </div>
 
                 <div className="flex items-center gap-3 bg-muted/50 p-2 rounded-lg border">
-                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap hidden sm:inline-block">Filter Jadwal:</span>
-                    <Select value={selectedTeacherId} onValueChange={setSelectedTeacherId}>
-                        <SelectTrigger className="w-[220px] bg-background">
-                            <SelectValue placeholder="Semua Guru" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Semua Guru</SelectItem>
-                            <SelectItem value="unassigned" className="text-destructive font-medium">Jadwal Kosong (Tanpa Guru)</SelectItem>
-                            {teachers.map(t => (
-                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap hidden sm:inline-block">{t('operator.calendar.filterLabel')}</span>
+                    <TeacherCombobox
+                        teachers={teachers}
+                        value={selectedTeacherId}
+                        onChange={setSelectedTeacherId}
+                    />
                 </div>
             </div>
 
