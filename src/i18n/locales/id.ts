@@ -128,6 +128,10 @@ export default {
     analytics: 'Statistik & Laporan',
     students: 'Siswa',
     announcements: 'Pengumuman',
+    periods: 'Periode Akademik',
+    schedules: 'Jadwal',
+    classes: 'Kelas',
+    reports: 'Laporan',
     questionBank: 'Bank Soal',
     reportCards: 'Rapor',
     notifications: 'Notifikasi & Pengumuman',
@@ -165,6 +169,8 @@ export default {
     availableToEnroll: 'Mata pelajaran ini tersedia untuk pendaftaran.',
     viewDetails: 'Lihat Detail',
     examResults: 'Hasil Ujian',
+    children: 'Daftar Siswa',
+    settings: 'Pengaturan',
   },
 
   // Auth
@@ -1866,7 +1872,8 @@ export default {
     myAttendance: 'Absensi Saya',
     totalSessions: 'Total Sesi',
     late: 'Terlambat',
-    absent: 'Absen',
+    absent: 'Alpa',
+    excused: 'Izin',
     attendanceGrade: 'Nilai Absensi',
 
     // Excuses
@@ -2253,6 +2260,20 @@ export default {
       unpinnedSuccess: 'Pengumuman berhasil dilepas sematannya',
       unpin: 'Lepas Sematan',
     },
+  },
+  demo: {
+    welcome: 'Selamat Datang di Demo {{role}}',
+    description: 'Ini adalah pratinjau interaktif dari platform AjarinAja.',
+    viewOnly: 'Mode Lihat Saja',
+    viewOnlyDesc: 'Beberapa fitur mungkin terbatas dalam mode demo ini.',
+    childDashboard: 'Dasbor Siswa (Demo)',
+    parentOverview: 'Ikhtisar Orang Tua (Demo)',
+    attendance: 'Kehadiran (Demo)',
+    assignments: 'Tugas (Demo)',
+    exams: 'Ujian (Demo)',
+    backToParent: 'Kembali ke Ikhtisar',
+    selectChild: 'Pilih siswa untuk melihat progres',
+    demoStudents: 'Siswa Demo',
   },
 };
 

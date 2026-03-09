@@ -85,7 +85,8 @@ const Index = () => {
   const navLinks = [
     { href: "#features", label: "Features" },
     { href: "#for-teachers", label: "For Teachers" },
-    { href: "#for-schools", label: "For Schools" },
+    { href: "#for-parents", label: "For Parents" },
+    { href: "#for-operators", label: "For Schools & Institutions" },
     // { href: "#pricing", label: "Pricing" },
     { href: "#testimonials", label: "Testimonials" },
     { href: "#faq", label: "FAQ" },
@@ -95,6 +96,9 @@ const Index = () => {
     setMobileMenuOpen(false);
     if (href === "/courses") {
       navigate("/courses");
+    } else if (href === "#experience") {
+      const element = document.querySelector("#experience");
+      element?.scrollIntoView({ behavior: "smooth" });
     } else {
       const element = document.querySelector(href);
       element?.scrollIntoView({ behavior: "smooth" });
@@ -178,11 +182,11 @@ const Index = () => {
                       className="w-full"
                       onClick={() => {
                         setMobileMenuOpen(false);
-                        navigate("/demo/teacher");
+                        handleNavClick("#experience");
                       }}
                     >
                       <Eye className="w-4 h-4" />
-                      Try Demo
+                      Explore Demos
                     </Button>
                     <Button
                       variant="hero"
@@ -214,17 +218,17 @@ const Index = () => {
                 Trusted by 500+ Schools Worldwide
               </div>
               <h1 className="text-4xl md:text-6xl font-extrabold text-foreground mb-6 leading-tight">
-                Your Complete
-                <span className="text-gradient block">Learning Management System</span>
+                Complete
+                <span className="text-gradient block">Educational Ecosystem</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                AjarinAja is the all-in-one LMS platform for modern educators. Manage courses, create assignments & exams,
-                track student progress, and deliver an exceptional learning experience.
+                AjarinAja is the all-in-one platform for modern education. Empowering Teachers, engaging Students,
+                involving Parents, and streamlining Institution Management for a superior learning journey.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-4">
-                <Button variant="outline" size="xl" onClick={() => navigate("/demo/teacher")}>
+                <Button variant="outline" size="xl" onClick={() => handleNavClick("#experience")}>
                   <Eye className="w-4 h-4" />
-                  Try Demo
+                  Explore Demos
                 </Button>
                 <Button variant="hero" size="xl" onClick={handleContactDemo}>
                   <MessageSquare className="w-4 h-4" />
@@ -404,28 +408,102 @@ const Index = () => {
                   </li>
                 ))}
               </ul>
-              <Button variant="hero" size="lg" onClick={handleContactDemo}>
-                <MessageSquare className="w-4 h-4" />
-                Contact for Full Demo
-              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* For Schools Section */}
-      <section id="for-schools" className="py-24 px-6">
+      {/* For Parents Section */}
+      <section id="for-parents" className="py-24 px-6 relative overflow-hidden">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <ScrollReveal animation="fade-right">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 rounded-full text-orange-600 text-sm font-medium mb-6">
+                  <Users className="w-4 h-4" />
+                  For Parents
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                  Stay Connected to Your Child's Journey
+                </h2>
+                <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                  Bridge the gap between home and school. AjarinAja gives parents real-time visibility into their child's academic progress, attendance, and achievements.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  {[
+                    {
+                      icon: <TrendingUp className="w-5 h-5" />,
+                      title: "Progress Tracking",
+                      description: "Real-time dashboard for grades and overall academic standing.",
+                    },
+                    {
+                      icon: <Bell className="w-5 h-5" />,
+                      title: "Instant Alerts",
+                      description: "Get notified about exam schedules, results, and school announcements.",
+                    },
+                    {
+                      icon: <Calendar className="w-5 h-5" />,
+                      title: "Attendance Monitoring",
+                      description: "Track daily check-ins and late arrivals effortlessly.",
+                    },
+                    {
+                      icon: <MessageSquare className="w-5 h-5" />,
+                      title: "Direct Communication",
+                      description: "Receive updates directly from teachers and school operators.",
+                    },
+                  ].map((item, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center text-orange-600">
+                        {item.icon}
+                      </div>
+                      <h4 className="font-semibold text-foreground">{item.title}</h4>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal animation="fade-left" delay={200}>
+              <div className="relative">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border">
+                  <img
+                    src={studentsStudying}
+                    alt="Students studying together representing children's educational progress"
+                    className="w-full h-auto object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+                </div>
+                {/* Floating Card */}
+                <div className="absolute -bottom-6 -left-6 bg-card p-4 rounded-2xl shadow-card border border-border animate-bounce-subtle">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-foreground">GPA: 3.8</div>
+                      <div className="text-xs text-muted-foreground">Semester progress</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* For Operators Section */}
+      <section id="for-operators" className="py-24 px-6">
         <div className="container mx-auto max-w-7xl">
           <ScrollReveal animation="fade-up" className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full text-secondary text-sm font-medium mb-6">
               <Building2 className="w-4 h-4" />
-              For Schools & Institutions
+              For Operators & Institutions
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Enterprise-Ready Education Platform
+              Effortless Institutional Management
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              A secure, scalable solution designed for educational institutions of all sizes—from small tutoring centers to large universities.
+              A complete administrative suite for modern educational institutions. Manage classes, schedules, and academic records with ease.
             </p>
           </ScrollReveal>
 
@@ -499,8 +577,8 @@ const Index = () => {
                 className="rounded-2xl shadow-lg w-full h-48 object-cover animate-slide-up"
               />
               <img
-                src={teacherTeaching}
-                alt="Teacher actively teaching"
+                src={teacherAnalytics}
+                alt="Administrative dashboard and analytics"
                 className="rounded-2xl shadow-lg w-full h-48 object-cover mt-8 animate-slide-up"
                 style={{ animationDelay: "100ms" }}
               />
@@ -603,6 +681,18 @@ const Index = () => {
                 color: "bg-indigo-500/10 text-indigo-600",
               },
               {
+                icon: <Users className="w-6 h-6" />,
+                title: "Parent Portal",
+                description: "Dedicated access for parents to monitor their child's progress, attendance, and grades in real-time.",
+                color: "bg-orange-500/10 text-orange-600",
+              },
+              {
+                icon: <Building2 className="w-6 h-6" />,
+                title: "Institutional Oversight",
+                description: "Comprehensive management for school operators—from academic periods to campus-wide announcements.",
+                color: "bg-teal-500/10 text-teal-600",
+              },
+              {
                 icon: <Globe className="w-6 h-6" />,
                 title: "Multi-Language Support",
                 description: "Full interface available in English and Indonesian with easy language switching.",
@@ -682,6 +772,86 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Experience Section */}
+      <section id="experience" className="py-24 px-6 relative overflow-hidden bg-background">
+        <div className="container mx-auto max-w-7xl">
+          <ScrollReveal animation="fade-up" className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Experience the Platform
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Choose your role and see how AjarinAja can transform your educational experience.
+            </p>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                role: "Teacher",
+                description: "Manage courses, create exams, and track student performance.",
+                icon: <GraduationCap className="w-6 h-6" />,
+                action: () => navigate("/demo/teacher"),
+                color: "bg-primary/10 text-primary",
+                image: teacherSmartboard,
+              },
+              {
+                role: "Student",
+                description: "Learn with rich materials, take exams, and track your achievements.",
+                icon: <BookOpen className="w-6 h-6" />,
+                action: () => navigate("/demo/student"),
+                color: "bg-blue-500/10 text-blue-600",
+                image: studentOnlineExam,
+              },
+              {
+                role: "Parent",
+                description: "Monitor your child's progress, attendance, and growth.",
+                icon: <Users className="w-6 h-6" />,
+                action: () => navigate("/demo/parent"), // Placeholder for now or actual if implemented
+                color: "bg-orange-500/10 text-orange-600",
+                image: studentsStudying,
+              },
+              {
+                role: "Operator",
+                description: "Oversee institution-wide classes, schedules, and reports.",
+                icon: <Building2 className="w-6 h-6" />,
+                action: () => navigate("/demo/operator"), // Placeholder handle
+                color: "bg-teal-500/10 text-teal-600",
+                image: teacherAnalytics,
+              },
+            ].map((demo, index) => (
+              <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
+                <div className="flex flex-col bg-card rounded-2xl overflow-hidden border border-border/50 hover:shadow-xl transition-all duration-300 h-full group">
+                  <div className="h-40 relative overflow-hidden">
+                    <img
+                      src={demo.image}
+                      alt={`${demo.role} perspective`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+                  </div>
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${demo.color}`}>
+                      {demo.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{demo.role}</h3>
+                    <p className="text-sm text-muted-foreground mb-6 flex-1">
+                      {demo.description}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      onClick={demo.action}
+                    >
+                      Try {demo.role} Demo
+                    </Button>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 px-6 bg-muted/30">
         <div className="container mx-auto max-w-6xl">
@@ -735,9 +905,9 @@ const Index = () => {
                   What is AjarinAja and who is it for?
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-5">
-                  AjarinAja is a comprehensive Learning Management System (LMS) designed for schools, educational institutions,
-                  and independent educators. It provides tools for course management, assignment creation, exam administration,
-                  student progress tracking, and analytics — all in one platform.
+                  AjarinAja is a comprehensive Educational Ecosystem designed for schools, institutions, and independent educators.
+                  It provides a unified experience for four key roles: Administrators/Operators (school management), Teachers (course & exam delivery),
+                  Students (learning & assessment), and Parents (progress monitoring).
                 </AccordionContent>
               </AccordionItem>
 
@@ -778,13 +948,34 @@ const Index = () => {
 
               <AccordionItem value="item-5" className="bg-card border border-border rounded-xl px-6">
                 <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  How can parents stay involved in their child's learning?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Parents have a dedicated portal where they can view their child's dashboard, track attendance, see exam scores,
+                  and receive notifications about school events. This ensures parents are always in the loop and can support
+                  their child's educational journey effectively.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-6" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                  What administrative tools are available for school operators?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-5">
+                  Operators can manage the entire institution's structure, including academic periods (semesters), class assignments,
+                  teacher-student mapping, and school-wide announcements. They also have access to high-level reports on
+                  system usage and overall academic performance.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-7" className="bg-card border border-border rounded-xl px-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
                   Is there a demo I can try before committing?
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-5">
-                  Absolutely! We offer an interactive demo that lets you explore the platform from both teacher and student
-                  perspectives. You can try creating courses, assignments, and exams, or experience the student view of
-                  taking assessments. Click the "Try Demo" button above to get started, or contact us for a personalized
-                  walkthrough of all features.
+                  Absolutely! We offer interactive demos for all roles: Teacher, Student, Parent, and Operator.
+                  Explore the platform from any perspective to see how it fits your needs. Click the "Try Demo"
+                  buttons above or contact us for a guided walkthrough.
                 </AccordionContent>
               </AccordionItem>
 

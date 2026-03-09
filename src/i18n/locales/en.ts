@@ -128,6 +128,10 @@ export default {
     analytics: 'Stats & Reports',
     students: 'Students',
     announcements: 'Announcements',
+    periods: 'Academic Periods',
+    schedules: 'Schedules',
+    classes: 'Classes',
+    reports: 'Reports',
     questionBank: 'Question Bank',
     reportCards: 'Report Cards',
     notifications: 'Notifications',
@@ -165,6 +169,8 @@ export default {
     availableToEnroll: 'This course is available for enrollment.',
     viewDetails: 'View Details',
     examResults: 'Exam Results',
+    children: 'Students',
+    settings: 'Settings',
   },
 
   // Auth
@@ -1759,6 +1765,9 @@ export default {
 
     // Status
     present: 'Present',
+    late: 'Late',
+    absent: 'Absent',
+    excused: 'Excused',
     statusUpdated: 'Status Updated',
     statusUpdateSuccess: 'Successfully updated status for {{student}} to {{status}}',
     statusUpdateFailed: 'Failed to update attendance status',
@@ -2202,6 +2211,20 @@ export default {
       unpinnedSuccess: 'Announcement unpinned successfully',
       unpin: 'Unpin',
     },
+  },
+  demo: {
+    welcome: 'Welcome to the {{role}} Demo',
+    description: 'This is an interactive preview of the AjarinAja platform.',
+    viewOnly: 'View Only Mode',
+    viewOnlyDesc: 'Some features may be limited in this demo mode.',
+    childDashboard: 'Child Dashboard (Demo)',
+    parentOverview: 'Parent Overview (Demo)',
+    attendance: 'Attendance (Demo)',
+    assignments: 'Assignments (Demo)',
+    exams: 'Exams (Demo)',
+    backToParent: 'Back to Overview',
+    selectChild: 'Select a student to view progress',
+    demoStudents: 'Demo Students',
   },
 };
 

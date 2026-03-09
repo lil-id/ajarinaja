@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, FileText, ClipboardCheck, Award, Calendar, TrendingUp } from 'lucide-react';
@@ -18,6 +19,7 @@ import { format } from 'date-fns';
  * @returns {JSX.Element} The rendered Student Dashboard page.
  */
 export default function DemoStudentDashboard() {
+  const { t } = useTranslation();
   const stats = demoStats.student;
   const enrolledCourses = demoCourses.filter(c => c.status === 'published').slice(0, 2);
   const upcomingAssignments = demoAssignments.filter(a => a.status === 'published').slice(0, 3);
@@ -25,8 +27,8 @@ export default function DemoStudentDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Welcome back, Demo Student!</h1>
-        <p className="text-muted-foreground">Track your progress and stay on top of your studies</p>
+        <h1 className="text-3xl font-bold">{t('demo.welcome', { role: 'Student' })}</h1>
+        <p className="text-muted-foreground">{t('demo.description')}</p>
       </div>
 
       {/* Stats Grid */}

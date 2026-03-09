@@ -115,6 +115,19 @@ import DemoStudentAnalytics from "./pages/demo/DemoStudentAnalytics";
 import DemoStudentCalendar from "./pages/demo/DemoStudentCalendar";
 import DemoStudentNotifications from "./pages/demo/DemoStudentNotifications";
 import DemoStudentMaterials from "./pages/demo/DemoStudentMaterials";
+// Parent Demo
+import DemoParentOverview from "./pages/demo/DemoParentOverview";
+import DemoChildDashboard from "./pages/demo/DemoChildDashboard";
+import DemoChildAttendance from "./pages/demo/DemoChildAttendance";
+import DemoChildAssignments from "./pages/demo/DemoChildAssignments";
+import DemoChildExams from "./pages/demo/DemoChildExams";
+// Operator Demo
+import DemoOperatorDashboard from "./pages/demo/DemoOperatorDashboard";
+import DemoOperatorReports from "./pages/demo/DemoOperatorReports";
+import DemoOperatorAnnouncements from "./pages/demo/DemoOperatorAnnouncements";
+import DemoOperatorPeriods from "./pages/demo/DemoOperatorPeriods";
+import DemoOperatorSchedules from "./pages/demo/DemoOperatorSchedules";
+import DemoOperatorClasses from "./pages/demo/DemoOperatorClasses";
 
 const queryClient = new QueryClient();
 
@@ -282,6 +295,25 @@ const App = () => (
               <Route path="student/analytics" element={<DemoStudentAnalytics />} />
               <Route path="student/calendar" element={<DemoStudentCalendar />} />
               <Route path="student/notifications" element={<DemoStudentNotifications />} />
+
+              {/* Parent Demo */}
+              <Route path="parent" element={<DemoParentOverview />} />
+              <Route path="parent/children" element={<DemoParentOverview />} />
+              <Route path="parent/children/:childId" element={<DemoChildDashboard />} />
+              <Route path="parent/children/:childId/attendance" element={<DemoChildAttendance />} />
+              <Route path="parent/children/:childId/assignments" element={<DemoChildAssignments />} />
+              <Route path="parent/children/:childId/exams" element={<DemoChildExams />} />
+              <Route path="parent/notifications" element={<DemoGenericPage />} />
+              <Route path="parent/settings" element={<DemoGenericPage />} />
+
+              {/* Operator Demo */}
+              <Route path="operator" element={<DemoOperatorDashboard />} />
+              <Route path="operator/periods" element={<DemoOperatorPeriods />} />
+              <Route path="operator/classes" element={<DemoOperatorClasses />} />
+              <Route path="operator/schedules" element={<DemoOperatorSchedules />} />
+              <Route path="operator/reports" element={<DemoOperatorReports />} />
+              <Route path="operator/announcements" element={<DemoOperatorAnnouncements />} />
+              <Route path="operator/settings" element={<DemoGenericPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

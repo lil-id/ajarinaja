@@ -16,11 +16,13 @@ import {
   Eye,
   MessageSquare,
 
-  Menu,
+  Award,
+  Clock,
+  Settings,
   FolderOpen,
   Database,
   Home,
-  Award,
+  Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDemoContext } from '@/contexts/DemoContext';
@@ -59,12 +61,34 @@ export default function DemoLayout() {
     { icon: Bell, label: t('nav.notifications'), path: '/demo/student/notifications' },
   ];
 
-  const navItems = demoRole === 'teacher' ? teacherNavItems : studentNavItems;
+  const parentNavItems = [
+    { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/demo/parent' },
+    { icon: Users, label: t('nav.children'), path: '/demo/parent/children' },
+    { icon: Bell, label: t('nav.notifications'), path: '/demo/parent/notifications' },
+    { icon: Settings, label: t('nav.settings'), path: '/demo/parent/settings' },
+  ];
 
-  const handleRoleSwitch = (role: 'teacher' | 'student') => {
-    // Navigate to the base demo path for the new role
-    // The DemoContext will sync the role from the URL path
-    navigate(role === 'teacher' ? '/demo/teacher' : '/demo/student');
+  const operatorNavItems = [
+    { icon: LayoutDashboard, label: t('nav.overview'), path: '/demo/operator' },
+    { icon: Calendar, label: t('nav.periods'), path: '/demo/operator/periods' },
+    { icon: Users, label: t('nav.classes'), path: '/demo/operator/classes' },
+    { icon: Clock, label: t('nav.schedules'), path: '/demo/operator/schedules' },
+    { icon: BarChart2, label: t('nav.reports'), path: '/demo/operator/reports' },
+    { icon: Bell, label: t('nav.announcements'), path: '/demo/operator/announcements' },
+    { icon: Settings, label: t('nav.settings'), path: '/demo/operator/settings' },
+  ];
+
+  const navItemsByRole = {
+    teacher: teacherNavItems,
+    student: studentNavItems,
+    parent: parentNavItems,
+    operator: operatorNavItems,
+  };
+
+  const navItems = navItemsByRole[demoRole];
+
+  const handleRoleSwitch = (role: 'teacher' | 'student' | 'parent' | 'operator') => {
+    navigate(`/demo/${role}`);
   };
 
   const NavContent = () => (
@@ -93,11 +117,10 @@ export default function DemoLayout() {
       {/* Role Switcher */}
       <div className="p-4 border-b">
         <p className="text-xs text-muted-foreground mb-2">View as:</p>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             variant={demoRole === 'teacher' ? 'default' : 'outline'}
             size="sm"
-            className="flex-1"
             onClick={() => handleRoleSwitch('teacher')}
           >
             Teacher
@@ -105,10 +128,23 @@ export default function DemoLayout() {
           <Button
             variant={demoRole === 'student' ? 'default' : 'outline'}
             size="sm"
-            className="flex-1"
             onClick={() => handleRoleSwitch('student')}
           >
             Student
+          </Button>
+          <Button
+            variant={demoRole === 'parent' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleRoleSwitch('parent')}
+          >
+            Parent
+          </Button>
+          <Button
+            variant={demoRole === 'operator' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleRoleSwitch('operator')}
+          >
+            Operator
           </Button>
         </div>
       </div>

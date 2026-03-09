@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom';
 
 interface DemoContextType {
   isDemo: boolean;
-  demoRole: 'teacher' | 'student';
-  setDemoRole: (role: 'teacher' | 'student') => void;
+  demoRole: 'teacher' | 'student' | 'parent' | 'operator';
+  setDemoRole: (role: 'teacher' | 'student' | 'parent' | 'operator') => void;
   exitDemo: () => void;
 }
 
@@ -42,10 +42,10 @@ interface DemoProviderProps {
  * Determine the initial demo role from the current URL path.
  * This ensures the role is preserved on browser refresh.
  */
-const getRoleFromPath = (pathname: string): 'teacher' | 'student' => {
-  if (pathname.includes('/demo/student')) {
-    return 'student';
-  }
+const getRoleFromPath = (pathname: string): 'teacher' | 'student' | 'parent' | 'operator' => {
+  if (pathname.includes('/demo/student')) return 'student';
+  if (pathname.includes('/demo/parent')) return 'parent';
+  if (pathname.includes('/demo/operator')) return 'operator';
   return 'teacher';
 };
 
@@ -59,7 +59,7 @@ const getRoleFromPath = (pathname: string): 'teacher' | 'student' => {
 export const DemoProvider: React.FC<DemoProviderProps> = ({ children }) => {
   const location = useLocation();
   const [isDemo] = useState(true);
-  const [demoRole, setDemoRole] = useState<'teacher' | 'student'>(() => getRoleFromPath(location.pathname));
+  const [demoRole, setDemoRole] = useState<'teacher' | 'student' | 'parent' | 'operator'>(() => getRoleFromPath(location.pathname));
 
   // Sync role with URL path changes (e.g., when navigating via browser back/forward)
   useEffect(() => {

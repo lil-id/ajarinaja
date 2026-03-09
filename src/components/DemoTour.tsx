@@ -93,11 +93,51 @@ const studentTourSteps: TourStep[] = [
   },
 ];
 
+const parentTourSteps: TourStep[] = [
+  {
+    title: 'Welcome, Parent!',
+    description: 'Monitor your child\'s educational journey. Track progress, attendance, and receive real-time updates from the school.',
+    icon: <Users className="h-8 w-8 text-primary" />,
+  },
+  {
+    title: 'Track Progress',
+    description: 'View child-specific dashboards with GPA trends, assignment status, and upcoming exams.',
+    icon: <BarChart2 className="h-8 w-8 text-green-500" />,
+    highlight: 'overview',
+  },
+  {
+    title: 'Stay Informed',
+    description: 'Receive instant notifications for grades and attendance. Never miss an important school update.',
+    icon: <MessageSquare className="h-8 w-8 text-primary" />,
+    highlight: 'notifications',
+  },
+];
+
+const operatorTourSteps: TourStep[] = [
+  {
+    title: 'Institutional Oversight',
+    description: 'Manage the entire school ecosystem. Oversee classes, academic periods, and institutional communications.',
+    icon: <GraduationCap className="h-8 w-8 text-primary" />,
+  },
+  {
+    title: 'Academic Management',
+    description: 'Configure semesters, manage class schedules, and assign teachers to their respective courses.',
+    icon: <BookOpen className="h-8 w-8 text-secondary" />,
+    highlight: 'periods',
+  },
+  {
+    title: 'System Reports',
+    description: 'Access high-level analytics and academic reports across all departments and grade levels.',
+    icon: <BarChart2 className="h-8 w-8 text-green-500" />,
+    highlight: 'reports',
+  },
+];
+
 /**
  * Props for the DemoTour component.
  */
 interface DemoTourProps {
-  role: 'teacher' | 'student';
+  role: 'teacher' | 'student' | 'parent' | 'operator';
   onComplete?: () => void;
 }
 
@@ -112,7 +152,14 @@ export function DemoTour({ role, onComplete }: DemoTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
-  const tourSteps = role === 'teacher' ? teacherTourSteps : studentTourSteps;
+  const tourStepsByRole = {
+    teacher: teacherTourSteps,
+    student: studentTourSteps,
+    parent: parentTourSteps,
+    operator: operatorTourSteps,
+  };
+
+  const tourSteps = tourStepsByRole[role];
 
   useEffect(() => {
     // Check if tour has been seen
@@ -187,10 +234,10 @@ export function DemoTour({ role, onComplete }: DemoTourProps) {
               <div
                 key={index}
                 className={`w-2 h-2 rounded-full transition-colors ${index === currentStep
-                    ? 'bg-primary'
-                    : index < currentStep
-                      ? 'bg-primary/50'
-                      : 'bg-muted-foreground/30'
+                  ? 'bg-primary'
+                  : index < currentStep
+                    ? 'bg-primary/50'
+                    : 'bg-muted-foreground/30'
                   }`}
               />
             ))}
