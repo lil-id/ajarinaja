@@ -590,22 +590,25 @@ export default function SubmitAssignment() {
               ) : (
                 <>
                   {questions.map((q, index) => (
-                    <div key={q.id} className="p-4 border rounded-lg space-y-3">
-                      <div className="space-y-2">
+                    <div key={q.id} className="p-6 border rounded-xl space-y-5 bg-card shadow-sm">
+                      <div className="space-y-3">
                         {q.image_url && (
-                          <div className="mb-2">
+                          <div className="mb-4">
                             <img
                               src={q.image_url}
                               alt="Question"
-                              className="max-h-80 w-full object-contain rounded-lg border bg-muted/30"
+                              className="max-h-80 w-full object-contain rounded-xl border bg-muted/30"
                             />
                           </div>
                         )}
-                        <div className="flex justify-between items-start gap-2">
-                          <p className="font-medium">
-                            {index + 1}. <FormulaText text={q.question} />
-                          </p>
-                          <Badge variant="outline">{q.points} {t('common.pts')}</Badge>
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="font-semibold text-lg leading-relaxed flex items-start">
+                            <span className="text-muted-foreground mr-2">{index + 1}.</span>
+                            <div><FormulaText text={q.question} /></div>
+                          </div>
+                          <Badge variant="secondary" className="shrink-0">
+                            {q.points} {t('common.pts')}
+                          </Badge>
                         </div>
                       </div>
 
@@ -613,23 +616,47 @@ export default function SubmitAssignment() {
                         <RadioGroup
                           value={answers[q.id]?.toString()}
                           onValueChange={(value) => setAnswers({ ...answers, [q.id]: parseInt(value) })}
+                          className="space-y-3"
                         >
                           {q.options.map((option, optIndex) => {
                             const isString = typeof option === 'string';
                             const text = isString ? option : option.text;
                             const imageUrl = !isString ? option.image_url : undefined;
+                            const isSelected = answers[q.id] === optIndex;
 
                             return (
-                              <div key={optIndex} className="flex items-start space-x-2">
-                                <RadioGroupItem value={optIndex.toString()} id={`${q.id}-${optIndex}`} className="mt-1" />
-                                <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
+                              <div
+                                key={optIndex}
+                                onClick={() => setAnswers({ ...answers, [q.id]: optIndex })}
+                                className={cn(
+                                  "flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer group",
+                                  isSelected
+                                    ? "border-primary bg-primary/5 shadow-sm"
+                                    : "border-border hover:border-primary/30 hover:bg-muted/30"
+                                )}
+                              >
+                                <RadioGroupItem
+                                  value={optIndex.toString()}
+                                  id={`${q.id}-${optIndex}`}
+                                  className="mt-1"
+                                />
+                                <Label
+                                  htmlFor={`${q.id}-${optIndex}`}
+                                  className="flex-1 cursor-pointer font-normal"
+                                  onClick={(e) => e.preventDefault()} // Let the div handle it
+                                >
                                   <div className="flex flex-col gap-2">
-                                    <FormulaText text={text} />
+                                    <div className={cn(
+                                      "text-base leading-relaxed transition-colors",
+                                      isSelected ? "text-primary font-medium" : "text-muted-foreground group-hover:text-foreground"
+                                    )}>
+                                      <FormulaText text={text} />
+                                    </div>
                                     {imageUrl && (
                                       <img
                                         src={imageUrl}
                                         alt={`Option ${optIndex + 1}`}
-                                        className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border"
+                                        className="mt-2 w-full h-auto max-h-[400px] object-contain rounded-lg border bg-white"
                                       />
                                     )}
                                   </div>
@@ -641,31 +668,55 @@ export default function SubmitAssignment() {
                       )}
 
                       {q.type === 'multi-select' && q.options && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground">{t('submitAssignment.selectAllThatApply')}</p>
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium text-primary flex items-center gap-2 mb-4">
+                            <AlignLeft className="w-4 h-4" />
+                            {t('submitAssignment.selectAllThatApply')}
+                          </p>
                           {q.options.map((option, optIndex) => {
                             const isString = typeof option === 'string';
                             const text = isString ? option : option.text;
                             const imageUrl = !isString ? option.image_url : undefined;
+                            const currentAnswers = (answers[q.id] as number[]) || [];
+                            const isSelected = currentAnswers.includes(optIndex);
 
                             return (
-                              <div key={optIndex} className="flex items-start space-x-2">
+                              <div
+                                key={optIndex}
+                                onClick={() => handleMultiSelectChange(q.id, optIndex, !isSelected)}
+                                className={cn(
+                                  "flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer group",
+                                  isSelected
+                                    ? "border-secondary bg-secondary/5 shadow-sm"
+                                    : "border-border hover:border-secondary/30 hover:bg-muted/30"
+                                )}
+                              >
                                 <Checkbox
                                   id={`${q.id}-${optIndex}`}
-                                  checked={((answers[q.id] as number[]) || []).includes(optIndex)}
+                                  checked={isSelected}
                                   onCheckedChange={(checked) =>
                                     handleMultiSelectChange(q.id, optIndex, checked as boolean)
                                   }
                                   className="mt-1"
+                                  onClick={(e) => e.stopPropagation()}
                                 />
-                                <Label htmlFor={`${q.id}-${optIndex}`} className="font-normal">
+                                <Label
+                                  htmlFor={`${q.id}-${optIndex}`}
+                                  className="flex-1 cursor-pointer font-normal"
+                                  onClick={(e) => e.preventDefault()} // Let the div handle it
+                                >
                                   <div className="flex flex-col gap-2">
-                                    <FormulaText text={text} />
+                                    <div className={cn(
+                                      "text-base leading-relaxed transition-colors",
+                                      isSelected ? "text-secondary font-medium" : "text-muted-foreground group-hover:text-foreground"
+                                    )}>
+                                      <FormulaText text={text} />
+                                    </div>
                                     {imageUrl && (
                                       <img
                                         src={imageUrl}
                                         alt={`Option ${optIndex + 1}`}
-                                        className="mt-2 w-full h-auto max-h-[400px] object-contain rounded border"
+                                        className="mt-2 w-full h-auto max-h-[400px] object-contain rounded-lg border bg-white"
                                       />
                                     )}
                                   </div>

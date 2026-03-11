@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useEnrollments } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useCourses } from '@/hooks/useCourses';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,16 +17,33 @@ import { useSchoolAnnouncements } from '@/hooks/useSchoolAnnouncements';
  */
 const StudentAnnouncements = () => {
   const { t } = useTranslation();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const {
+    effectiveCourseIds,
+    enrollments,
+    enrolledClassIds,
+    isLoading: effectiveCoursesLoading
+  } = useEffectiveCourseIds();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { announcements, isLoading: announcementsLoading } = useAnnouncements();
 
   const { announcements: schoolAnnouncements, isLoading: schoolLoading } = useSchoolAnnouncements();
 
-  const isLoading = enrollmentsLoading || coursesLoading || announcementsLoading || schoolLoading;
+  const isLoading = effectiveCoursesLoading || coursesLoading || announcementsLoading || schoolLoading;
 
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
-  const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
+  const enrolledCourseIds = effectiveCourseIds;
+  const myAnnouncements = announcements.filter(a => {
+    // Basic check: is the student enrolled in the course?
+    if (!enrolledCourseIds.includes(a.course_id)) return false;
+
+    // If announcement is global (no class_id), everyone sees it
+    if (!a.class_id) return true;
+
+    // If announcement is class-specific, student must be in that class
+    const isExplicitlyEnrolled = enrollments.some(e => e.course_id === a.course_id);
+    const isMyClass = enrolledClassIds.includes(a.class_id);
+
+    return isExplicitlyEnrolled || isMyClass;
+  });
 
   const getCourseTitle = (courseId: string) => {
     return courses.find(c => c.id === courseId)?.title || t('announcements.unknownCourse');

@@ -76,7 +76,7 @@ export default function OperatorCalendar() {
             class_id: schedule.class_id,
             subject_id: schedule.course_id, // assuming course acts as subject
             teacher_id: schedule.teacher_id,
-            day_of_week: DAY_LABELS[schedule.day_of_week],
+            day_of_week: t(DAY_LABELS[schedule.day_of_week]),
             day_of_week_num: schedule.day_of_week,
             start_time: schedule.start_time,
             end_time: schedule.end_time,
@@ -143,7 +143,7 @@ export default function OperatorCalendar() {
                             {workDays.map(dayNum => (
                                 <div key={dayNum} className="space-y-3">
                                     <div className="font-semibold text-center pb-2 mb-2 border-b text-sm text-muted-foreground uppercase tracking-wider">
-                                        {DAY_LABELS[dayNum]}
+                                        {t(DAY_LABELS[dayNum])}
                                     </div>
                                     <div className="space-y-3">
                                         {schedulesByDay[dayNum].length === 0 ? (

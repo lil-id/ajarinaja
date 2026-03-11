@@ -3,14 +3,10 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
-import { useCourseMetrics } from '@/hooks/useCourseMetrics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { BookOpen, FileText, TrendingUp, Loader2, ClipboardList, AlertCircle } from 'lucide-react';
+import { BookOpen, FileText, TrendingUp, Loader2, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
 import { id, enUS } from 'date-fns/locale';
 import { ActivityChart } from '@/components/dashboard/ActivityChart';
 import { RecentSubmissionsWidget } from '@/components/dashboard/RecentSubmissionsWidget';
@@ -18,6 +14,7 @@ import { PendingGradingWidget } from '@/components/dashboard/PendingGradingWidge
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { LiveSessionWidget } from '@/components/dashboard/LiveSessionWidget';
 import { SchoolAnnouncementsBanner } from '@/components/dashboard/SchoolAnnouncementsBanner';
+import { TeacherTodayScheduleWidget } from '@/components/dashboard/TeacherTodayScheduleWidget';
 
 /**
  * Teacher Dashboard Overview page.
@@ -42,9 +39,6 @@ const TeacherOverview = () => {
   const { courses, isLoading: coursesLoading } = useTeacherCourses();
   const { exams, isLoading: examsLoading } = useExams();
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
-
-  const courseIds = courses.map(c => c.id);
-  const { data: courseMetrics = [], isLoading: metricsLoading } = useCourseMetrics(courseIds);
 
   const isLoading = coursesLoading || examsLoading || assignmentsLoading;
 
@@ -140,12 +134,12 @@ const TeacherOverview = () => {
         {/* Row 2: Activity Chart & Pending Grading */}
         <div className="grid lg:grid-cols-2 gap-6">
           <ActivityChart />
-          <PendingGradingWidget />
+          <TeacherTodayScheduleWidget />
         </div>
 
         {/* Row 3: Recent Submissions & Calendar Widget */}
         <div className="grid lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <RecentSubmissionsWidget />
           </div>
           <div className="lg:col-span-3">
@@ -153,105 +147,8 @@ const TeacherOverview = () => {
           </div>
         </div>
 
-        {/* My Courses - Grid Layout with Engagement Metrics */}
-        <Card className="border-0 shadow-card">
-          <CardHeader>
-            <CardTitle className="text-xl">{t('courses.myCourses')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {courses.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                {t('courses.noCourses')}
-              </p>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {courses.slice(0, 6).map((course) => {
-                  const metrics = courseMetrics.find(m => m.course_id === course.id);
-
-                  return (
-                    <Card
-                      key={course.id}
-                      onClick={() => navigate(`/teacher/courses/${course.id}`)}
-                      className="border border-border hover:border-primary/50 transition-all cursor-pointer hover:shadow-md"
-                    >
-                      <CardContent className="p-4 space-y-3">
-                        {/* Header */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center flex-shrink-0">
-                              <BookOpen className="w-5 h-5 text-secondary-foreground" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-foreground truncate">{course.title}</h3>
-                              <p className="text-xs text-muted-foreground">
-                                {metrics?.student_count || 0} {t('courses.students')}
-                              </p>
-                            </div>
-                          </div>
-                          <Badge
-                            variant={course.status === 'published' ? 'secondary' : 'outline'}
-                            className="text-xs flex-shrink-0"
-                          >
-                            {course.status === 'published' ? t('common.published') : t('common.draft')}
-                          </Badge>
-                        </div>
-
-                        {/* Metrics */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="flex items-center gap-1">
-                            <FileText className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">{metrics?.exam_count || 0}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <ClipboardList className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">{metrics?.assignment_count || 0}</span>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar */}
-                        {metrics && (
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">{t('courses.avgProgress')}</span>
-                              <span className="font-medium">{metrics.avg_progress}%</span>
-                            </div>
-                            <Progress value={metrics.avg_progress} className="h-1.5" />
-                          </div>
-                        )}
-
-                        {/* Pending Grading Alert */}
-                        {metrics && metrics.pending_grading_count > 0 && (
-                          <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                            <span className="text-xs text-amber-700 dark:text-amber-300">
-                              {metrics.pending_grading_count} {t('courses.pendingGrading')}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Next Deadline */}
-                        {metrics?.upcoming_deadline && (
-                          <div className="pt-2 border-t">
-                            <p className="text-xs text-muted-foreground truncate">
-                              <span className="font-medium">{t('courses.nextDeadline')}:</span>{' '}
-                              {metrics.upcoming_deadline.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(metrics.upcoming_deadline.date), {
-                                addSuffix: true,
-                                locale: getDateLocale()
-                              })}
-                            </p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Pending Grading - Full Width Bottom */}
+        <PendingGradingWidget />
       </div>
     </TooltipProvider>
   );

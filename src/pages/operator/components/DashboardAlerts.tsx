@@ -80,7 +80,7 @@ export const DashboardAlerts = () => {
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <CalendarDays className="w-3.5 h-3.5" />
-                                    {DAY_LABELS[schedule.day_of_week]}
+                                    {t(DAY_LABELS[schedule.day_of_week])}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <Clock className="w-3.5 h-3.5" />

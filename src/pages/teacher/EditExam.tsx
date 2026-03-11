@@ -9,7 +9,9 @@ import { Label } from '@/components/ui/label';
 import { useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
 import { useUpdateQuestion, useDeleteQuestion, useAddQuestion } from '@/hooks/useQuestions';
 import { useQuestionBank, useIncrementQuestionUsage, useSaveExamQuestionsToBank } from '@/hooks/useQuestionBank';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus, Eye, X, Image as ImageIcon } from 'lucide-react';
+import { useTeacherCourses } from '@/hooks/useCourses';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, CheckCircle, AlignLeft, Calendar, Library, Search, BookmarkPlus, Eye, X, Image as ImageIcon, Copy } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -63,6 +65,8 @@ const EditExam = () => {
     end_date: '',
     kkm: 60,
     status: 'draft',
+    course_id: '',
+    class_id: '',
   });
 
   const [riskCriteria, setRiskCriteria] = useState<RiskCriterion[]>([]);
@@ -91,6 +95,9 @@ const EditExam = () => {
     points: 10,
   });
 
+  const { courses = [] } = useTeacherCourses();
+  const { data: classes = [] } = useTeacherCourseClasses(examForm.course_id || undefined);
+
   useEffect(() => {
     if (exam) {
       setExamForm({
@@ -101,6 +108,8 @@ const EditExam = () => {
         end_date: exam.end_date ? utcToLocalDateTime(exam.end_date) : '',
         kkm: (exam as any).kkm || 60,
         status: exam.status || 'draft',
+        course_id: exam.course_id || '',
+        class_id: exam.class_id || '',
       });
       setQuestions(exam.questions || []);
 
@@ -142,6 +151,8 @@ const EditExam = () => {
         end_date: examForm.end_date ? localDateTimeToUTC(examForm.end_date) : null,
         kkm: examForm.kkm,
         status: examForm.status,
+        course_id: examForm.course_id,
+        class_id: examForm.class_id || null,
         risk_on_missed: missedCriterion?.enabled || false,
         risk_on_below_kkm: belowKkmCriterion?.enabled || false,
         risk_missed_severity: missedCriterion?.severity || 'high',
@@ -353,9 +364,9 @@ const EditExam = () => {
   if (!exam) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">Exam not found</p>
+        <p className="text-muted-foreground">{t('exams.examNotFound', { defaultValue: 'Exam not found' })}</p>
         <Button variant="outline" onClick={() => navigate('/teacher/exams')} className="mt-4">
-          Back to Exams
+          {t('exams.backToExams', { defaultValue: 'Back to Exams' })}
         </Button>
       </div>
     );
@@ -369,8 +380,8 @@ const EditExam = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-foreground">Edit Exam</h1>
-          <p className="text-muted-foreground mt-1">Modify exam details and questions</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('exams.editExam')}</h1>
+          <p className="text-muted-foreground mt-1">{t('exams.modifyExamDetails')}</p>
         </div>
         <div className="flex items-center gap-2">
           <StudentPreviewMode
@@ -390,7 +401,7 @@ const EditExam = () => {
           />
           <Button onClick={handleSaveExam} disabled={updateExam.isPending}>
             {updateExam.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save Changes
+            {t('common.saveChanges')}
           </Button>
         </div>
       </div>
@@ -398,19 +409,59 @@ const EditExam = () => {
       {/* Exam Details */}
       <Card className="border-0 shadow-card">
         <CardHeader>
-          <CardTitle>Exam Details</CardTitle>
+          <CardTitle>{t('exams.examDetails')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Title</Label>
+              <Label>{t('common.course')}</Label>
+              <Select
+                value={examForm.course_id}
+                onValueChange={(val) => setExamForm({ ...examForm, course_id: val, class_id: '' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('exams.selectCourse')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {examForm.course_id && (
+              <div className="space-y-2">
+                <Label>{t('common.class')}</Label>
+                <Select
+                  value={examForm.class_id}
+                  onValueChange={(val) => setExamForm({ ...examForm, class_id: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('common.selectClass')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t('exams.examTitle')}</Label>
               <Input
                 value={examForm.title}
                 onChange={(e) => setExamForm({ ...examForm, title: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label>Duration (minutes)</Label>
+              <Label>{t('exams.duration')}</Label>
               <Input
                 type="number"
                 value={examForm.duration}
@@ -419,18 +470,18 @@ const EditExam = () => {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t('common.description')}</Label>
             <Textarea
               value={examForm.description}
               onChange={(e) => setExamForm({ ...examForm, description: e.target.value })}
-              placeholder="Exam description..."
+              placeholder={t('exams.descriptionPlaceholder')}
             />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                Start Date & Time
+                {t('exams.startDate', { defaultValue: 'Start Date & Time' })}
               </Label>
               <Input
                 type="datetime-local"
@@ -441,7 +492,7 @@ const EditExam = () => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                End Date & Time
+                {t('exams.endDate', { defaultValue: 'End Date & Time' })}
               </Label>
               <Input
                 type="datetime-local"
@@ -452,7 +503,7 @@ const EditExam = () => {
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Minimum Passing Grade (KKM)</Label>
+              <Label>{t('exams.minimumPassingGrade')}</Label>
               <Input
                 type="number"
                 min={0}
@@ -460,10 +511,10 @@ const EditExam = () => {
                 value={examForm.kkm}
                 onChange={(e) => setExamForm({ ...examForm, kkm: Number(e.target.value) })}
               />
-              <p className="text-xs text-muted-foreground">Percentage required to pass</p>
+              <p className="text-xs text-muted-foreground">{t('exams.percentageRequired')}</p>
             </div>
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label>{t('common.status')}</Label>
               <Select
                 value={examForm.status}
                 onValueChange={(value) => setExamForm({ ...examForm, status: value })}
@@ -494,26 +545,26 @@ const EditExam = () => {
       {/* Questions */}
       <Card className="border-0 shadow-card">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Questions ({questions.length})</CardTitle>
+          <CardTitle>{t('exams.questions')} ({questions.length})</CardTitle>
           <div className="flex gap-2 flex-wrap">
             {questions.length > 0 && (
               <Dialog open={isSaveToBankDialogOpen} onOpenChange={setIsSaveToBankDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <BookmarkPlus className="w-4 h-4" />
-                    Save to Bank
+                    {t('common.saveToBank', { defaultValue: 'Save to Bank' })}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Save Questions to Bank</DialogTitle>
+                    <DialogTitle>{t('common.saveQuestionsToBank', { defaultValue: 'Save Questions to Bank' })}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
                     <p className="text-sm text-muted-foreground">
-                      This will save all {questions.length} question(s) from this exam to your question bank for future reuse.
+                      {t('common.saveQuestionsToBankDesc', { defaultValue: `This will save all ${questions.length} question(s) from this exam to your question bank for future reuse.` })}
                     </p>
                     <div className="space-y-2">
-                      <Label>Category</Label>
+                      <Label>{t('common.category', { defaultValue: 'Category' })}</Label>
                       <Select value={saveToBankCategory} onValueChange={setSaveToBankCategory}>
                         <SelectTrigger>
                           <SelectValue />
@@ -529,11 +580,11 @@ const EditExam = () => {
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
                       <Button variant="outline" onClick={() => setIsSaveToBankDialogOpen(false)}>
-                        Cancel
+                        {t('common.cancel')}
                       </Button>
                       <Button onClick={handleSaveQuestionsToBank} disabled={saveToBank.isPending}>
                         {saveToBank.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                        Save All Questions
+                        {t('common.saveAllQuestions', { defaultValue: 'Save All Questions' })}
                       </Button>
                     </div>
                   </div>
@@ -544,18 +595,18 @@ const EditExam = () => {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Library className="w-4 h-4" />
-                  Import from Bank
+                  {t('exams.importFromBank')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>Import from Question Bank</DialogTitle>
+                  <DialogTitle>{t('exams.importFromBank')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search questions..."
+                      placeholder={t('common.searchQuestions')}
                       value={importSearch}
                       onChange={(e) => setImportSearch(e.target.value)}
                       className="pl-10"
@@ -565,8 +616,8 @@ const EditExam = () => {
                     {filteredBankQuestions.length === 0 ? (
                       <p className="text-center text-muted-foreground py-8">
                         {questionBank.length === 0
-                          ? 'No questions in your bank yet'
-                          : 'No questions match your search'}
+                          ? t('exams.noQuestionsInBank')
+                          : t('common.noMatchingQuestions')}
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -601,18 +652,18 @@ const EditExam = () => {
                   </ScrollArea>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-sm text-muted-foreground">
-                      {selectedBankQuestions.length} selected
+                      {t('common.selected', { count: selectedBankQuestions.length })}
                     </span>
                     <div className="flex gap-2">
                       <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
-                        Cancel
+                        {t('common.cancel')}
                       </Button>
                       <Button
                         onClick={handleImportQuestions}
                         disabled={selectedBankQuestions.length === 0 || addQuestion.isPending}
                       >
                         {addQuestion.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                        Import Selected
+                        {t('common.importSelected')}
                       </Button>
                     </div>
                   </div>
@@ -623,12 +674,12 @@ const EditExam = () => {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Plus className="w-4 h-4" />
-                  Add Question
+                  {t('exams.addQuestion')}
                 </Button>
               </DialogTrigger>
               <DialogContent size="lg">
                 <DialogHeader>
-                  <DialogTitle>Add New Question</DialogTitle>
+                  <DialogTitle>{t('exams.addQuestion')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <Tabs
@@ -636,9 +687,9 @@ const EditExam = () => {
                     onValueChange={(v) => setNewQuestion({ ...newQuestion, type: v as 'multiple-choice' | 'multi-select' | 'essay' })}
                   >
                     <TabsList className="mb-2">
-                      <TabsTrigger value="multiple-choice">Multiple Choice</TabsTrigger>
-                      <TabsTrigger value="multi-select">Multi-Select</TabsTrigger>
-                      <TabsTrigger value="essay">Essay</TabsTrigger>
+                      <TabsTrigger value="multiple-choice">{t('exams.questionTypes.multipleChoice')}</TabsTrigger>
+                      <TabsTrigger value="multi-select">{t('exams.questionTypes.multiSelect')}</TabsTrigger>
+                      <TabsTrigger value="essay">{t('exams.questionTypes.essay')}</TabsTrigger>
                     </TabsList>
 
                     <div className="flex flex-col gap-2 mb-4">
@@ -682,13 +733,13 @@ const EditExam = () => {
                       <VisualEquationBuilder
                         value={newQuestion.question}
                         onChange={(v) => setNewQuestion({ ...newQuestion, question: v })}
-                        placeholder="Enter your question..."
+                        placeholder={t('exams.enterQuestion', { defaultValue: 'Enter your question...' })}
                         rows={2}
                       />
                     </div>
 
                     <TabsContent value="multiple-choice" className="mt-3 space-y-2">
-                      <p className="text-xs text-muted-foreground mb-1">Select the correct answer:</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('exams.selectCorrectAnswer')}:</p>
                       <div className="grid gap-2">
                         {newQuestion.options.map((opt, i) => (
                           <div key={i} className="flex items-start gap-2 bg-muted/30 p-2 rounded-md">
@@ -710,7 +761,7 @@ const EditExam = () => {
                                     newOptions[i] = { ...newOptions[i], text: v };
                                     setNewQuestion({ ...newQuestion, options: newOptions });
                                   }}
-                                  placeholder={`Option ${i + 1}`}
+                                  placeholder={`${t('exams.option', { defaultValue: 'Option' })} ${i + 1}`}
                                   compact
                                   singleLine
                                 />
@@ -743,7 +794,7 @@ const EditExam = () => {
                               </div>
                               {opt.image_url && (
                                 <div className="relative group w-fit">
-                                  <img src={opt.image_url} alt={`Option ${i + 1}`} className="h-20 w-auto object-contain rounded border" />
+                                  <img src={opt.image_url} alt={`${t('exams.option', { defaultValue: 'Option' })} ${i + 1}`} className="h-20 w-auto object-contain rounded border" />
                                   <button
                                     type="button"
                                     className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5"
@@ -761,11 +812,11 @@ const EditExam = () => {
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">Tip: Use $formula$ syntax for math in options</p>
+                      <p className="text-xs text-muted-foreground">{t('assignments.mathTip', { defaultValue: 'Tip: Use $formula$ syntax for math in options' })}</p>
                     </TabsContent>
 
                     <TabsContent value="multi-select" className="mt-3 space-y-2">
-                      <p className="text-xs text-muted-foreground mb-1">Select all correct answers:</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('exams.selectAllCorrectAnswers')}:</p>
                       <div className="grid gap-2">
                         {newQuestion.options.map((opt, i) => (
                           <div key={i} className="flex items-start gap-2 bg-muted/30 p-2 rounded-md">
@@ -789,7 +840,7 @@ const EditExam = () => {
                                     newOptions[i] = { ...newOptions[i], text: v };
                                     setNewQuestion({ ...newQuestion, options: newOptions });
                                   }}
-                                  placeholder={`Option ${i + 1}`}
+                                  placeholder={`${t('exams.option', { defaultValue: 'Option' })} ${i + 1}`}
                                   compact
                                   singleLine
                                 />
@@ -840,13 +891,13 @@ const EditExam = () => {
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">Tip: Use $formula$ syntax for math in options</p>
+                      <p className="text-xs text-muted-foreground">{t('assignments.mathTip', { defaultValue: 'Tip: Use $formula$ syntax for math in options' })}</p>
                     </TabsContent>
                   </Tabs>
 
                   <div className="flex items-center gap-4 pt-2 border-t">
                     <div className="flex-1">
-                      <Label className="text-xs">Points</Label>
+                      <Label className="text-xs">{t('common.points')}</Label>
                       <Input
                         type="number"
                         value={newQuestion.points}
@@ -855,7 +906,7 @@ const EditExam = () => {
                     </div>
                     <Button onClick={handleAddNewQuestion} className="mt-5" disabled={addQuestion.isPending}>
                       {addQuestion.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Add Question
+                      {t('exams.addQuestion')}
                     </Button>
                   </div>
                 </div>
@@ -865,7 +916,7 @@ const EditExam = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {questions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No questions yet. Add your first question!</p>
+            <p className="text-center text-muted-foreground py-8">{t('exams.noQuestionsYet')}</p>
           ) : (
             <SortableList
               items={questions.map(q => q.id)}
@@ -955,6 +1006,7 @@ const EditExam = () => {
                             onChange={(v) => updateLocalQuestion(index, { question: v })}
                             onBlur={() => handleUpdateQuestion(questions[index])}
                             compact
+                            placeholder={t('exams.enterQuestion', { defaultValue: 'Enter your question...' })}
                           />
                         </div>
 
@@ -995,6 +1047,7 @@ const EditExam = () => {
                                         onBlur={() => handleUpdateQuestion(questions[index])}
                                         compact
                                         singleLine
+                                        placeholder={`${t('exams.option', { defaultValue: 'Option' })} ${optIndex + 1}`}
                                       />
                                       <div className="relative">
                                         <input
@@ -1030,7 +1083,7 @@ const EditExam = () => {
                                     </div>
                                     {imageUrl && (
                                       <div className="relative group w-fit">
-                                        <img src={imageUrl} alt={`Option ${optIndex + 1}`} className="h-auto max-h-[150px] object-contain rounded border" />
+                                        <img src={imageUrl} alt={`${t('exams.option', { defaultValue: 'Option' })} ${optIndex + 1}`} className="h-auto max-h-[150px] object-contain rounded border" />
                                         <button
                                           type="button"
                                           className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1054,7 +1107,7 @@ const EditExam = () => {
 
                         {q.type === 'multi-select' && q.options && (
                           <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">Select all correct answers</p>
+                            <p className="text-xs text-muted-foreground">{t('exams.selectAllCorrectAnswers')}</p>
                             {(q.options).map((opt, optIndex) => {
                               const isString = typeof opt === 'string';
                               const text = isString ? opt : (opt as any).text || '';
@@ -1126,7 +1179,7 @@ const EditExam = () => {
                                     </div>
                                     {imageUrl && (
                                       <div className="relative group w-fit">
-                                        <img src={imageUrl} alt={`Option ${optIndex + 1}`} className="h-auto max-h-[150px] object-contain rounded border" />
+                                        <img src={imageUrl} alt={`${t('exams.option', { defaultValue: 'Option' })} ${optIndex + 1}`} className="h-auto max-h-[150px] object-contain rounded border" />
                                         <button
                                           type="button"
                                           className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"

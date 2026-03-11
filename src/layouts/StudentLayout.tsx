@@ -63,7 +63,7 @@ const StudentLayout = () => {
   const navigation = [
     { name: t('nav.dashboard'), href: '/student', icon: Home },
     { name: t('nav.courses'), href: '/student/courses', icon: BookOpen },
-    { name: t('nav.exploreCourses'), href: '/student/explore', icon: GraduationCap },
+    // { name: t('nav.exploreCourses'), href: '/student/explore', icon: GraduationCap },
     { name: t('nav.calendar'), href: '/student/calendar', icon: Calendar },
     { name: t('attendance.title') || 'Attendance', href: '/student/attendance', icon: ClipboardList },
     { name: t('nav.assignments'), href: '/student/assignments', icon: ClipboardList },
@@ -239,7 +239,7 @@ const StudentLayout = () => {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.student')}</p>
                         {isEnrolled && enrollmentData?.classes?.name && (
-                          <Badge variant="secondary" className="h-4 text-[10px] px-1 py-0 shadow-none font-medium text-blue-600 bg-blue-100/50 dark:text-blue-400 dark:bg-blue-900/30">
+                          <Badge variant="outline" className="h-4 text-[10px] px-1 py-0 shadow-none font-medium text-blue-600 bg-blue-100/50 border-transparent hover:bg-blue-200/50 dark:text-blue-400 dark:bg-blue-900/30 dark:hover:bg-blue-800/50">
                             {enrollmentData.classes.name}
                           </Badge>
                         )}

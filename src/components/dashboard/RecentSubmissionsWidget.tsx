@@ -57,8 +57,8 @@ export function RecentSubmissionsWidget() {
                             >
                                 <div className="flex items-start gap-3 flex-1 min-w-0">
                                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${submission.item_type === 'assignment'
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'bg-secondary/10 text-secondary'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'bg-secondary/10 text-secondary'
                                         }`}>
                                         {submission.item_type === 'assignment' ? (
                                             <ClipboardList className="w-5 h-5" />
@@ -71,7 +71,7 @@ export function RecentSubmissionsWidget() {
                                             {submission.student_name}
                                         </p>
                                         <p className="text-xs text-muted-foreground truncate">
-                                            {submission.item_title}
+                                            {submission.item_title} {submission.class_name ? `• ${submission.class_name}` : ''}
                                         </p>
                                         <p className="text-xs text-muted-foreground mt-1">
                                             {formatDistanceToNow(new Date(submission.submitted_at), { addSuffix: true })}

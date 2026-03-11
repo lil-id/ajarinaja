@@ -39,6 +39,7 @@ import TeacherReportCards from "./pages/teacher/ReportCards";
 import TeacherReportCardDetail from "./pages/teacher/ReportCardDetail";
 import TeacherAttendanceSessionDetail from "./pages/teacher/AttendanceSessionDetail";
 import TeacherAttendance from "./pages/teacher/Attendance";
+import TeacherSchedules from "./pages/teacher/Schedules";
 
 // Student Pages
 import StudentLayout from "./layouts/StudentLayout";
@@ -193,6 +194,7 @@ const App = () => (
               <Route path="report-cards" element={<TeacherReportCards />} />
               <Route path="report-cards/:reportCardId" element={<TeacherReportCardDetail />} />
               <Route path="attendance" element={<TeacherAttendance />} />
+              <Route path="schedules" element={<TeacherSchedules />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="settings" element={<TeacherSettings />} />
             </Route>

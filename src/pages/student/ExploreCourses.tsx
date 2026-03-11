@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCourses, Course } from '@/hooks/useCourses';
-import { useEnrollments, useEnroll, useUnenroll } from '@/hooks/useEnrollments';
+import { useEnroll, useUnenroll } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
+import { useAllCourseSchedules } from '@/hooks/useAllCourseSchedules';
 import {
   Select,
   SelectContent,
@@ -60,7 +62,7 @@ const getSubject = (course: Course): string => {
   return "other";
 };
 
-const getSubjectDisplayName = (subject: string, t: any): string => {
+const getSubjectDisplayName = (subject: string, t: (key: string) => string): string => {
   const key = `exploreCourses.subjects.${subject}`;
   const translated = t(key);
   // If translation returns the key (meaning missing), fallback to capitalized subject
@@ -292,14 +294,30 @@ const ExploreCourses = () => {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   const { courses, isLoading: coursesLoading } = useCourses();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { effectiveCourseIds, enrolledClassIds, isLoading: effectiveCoursesLoading } = useEffectiveCourseIds();
+  const { data: schedules = [], isLoading: schedulesLoading } = useAllCourseSchedules();
   const enroll = useEnroll();
   const unenroll = useUnenroll();
 
-  const isLoading = coursesLoading || enrollmentsLoading;
+  const isLoading = coursesLoading || effectiveCoursesLoading || schedulesLoading;
 
-  const enrolledCourseIds = useMemo(() => enrollments.map(e => e.course_id), [enrollments]);
-  const publishedCourses = useMemo(() => courses.filter(c => c.status === 'published'), [courses]);
+  const enrolledCourseIds = effectiveCourseIds;
+
+  // A global course has no class_schedules. A restricted course has 1+ class_schedules.
+  // A course is available to the student if it's global OR if they are in one of the scheduled classes.
+  const publishedCourses = useMemo(() => {
+    return courses.filter(c => {
+      if (c.status !== 'published') return false;
+
+      const courseSchedules = schedules.filter(s => s.course_id === c.id);
+      const isGlobal = courseSchedules.length === 0;
+
+      if (isGlobal) return true;
+
+      // If restricted, check if student is in any of those classes
+      return courseSchedules.some(s => enrolledClassIds.includes(s.class_id));
+    });
+  }, [courses, schedules, enrolledClassIds]);
 
   const filteredCourses = useMemo(() => {
     let result = [...publishedCourses];

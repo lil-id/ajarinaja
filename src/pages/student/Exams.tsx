@@ -11,6 +11,7 @@ import { useCourses } from '@/hooks/useCourses';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useExams } from '@/hooks/useExams';
 import { useSubmissions } from '@/hooks/useSubmissions';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { FileText, Clock, Award, ArrowRight, CheckCircle, Loader2, Eye, Calendar, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -32,17 +33,34 @@ const StudentExams = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const {
+    effectiveCourseIds,
+    enrollments,
+    enrolledClassIds,
+    isLoading: effectiveCoursesLoading
+  } = useEffectiveCourseIds();
   const { exams, isLoading: examsLoading } = useExams();
   const { submissions, isLoading: submissionsLoading } = useSubmissions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
 
-  const isLoading = coursesLoading || enrollmentsLoading || examsLoading || submissionsLoading;
+  const isLoading = coursesLoading || effectiveCoursesLoading || examsLoading || submissionsLoading;
 
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
+
+  /**
+   * Determines whether a given exam should be visible to this student.
+   * - Class-targeted: ONLY show to students in that specific class
+   * - Global (no class_id): show to anyone enrolled in the course
+   */
+  const isExamVisible = (e: typeof exams[0]) => {
+    if (e.class_id) {
+      return enrolledClassIds.includes(e.class_id);
+    }
+    return enrolledCourseIds.includes(e.course_id);
+  };
 
   const now = new Date();
 
@@ -59,37 +77,31 @@ const StudentExams = () => {
 
   const completedExamIds = submissions.map(s => s.exam_id);
 
-  // Completed exams: All exams with submissions, for enrolled courses.
+  // Completed exams: All exams with submissions, visible to this student.
   // We do NOT check for 'published' status here to ensure history is preserved even if exam is archived.
-  const rawCompletedExams = exams.filter(e =>
-    completedExamIds.includes(e.id) &&
-    enrolledCourseIds.includes(e.course_id)
-  );
+  const rawCompletedExams = exams.filter(e => {
+    if (!isExamVisible(e)) return false;
+    return completedExamIds.includes(e.id);
+  });
   const completedExams = filterExams(rawCompletedExams);
 
-  // Available exams: Published, Enrolled, Within Schedule, Not Completed
+  // Available exams: Published, visible to student, within schedule, not completed
   const rawAvailableExams = exams.filter(e => {
     if (completedExamIds.includes(e.id)) return false;
-    if (e.status !== 'published') return false;
-    if (!enrolledCourseIds.includes(e.course_id)) return false;
-
-    // Check schedule
+    if (e.status?.toLowerCase() !== 'published') return false;
+    if (!isExamVisible(e)) return false;
     if (e.start_date && new Date(e.start_date) > now) return false;
     if (e.end_date && new Date(e.end_date) < now) return false;
-
     return true;
   });
   const availableExams = filterExams(rawAvailableExams);
 
-  // Missed exams: Published, Enrolled, Expired, Not Completed
+  // Missed exams: Published, visible to student, expired, not completed
   const rawMissedExams = exams.filter(e => {
     if (completedExamIds.includes(e.id)) return false;
-    if (e.status !== 'published') return false;
-    if (!enrolledCourseIds.includes(e.course_id)) return false;
-
-    // Must be expired
+    if (e.status?.toLowerCase() !== 'published') return false;
+    if (!isExamVisible(e)) return false;
     if (e.end_date && new Date(e.end_date) < now) return true;
-
     return false;
   });
 
@@ -99,10 +111,10 @@ const StudentExams = () => {
   );
   const historyExams = filterExams(rawHistoryExams);
 
-  // Upcoming exams: Published, Enrolled, Future Start Date
+  // Upcoming exams: Published, visible to student, future start date
   const rawUpcomingExams = exams.filter(e => {
-    if (e.status !== 'published') return false;
-    if (!enrolledCourseIds.includes(e.course_id)) return false;
+    if (e.status?.toLowerCase() !== 'published') return false;
+    if (!isExamVisible(e)) return false;
     if (e.start_date && new Date(e.start_date) > now) return true;
     return false;
   });
@@ -359,7 +371,7 @@ const StudentExams = () => {
         </Card>
       </div>
 
-      {availableExams.length === 0 && upcomingExams.length === 0 && completedExams.length === 0 ? (
+      {availableExams.length === 0 && upcomingExams.length === 0 && historyExams.length === 0 ? (
         <Card className="border-0 shadow-card">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

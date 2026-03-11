@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '@/hooks/useAnnouncements';
-import { Megaphone, Plus, Trash2, Loader2, Calendar, BookOpen } from 'lucide-react';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
+import { Megaphone, Plus, Trash2, Loader2, Calendar, BookOpen, Filter, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +29,18 @@ const TeacherAnnouncements = () => {
   const courseIds = courses.map(c => c.id);
 
   const { announcements, isLoading } = useAnnouncements();
-  const teacherAnnouncements = announcements.filter(a => courseIds.includes(a.course_id));
+  const teacherAnnouncements = announcements.filter(a => {
+    // Course filter
+    const inVisibleCourse = courseIds.includes(a.course_id);
+    if (!inVisibleCourse) return false;
+
+    if (filterCourse !== 'all' && a.course_id !== filterCourse) return false;
+
+    // Class filter
+    if (filterClass !== 'all' && a.class_id !== filterClass) return false;
+
+    return true;
+  });
 
   const { announcements: schoolAnnouncements, isLoading: schoolLoading } = useSchoolAnnouncements();
 
@@ -37,10 +49,16 @@ const TeacherAnnouncements = () => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [filterCourse, setFilterCourse] = useState('all');
+  const [filterClass, setFilterClass] = useState('all');
   const [form, setForm] = useState({ title: '', content: '' });
 
+  const { data: classes = [] } = useTeacherCourseClasses(filterCourse !== 'all' ? filterCourse : undefined);
+  const { data: creationClasses = [] } = useTeacherCourseClasses(selectedCourse || undefined);
+
   const handleCreate = async () => {
-    if (!selectedCourse || !form.title.trim() || !form.content.trim()) {
+    if (!selectedCourse || !selectedClassId || !form.title.trim() || !form.content.trim()) {
       toast.error(t('validation.fillRequiredFields'));
       return;
     }
@@ -48,11 +66,13 @@ const TeacherAnnouncements = () => {
     try {
       await createAnnouncement.mutateAsync({
         courseId: selectedCourse,
+        classId: selectedClassId,
         title: form.title,
         content: form.content,
       });
       setForm({ title: '', content: '' });
       setSelectedCourse('');
+      setSelectedClassId('');
       setIsDialogOpen(false);
       toast.success(t('courseDetail.postAnnouncementSuccess'));
     } catch (error) {
@@ -108,8 +128,43 @@ const TeacherAnnouncements = () => {
 
         {/* Course Announcements Tab */}
         <TabsContent value="course" className="space-y-4 mt-4">
-          {/* Create button */}
-          <div className="flex justify-end">
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <Select
+              value={filterCourse}
+              onValueChange={(val) => {
+                setFilterCourse(val);
+                setFilterClass('all');
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder={t('common.allCourses')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.allCourses')}</SelectItem>
+                {courses.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {filterCourse !== 'all' && (
+              <Select value={filterClass} onValueChange={setFilterClass}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <Users className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder={t('common.allClasses')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('common.allClasses')}</SelectItem>
+                  {classes.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            <div className="flex-1" />
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="default" disabled={courses.length === 0}>
@@ -124,7 +179,13 @@ const TeacherAnnouncements = () => {
                 <div className="space-y-4 pt-4">
                   <div className="space-y-2">
                     <Label>{t('materials.selectCourse')}</Label>
-                    <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                    <Select
+                      value={selectedCourse}
+                      onValueChange={(val) => {
+                        setSelectedCourse(val);
+                        setSelectedClassId('');
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={t('materials.chooseCourse')} />
                       </SelectTrigger>
@@ -137,6 +198,23 @@ const TeacherAnnouncements = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {selectedCourse && (
+                    <div className="space-y-2">
+                      <Label>{t('common.selectClass')}</Label>
+                      <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('common.chooseClass')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {creationClasses.map(c => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label>{t('materials.titleLabel')}</Label>
                     <Input

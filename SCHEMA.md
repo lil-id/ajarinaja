@@ -99,6 +99,7 @@ erDiagram
     exams {
         uuid id PK
         uuid course_id FK
+        uuid class_id FK
         string title
         integer duration
         integer total_points
@@ -126,6 +127,7 @@ erDiagram
     assignments {
         uuid id PK
         uuid course_id FK
+        uuid class_id FK
         string title
         timestamp due_date
         integer total_points
@@ -152,6 +154,7 @@ erDiagram
     attendance_sessions {
         uuid id PK
         uuid course_id FK
+        uuid class_id FK
         uuid teacher_id FK
         timestamp open_time
         timestamp close_time
@@ -189,6 +192,7 @@ erDiagram
     announcements {
         uuid id PK
         uuid course_id FK
+        uuid class_id FK
         uuid teacher_id FK
         string title
         string content

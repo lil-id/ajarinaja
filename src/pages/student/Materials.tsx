@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useEnrollments } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useCourses } from '@/hooks/useCourses';
 import { useCourseMaterials, extractYouTubeId, getYouTubeThumbnail } from '@/hooks/useCourseMaterials';
 import { FileText, Loader2, File, Video, FileImage, Download, Youtube, Play, Eye, ChevronDown, Filter } from 'lucide-react';
@@ -50,7 +50,7 @@ const formatFileSize = (bytes: number | null) => {
  */
 const StudentMaterials = () => {
   const { t } = useTranslation();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { effectiveCourseIds, isLoading: effectiveCoursesLoading } = useEffectiveCourseIds();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -58,9 +58,9 @@ const StudentMaterials = () => {
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('all');
   const [expandedCourses, setExpandedCourses] = useState<Set<string>>(new Set());
 
-  const isLoading = enrollmentsLoading || coursesLoading || materialsLoading;
+  const isLoading = effectiveCoursesLoading || coursesLoading || materialsLoading;
 
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
 
   const myMaterials = materials.filter(m => enrolledCourseIds.includes(m.course_id));

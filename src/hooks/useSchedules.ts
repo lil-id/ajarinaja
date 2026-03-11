@@ -5,13 +5,13 @@ import { toast } from 'sonner';
 import i18next from 'i18next';
 
 export const DAY_LABELS: Record<number, string> = {
-    1: 'Senin',
-    2: 'Selasa',
-    3: 'Rabu',
-    4: 'Kamis',
-    5: 'Jumat',
-    6: 'Sabtu',
-    7: 'Minggu',
+    1: 'common.days.monday',
+    2: 'common.days.tuesday',
+    3: 'common.days.wednesday',
+    4: 'common.days.thursday',
+    5: 'common.days.friday',
+    6: 'common.days.saturday',
+    7: 'common.days.sunday',
 };
 
 export interface ClassSchedule {

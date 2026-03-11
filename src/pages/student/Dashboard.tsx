@@ -3,7 +3,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCourses } from '@/hooks/useCourses';
-import { useEnrollments, useEnroll } from '@/hooks/useEnrollments';
+import { useEnroll } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +42,12 @@ const StudentDashboard = () => {
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const {
+    effectiveCourseIds,
+    enrollments,
+    enrolledClassIds,
+    isLoading: effectiveCoursesLoading
+  } = useEffectiveCourseIds();
   const { exams, isLoading: examsLoading } = useExams();
   const { data: assignments = [] } = useAssignments();
   const enroll = useEnroll();
@@ -71,16 +77,28 @@ const StudentDashboard = () => {
     enabled: !!user,
   });
 
-  const isLoading = coursesLoading || enrollmentsLoading || examsLoading;
+  const isLoading = coursesLoading || effectiveCoursesLoading || examsLoading;
 
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
   const availableCourses = courses.filter(
     c => c.status === 'published' && !enrolledCourseIds.includes(c.id)
   );
 
+  /**
+   * Determines whether a given exam or assignment should be visible to this student.
+   * - Class-targeted: ONLY show to students in that specific class
+   * - Global (no class_id): show to anyone enrolled in the course
+   */
+  const isItemVisible = (item: { course_id: string; class_id?: string | null }) => {
+    if (item.class_id) {
+      return enrolledClassIds.includes(item.class_id);
+    }
+    return enrolledCourseIds.includes(item.course_id);
+  };
+
   const upcomingExams = exams.filter(
-    e => e.status === 'published' && enrolledCourseIds.includes(e.course_id)
+    e => e.status?.toLowerCase() === 'published' && isItemVisible(e)
   );
 
   const handleEnroll = async (courseId: string) => {
@@ -170,7 +188,7 @@ const StudentDashboard = () => {
                   </TooltipProvider>
                 </div>
                 <p className="text-3xl font-bold text-foreground mt-2">
-                  {assignments.filter(a => a.status === 'published' && enrolledCourseIds.includes(a.course_id)).length}
+                  {assignments.filter(a => a.status?.toLowerCase() === 'published' && isItemVisible(a)).length}
                 </p>
               </div>
               <div className="h-12 w-12 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">

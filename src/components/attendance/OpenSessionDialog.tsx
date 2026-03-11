@@ -3,6 +3,13 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, Play, Copy, CheckCircle2 } from 'lucide-react';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -19,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useCreateSession, useOpenSession } from '@/hooks/useAttendanceSessions';
 import { useAttendanceSettings } from '@/hooks/useAttendanceSettings';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
 import type { AttendanceSession } from '@/types/attendance';
 
 interface OpenSessionDialogProps {
@@ -58,26 +66,30 @@ export function OpenSessionDialog({ courseId, trigger }: OpenSessionDialogProps)
     const [copied, setCopied] = useState(false);
 
     const { data: settings } = useAttendanceSettings(courseId);
+    const { data: classes = [] } = useTeacherCourseClasses(courseId);
     const createSession = useCreateSession();
     const openSession = useOpenSession();
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
         defaultValues: {
             topic: '',
+            class_id: '',
             duration: 15,
             sessionDate: new Date().toISOString().split('T')[0],
         },
     });
 
     const duration = watch('duration');
+    const selectedClassId = watch('class_id');
 
     const onSubmit = async (data: any) => {
         try {
             // Get next session number
-            const { data: existingSessions } = await supabase
+            const { data: existingSessions } = await (supabase as any)
                 .from('attendance_sessions')
                 .select('session_number')
                 .eq('course_id', courseId)
+                .eq('class_id', data.class_id)
                 .order('session_number', { ascending: false })
                 .limit(1);
 
@@ -93,6 +105,7 @@ export function OpenSessionDialog({ courseId, trigger }: OpenSessionDialogProps)
             // Create session
             const newSession = await createSession.mutateAsync({
                 course_id: courseId,
+                class_id: data.class_id,
                 teacher_id: (await supabase.auth.getUser()).data.user?.id,
                 session_number: nextSessionNumber,
                 topic: data.topic || undefined,
@@ -100,7 +113,7 @@ export function OpenSessionDialog({ courseId, trigger }: OpenSessionDialogProps)
                 pin_hash: pinHash,
                 pin_encrypted: pinEncrypted,
                 status: 'scheduled',
-            } as Partial<AttendanceSession>);
+            } as any); // Cast to any to bypass Partial mismatch if needed, or ensure it matches the hook signature
 
             // Open session
             await openSession.mutateAsync({
@@ -176,6 +189,25 @@ export function OpenSessionDialog({ courseId, trigger }: OpenSessionDialogProps)
                                 type="date"
                                 {...register('sessionDate', { required: true })}
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="class_id">{t('common.class')}</Label>
+                            <Select
+                                value={selectedClassId}
+                                onValueChange={(val) => setValue('class_id', val)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={t('common.chooseClass')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {classes.map(c => (
+                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.class_id && <p className="text-sm text-destructive">{t('common.requiredField')}</p>}
+                            <input type="hidden" {...register('class_id', { required: true })} />
                         </div>
 
                         <div className="space-y-2">

@@ -15,12 +15,15 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useStudentCourseClass } from '@/hooks/useStudentCourseClass';
 
 const StudentAttendance = () => {
     const { t } = useTranslation();
     const { courses, isLoading } = useCourses();
     const { user } = useAuth();
     const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+    const { data: studentClass } = useStudentCourseClass(selectedCourseId || undefined);
+    const classId = (studentClass as any)?.id;
 
     // Students see all courses they are enrolled in (which useCourses returns for them)
     // Filter out draft courses just in case, though backend usually handles this for students
@@ -44,7 +47,10 @@ const StudentAttendance = () => {
 
             {/* Live Session Widget for Check-in */}
             {selectedCourseId && (
-                <StudentLiveSessionWidget courseId={selectedCourseId} />
+                <StudentLiveSessionWidget
+                    courseId={selectedCourseId}
+                    classId={classId}
+                />
             )}
 
             <Card>
@@ -82,6 +88,7 @@ const StudentAttendance = () => {
                             {selectedCourseId ? (
                                 <AttendanceComparisonTable
                                     courseId={selectedCourseId}
+                                    classId={classId}
                                     readOnly={true}
                                     targetStudentId={user?.id}
                                 />

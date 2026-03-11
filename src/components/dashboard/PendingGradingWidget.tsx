@@ -65,12 +65,12 @@ export function PendingGradingWidget() {
                         </div>
 
                         {/* Items List */}
-                        <div className="space-y-2">
-                            {items.slice(0, 5).map((item) => (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {items.slice(0, 9).map((item) => (
                                 <div
                                     key={`${item.type}-${item.id}`}
                                     onClick={() => handleNavigate(item)}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                                    className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-muted/30 hover:border-border transition-all cursor-pointer shadow-sm group"
                                 >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.type === 'assignment'
@@ -88,7 +88,7 @@ export function PendingGradingWidget() {
                                                 {item.title}
                                             </p>
                                             <p className="text-xs text-muted-foreground truncate">
-                                                {item.course_title}
+                                                {item.course_title} {item.class_name ? `• ${item.class_name}` : ''}
                                             </p>
                                         </div>
                                     </div>

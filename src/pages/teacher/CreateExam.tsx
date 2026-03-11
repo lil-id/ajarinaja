@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/dialog';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useCreateExam, useExamWithQuestions, useUpdateExam, Question } from '@/hooks/useExams';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
 import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
 import { useAddQuestion, useUpdateQuestion, useDeleteQuestion } from '@/hooks/useQuestions';
 import { toast } from 'sonner';
@@ -56,6 +57,7 @@ import { useSidebarContext } from '@/contexts/SidebarContext';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
+  class_id: z.string().min(1, 'Please select a class'),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().optional(),
   duration: z.coerce.number().min(1).max(600),
@@ -177,6 +179,7 @@ export default function CreateExam() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       course_id: '',
+      class_id: '',
       title: '',
       description: '',
       duration: 60,
@@ -191,15 +194,19 @@ export default function CreateExam() {
     },
   });
 
+  const selectedCourseId = form.watch('course_id');
+  const { data: classes = [] } = useTeacherCourseClasses(selectedCourseId || undefined);
+
   // Load existing exam data in edit mode
   useEffect(() => {
     if (isEditMode && existingExam) {
       const examData = existingExam as any;
       form.reset({
-        course_id: existingExam.course_id,
-        title: existingExam.title,
-        description: existingExam.description || '',
-        duration: existingExam.duration,
+        course_id: (existingExam as any).course_id,
+        class_id: (existingExam as any).class_id,
+        title: (existingExam as any).title,
+        description: (existingExam as any).description || '',
+        duration: (existingExam as any).duration,
         kkm: examData.kkm || 60,
         start_date: existingExam.start_date
           ? utcToLocalDateTime(existingExam.start_date)
@@ -427,6 +434,7 @@ export default function CreateExam() {
           risk_on_below_kkm: belowKkmCriterion?.enabled || false,
           risk_missed_severity: missedCriterion?.severity || 'high',
           risk_below_kkm_severity: belowKkmCriterion?.severity || 'medium',
+          class_id: data.class_id,
         });
 
         // Handle questions: delete removed, update existing, add new
@@ -484,10 +492,14 @@ export default function CreateExam() {
 
         await createExam.mutateAsync({
           courseId: data.course_id,
+          classId: data.class_id,
           title: data.title,
           description: data.description,
           duration: data.duration,
           kkm: data.kkm,
+          status: data.status,
+          start_date: data.start_date ? localDateTimeToUTC(data.start_date) : null,
+          end_date: data.end_date ? localDateTimeToUTC(data.end_date) : null,
           questions: questionsToCreate,
         });
 
@@ -582,7 +594,10 @@ export default function CreateExam() {
                     <FormItem>
                       <FormLabel>{t('exams.selectCourse')}</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(val) => {
+                          field.onChange(val);
+                          form.setValue('class_id', '');
+                        }}
                         value={field.value}
                         disabled={isEditMode}
                       >
@@ -603,6 +618,34 @@ export default function CreateExam() {
                     </FormItem>
                   )}
                 />
+
+                {selectedCourseId && (
+                  <FormField
+                    control={form.control}
+                    name="class_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('common.class')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isEditMode}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('common.selectClass')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {classes.map((c) => (
+                              <SelectItem key={c.id} value={c.id}>
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 <FormField
                   control={form.control}
                   name="title"

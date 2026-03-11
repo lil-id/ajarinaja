@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dialog';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useCreateAssignment, useUpdateAssignment, useAssignment, RubricItem } from '@/hooks/useAssignments';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
 import { useAssignmentQuestions, useAddAssignmentQuestion, useUpdateAssignmentQuestion, useDeleteAssignmentQuestion, AssignmentQuestion } from '@/hooks/useAssignmentQuestions';
 import { useQuestionBank, useIncrementQuestionUsage } from '@/hooks/useQuestionBank';
 import { toast } from 'sonner';
@@ -58,6 +59,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const formSchema = z.object({
   course_id: z.string().min(1, 'Please select a course'),
+  class_id: z.string().min(1, 'Please select a class'),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().optional(),
   instructions: z.string().optional(),
@@ -186,6 +188,7 @@ export default function CreateAssignment() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       course_id: '',
+      class_id: '',
       title: '',
       description: '',
       instructions: '',
@@ -208,12 +211,16 @@ export default function CreateAssignment() {
 
   const assignmentType = form.watch('assignment_type');
   const allowLate = form.watch('allow_late_submissions');
+  const selectedCourseId = form.watch('course_id');
+
+  const { data: classes = [] } = useTeacherCourseClasses(selectedCourseId || undefined);
 
   // Load existing assignment data in edit mode
   useEffect(() => {
     if (isEditMode && existingAssignment) {
       form.reset({
         course_id: existingAssignment.course_id,
+        class_id: existingAssignment.class_id,
         title: existingAssignment.title,
         description: existingAssignment.description || '',
         instructions: existingAssignment.instructions || '',
@@ -420,6 +427,7 @@ export default function CreateAssignment() {
     try {
       const assignmentData = {
         course_id: data.course_id,
+        class_id: data.class_id,
         title: data.title,
         description: data.description,
         instructions: data.instructions,
@@ -604,7 +612,13 @@ export default function CreateAssignment() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('assignments.course')}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        form.setValue('class_id', ''); // Reset class when course changes
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t('materials.selectCourse')} />
@@ -622,6 +636,33 @@ export default function CreateAssignment() {
                   </FormItem>
                 )}
               />
+
+              {selectedCourseId && (
+                <FormField
+                  control={form.control}
+                  name="class_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('common.class')}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('common.selectClass')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {classes.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

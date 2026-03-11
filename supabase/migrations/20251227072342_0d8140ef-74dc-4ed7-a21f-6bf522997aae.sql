@@ -111,8 +111,14 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
   SELECT EXISTS (
+    -- 1. Explicit enrollment
     SELECT 1 FROM public.enrollments
     WHERE student_id = _user_id AND course_id = _course_id
+    UNION
+    -- 2. Implicit enrollment via class schedule
+    SELECT 1 FROM public.class_students cs
+    JOIN public.class_schedules sch ON cs.class_id = sch.class_id
+    WHERE cs.student_id = _user_id AND sch.course_id = _course_id
   )
 $$;
 

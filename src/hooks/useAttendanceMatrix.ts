@@ -35,40 +35,69 @@ export interface AttendanceSessionInfo {
 
 interface UseAttendanceMatrixProps {
     courseId: string | undefined;
+    classId?: string; // Added for class-based partitioning
     month: Date;
 }
 
-export const useAttendanceMatrix = ({ courseId, month }: UseAttendanceMatrixProps) => {
+export const useAttendanceMatrix = ({ courseId, classId, month }: UseAttendanceMatrixProps) => {
     const startDate = startOfMonth(month);
     const endDate = endOfMonth(month);
     const startDateStr = format(startDate, 'yyyy-MM-dd');
     const endDateStr = format(endDate, 'yyyy-MM-dd');
 
     return useQuery({
-        queryKey: ['attendance-matrix', courseId, startDateStr, endDateStr],
+        queryKey: ['attendance-matrix', courseId, classId, startDateStr, endDateStr],
         enabled: !!courseId,
         queryFn: async () => {
-            // 1. Fetch Students (Enrollments) - ALWAYS fetch all active students
-            const { data: enrollments, error: enrollError } = await supabase
-                .from('enrollments')
-                .select(`
-          id,
-          student_id,
-          student:profiles (
-            id,
-            name,
-            email
-          )
-        `)
-                .eq('course_id', courseId);
+            // 1. Fetch Students
+            // If classId is provided, we fetch students FROM that class
+            let studentsData: any[] = [];
+            if (classId) {
+                const { data: classStudents, error: classError } = await supabase
+                    .from('class_students')
+                    .select(`
+                        student_id,
+                        student:profiles (
+                            id,
+                            name,
+                            email
+                        )
+                    `)
+                    .eq('class_id', classId);
 
-            if (enrollError) throw enrollError;
+                if (classError) throw classError;
+                studentsData = classStudents || [];
+            } else {
+                // Fallback to enrollments if no classId (legacy or global view)
+                const { data: enrollments, error: enrollError } = await supabase
+                    .from('enrollments')
+                    .select(`
+                        student_id,
+                        student:profiles (
+                            id,
+                            name,
+                            email
+                        )
+                    `)
+                    .eq('course_id', courseId);
+
+                if (enrollError) throw enrollError;
+                studentsData = enrollments || [];
+            }
+
+            const students = studentsData;
 
             // 2. Fetch Sessions in range
-            const { data: sessionsData, error: sessionError } = await supabase
+            let sessionsQuery = supabase
                 .from('attendance_sessions')
                 .select('*')
-                .eq('course_id', courseId)
+                .eq('course_id', courseId);
+
+            if (classId) {
+                sessionsQuery = sessionsQuery.eq('class_id', classId);
+            }
+
+            const { data: sessionsData, error: sessionError } = await sessionsQuery
                 .gte('session_date', startDateStr)
                 .lte('session_date', endDateStr)
                 .order('session_date', { ascending: true });
@@ -108,13 +137,13 @@ export const useAttendanceMatrix = ({ courseId, month }: UseAttendanceMatrixProp
             });
 
             // 5. Build Unified Student List
-            // Collect all unique student IDs from enrollments AND records
-            const enrollmentIds = new Set(enrollments?.map((e: any) => e.student_id) || []);
+            // Collect all unique student IDs from students data AND records
+            const studentIdsFromSource = new Set(students?.map((e: any) => e.student_id) || []);
             const recordStudentIds = new Set(records?.map((r: any) => r.student_id) || []);
-            const allStudentIds = Array.from(new Set([...enrollmentIds, ...recordStudentIds]));
+            const allStudentIds = Array.from(new Set([...studentIdsFromSource, ...recordStudentIds]));
 
-            // Identify students who are in records but NOT in enrollments (Ghost students)
-            const missingProfileIds = allStudentIds.filter(id => !enrollmentIds.has(id));
+            // Identify students who are in records but NOT in class list (Ghost students)
+            const missingProfileIds = allStudentIds.filter(id => !studentIdsFromSource.has(id));
 
             // Fetch profiles for ghost students if any
             let additionalProfiles: any[] = [];
@@ -132,8 +161,8 @@ export const useAttendanceMatrix = ({ courseId, month }: UseAttendanceMatrixProp
             // Create a map of student ID -> Student Info
             const studentMap = new Map<string, { name: string; email: string }>();
 
-            // Populate from enrollments
-            enrollments?.forEach((e: any) => {
+            // Populate from students source
+            students?.forEach((e: any) => {
                 if (e.student) {
                     studentMap.set(e.student_id, {
                         name: e.student.name || 'Unknown',

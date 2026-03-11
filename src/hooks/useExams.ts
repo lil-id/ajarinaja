@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 export interface Exam {
   id: string;
   course_id: string;
+  class_id: string; // Added for class-based partitioning
   title: string;
   description: string | null;
   duration: number;
@@ -21,6 +22,9 @@ export interface Exam {
   risk_below_kkm_severity: 'high' | 'medium' | 'low' | null;
   created_at: string;
   updated_at: string;
+  class?: {
+    name: string;
+  } | null;
 }
 
 export interface QuestionOption {
@@ -48,23 +52,27 @@ export interface Question {
  * @param {string} [courseId] - The ID of the course.
  * @returns {object} The exams, loading state, and error.
  */
-export function useExams(courseId?: string) {
+export function useExams(courseId?: string, classId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: exams = [], isLoading, error } = useQuery({
-    queryKey: ['exams', courseId],
+    queryKey: ['exams', courseId, classId],
     queryFn: async () => {
-      let query = supabase.from('exams').select('*');
+      let query: any = supabase.from('exams').select('*, class:classes(name)');
 
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
 
+      if (classId) {
+        query = query.eq('class_id', classId);
+      }
+
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Exam[];
+      return (data || []) as unknown as Exam[];
     },
     enabled: !!user,
   });
@@ -173,17 +181,25 @@ export function useCreateExam() {
   return useMutation({
     mutationFn: async ({
       courseId,
+      classId, // Required for partitioning
       title,
       description,
       duration,
       kkm,
+      status,
+      start_date,
+      end_date,
       questions
     }: {
       courseId: string;
+      classId: string;
       title: string;
       description?: string;
       duration: number;
       kkm?: number;
+      status?: string;
+      start_date?: string | null;
+      end_date?: string | null;
       questions: Omit<Question, 'id' | 'exam_id'>[];
     }) => {
       // Create exam
@@ -193,11 +209,14 @@ export function useCreateExam() {
         .from('exams')
         .insert({
           course_id: courseId,
+          class_id: classId,
           title,
           description,
           duration,
           total_points: totalPoints,
-          status: 'draft',
+          status: status || 'draft',
+          start_date,
+          end_date,
           kkm: kkm || 60,
         })
         .select()

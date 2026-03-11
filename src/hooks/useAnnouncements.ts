@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 export interface Announcement {
   id: string;
   course_id: string;
+  class_id: string; // Added for class-based partitioning
   title: string;
   content: string;
   created_at: string;
@@ -18,17 +19,21 @@ export interface Announcement {
  * @param {string} [courseId] - The ID of the course to fetch announcements for. If undefined, fetches all accessible announcements.
  * @returns {object} The announcements data, loading state, and error.
  */
-export function useAnnouncements(courseId?: string) {
+export function useAnnouncements(courseId?: string, classId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: announcements = [], isLoading, error } = useQuery({
-    queryKey: ['announcements', courseId],
+    queryKey: ['announcements', courseId, classId],
     queryFn: async () => {
       let query = supabase.from('announcements').select('*');
 
       if (courseId) {
         query = query.eq('course_id', courseId);
+      }
+
+      if (classId) {
+        query = query.eq('class_id', classId);
       }
 
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -77,10 +82,12 @@ export function useCreateAnnouncement() {
   return useMutation({
     mutationFn: async ({
       courseId,
+      classId, // Required for partitioning
       title,
       content
     }: {
       courseId: string;
+      classId: string;
       title: string;
       content: string;
     }) => {
@@ -88,6 +95,7 @@ export function useCreateAnnouncement() {
         .from('announcements')
         .insert({
           course_id: courseId,
+          class_id: classId,
           title,
           content,
         })

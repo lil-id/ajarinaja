@@ -49,18 +49,6 @@ export function CalendarWidget() {
         exams
             .filter(e => courseIds.includes(e.course_id))
             .forEach(exam => {
-                // Add start date event if exists
-                if (exam.start_date) {
-                    allEvents.push({
-                        id: `${exam.id}-start`,
-                        title: `${exam.title} (Start)`,
-                        date: new Date(exam.start_date),
-                        type: 'exam',
-                        courseName: courseMap.get(exam.course_id) || (t('courses.unknownCourse') as string),
-                        courseId: exam.course_id
-                    });
-                }
-
                 // Add end date event if exists
                 if (exam.end_date) {
                     allEvents.push({

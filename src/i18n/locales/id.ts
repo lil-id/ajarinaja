@@ -41,6 +41,7 @@ export default {
     upload: 'Unggah',
     graded: 'Dinilai',
     course: 'Mata Pelajaran',
+    class: 'Kelas',
     yes: 'Ya',
     no: 'Tidak',
     all: 'Semua',
@@ -83,7 +84,10 @@ export default {
     remove: 'Hapus',
     choose: 'Pilih',
     select: 'Pilih',
+    selectClass: 'Pilih Kelas',
+    allClasses: 'Semua Kelas',
     allCourses: 'Semua Mata Pelajaran',
+    due: 'Tenggat',
     searchPlaceholder: 'Cari...',
     dangerZone: 'Zona Berbahaya',
     irreversibleActions: 'Tindakan tidak dapat dibatalkan',
@@ -91,6 +95,15 @@ export default {
     deleting: 'Menghapus...',
     optional: 'opsional',
     goBack: 'Kembali',
+    days: {
+      monday: 'Senin',
+      tuesday: 'Selasa',
+      wednesday: 'Rabu',
+      thursday: 'Kamis',
+      friday: 'Jumat',
+      saturday: 'Sabtu',
+      sunday: 'Minggu',
+    },
 
     // Shared actions (exam/question bank)
     selected: 'dipilih',
@@ -130,7 +143,6 @@ export default {
     announcements: 'Pengumuman',
     periods: 'Periode Akademik',
     schedules: 'Jadwal',
-    classes: 'Kelas',
     reports: 'Laporan',
     questionBank: 'Bank Soal',
     reportCards: 'Rapor',
@@ -234,6 +246,7 @@ export default {
     weeklyActivity: 'Aktivitas Mingguan',
     totalSubmissionsWeek: 'pengumpulan minggu ini',
     noActivityData: 'Tidak ada data aktivitas',
+    noRecentActivity: 'Tidak ada aktivitas terbaru',
     calendarTooltip: 'Jumlah tenggat waktu tugas dan ujian yang akan datang',
     studentsTooltip: 'Total siswa unik yang terdaftar di semua mata pelajaran Anda',
     analyticsTooltip: 'Jumlah mata pelajaran yang dipublikasikan',
@@ -343,6 +356,9 @@ export default {
     removeStudentConfirm: 'Apakah Anda yakin ingin menghapus siswa ini dari mata pelajaran?',
     manageStudents: 'Kelola Siswa',
     students: 'Siswa',
+    noStudentsInClass: 'Tidak ada siswa di kelas ini',
+    studentsEnrolledViaOperator: 'Siswa didaftarkan oleh operator',
+    studentsInClass: 'Siswa di kelas',
     exams: 'Ujian',
     createExam: 'Buat Ujian',
     assignments: 'Tugas',
@@ -376,6 +392,21 @@ export default {
     postAnnouncement: 'Posting Pengumuman',
   },
 
+
+  // Schedules
+  schedules: {
+    title: 'Jadwal Mengajar',
+    description: 'Jadwal mengajar mingguan Anda.',
+    noData: 'Tidak ada data',
+    noSchedulesRegistered: 'Anda belum memiliki jadwal mengajar yang didaftarkan oleh operator akademik untuk periode ini.',
+    today: 'Hari Ini',
+    freeDay: 'Tidak ada jadwal',
+    ongoing: 'Sedang berlangsung',
+    time: 'Waktu',
+    course: 'Mata Pelajaran',
+    class: 'Kelas',
+    room: 'Ruangan',
+  },
 
   // Assignments
   assignments: {
@@ -1065,7 +1096,7 @@ export default {
     hoursAgo: '{{count}} jam yang lalu',
     minutesAgo: '{{count}} menit yang lalu',
     justNow: 'Baru saja',
-    dueIn: 'Tenggat dalam {{time}}',
+    dueIn: 'Tenggat: {{time}}',
     overdue: 'Terlambat {{time}}',
   },
 

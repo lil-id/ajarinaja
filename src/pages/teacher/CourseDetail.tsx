@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses, useUpdateCourse, useDeleteCourse, useUploadCourseThumbnail } from '@/hooks/useCourses';
 import { useAcademicPeriods } from '@/hooks/useAcademicPeriods';
 import { useExams } from '@/hooks/useExams';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
+import { useClassStudents } from '@/hooks/useClasses';
 import {
   useCourseMaterials,
   useUploadMaterial,
@@ -40,7 +42,6 @@ import {
   Save,
   X,
   Upload,
-  UserPlus,
   UserMinus,
   Image,
   UsersRound,
@@ -51,7 +52,10 @@ import {
   File,
   Clock,
   Award,
-  Calendar
+  Calendar,
+  ChevronDown,
+  School,
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -130,12 +134,37 @@ const TeacherCourseDetail = () => {
 
   const course = courses.find(c => c.id === courseId);
 
-  const { exams, isLoading: examsLoading } = useExams();
+  const { exams } = useExams(courseId);
   const { materials, isLoading: materialsLoading } = useCourseMaterials();
-  const { announcements, isLoading: announcementsLoading } = useAnnouncements();
+  const { announcements, isLoading: announcementsLoading } = useAnnouncements(courseId);
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments(courseId);
-  const { enrollments, isLoading: enrollmentsLoading } = useCourseEnrollments(courseId || '');
-  const { data: allStudents = [], isLoading: studentsLoading } = useAllStudents();
+
+  // Class selector: which class is the teacher viewing content for
+  const { data: courseClasses = [], isLoading: classesLoading } = useTeacherCourseClasses(courseId);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+
+  // Auto-select the first class when classes load
+  useEffect(() => {
+    if (courseClasses.length > 0 && !selectedClassId) {
+      setSelectedClassId(courseClasses[0].id);
+    }
+  }, [courseClasses, selectedClassId]);
+
+  const selectedClass = useMemo(
+    () => courseClasses.find(c => c.id === selectedClassId),
+    [courseClasses, selectedClassId]
+  );
+
+  // Class-scoped hooks: re-fetch when selectedClassId changes
+  const { exams: classExams } = useExams(courseId, selectedClassId || undefined);
+  const { data: classAssignments = [] } = useAssignments(courseId, selectedClassId || undefined);
+  const { announcements: classAnnouncements } = useAnnouncements(courseId, selectedClassId || undefined);
+
+  // Students in the selected class
+  const { students: classStudents, isLoading: classStudentsLoading } = useClassStudents(selectedClassId || undefined);
+
+  // Enrollment hooks (kept for backward compat but no longer shown in Students tab)
+  const { enrollments } = useCourseEnrollments(courseId || '');
   const enrollStudent = useTeacherEnrollStudent();
   const unenrollStudent = useTeacherUnenrollStudent();
   const unenrollAllStudents = useTeacherUnenrollAllStudents();
@@ -152,10 +181,12 @@ const TeacherCourseDetail = () => {
   // Assignment hooks
   const deleteAssignment = useDeleteAssignment();
 
-  const courseExams = exams.filter(e => e.course_id === courseId);
   const courseMaterials = materials.filter(m => m.course_id === courseId);
-  const courseAnnouncements = announcements.filter(a => a.course_id === courseId);
-  const courseAssignments = assignments.filter(a => a.course_id === courseId);
+
+  // Count exams and assignments from class-scoped hooks when a class is selected
+  const courseExams = selectedClassId ? classExams : exams.filter(e => e.course_id === courseId);
+  const courseAssignments = selectedClassId ? classAssignments : assignments.filter(a => a.course_id === courseId);
+  const courseAnnouncements = selectedClassId ? classAnnouncements : announcements.filter(a => a.course_id === courseId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ title: '', description: '', period_id: '' });
@@ -175,17 +206,6 @@ const TeacherCourseDetail = () => {
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '' });
 
-  // Get students not already enrolled and filter by search
-  const enrolledStudentIds = new Set(enrollments.map(e => e.student_id));
-  const availableStudents = allStudents.filter(s => !enrolledStudentIds.has(s.user_id));
-
-  // Filter by email search
-  const filteredStudents = studentEmailSearch.trim()
-    ? availableStudents.filter(s =>
-      s.email.toLowerCase().includes(studentEmailSearch.toLowerCase()) ||
-      s.name.toLowerCase().includes(studentEmailSearch.toLowerCase())
-    )
-    : availableStudents;
 
   if (coursesLoading) {
     return (
@@ -281,36 +301,6 @@ const TeacherCourseDetail = () => {
     }
   };
 
-  const handleEnrollStudent = async () => {
-    if (!selectedStudentId) {
-      toast.error(t('toast.pleaseSelectStudent'));
-      return;
-    }
-
-    // Find the selected student's details
-    const selectedStudent = allStudents.find(s => s.user_id === selectedStudentId);
-    if (!selectedStudent) {
-      toast.error(t('toast.studentNotFound'));
-      return;
-    }
-
-    try {
-      await enrollStudent.mutateAsync({
-        studentId: selectedStudentId,
-        courseId: course.id,
-        studentEmail: selectedStudent.email,
-        studentName: selectedStudent.name,
-        courseName: course.title,
-        teacherName: profile?.name || 'Your Instructor',
-      });
-      toast.success(t('toast.studentEnrolled'));
-      setIsEnrollDialogOpen(false);
-      setSelectedStudentId('');
-      setStudentEmailSearch('');
-    } catch (error) {
-      toast.error(t('toast.failedToEnrollStudent'));
-    }
-  };
 
   const handleUnenrollStudent = async (enrollmentId: string) => {
     try {
@@ -411,9 +401,15 @@ const TeacherCourseDetail = () => {
       return;
     }
 
+    if (!selectedClassId) {
+      toast.error(t('common.chooseClass'));
+      return;
+    }
+
     try {
       await createAnnouncement.mutateAsync({
         courseId: course.id,
+        classId: selectedClassId,
         title: announcementForm.title,
         content: announcementForm.content,
       });
@@ -604,10 +600,44 @@ const TeacherCourseDetail = () => {
         </div>
       </div>
 
+      {/* Class Selector Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-muted/40 rounded-lg border">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground shrink-0">
+          <School className="w-4 h-4" />
+          {t('common.class') || 'Class'}:
+        </div>
+        {classesLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+        ) : courseClasses.length === 0 ? (
+          <div className="flex items-center gap-2 text-sm text-amber-600">
+            <AlertCircle className="w-4 h-4" />
+            <span>{t('courses.noClassesAssigned') || 'No classes assigned to this course. Ask your operator to set up class schedules.'}</span>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {courseClasses.map(cls => (
+              <button
+                key={cls.id}
+                type="button"
+                onClick={() => setSelectedClassId(cls.id)}
+                className={[
+                  'px-3 py-1 rounded-full text-sm font-medium border transition-colors',
+                  selectedClassId === cls.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-foreground border-border hover:bg-muted'
+                ].join(' ')}
+              >
+                {cls.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="students">{t('courses.students')} ({enrollments.length})</TabsTrigger>
+          <TabsTrigger value="students">{t('courses.students')} ({selectedClassId ? classStudents.length : enrollments.length})</TabsTrigger>
           <TabsTrigger value="exams">{t('courses.exams')} ({courseExams.length})</TabsTrigger>
           <TabsTrigger value="assignments">{t('courses.assignments')} ({courseAssignments.length})</TabsTrigger>
           <TabsTrigger value="materials">{t('nav.materials')} ({courseMaterials.length})</TabsTrigger>
@@ -643,181 +673,53 @@ const TeacherCourseDetail = () => {
               <div className="flex items-center justify-between">
                 <h4 className="text-md font-medium">{t('attendance.sessionHistory') || 'Session History'}</h4>
               </div>
-              <AttendanceSessionsTable courseId={courseId!} />
+              <AttendanceSessionsTable courseId={courseId!} classId={selectedClassId || undefined} />
             </TabsContent>
 
             <TabsContent value="summary">
-              <AttendanceStudentSummary courseId={courseId!} />
+              <AttendanceStudentSummary courseId={courseId!} classId={selectedClassId || undefined} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
-        {/* Students Tab */}
+        {/* Students Tab — shows class roster for the selected class */}
         <TabsContent value="students" className="space-y-4">
-          <div className="flex justify-end gap-2">
-            {enrollments.length > 0 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline">
-                    <UsersRound className="w-4 h-4" />
-                    {t('courses.removeAll')} ({enrollments.length})
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{t('courses.removeAllStudents')}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t('courses.removeAllStudentsConfirm', { count: enrollments.length })}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleUnenrollAllStudents}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      {unenrollAllStudents.isPending ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        t('courses.removeAll')
-                      )}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-            <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="default">
-                  <UserPlus className="w-4 h-4" />
-                  {t('courses.enrollStudent')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('courses.enrollStudent')}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  {studentsLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="student-email-search">{t('courses.searchByEmailName')}</Label>
-                        <Input
-                          id="student-email-search"
-                          placeholder={t('courses.enterEmailName')}
-                          value={studentEmailSearch}
-                          onChange={(e) => {
-                            setStudentEmailSearch(e.target.value);
-                            setSelectedStudentId('');
-                          }}
-                        />
-                      </div>
-
-                      {availableStudents.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-4">
-                          {t('courses.noStudentsAvailable')}
-                        </p>
-                      ) : filteredStudents.length === 0 && studentEmailSearch.trim() ? (
-                        <p className="text-muted-foreground text-center py-4">
-                          {t('courses.noStudentFound')}
-                        </p>
-                      ) : (
-                        <>
-                          <div className="space-y-2">
-                            <Label>{t('courses.selectStudent')}</Label>
-                            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t('courses.chooseStudent')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {filteredStudents.map(student => (
-                                  <SelectItem key={student.user_id} value={student.user_id}>
-                                    <div className="flex flex-col items-start">
-                                      <span>{student.name}</span>
-                                      <span className="text-xs text-muted-foreground">{student.email}</span>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button
-                            onClick={handleEnrollStudent}
-                            className="w-full"
-                            disabled={enrollStudent.isPending || !selectedStudentId}
-                          >
-                            {enrollStudent.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                            {t('courses.enrollStudent')}
-                          </Button>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {enrollmentsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
+          {!selectedClassId ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+              <School className="w-10 h-10 opacity-20" />
+              <p>{t('courses.selectClassToViewStudents') || 'Select a class above to view its students.'}</p>
             </div>
-          ) : enrollments.length === 0 ? (
-            <Card className="border-0 shadow-card">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">{t('courses.noStudentsEnrolled')}</p>
-              </CardContent>
-            </Card>
+          ) : classStudentsLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : classStudents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+              <Users className="w-10 h-10 opacity-20" />
+              <p>{t('courses.noStudentsInClass') || 'No students are enrolled in this class yet.'}</p>
+              <p className="text-xs">{t('courses.studentsEnrolledViaOperator') || 'Students are enrolled through the operator or student onboarding.'}</p>
+            </div>
           ) : (
-            <div className="grid gap-3">
-              {enrollments.map((enrollment) => (
-                <Card key={enrollment.id} className="border-0 shadow-card">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={enrollment.student.avatar_url || undefined} />
-                        <AvatarFallback>
-                          {enrollment.student.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-foreground">{enrollment.student.name}</p>
-                        <p className="text-sm text-muted-foreground">{enrollment.student.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">
-                        Enrolled {new Date(enrollment.enrolled_at).toLocaleDateString()}
-                      </span>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <UserMinus className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{t('courses.removeStudent')}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {t('courses.removeStudentConfirm')}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleUnenrollStudent(enrollment.id)}>
-                              {t('courses.remove')}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </CardContent>
-                </Card>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {classStudents.length} {t('courses.studentsInClass') || 'students in'} {selectedClass?.name}
+              </p>
+              {classStudents.map((cs: { student_id: string; student?: { name?: string; email?: string } | null }) => (
+                <div
+                  key={cs.student_id}
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                >
+                  <Avatar className="w-9 h-9">
+                    <AvatarFallback className="text-sm">
+                      {cs.student?.name?.charAt(0)?.toUpperCase() || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{cs.student?.name || t('common.unknown')}</p>
+                    <p className="text-xs text-muted-foreground truncate">{cs.student?.email || ''}</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs shrink-0">{selectedClass?.name}</Badge>
+                </div>
               ))}
             </div>
           )}
@@ -832,11 +734,7 @@ const TeacherCourseDetail = () => {
             </Button>
           </div>
 
-          {examsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseExams.length === 0 ? (
+          {courseExams.length === 0 ? (
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-10 h-10 text-muted-foreground mb-4" />
@@ -892,6 +790,10 @@ const TeacherCourseDetail = () => {
           )}
         </TabsContent>
 
+
+
+
+
         {/* Assignments Tab */}
         <TabsContent value="assignments" className="space-y-4">
           <div className="flex justify-end">
@@ -901,11 +803,7 @@ const TeacherCourseDetail = () => {
             </Button>
           </div>
 
-          {assignmentsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseAssignments.length === 0 ? (
+          {courseAssignments.length === 0 ? (
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <ClipboardList className="w-10 h-10 text-muted-foreground mb-4" />
@@ -984,7 +882,7 @@ const TeacherCourseDetail = () => {
         </TabsContent>
 
         {/* Materials Tab */}
-        <TabsContent value="materials" className="space-y-4">
+        < TabsContent value="materials" className="space-y-4" >
           <div className="flex justify-end">
             <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
               <DialogTrigger asChild>
@@ -1109,70 +1007,72 @@ const TeacherCourseDetail = () => {
             </Dialog>
           </div>
 
-          {materialsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseMaterials.length === 0 ? (
-            <Card className="border-0 shadow-card">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <BookOpen className="w-10 h-10 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">{t('materials.noMaterials')}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {courseMaterials.map((material) => {
-                const isVideo = !!material.video_url;
-                const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
+          {
+            materialsLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="w-6 h-6 animate-spin text-secondary" />
+              </div>
+            ) : courseMaterials.length === 0 ? (
+              <Card className="border-0 shadow-card">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <BookOpen className="w-10 h-10 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">{t('materials.noMaterials')}</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {courseMaterials.map((material) => {
+                  const isVideo = !!material.video_url;
+                  const videoId = isVideo ? extractYouTubeId(material.video_url!) : null;
 
-                return (
-                  <Card
-                    key={material.id}
-                    className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => setViewingMaterial(material)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        {isVideo && videoId ? (
-                          <div className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                            <img
-                              src={getYouTubeThumbnail(videoId)}
-                              alt={material.title}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <BookOpen className="w-6 h-6 text-secondary" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground">{material.title}</h3>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {material.description || material.file_name || 'YouTube Video'}
-                          </p>
-                          {material.file_size && (
-                            <span className="text-xs text-muted-foreground">
-                              {formatFileSize(material.file_size)}
-                            </span>
+                  return (
+                    <Card
+                      key={material.id}
+                      className="border-0 shadow-card cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => setViewingMaterial(material)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-4">
+                          {isVideo && videoId ? (
+                            <div className="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                              <img
+                                src={getYouTubeThumbnail(videoId)}
+                                alt={material.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <BookOpen className="w-6 h-6 text-secondary" />
+                            </div>
                           )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-foreground">{material.title}</h3>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {material.description || material.file_name || 'YouTube Video'}
+                            </p>
+                            {material.file_size && (
+                              <span className="text-xs text-muted-foreground">
+                                {formatFileSize(material.file_size)}
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={(e) => handleDeleteMaterial(material.id, material.file_path, e)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={(e) => handleDeleteMaterial(material.id, material.file_path, e)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )
+          }
 
           <MaterialViewer
             isOpen={!!viewingMaterial}
@@ -1228,11 +1128,7 @@ const TeacherCourseDetail = () => {
             </Dialog>
           </div>
 
-          {announcementsLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-6 h-6 animate-spin text-secondary" />
-            </div>
-          ) : courseAnnouncements.length === 0 ? (
+          {courseAnnouncements.length === 0 ? (
             <Card className="border-0 shadow-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Megaphone className="w-10 h-10 text-muted-foreground mb-4" />

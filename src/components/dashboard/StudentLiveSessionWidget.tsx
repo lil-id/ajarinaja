@@ -13,9 +13,10 @@ import { cn } from '@/lib/utils';
 
 interface StudentLiveSessionWidgetProps {
     courseId: string | undefined;
+    classId?: string;
 }
 
-export function StudentLiveSessionWidget({ courseId }: StudentLiveSessionWidgetProps) {
+export function StudentLiveSessionWidget({ courseId, classId }: StudentLiveSessionWidgetProps) {
     const { t } = useTranslation();
     const { toast } = useToast();
     const { user } = useAuth();

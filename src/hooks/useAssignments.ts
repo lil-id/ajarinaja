@@ -14,6 +14,7 @@ export interface RubricItem {
 export interface Assignment {
   id: string;
   course_id: string;
+  class_id: string;
   title: string;
   description: string | null;
   instructions: string | null;
@@ -33,6 +34,9 @@ export interface Assignment {
   risk_late_severity: 'high' | 'medium' | 'low' | null;
   created_at: string;
   updated_at: string;
+  class?: {
+    name: string;
+  } | null;
 }
 
 export interface AssignmentSubmission {
@@ -60,23 +64,27 @@ export interface AssignmentSubmission {
  * @param {string} [courseId] - The ID of the course.
  * @returns {UseQueryResult} The query result containing assignments.
  */
-export function useAssignments(courseId?: string) {
+export function useAssignments(courseId?: string, classId?: string) {
   return useQuery({
-    queryKey: ['assignments', courseId],
+    queryKey: ['assignments', courseId, classId],
     queryFn: async () => {
-      let query = supabase.from('assignments').select('*');
+      let query = supabase.from('assignments').select('*, class:classes(name)');
 
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
 
-      const { data, error } = await query.order('due_date', { ascending: true });
+      if (classId) {
+        query = query.eq('class_id', classId);
+      }
+
+      const { data, error } = await (query as any).order('due_date', { ascending: true });
 
       if (error) throw error;
       return (data || []).map(a => ({
         ...a,
         rubric: (a.rubric as unknown as RubricItem[]) || [],
-      })) as Assignment[];
+      })) as unknown as Assignment[];
     },
   });
 }
@@ -121,7 +129,7 @@ export function useAssignment(assignmentId: string) {
       return {
         ...data,
         rubric: (data.rubric as unknown as RubricItem[]) || [],
-      } as Assignment;
+      } as unknown as Assignment;
     },
     enabled: !!assignmentId,
   });
@@ -138,6 +146,7 @@ export function useCreateAssignment() {
   return useMutation({
     mutationFn: async (assignment: {
       course_id: string;
+      class_id: string; // Required for partitioning
       title: string;
       description?: string;
       instructions?: string;

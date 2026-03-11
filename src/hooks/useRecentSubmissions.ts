@@ -12,6 +12,7 @@ interface RecentSubmission {
     submitted_at: string;
     graded: boolean;
     score?: number;
+    class_name?: string;
 }
 
 export function useRecentSubmissions(limit: number = 10) {
@@ -44,7 +45,8 @@ export function useRecentSubmissions(limit: number = 10) {
           assignments!inner(
             id,
             title,
-            course_id
+            course_id,
+            class:classes(name)
           )
         `)
                 .in('assignments.course_id', courseIds)
@@ -64,7 +66,8 @@ export function useRecentSubmissions(limit: number = 10) {
           assignments!inner(
             id,
             title,
-            course_id
+            course_id,
+            class:classes(name)
           )
         `)
                 .in('assignments.course_id', courseIds)
@@ -83,7 +86,8 @@ export function useRecentSubmissions(limit: number = 10) {
           exams!inner(
             id,
             title,
-            course_id
+            course_id,
+            class:classes(name)
           )
         `)
                 .in('exams.course_id', courseIds)
@@ -120,6 +124,7 @@ export function useRecentSubmissions(limit: number = 10) {
                         submitted_at: sub.submitted_at,
                         graded: sub.score !== null,
                         score: sub.score || undefined,
+                        class_name: (sub.assignments as any)?.class?.name,
                     });
                 });
             }
@@ -137,6 +142,7 @@ export function useRecentSubmissions(limit: number = 10) {
                         submitted_at: sub.submitted_at,
                         graded: sub.graded ?? (sub.score !== null), // Use graded column if available
                         score: sub.score || undefined,
+                        class_name: (sub.assignments as any)?.class?.name,
                     });
                 });
             }
@@ -153,6 +159,7 @@ export function useRecentSubmissions(limit: number = 10) {
                         submitted_at: sub.submitted_at,
                         graded: sub.score !== null,
                         score: sub.score || undefined,
+                        class_name: (sub.exams as any)?.class?.name,
                     });
                 });
             }

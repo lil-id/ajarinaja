@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { useExams } from '@/hooks/useExams';
 import { useAssignments } from '@/hooks/useAssignments';
-import { useEnrollments } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useAllAssignmentSubmissions } from '@/hooks/useProgress';
 import { useNavigate } from 'react-router-dom';
 import { format, isSameDay, isAfter, startOfDay, addDays, isPast } from 'date-fns';
@@ -33,7 +33,7 @@ export function StudentCalendarWidget() {
     const [date, setDate] = useState<Date | undefined>(new Date());
 
     // Fetch data
-    const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+    const { effectiveCourseIds: enrolledCourseIds, enrolledClassIds, isLoading: enrollmentsLoading } = useEffectiveCourseIds();
     const { courses, isLoading: coursesLoading } = useCourses();
     const { exams, isLoading: examsLoading } = useExams();
     const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
@@ -45,16 +45,26 @@ export function StudentCalendarWidget() {
     const events = useMemo(() => {
         if (isLoading) return [];
 
-        const enrolledCourseIds = enrollments.map(e => e.course_id);
-
         // Create course lookup map
         const courseMap = new Map(courses.map(c => [c.id, c.title]));
 
         const allEvents: DashboardEvent[] = [];
 
+        /**
+         * Determines whether a given exam or assignment should be visible to this student.
+         * - Class-targeted: ONLY show to students in that specific class
+         * - Global (no class_id): show to anyone enrolled in the course
+         */
+        const isEventVisible = (event: { course_id: string; class_id?: string | null }) => {
+            if (event.class_id) {
+                return enrolledClassIds.includes(event.class_id);
+            }
+            return enrolledCourseIds.includes(event.course_id);
+        };
+
         // Filter and map exams
         exams
-            .filter(e => enrolledCourseIds.includes(e.course_id) && e.status === 'published')
+            .filter(e => isEventVisible(e) && e.status === 'published')
             .forEach(exam => {
                 // Add end date event if exists (Deadline)
                 if (exam.end_date) {
@@ -73,7 +83,7 @@ export function StudentCalendarWidget() {
 
         // Filter and map assignments
         assignments
-            .filter(a => enrolledCourseIds.includes(a.course_id) && a.status === 'published')
+            .filter(a => isEventVisible(a) && a.status === 'published')
             .forEach(assignment => {
                 if (assignment.due_date) {
                     const dueDate = new Date(assignment.due_date);
@@ -94,7 +104,7 @@ export function StudentCalendarWidget() {
 
         // Sort by date ascending
         return allEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
-    }, [exams, assignments, courses, enrollments, submittedAssignmentIds, isLoading, t]);
+    }, [exams, assignments, courses, enrolledCourseIds, enrolledClassIds, submittedAssignmentIds, isLoading, t]);
 
     // Modifiers for the calendar (highlight days with events)
     const eventDays = useMemo(() => events.map(e => e.date), [events]);
@@ -176,26 +186,26 @@ export function StudentCalendarWidget() {
                                         <div className="flex-1 min-w-0">
                                             <h5 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{event.title}</h5>
                                             <p className="text-xs text-muted-foreground truncate">{event.courseName}</p>
-                                            <div className="flex items-center gap-2 mt-1.5">
+                                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                 <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal">
                                                     {event.type === 'exam' ? t('calendar.exam') : t('calendar.assignment')}
                                                 </Badge>
 
                                                 {event.isSubmitted && (
-                                                    <Badge className="text-[10px] h-5 px-1.5 bg-green-100 text-green-700 hover:bg-green-100 border-green-200 gap-1">
+                                                    <Badge className="text-[10px] h-5 px-1.5 bg-green-100 text-green-700 hover:bg-green-100 border-green-200 gap-1 flex items-center">
                                                         <CheckCircle className="w-3 h-3" />
-                                                        {t('common.submitted')}
+                                                        {event.type === 'exam' ? t('common.completed') : t('common.submitted')}
                                                     </Badge>
                                                 )}
 
                                                 {event.isPastDue && !event.isSubmitted && (
-                                                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5 gap-1">
+                                                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5 gap-1 flex items-center">
                                                         <AlertCircle className="w-3 h-3" />
                                                         {t('calendar.pastDue')}
                                                     </Badge>
                                                 )}
 
-                                                <span className="text-[10px] text-muted-foreground">
+                                                <span className="text-[10px] text-muted-foreground ml-auto">
                                                     {format(event.date, 'HH:mm')}
                                                 </span>
                                             </div>

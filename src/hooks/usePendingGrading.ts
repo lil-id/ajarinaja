@@ -10,6 +10,7 @@ interface PendingGradingItem {
     pending_count: number;
     due_date?: string;
     is_overdue: boolean;
+    class_name?: string;
 }
 
 export function usePendingGrading() {
@@ -33,7 +34,7 @@ export function usePendingGrading() {
             // Get assignments for teacher's courses
             const { data: assignments } = await supabase
                 .from('assignments')
-                .select('id, title, course_id, due_date')
+                .select('id, title, course_id, due_date, class:classes(name)')
                 .in('course_id', courseIds);
 
             if (assignments && assignments.length > 0) {
@@ -70,6 +71,7 @@ export function usePendingGrading() {
                             pending_count: ungradedCount,
                             due_date: assignment.due_date,
                             is_overdue: isOverdue,
+                            class_name: (assignment.class as any)?.name,
                         });
                     }
                 });
@@ -78,7 +80,7 @@ export function usePendingGrading() {
             // Get exams for teacher's courses
             const { data: exams } = await supabase
                 .from('exams')
-                .select('id, title, course_id, end_date')
+                .select('id, title, course_id, end_date, class:classes(name)')
                 .in('course_id', courseIds);
 
             if (exams && exams.length > 0) {
@@ -115,6 +117,7 @@ export function usePendingGrading() {
                             pending_count: ungradedCount,
                             due_date: exam.end_date,
                             is_overdue: isOverdue,
+                            class_name: (exam.class as any)?.name,
                         });
                     }
                 });

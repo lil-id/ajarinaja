@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useCourses } from '@/hooks/useCourses';
-import { useEnrollments } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useExams } from '@/hooks/useExams';
 import { useCourseMaterials } from '@/hooks/useCourseMaterials';
 import { useExamSubmissions, useMaterialViews, useAllAssignmentSubmissions } from '@/hooks/useProgress';
@@ -26,7 +26,7 @@ const StudentCourses = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { courses, isLoading: coursesLoading } = useCourses();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { effectiveCourseIds, isLoading: effectiveCoursesLoading } = useEffectiveCourseIds();
   const { exams } = useExams();
   const { materials } = useCourseMaterials();
   const { data: submissions = [] } = useExamSubmissions();
@@ -34,9 +34,9 @@ const StudentCourses = () => {
   const { data: allAssignments = [] } = useAllAssignmentsBasic();
   const { data: assignmentSubmissions = [] } = useAllAssignmentSubmissions();
 
-  const isLoading = coursesLoading || enrollmentsLoading;
+  const isLoading = coursesLoading || effectiveCoursesLoading;
 
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
 
   // Calculate progress for each course

@@ -55,6 +55,7 @@ export default {
     finalized: 'Finalized',
     graded: 'Graded',
     course: 'Course',
+    class: 'Class',
     pass: 'Pass',
     fail: 'Fail',
     viewAll: 'View All',
@@ -85,12 +86,24 @@ export default {
     remove: 'Remove',
     choose: 'Choose',
     select: 'Select',
+    selectClass: 'Select Class',
+    allClasses: 'All Classes',
     allCourses: 'All Courses',
+    due: 'Due',
     searchPlaceholder: 'Search...',
     dangerZone: 'Danger Zone',
     irreversibleActions: 'Irreversible actions',
     deleteAccount: 'Delete Account',
     goBack: 'Back',
+    days: {
+      monday: 'Monday',
+      tuesday: 'Tuesday',
+      wednesday: 'Wednesday',
+      thursday: 'Thursday',
+      friday: 'Friday',
+      saturday: 'Saturday',
+      sunday: 'Sunday',
+    },
 
     // Shared actions (exam/question bank)
     selected: 'selected',
@@ -236,6 +249,7 @@ export default {
     weeklyActivity: 'Weekly Activity',
     totalSubmissionsWeek: 'submissions this week',
     noActivityData: 'No activity data available',
+    noRecentActivity: 'No recent activity',
     calendarTooltip: 'Number of upcoming assignment and exam deadlines',
     studentsTooltip: 'Total unique students enrolled across all your courses',
     analyticsTooltip: 'Number of published courses',
@@ -339,6 +353,9 @@ export default {
     removeStudentConfirm: 'Are you sure you want to remove this student from the course?',
     manageStudents: 'Manage Students',
     students: 'Students',
+    noStudentsInClass: 'No students in this class',
+    studentsEnrolledViaOperator: 'Students enrolled by operator',
+    studentsInClass: 'Students in class',
     exams: 'Exams',
     createExam: 'Create Exam',
     assignments: 'Assignments',
@@ -372,6 +389,21 @@ export default {
     postAnnouncement: 'Post Announcement',
   },
 
+
+  // Schedules
+  schedules: {
+    title: 'Schedules',
+    description: 'Your weekly teaching schedule.',
+    noData: 'No schedules registered',
+    noSchedulesRegistered: 'You do not have any teaching schedules registered by the academic operator for this period.',
+    today: 'Today',
+    freeDay: 'No schedule',
+    ongoing: 'Ongoing',
+    time: 'Time',
+    course: 'Course',
+    class: 'Class',
+    room: 'Room',
+  },
 
   // Assignments
   assignments: {
@@ -1679,6 +1711,31 @@ export default {
     points: 'Points',
     aiGenerated: 'AI Generated',
     generationHistory: 'Generation History',
+
+    // Progress Stepper
+    workflowTitle: 'AI Question Generation Workflow',
+    workflowDescription: 'Follow these steps to generate questions from your material',
+    step1Title: '1. Upload Material',
+    step1Description: 'Upload PDF or TXT files containing teaching materials',
+    step2Title: '2. Process Material',
+    step2Description: 'AI analyzes and breaks content into searchable segments',
+    step3Title: '3. Generate Questions',
+    step3Description: 'AI creates questions based on the material content',
+    step4Title: '4. Save to Question Bank',
+    step4Description: 'Review, edit, and save questions to your question bank',
+    uploaded: 'uploaded',
+    generated: 'generated',
+    saved: 'saved',
+
+    // Configuration & Generation
+    configureParameters: 'Configure AI question parameters',
+    questionsGenerated: 'questions generated',
+    reviewBeforeSaving: 'Review and edit before saving',
+    questionLabel: 'Question',
+    optionsLabel: 'Answer Options',
+    correctAnswerLabel: 'Correct Answer',
+    explanationLabel: 'Answer Explanation',
+    explanationPlaceholder: 'Add an explanation of why this answer is correct...',
   },
 
   attendance: {

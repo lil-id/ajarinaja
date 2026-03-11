@@ -4,6 +4,7 @@ import { logger, generateCorrelationId } from '@/lib/logger';
 import type { AttendanceSession, AttendanceRecord, CheckInResponse } from '@/types/attendance';
 
 export function useStudentAttendance(courseId: string) {
+    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['student-attendance', courseId],
         queryFn: async () => {
@@ -11,10 +12,18 @@ export function useStudentAttendance(courseId: string) {
             if (!user) throw new Error('Not authenticated');
 
             // 1. Get all sessions for this course
-            const { data: sessions, error: sessionsError } = await supabase
+            let query = supabase
                 .from('attendance_sessions' as any)
                 .select('*')
-                .eq('course_id', courseId)
+                .eq('course_id', courseId);
+
+            // Fetch specific class if provided
+            const classId = (queryClient.getQueryData(['student-course-class', courseId]) as any)?.class_id;
+            if (classId) {
+                query = query.eq('class_id', classId);
+            }
+
+            const { data: sessions, error: sessionsError } = await query
                 .order('session_date', { ascending: false });
 
             if (sessionsError) throw sessionsError;
@@ -126,7 +135,7 @@ export function useStudentActiveSessions() {
             if (!user) throw new Error('Not authenticated');
 
             // 1. Get open sessions (RLS filters by enrollment automatically)
-            const { data: sessions, error } = await supabase
+            const { data: allSessions, error: sessionsError } = await supabase
                 .from('attendance_sessions' as any)
                 .select(`
                     *,
@@ -135,12 +144,27 @@ export function useStudentActiveSessions() {
                 .eq('status', 'open')
                 .order('close_time', { ascending: true });
 
-            if (error) throw error;
+            if (sessionsError) throw sessionsError;
 
-            if (!sessions || sessions.length === 0) return [];
+            if (!allSessions || allSessions.length === 0) return [];
 
-            // 2. Get my records to exclude already checked-in ones (if desired)
-            const sessionIds = sessions.map((s: any) => s.id);
+            // 2. Get the student's assigned classes to filter sessions
+            const { data: studentClasses } = await supabase
+                .from('class_students')
+                .select('class_id')
+                .eq('student_id', user.id);
+
+            const studentClassIds = studentClasses?.map(c => c.class_id) || [];
+
+            // Filter sessions by student's classes
+            const mySessions = (allSessions as any[]).filter((s: any) =>
+                !s.class_id || studentClassIds.includes(s.class_id)
+            );
+
+            if (mySessions.length === 0) return [];
+
+            // 3. Get my records to exclude already checked-in ones
+            const sessionIds = mySessions.map((s: any) => s.id);
             const { data: records, error: recordsError } = await supabase
                 .from('attendance_records' as any)
                 .select('*')
@@ -152,12 +176,9 @@ export function useStudentActiveSessions() {
             const recordMap = new Map(records.map((r: any) => [r.session_id, r]));
 
             // Filter logic: Show if NO record OR record status is 'absent'
-            // If checking in is allowed even if 'late', we show it.
-            // If already 'present' or 'late' (checked in), hide it from "Active Actions".
-            const relevantSessions = sessions.filter((s: any) => {
+            const relevantSessions = mySessions.filter((s: any) => {
                 const rec = recordMap.get(s.id);
                 if (!rec) return true;
-                // Only show if status is 'absent' (meaning hasn't successfully checked in yet)
                 return rec.status === 'absent';
             });
 

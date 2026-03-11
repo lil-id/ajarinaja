@@ -11,7 +11,7 @@ import {
   useMarkAllNotificationsRead,
   type Notification,
 } from '@/hooks/useNotifications';
-import { useEnrollments } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useCourses } from '@/hooks/useCourses';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useSchoolAnnouncements } from '@/hooks/useSchoolAnnouncements';
@@ -156,7 +156,7 @@ const StudentNotifications = () => {
   const markAllRead = useMarkAllNotificationsRead();
 
   // Announcements data
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { effectiveCourseIds, isLoading: effectiveCoursesLoading } = useEffectiveCourseIds();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { announcements, isLoading: announcementsLoading } = useAnnouncements();
 
@@ -169,7 +169,7 @@ const StudentNotifications = () => {
   };
 
   // Announcements logic
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
   const myAnnouncements = announcements.filter(a => enrolledCourseIds.includes(a.course_id));
 
   // School-wide announcements
@@ -179,7 +179,7 @@ const StudentNotifications = () => {
     return courses.find(c => c.id === courseId)?.title || t('studentMaterials.unknownCourse');
   };
 
-  const isAnnouncementsLoading = enrollmentsLoading || coursesLoading || announcementsLoading;
+  const isAnnouncementsLoading = effectiveCoursesLoading || coursesLoading || announcementsLoading;
 
   return (
     <div className="space-y-6">

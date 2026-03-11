@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useCourses } from '@/hooks/useCourses';
 import { useCourseAttendanceStats } from '@/hooks/useAttendanceSessions';
 import { useAttendanceExport } from '@/hooks/useAttendanceExport';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
+import { OpenSessionDialog } from '@/components/attendance/OpenSessionDialog';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Users, QrCode, Filter, Calendar as CalendarIcon, FileDown, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
@@ -38,12 +40,14 @@ const TeacherAttendance = () => {
     const { courses, isLoading } = useCourses();
     const navigate = useNavigate();
     const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+    const [selectedClassId, setSelectedClassId] = useState<string>('');
 
     // Filter State
     const [period, setPeriod] = useState<Period>('all');
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
     const activeCourses = courses?.filter(course => course.status !== 'draft') || [];
+    const { data: classes = [] } = useTeacherCourseClasses(selectedCourseId || undefined);
     const { exportToCSV, exportToPDF } = useAttendanceExport();
 
     // Auto-select first course when courses are loaded
@@ -51,7 +55,7 @@ const TeacherAttendance = () => {
         if (activeCourses.length > 0 && !selectedCourseId) {
             setSelectedCourseId(activeCourses[0].id);
         }
-    }, [courses]);
+    }, [activeCourses, selectedCourseId]);
 
     const selectedCourse = useMemo(() => {
         return activeCourses.find(c => c.id === selectedCourseId);
@@ -87,7 +91,7 @@ const TeacherAttendance = () => {
     }, [period, dateRange]);
 
     // Fetch stats for export capability
-    const { data: stats } = useCourseAttendanceStats(selectedCourseId, filterRange);
+    const { data: stats } = useCourseAttendanceStats(selectedCourseId, selectedClassId || undefined, filterRange);
 
 
     const handleExport = (type: 'csv' | 'pdf') => {
@@ -110,6 +114,9 @@ const TeacherAttendance = () => {
                     <h1 className="text-2xl font-bold tracking-tight">{t('attendance.title') || 'Attendance'}</h1>
                     <p className="text-muted-foreground">{t('attendance.manageSubtitle') || 'Manage attendance sessions and history'}</p>
                 </div>
+                {selectedCourseId && (
+                    <OpenSessionDialog courseId={selectedCourseId} />
+                )}
             </div>
 
             <LiveSessionWidget />
@@ -123,7 +130,10 @@ const TeacherAttendance = () => {
                                     <div className="w-full sm:w-[250px]">
                                         <Select
                                             value={selectedCourseId}
-                                            onValueChange={setSelectedCourseId}
+                                            onValueChange={(val) => {
+                                                setSelectedCourseId(val);
+                                                setSelectedClassId(''); // Reset class when course changes
+                                            }}
                                             disabled={isLoading || activeCourses.length === 0}
                                         >
                                             <SelectTrigger>
@@ -138,6 +148,28 @@ const TeacherAttendance = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
+
+                                    {selectedCourseId && (
+                                        <div className="w-full sm:w-[200px]">
+                                            <Select
+                                                value={selectedClassId}
+                                                onValueChange={setSelectedClassId}
+                                            >
+                                                <SelectTrigger>
+                                                    <Users className="w-4 h-4 mr-2" />
+                                                    <SelectValue placeholder={t('common.allClasses')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">{t('common.allClasses')}</SelectItem>
+                                                    {classes.map(c => (
+                                                        <SelectItem key={c.id} value={c.id}>
+                                                            {c.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                     <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
                                         <SelectTrigger className="w-[180px]">
                                             <Filter className="w-4 h-4 mr-2" />
@@ -226,6 +258,7 @@ const TeacherAttendance = () => {
                             {selectedCourseId ? (
                                 <AttendanceComparisonTable
                                     courseId={selectedCourseId}
+                                    classId={selectedClassId !== 'all' ? selectedClassId : undefined}
                                     courseName={selectedCourse?.title}
                                 />
                             ) : (

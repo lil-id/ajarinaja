@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, isFuture, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload, Search } from 'lucide-react';
+import { FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +10,9 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useEnrollments } from '@/hooks/useEnrollments';
 import { useCourses } from '@/hooks/useCourses';
-import { useAssignments } from '@/hooks/useAssignments';
+import { useAssignments, Assignment, AssignmentSubmission } from '@/hooks/useAssignments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -33,15 +33,20 @@ export default function StudentAssignments() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { enrollments = [] } = useEnrollments();
-  const { courses = [] } = useCourses();
-  const { data: allAssignments = [] } = useAssignments();
+  const {
+    effectiveCourseIds,
+    enrollments,
+    enrolledClassIds,
+    isLoading: effectiveCoursesLoading
+  } = useEffectiveCourseIds();
+  const { courses = [], isLoading: coursesLoading } = useCourses();
+  const { data: allAssignments = [], isLoading: assignmentsLoading } = useAssignments();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
 
   // Get student's file/text submissions
-  const { data: mySubmissions = [] } = useQuery({
+  const { data: mySubmissions = [], isLoading: submissionsLoading } = useQuery({
     queryKey: ['my-all-submissions', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -56,7 +61,7 @@ export default function StudentAssignments() {
   });
 
   // Get student's question-based submissions
-  const { data: myQuestionSubmissions = [] } = useQuery({
+  const { data: myQuestionSubmissions = [], isLoading: questionSubmissionsLoading } = useQuery({
     queryKey: ['my-all-question-submissions', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -70,15 +75,27 @@ export default function StudentAssignments() {
     enabled: !!user,
   });
 
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
   const enrolledCourses = courses.filter(c => enrolledCourseIds.includes(c.id));
   const courseMap = new Map(courses.map(c => [c.id, c.title]));
 
-  // Filter assignments for enrolled courses only
+  // Filter assignments visible to this student:
+  // - Must be published
+  // - Class-targeted (class_id set): student must be in THAT class exactly
+  // - Global (no class_id): student must be enrolled in the course
   const assignments = allAssignments
-    .filter(a => enrolledCourseIds.includes(a.course_id) && a.status === 'published')
+    .filter(a => {
+      if (a.status?.toLowerCase() !== 'published') return false;
+
+      if (a.class_id) {
+        // Class-targeted: ONLY show to students in that specific class
+        return enrolledClassIds.includes(a.class_id);
+      }
+
+      // Global assignment: show to anyone enrolled in the course
+      return enrolledCourseIds.includes(a.course_id);
+    })
     .map(a => {
-      // Check both submission types based on assignment type
       const fileSubmission = mySubmissions.find(s => s.assignment_id === a.id);
       const questionSubmission = myQuestionSubmissions.find(s => s.assignment_id === a.id);
       const submission = fileSubmission || questionSubmission;
@@ -115,6 +132,7 @@ export default function StudentAssignments() {
    * @param {any} assignment - The assignment object
    * @returns {JSX.Element} The rendered card
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderAssignmentCard = (assignment: any) => {
     const isOverdue = isPast(new Date(assignment.due_date)) && !assignment.submission;
     const isSubmitted = !!assignment.submission;
@@ -207,7 +225,17 @@ export default function StudentAssignments() {
     );
   };
 
-  if (enrollments.length === 0) {
+  const isDataLoading = effectiveCoursesLoading || coursesLoading || assignmentsLoading || submissionsLoading || questionSubmissionsLoading;
+
+  if (isDataLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+      </div>
+    );
+  }
+
+  if (effectiveCourseIds.length === 0) {
     return (
       <div className="space-y-6">
         <div>

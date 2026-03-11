@@ -9,14 +9,21 @@ import type {
 } from '@/types/attendance';
 
 // Get all sessions for a course
-export function useAttendanceSessions(courseId: string) {
+export function useAttendanceSessions(courseId: string, classId?: string) {
     return useQuery({
-        queryKey: ['attendance-sessions', courseId],
+        queryKey: ['attendance-sessions', courseId, classId],
         queryFn: async () => {
-            const { data, error } = await supabase
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let query: any = supabase
                 .from('attendance_sessions')
                 .select('*, course:courses(id, title)')
-                .eq('course_id', courseId)
+                .eq('course_id', courseId);
+
+            if (classId) {
+                query = query.eq('class_id', classId);
+            }
+
+            const { data, error } = await query
                 .order('session_date', { ascending: false })
                 .order('session_number', { ascending: false });
 
@@ -57,7 +64,7 @@ export function useAttendanceSession(sessionId: string) {
             if (recordsResult.error) throw recordsResult.error;
 
             // Transform records to flatten student data
-            const records = recordsResult.data.map((record: any) => ({
+            const records = recordsResult.data.map((record: { student_id: string; student?: { name?: string; email?: string; avatar_url?: string } | null;[key: string]: unknown }) => ({
                 ...record,
                 student: {
                     id: record.student_id,
@@ -68,7 +75,7 @@ export function useAttendanceSession(sessionId: string) {
             }));
 
             // Sort by name manually since we can't easily order by JSONB/relation
-            records.sort((a: any, b: any) => a.student.name.localeCompare(b.student.name));
+            records.sort((a, b) => String(a.student.name).localeCompare(String(b.student.name)));
 
             return {
                 session: sessionResult.data as AttendanceSessionWithCourse,
@@ -84,10 +91,14 @@ export function useCreateSession() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (session: Partial<AttendanceSession>) => {
+        mutationFn: async (session: Partial<AttendanceSession> & { class_id: string }) => {
             const { data, error } = await supabase
                 .from('attendance_sessions')
-                .insert(session)
+                // Cast is required because Supabase types require session_date but it
+                // is auto-populated by the DB trigger; the rest of the required fields
+                // are passed by the caller.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .insert(session as any)
                 .select()
                 .single();
 
@@ -118,7 +129,7 @@ export function useOpenSession() {
             });
 
             if (error) throw error;
-            return data as OpenSessionResponse;
+            return (data as unknown) as OpenSessionResponse;
         },
         onSuccess: (_, variables) => {
             // Invalidate session queries
@@ -232,16 +243,21 @@ export function useActiveTeacherSession() {
 }
 
 // Get aggregated attendance stats for all students in a course
-export function useCourseAttendanceStats(courseId: string, dateRange?: { from?: Date; to?: Date }) {
+export function useCourseAttendanceStats(courseId: string, classId?: string, dateRange?: { from?: Date; to?: Date }) {
     return useQuery({
-        queryKey: ['course-attendance-stats', courseId, dateRange],
+        queryKey: ['course-attendance-stats', courseId, classId, dateRange],
         queryFn: async () => {
             // 1. Fetch Sessions (to calculate total sessions so far)
-            let query = supabase
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let query: any = supabase
                 .from('attendance_sessions')
                 .select('id')
                 .eq('course_id', courseId)
                 .neq('status', 'open'); // Only count closed/finalized sessions for stats
+
+            if (classId) {
+                query = query.eq('class_id', classId);
+            }
 
             // Apply date filters if present
             if (dateRange?.from) {
@@ -255,13 +271,28 @@ export function useCourseAttendanceStats(courseId: string, dateRange?: { from?: 
 
             if (sessionError) throw sessionError;
 
-            // 2. Fetch Enrollments (to get all students)
-            const { data: enrollments, error: enrollError } = await supabase
-                .from('enrollments')
-                .select('student_id, student:profiles!fk_enrollments_profiles(id, name, email)')
-                .eq('course_id', courseId);
+            // 2. Fetch Students
+            // When classId is provided, use class_students (the ground truth for class rosters).
+            // Fall back to enrollments for courses without a class context.
+            let studentsData: { student_id: string; student: { id: string; name: string | null; email: string | null } | null }[] = [];
 
-            if (enrollError) throw enrollError;
+            if (classId) {
+                const { data: classStudents, error: classError } = await supabase
+                    .from('class_students')
+                    .select('student_id, student:profiles!class_students_student_id_fkey(id, name, email)')
+                    .eq('class_id', classId);
+
+                if (classError) throw classError;
+                studentsData = classStudents || [];
+            } else {
+                const { data: enrollments, error: enrollError } = await supabase
+                    .from('enrollments')
+                    .select('student_id, student:profiles!fk_enrollments_profiles(id, name, email)')
+                    .eq('course_id', courseId);
+
+                if (enrollError) throw enrollError;
+                studentsData = enrollments || [];
+            }
 
             // 3. Fetch Records
             const sessionIds = sessions.map(s => s.id);
@@ -273,27 +304,40 @@ export function useCourseAttendanceStats(courseId: string, dateRange?: { from?: 
             if (recordsError) throw recordsError;
 
             // 4. Aggregate
-            const statsMap = new Map();
+            interface StudentStat {
+                id: string;
+                name: string;
+                email: string;
+                present: number;
+                late: number;
+                excused: number;
+                sick: number;
+                absent: number;
+                sessionsCalculated: number;
+                attendancePercentage: number;
+            }
+
+            const statsMap = new Map<string, StudentStat>();
             const totalSessions = sessions.length;
 
             // Initialize
-            enrollments.forEach((enr: any) => {
+            studentsData.forEach((enr) => {
                 statsMap.set(enr.student_id, {
                     id: enr.student_id,
-                    name: enr.student.name,
-                    email: enr.student.email,
+                    name: enr.student?.name ?? 'Unknown',
+                    email: enr.student?.email ?? '',
                     present: 0,
                     late: 0,
                     excused: 0,
                     sick: 0,
                     absent: 0,
-                    sessionsCalculated: 0, // Records found
+                    sessionsCalculated: 0,
                     attendancePercentage: 0
                 });
             });
 
             // Count
-            records.forEach((rec: any) => {
+            (records || []).forEach((rec: { student_id: string; status: string }) => {
                 const student = statsMap.get(rec.student_id);
                 if (student) {
                     if (rec.status === 'present') student.present++;
@@ -306,22 +350,12 @@ export function useCourseAttendanceStats(courseId: string, dateRange?: { from?: 
                 }
             });
 
-            // Finalize (Calculate absent for missing records if session is closed? 
-            // Simplified: If we auto-create absent records, then records.length should match sessions.length.
-            // If not, missing records = Absent? 
-            // For now, let's assume missing records = Absent, if totalSessions > sessionsCalculated.
-
-            const stats = Array.from(statsMap.values()).map((s: any) => {
+            const stats = Array.from(statsMap.values()).map((s) => {
                 const missing = totalSessions - s.sessionsCalculated;
                 if (missing > 0) {
-                    s.absent += missing; // Treat missing records as absent for closed sessions
+                    s.absent += missing;
                 }
 
-                // Calculate Score: (Present + Late) / Total
-                // Or custom logic. Simple presence %.
-                const presenceCount = s.present + s.late; // Late counts as present? or partial?
-                // Standard: Present / Total * 100
-                // User requirement: Just simple summary.
                 s.attendancePercentage = totalSessions > 0
                     ? Math.round(((s.present + (s.late * 0.5)) / totalSessions) * 100)
                     : 0;
@@ -331,6 +365,7 @@ export function useCourseAttendanceStats(courseId: string, dateRange?: { from?: 
 
             // Sort by name
             return stats.sort((a, b) => a.name.localeCompare(b.name));
+
         },
         enabled: !!courseId
     });
@@ -370,14 +405,14 @@ export function useSyncAttendanceGrades() {
             if (error) throw error;
             return data;
         },
-        onSuccess: (data: any) => {
+        onSuccess: (data: { success: boolean; updated_count?: number; message?: string }) => {
             if (data.success) {
                 toast.success(`Attendance grades synced for ${data.updated_count} students`);
             } else {
                 toast.error(data.message || 'Failed to sync grades');
             }
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             console.error('Error syncing grades:', error);
             toast.error('Failed to sync attendance grades');
         }

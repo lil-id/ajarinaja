@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useAssignments, useDeleteAssignment, useUpdateAssignment } from '@/hooks/useAssignments';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
 import { toast } from 'sonner';
 
 /**
@@ -53,7 +54,10 @@ export default function TeacherAssignments() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const [selectedClass, setSelectedClass] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('active');
+
+  const { data: classes = [] } = useTeacherCourseClasses(selectedCourse !== 'all' ? selectedCourse : undefined);
 
   const courseMap = new Map(courses.map(c => [c.id, c.title]));
 
@@ -69,6 +73,9 @@ export default function TeacherAssignments() {
 
     // Course filter
     if (selectedCourse !== 'all' && a.course_id !== selectedCourse) return false;
+
+    // Class filter
+    if (selectedClass !== 'all' && a.class_id !== selectedClass) return false;
 
     // Tab filter (archived vs active)
     const isArchived = (a as any).archived === true;
@@ -173,7 +180,13 @@ export default function TeacherAssignments() {
             className="pl-9"
           />
         </div>
-        <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+        <Select
+          value={selectedCourse}
+          onValueChange={(val) => {
+            setSelectedCourse(val);
+            setSelectedClass('all'); // Reset class when course changes
+          }}
+        >
           <SelectTrigger className="w-full sm:w-[200px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder={t('common.allCourses')} />
@@ -185,6 +198,21 @@ export default function TeacherAssignments() {
             ))}
           </SelectContent>
         </Select>
+
+        {selectedCourse !== 'all' && (
+          <Select value={selectedClass} onValueChange={setSelectedClass}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <Users className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={t('common.allClasses')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('common.allClasses')}</SelectItem>
+              {classes.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Tabs */}
@@ -286,13 +314,17 @@ export default function TeacherAssignments() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {assignment.class?.name || t('common.allClasses')}
+                      </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {t('assignments.due')}: {format(new Date(assignment.due_date), 'MMM d, yyyy h:mm a')}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
+                        <Plus className="h-4 w-4" />
                         {assignment.max_points} {t('common.points')}
                       </div>
                     </div>

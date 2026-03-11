@@ -44,6 +44,7 @@ import { AttendanceCalendar } from './AttendanceCalendar';
 
 interface AttendanceComparisonTableProps {
     courseId: string;
+    classId?: string;
     courseName?: string;
     readOnly?: boolean;
     targetStudentId?: string;
@@ -51,6 +52,7 @@ interface AttendanceComparisonTableProps {
 
 export const AttendanceComparisonTable = ({
     courseId,
+    classId,
     courseName,
     readOnly = false,
     targetStudentId
@@ -62,6 +64,7 @@ export const AttendanceComparisonTable = ({
 
     const { data, isLoading, refetch } = useAttendanceMatrix({
         courseId,
+        classId,
         month: selectedMonth
     });
 
@@ -97,10 +100,16 @@ export const AttendanceComparisonTable = ({
 
         const fetchLatestSession = async () => {
             const { supabase } = await import('@/integrations/supabase/client');
-            const { data: latestData } = await supabase
+            let query = supabase
                 .from('attendance_sessions')
                 .select('session_date')
-                .eq('course_id', courseId)
+                .eq('course_id', courseId);
+
+            if (classId) {
+                query = query.eq('class_id', classId);
+            }
+
+            const { data: latestData } = await query
                 .order('session_date', { ascending: false })
                 .limit(1)
                 .maybeSingle();
@@ -114,7 +123,7 @@ export const AttendanceComparisonTable = ({
         };
 
         fetchLatestSession();
-    }, [courseId]);
+    }, [courseId, classId]);
 
     if (isLoading) {
         return (

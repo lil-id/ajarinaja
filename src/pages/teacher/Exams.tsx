@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeacherCourses } from '@/hooks/useCourses';
 import { useExams, useUpdateExam, useDeleteExam } from '@/hooks/useExams';
-import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore, Calendar } from 'lucide-react';
+import { useTeacherCourseClasses } from '@/hooks/useTeacherCourseClasses';
+import { FileText, Plus, Clock, Award, MoreVertical, Edit, Trash2, Loader2, ClipboardCheck, Search, Filter, Archive, ArchiveRestore, Calendar, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,7 +50,10 @@ const TeacherExams = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCourse, setFilterCourse] = useState('all');
+  const [filterClass, setFilterClass] = useState('all');
   const [activeTab, setActiveTab] = useState('published');
+
+  const { data: classes = [] } = useTeacherCourseClasses(filterCourse !== 'all' ? filterCourse : undefined);
 
   const handleDeleteExam = async (examId: string) => {
     try {
@@ -133,20 +137,24 @@ const TeacherExams = () => {
     // Course filter
     if (filterCourse !== 'all' && exam.course_id !== filterCourse) return false;
 
+    // Class filter
+    if (filterClass !== 'all' && exam.class_id !== filterClass) return false;
+
     // Tab filter
     const isArchived = (exam as any).archived === true;
     if (activeTab === 'archived') return isArchived;
     if (isArchived) return false;
 
-    if (activeTab === 'published') return exam.status === 'published';
+    if (activeTab === 'published') return exam.status === 'published' && (!exam.end_date || new Date(exam.end_date) > new Date());
+    if (activeTab === 'closed') return exam.status === 'published' && exam.end_date && new Date(exam.end_date) <= new Date();
     if (activeTab === 'draft') return exam.status === 'draft';
 
     return true;
   });
 
-  // Count items for tabs
   const counts = {
-    published: teacherExams.filter(e => !((e as any).archived) && e.status === 'published').length,
+    published: teacherExams.filter(e => !((e as any).archived) && e.status === 'published' && (!e.end_date || new Date(e.end_date) > new Date())).length,
+    closed: teacherExams.filter(e => !((e as any).archived) && e.status === 'published' && e.end_date && new Date(e.end_date) <= new Date()).length,
     draft: teacherExams.filter(e => !((e as any).archived) && e.status === 'draft').length,
     archived: teacherExams.filter(e => (e as any).archived === true).length,
   };
@@ -186,7 +194,13 @@ const TeacherExams = () => {
             className="pl-10"
           />
         </div>
-        <Select value={filterCourse} onValueChange={setFilterCourse}>
+        <Select
+          value={filterCourse}
+          onValueChange={(val) => {
+            setFilterCourse(val);
+            setFilterClass('all'); // Reset class when course changes
+          }}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder={t('exams.filterByCourse')} />
@@ -200,6 +214,21 @@ const TeacherExams = () => {
             ))}
           </SelectContent>
         </Select>
+
+        {filterCourse !== 'all' && (
+          <Select value={filterClass} onValueChange={setFilterClass}>
+            <SelectTrigger className="w-full sm:w-48">
+              <Users className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={t('common.allClasses')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('common.allClasses')}</SelectItem>
+              {classes.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Tabs */}
@@ -207,6 +236,9 @@ const TeacherExams = () => {
         <TabsList>
           <TabsTrigger value="published">
             {t('common.published')} ({counts.published})
+          </TabsTrigger>
+          <TabsTrigger value="closed">
+            {t('assignments.closed')} ({counts.closed})
           </TabsTrigger>
           <TabsTrigger value="draft">
             {t('common.draft')} ({counts.draft})
@@ -227,7 +259,9 @@ const TeacherExams = () => {
                     ? t('common.noResultsFound')
                     : activeTab === 'archived'
                       ? t('exams.noArchivedExams')
-                      : t('exams.noExamsDescription')
+                      : activeTab === 'closed'
+                        ? t('exams.noClosedExams', { defaultValue: t('assignments.noClosedAssignments') })
+                        : t('exams.noExamsDescription')
                   }
                 </p>
               </CardContent>
@@ -306,7 +340,11 @@ const TeacherExams = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {exam.class_id ? exam.class?.name || 'Unknown Class' : t('common.allClasses')}
+                      </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         {exam.duration} {t('common.minutes')}

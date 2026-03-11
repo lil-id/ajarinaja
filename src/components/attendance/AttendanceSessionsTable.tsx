@@ -35,13 +35,14 @@ import {
 
 interface AttendanceSessionsTableProps {
     courseId: string;
+    classId?: string;
 }
 
-export function AttendanceSessionsTable({ courseId }: AttendanceSessionsTableProps) {
+export function AttendanceSessionsTable({ courseId, classId }: AttendanceSessionsTableProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { toast } = useToast();
-    const { data: sessions, isLoading } = useAttendanceSessions(courseId);
+    const { data: sessions, isLoading } = useAttendanceSessions(courseId, classId);
     const closeSession = useCloseSession();
     const deleteSession = useDeleteSession();
 

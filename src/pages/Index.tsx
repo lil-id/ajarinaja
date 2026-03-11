@@ -134,8 +134,8 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" disabled className="hidden sm:flex opacity-50 cursor-not-allowed">
-              Sign In
+            <Button variant="hero" onClick={() => navigate("/login")} className="hidden sm:flex">
+              Click Me
             </Button>
 
             {/* Mobile Hamburger Menu */}

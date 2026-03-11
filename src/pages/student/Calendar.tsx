@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, FileText, ClipboardList, Calendar as Calenda
 import { useExams } from '@/hooks/useExams';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { useAssignments } from '@/hooks/useAssignments';
-import { useEnrollments } from '@/hooks/useEnrollments';
+import { useEffectiveCourseIds } from '@/hooks/useEffectiveCourseIds';
 import { useCourses } from '@/hooks/useCourses';
 import { useAllAssignmentSubmissions } from '@/hooks/useProgress';
 import { cn } from '@/lib/utils';
@@ -41,33 +41,45 @@ export default function StudentCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const { effectiveCourseIds, enrollments, enrolledClassIds, isLoading: effectiveCoursesLoading } = useEffectiveCourseIds();
   const { courses, isLoading: coursesLoading } = useCourses();
   const { exams, isLoading: examsLoading } = useExams();
   const { submissions, isLoading: submissionsLoading } = useSubmissions();
   const { data: assignments = [], isLoading: assignmentsLoading } = useAssignments();
   const { data: submittedAssignmentIds = [] } = useAllAssignmentSubmissions();
 
-  const isLoading = enrollmentsLoading || coursesLoading || examsLoading || assignmentsLoading || submissionsLoading;
+  const isLoading = effectiveCoursesLoading || coursesLoading || examsLoading || assignmentsLoading || submissionsLoading;
 
   // Get enrolled course IDs
-  const enrolledCourseIds = enrollments.map(e => e.course_id);
+  const enrolledCourseIds = effectiveCourseIds;
 
   // Build course map for names
   const courseMap = useMemo(() => {
     return new Map(courses.map((c) => [c.id, c.title]));
   }, [courses]);
 
-  // Filter to only enrolled courses and build events
+  // Filter to only enrolled courses/classes and build events
   const events = useMemo(() => {
     const allEvents: CalendarEvent[] = [];
     const now = new Date();
+
+    /**
+     * Determines whether a given exam or assignment should be visible to this student.
+     * - Class-targeted: ONLY show to students in that specific class
+     * - Global (no class_id): show to anyone enrolled in the course
+     */
+    const isEventVisible = (event: { course_id: string; class_id?: string | null }) => {
+      if (event.class_id) {
+        return enrolledClassIds.includes(event.class_id);
+      }
+      return enrolledCourseIds.includes(event.course_id);
+    };
 
     // Add exam events
     const completedExamIds = submissions.map(s => s.exam_id);
 
     (exams || [])
-      .filter((e) => enrolledCourseIds.includes(e.course_id) && e.status === 'published')
+      .filter((e) => isEventVisible(e) && e.status === 'published')
       .forEach((exam) => {
         if (exam.end_date) {
           const endDate = new Date(exam.end_date);
@@ -82,23 +94,11 @@ export default function StudentCalendar() {
             isSubmitted: completedExamIds.includes(exam.id),
           });
         }
-        if (exam.start_date) {
-          const startDate = new Date(exam.start_date);
-          allEvents.push({
-            id: `${exam.id}-start`,
-            title: `${exam.title} (${t('calendar.opens')})`,
-            date: startDate,
-            type: 'exam',
-            courseName: courseMap.get(exam.course_id) || t('calendar.unknown'),
-            status: exam.status,
-            isPastDue: false,
-          });
-        }
       });
 
     // Add assignment events
     assignments
-      .filter((a) => enrolledCourseIds.includes(a.course_id) && a.status === 'published')
+      .filter((a) => isEventVisible(a) && a.status === 'published')
       .forEach((assignment) => {
         if (assignment.due_date) {
           const dueDate = new Date(assignment.due_date);
@@ -118,7 +118,7 @@ export default function StudentCalendar() {
       });
 
     return allEvents;
-  }, [exams, assignments, enrolledCourseIds, courseMap, submittedAssignmentIds]);
+  }, [exams, assignments, enrolledCourseIds, enrolledClassIds, courseMap, submittedAssignmentIds, submissions, t]);
 
   // Get days in current month view
   const monthStart = startOfMonth(currentMonth);

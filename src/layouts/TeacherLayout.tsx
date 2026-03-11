@@ -31,7 +31,8 @@ import {
   Calendar,
   AlertTriangle,
   PanelLeftClose,
-  PanelLeft
+  PanelLeft,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -49,6 +50,7 @@ const TeacherLayout = () => {
     { name: t('nav.dashboard'), href: '/teacher', icon: LayoutDashboard },
     { name: t('nav.courses'), href: '/teacher/courses', icon: BookOpen },
     { name: t('nav.calendar'), href: '/teacher/calendar', icon: Calendar },
+    { name: t('nav.schedules'), href: '/teacher/schedules', icon: Clock },
     { name: t('attendance.title') || 'Attendance', href: '/teacher/attendance', icon: ClipboardList },
     { name: t('nav.assignments'), href: '/teacher/assignments', icon: ClipboardList },
     { name: t('nav.exams'), href: '/teacher/exams', icon: FileText },
@@ -208,7 +210,7 @@ const TeacherLayout = () => {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-foreground">{profile?.name || t('auth.teacher')}</p>
                         {homeroomClass && (
-                          <Badge variant="secondary" className="h-4 text-[10px] px-1 py-0 shadow-none font-medium text-emerald-600 bg-emerald-100/50 dark:text-emerald-400 dark:bg-emerald-900/30">
+                          <Badge variant="outline" className="h-4 text-[10px] px-1 py-0 shadow-none font-medium text-emerald-600 bg-emerald-100/50 border-transparent hover:bg-emerald-200/50 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-800/50">
                             {t('operator.classes.homeroomTeacher')}
                           </Badge>
                         )}

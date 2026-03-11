@@ -8,12 +8,13 @@ import { DateRange } from 'react-day-picker';
 
 interface AttendanceStudentSummaryProps {
     courseId: string;
+    classId?: string;
     filterRange?: { from: Date | undefined; to: Date | undefined };
 }
 
-export function AttendanceStudentSummary({ courseId, filterRange }: AttendanceStudentSummaryProps) {
+export function AttendanceStudentSummary({ courseId, classId, filterRange }: AttendanceStudentSummaryProps) {
     const { t } = useTranslation();
-    const { data: stats, isLoading } = useCourseAttendanceStats(courseId, filterRange);
+    const { data: stats, isLoading } = useCourseAttendanceStats(courseId, classId, filterRange);
 
     if (isLoading) {
         return <div className="flex justify-center py-8"><Loader2 className="animate-spin" /></div>;
@@ -54,7 +55,7 @@ export function AttendanceStudentSummary({ courseId, filterRange }: AttendanceSt
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {stats.map((student: any) => (
+                        {stats.map((student: { id: string; name: string; email: string; present: number; late: number; excused: number; sick: number; absent: number; attendancePercentage: number }) => (
                             <TableRow key={student.id}>
                                 <TableCell>
                                     <div className="font-medium">{student.name}</div>

@@ -91,17 +91,6 @@ export default function TeacherCalendar() {
             href: `/teacher/exams/${exam.id}/edit`,
           });
         }
-        if (exam.start_date) {
-          allEvents.push({
-            id: `${exam.id}-start`,
-            title: `${exam.title} (Start)`,
-            date: new Date(exam.start_date),
-            type: 'exam',
-            courseName: courseMap.get(exam.course_id) || 'Unknown',
-            status: exam.status,
-            href: `/teacher/exams/${exam.id}/edit`,
-          });
-        }
       });
 
     // Add assignment events

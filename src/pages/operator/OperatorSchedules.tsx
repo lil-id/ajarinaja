@@ -206,9 +206,9 @@ const OperatorSchedules = () => {
                         <Card key={day}>
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-base flex items-center gap-2">
-                                    <CalendarDays className="w-4 h-4" />
-                                    {DAY_LABELS[day]}
-                                    <Badge variant="secondary" className="ml-1">{byDay[day].length}</Badge>
+                                    <h3 className="font-semibold text-sm text-foreground bg-muted/50 p-2 rounded-t-lg border-b">
+                                        {t(DAY_LABELS[day])}
+                                    </h3><Badge variant="secondary" className="ml-1">{byDay[day].length}</Badge>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
@@ -343,7 +343,7 @@ const OperatorSchedules = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {DAY_OPTIONS.map((d) => (
-                                        <SelectItem key={d} value={String(d)}>{DAY_LABELS[d]}</SelectItem>
+                                        <SelectItem key={d} value={String(d)}>{t(DAY_LABELS[d])}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
